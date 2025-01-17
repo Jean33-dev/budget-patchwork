@@ -10,6 +10,7 @@ interface Envelope {
   budget: number;
   spent: number;
   type: "income" | "expense";
+  category?: string;
 }
 
 const Index = () => {
@@ -17,9 +18,9 @@ const Index = () => {
   const [envelopes, setEnvelopes] = useState<Envelope[]>([
     { id: "1", title: "Salaire", budget: 5000, spent: 5000, type: "income" },
     { id: "2", title: "Freelance", budget: 1000, spent: 800, type: "income" },
-    { id: "3", title: "Loyer", budget: 1500, spent: 1500, type: "expense" },
-    { id: "4", title: "Courses", budget: 600, spent: 450, type: "expense" },
-    { id: "5", title: "Loisirs", budget: 200, spent: 180, type: "expense" },
+    { id: "3", title: "Loyer", budget: 1500, spent: 1500, type: "expense", category: "Logement" },
+    { id: "4", title: "Courses", budget: 600, spent: 450, type: "expense", category: "Alimentation" },
+    { id: "5", title: "Loisirs", budget: 200, spent: 180, type: "expense", category: "Loisirs" },
   ]);
 
   const [addDialogOpen, setAddDialogOpen] = useState(false);
@@ -33,7 +34,7 @@ const Index = () => {
     .filter((env) => env.type === "expense")
     .reduce((sum, env) => sum + env.spent, 0);
 
-  const handleAddEnvelope = (newEnvelope: { title: string; budget: number; type: "income" | "expense" }) => {
+  const handleAddEnvelope = (newEnvelope: { title: string; budget: number; type: "income" | "expense"; category?: string }) => {
     const envelope: Envelope = {
       id: Date.now().toString(),
       ...newEnvelope,
@@ -50,7 +51,7 @@ const Index = () => {
   const handleEnvelopeClick = (envelope: Envelope) => {
     toast({
       title: envelope.title,
-      description: `Budget : ${envelope.budget.toFixed(2)} €, Dépensé : ${envelope.spent.toFixed(2)} €`,
+      description: `Budget : ${envelope.budget.toFixed(2)} €, Dépensé : ${envelope.spent.toFixed(2)} €${envelope.category ? `, Catégorie : ${envelope.category}` : ""}`,
     });
   };
 

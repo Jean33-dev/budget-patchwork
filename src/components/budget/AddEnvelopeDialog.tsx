@@ -4,24 +4,40 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MoneyInput } from "../shared/MoneyInput";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useExpenseCategories } from "./ExpenseCategories";
 
 interface AddEnvelopeDialogProps {
   type: "income" | "expense";
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onAdd: (envelope: { title: string; budget: number; type: "income" | "expense" }) => void;
+  onAdd: (envelope: { title: string; budget: number; type: "income" | "expense"; category?: string }) => void;
 }
 
 export const AddEnvelopeDialog = ({ type, open, onOpenChange, onAdd }: AddEnvelopeDialogProps) => {
   const [title, setTitle] = useState("");
   const [budget, setBudget] = useState(0);
+  const [category, setCategory] = useState("");
+  const [newCategory, setNewCategory] = useState("");
+  const { categories, addCategory } = useExpenseCategories();
+  const [showNewCategoryInput, setShowNewCategoryInput] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onAdd({ title, budget, type });
+    onAdd({ title, budget, type, category: type === "expense" ? category : undefined });
     setTitle("");
     setBudget(0);
+    setCategory("");
     onOpenChange(false);
+  };
+
+  const handleAddNewCategory = () => {
+    if (newCategory) {
+      addCategory(newCategory);
+      setCategory(newCategory);
+      setNewCategory("");
+      setShowNewCategoryInput(false);
+    }
   };
 
   return (
@@ -41,6 +57,61 @@ export const AddEnvelopeDialog = ({ type, open, onOpenChange, onAdd }: AddEnvelo
               required
             />
           </div>
+          
+          {type === "expense" && (
+            <div className="space-y-2">
+              <Label>Catégorie</Label>
+              {!showNewCategoryInput ? (
+                <div className="flex gap-2">
+                  <Select value={category} onValueChange={setCategory}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Sélectionnez une catégorie" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories.map((cat) => (
+                        <SelectItem key={cat.id} value={cat.name}>
+                          {cat.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowNewCategoryInput(true)}
+                  >
+                    Nouvelle
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <Input
+                    value={newCategory}
+                    onChange={(e) => setNewCategory(e.target.value)}
+                    placeholder="Nom de la nouvelle catégorie"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleAddNewCategory}
+                  >
+                    Ajouter
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setShowNewCategoryInput(false);
+                      setNewCategory("");
+                    }}
+                  >
+                    Annuler
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
+
           <div className="space-y-2">
             <Label htmlFor="budget">Montant</Label>
             <MoneyInput
