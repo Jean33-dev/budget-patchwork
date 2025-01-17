@@ -28,21 +28,21 @@ export const AddEnvelopeDialog = ({ type, open, onOpenChange, onAdd }: AddEnvelo
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add New {type === "income" ? "Income" : "Expense"}</DialogTitle>
+          <DialogTitle>Ajouter un nouveau {type === "income" ? "revenu" : "budget"}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="title">Title</Label>
+            <Label htmlFor="title">Titre</Label>
             <Input
               id="title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder={`Enter ${type} title`}
+              placeholder={`Entrez le titre du ${type === "income" ? "revenu" : "budget"}`}
               required
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="budget">Amount</Label>
+            <Label htmlFor="budget">Montant</Label>
             <MoneyInput
               id="budget"
               value={budget}
@@ -51,7 +51,7 @@ export const AddEnvelopeDialog = ({ type, open, onOpenChange, onAdd }: AddEnvelo
             />
           </div>
           <DialogFooter>
-            <Button type="submit">Add {type === "income" ? "Income" : "Expense"}</Button>
+            <Button type="submit">Ajouter {type === "income" ? "le revenu" : "le budget"}</Button>
           </DialogFooter>
         </form>
       </DialogContent>

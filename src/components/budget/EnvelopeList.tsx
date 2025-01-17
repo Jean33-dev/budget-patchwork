@@ -24,11 +24,11 @@ export const EnvelopeList = ({ envelopes, type, onAddClick, onEnvelopeClick }: E
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold">
-          {type === "income" ? "Income" : "Expenses"}
+          {type === "income" ? "Revenus" : "Dépenses"}
         </h2>
         <Button onClick={onAddClick} variant="outline" size="sm">
           <PlusCircle className="h-4 w-4 mr-2" />
-          Add {type === "income" ? "Income" : "Expense"}
+          Ajouter {type === "income" ? "un revenu" : "une dépense"}
         </Button>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

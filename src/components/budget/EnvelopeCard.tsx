@@ -29,8 +29,8 @@ export const EnvelopeCard = ({ title, budget, spent, type, onClick }: EnvelopeCa
       <CardContent>
         <div className="space-y-2">
           <div className="flex justify-between text-sm text-gray-500">
-            <span>Budget: ${budget.toFixed(2)}</span>
-            <span>Spent: ${spent.toFixed(2)}</span>
+            <span>Budget : {budget.toFixed(2)} €</span>
+            <span>Dépensé : {spent.toFixed(2)} €</span>
           </div>
           <Progress 
             value={Math.min(progress, 100)} 
@@ -45,7 +45,7 @@ export const EnvelopeCard = ({ title, budget, spent, type, onClick }: EnvelopeCa
               "text-sm font-medium",
               isOverBudget ? "text-budget-expense" : "text-budget-income"
             )}>
-              ${Math.abs(remaining).toFixed(2)} {isOverBudget ? "over" : "remaining"}
+              {Math.abs(remaining).toFixed(2)} € {isOverBudget ? "dépassé" : "restant"}
             </span>
           </div>
         </div>
