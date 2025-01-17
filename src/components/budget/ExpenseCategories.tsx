@@ -9,16 +9,7 @@ export type ExpenseCategory = {
   name: string;
 };
 
-const DEFAULT_CATEGORIES: ExpenseCategory[] = [
-  { id: "1", name: "Logement" },
-  { id: "2", name: "Alimentation" },
-  { id: "3", name: "Transport" },
-  { id: "4", name: "Loisirs" },
-  { id: "5", name: "Santé" },
-  { id: "6", name: "Éducation" },
-  { id: "7", name: "Épargne" },
-  { id: "8", name: "Autres" },
-];
+const DEFAULT_CATEGORIES: ExpenseCategory[] = [];
 
 export const useExpenseCategories = () => {
   const [categories, setCategories] = useState<ExpenseCategory[]>(DEFAULT_CATEGORIES);
