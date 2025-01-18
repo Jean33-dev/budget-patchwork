@@ -1,9 +1,11 @@
-// On déplace le contenu de l'ancien Index.tsx ici
 import { useState } from "react";
 import { DashboardOverview } from "@/components/dashboard/DashboardOverview";
 import { EnvelopeList } from "@/components/budget/EnvelopeList";
 import { AddEnvelopeDialog } from "@/components/budget/AddEnvelopeDialog";
 import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface Envelope {
   id: string;
@@ -15,6 +17,7 @@ interface Envelope {
 }
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const { toast } = useToast();
   const [envelopes, setEnvelopes] = useState<Envelope[]>([
     { id: "1", title: "Salaire", budget: 5000, spent: 5000, type: "income" },
@@ -63,7 +66,17 @@ const Dashboard = () => {
 
   return (
     <div className="container mx-auto py-8 space-y-8">
-      <h1 className="text-4xl font-bold">Tableau de Bord Budget</h1>
+      <div className="flex items-center gap-4">
+        <Button 
+          variant="outline" 
+          size="icon"
+          onClick={() => navigate("/")}
+          className="shrink-0"
+        >
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+        <h1 className="text-4xl font-bold">Tableau de Bord Budget</h1>
+      </div>
       
       <DashboardOverview
         totalIncome={totalIncome}
