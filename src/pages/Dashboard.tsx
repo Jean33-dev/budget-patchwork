@@ -67,13 +67,34 @@ const Dashboard = () => {
     setCurrentDate(newDate);
   };
 
+  // Calcul des revenus totaux
   const totalIncome = currentMonthBudget.envelopes
     .filter((env) => env.type === "income")
-    .reduce((sum, env) => sum + env.budget, 0) + currentMonthBudget.remainingBudget;
+    .reduce((sum, env) => sum + env.budget, 0);
 
+  // Calcul du budget total des dépenses
+  const totalExpenseBudget = currentMonthBudget.envelopes
+    .filter((env) => env.type === "expense")
+    .reduce((sum, env) => sum + env.budget, 0);
+
+  // Calcul des dépenses réelles
   const totalExpenses = currentMonthBudget.envelopes
     .filter((env) => env.type === "expense")
     .reduce((sum, env) => sum + env.spent, 0);
+
+  // Calcul du budget restant après allocation aux dépenses
+  const remainingBudget = totalIncome - totalExpenseBudget;
+
+  // Calcul du budget non utilisé (différence entre budget alloué et dépenses réelles)
+  const unusedBudget = totalExpenseBudget - totalExpenses;
+
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [activeType, setActiveType] = useState<"income" | "expense">("income");
+
+  const handleAddClick = (type: "income" | "expense") => {
+    setActiveType(type);
+    setAddDialogOpen(true);
+  };
 
   const handleAddEnvelope = (newEnvelope: { title: string; budget: number; type: "income" | "expense"; category?: string }) => {
     const envelope: Envelope = {
@@ -102,14 +123,6 @@ const Dashboard = () => {
     });
   };
 
-  const [addDialogOpen, setAddDialogOpen] = useState(false);
-  const [activeType, setActiveType] = useState<"income" | "expense">("income");
-
-  const handleAddClick = (type: "income" | "expense") => {
-    setActiveType(type);
-    setAddDialogOpen(true);
-  };
-
   return (
     <div className="container mx-auto py-8 space-y-8">
       <div className="flex items-center justify-between">
@@ -133,13 +146,21 @@ const Dashboard = () => {
         envelopes={currentMonthBudget.envelopes}
       />
       
-      {currentMonthBudget.remainingBudget > 0 && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-          <p className="text-green-800">
-            Budget non utilisé du mois précédent : +{currentMonthBudget.remainingBudget.toFixed(2)} €
+      <div className="space-y-4">
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <p className="text-blue-800">
+            Budget restant après allocation : {remainingBudget.toFixed(2)} €
           </p>
         </div>
-      )}
+
+        {unusedBudget > 0 && (
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+            <p className="text-green-800">
+              Budget non utilisé : {unusedBudget.toFixed(2)} €
+            </p>
+          </div>
+        )}
+      </div>
 
       <div className="space-y-8">
         <EnvelopeList
