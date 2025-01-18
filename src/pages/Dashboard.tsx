@@ -20,7 +20,7 @@ interface Envelope {
 interface MonthlyBudget {
   date: string;
   envelopes: Envelope[];
-  previousBalance: number;
+  remainingBudget: number;
 }
 
 const Dashboard = () => {
@@ -38,10 +38,12 @@ const Dashboard = () => {
       const previousMonthKey = previousMonth.toISOString().slice(0, 7);
       const previousBudget = monthlyBudgets.find(mb => mb.date === previousMonthKey);
       
-      const previousBalance = previousBudget ? 
+      // Calculate remaining budget from previous month
+      const previousRemainingBudget = previousBudget ? 
         previousBudget.envelopes
-          .reduce((acc, env) => acc + (env.type === "income" ? env.budget : -env.spent), 0) + 
-        previousBudget.previousBalance : 0;
+          .filter(env => env.type === "expense")
+          .reduce((acc, env) => acc + (env.budget - env.spent), 0) + 
+        previousBudget.remainingBudget : 0;
 
       setMonthlyBudgets(prev => [...prev, {
         date: currentMonthKey,
@@ -52,14 +54,14 @@ const Dashboard = () => {
           { id: "4", title: "Courses", budget: 600, spent: 450, type: "expense", category: "Alimentation" },
           { id: "5", title: "Loisirs", budget: 200, spent: 180, type: "expense", category: "Loisirs" },
         ],
-        previousBalance
+        remainingBudget: previousRemainingBudget
       }]);
     }
   }, [currentDate, monthlyBudgets]);
 
   const currentMonthBudget = monthlyBudgets.find(
     mb => mb.date === currentDate.toISOString().slice(0, 7)
-  ) || { envelopes: [], previousBalance: 0 };
+  ) || { envelopes: [], remainingBudget: 0 };
 
   const handleMonthChange = (newDate: Date) => {
     setCurrentDate(newDate);
@@ -67,7 +69,7 @@ const Dashboard = () => {
 
   const totalIncome = currentMonthBudget.envelopes
     .filter((env) => env.type === "income")
-    .reduce((sum, env) => sum + env.budget, 0) + currentMonthBudget.previousBalance;
+    .reduce((sum, env) => sum + env.budget, 0) + currentMonthBudget.remainingBudget;
 
   const totalExpenses = currentMonthBudget.envelopes
     .filter((env) => env.type === "expense")
@@ -131,10 +133,10 @@ const Dashboard = () => {
         envelopes={currentMonthBudget.envelopes}
       />
       
-      {currentMonthBudget.previousBalance > 0 && (
+      {currentMonthBudget.remainingBudget > 0 && (
         <div className="bg-green-50 border border-green-200 rounded-lg p-4">
           <p className="text-green-800">
-            Solde du mois précédent : +{currentMonthBudget.previousBalance.toFixed(2)} €
+            Budget non utilisé du mois précédent : +{currentMonthBudget.remainingBudget.toFixed(2)} €
           </p>
         </div>
       )}
