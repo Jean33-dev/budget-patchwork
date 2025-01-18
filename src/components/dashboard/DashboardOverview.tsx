@@ -9,18 +9,20 @@ interface DashboardOverviewProps {
     title: string;
     budget: number;
     spent: number;
-    type: "income" | "expense";
+    type: "income" | "expense" | "budget";
   }>;
 }
 
 export const DashboardOverview = ({ totalIncome, totalExpenses, envelopes }: DashboardOverviewProps) => {
   const balance = totalIncome - totalExpenses;
   
-  const chartData = envelopes.map((env) => ({
-    name: env.title,
-    value: env.type === "income" ? env.budget : env.spent,
-    type: env.type,
-  }));
+  const chartData = envelopes
+    .filter(env => env.type !== "budget") // Exclude budget type from chart
+    .map((env) => ({
+      name: env.title,
+      value: env.type === "income" ? env.budget : env.spent,
+      type: env.type,
+    }));
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">

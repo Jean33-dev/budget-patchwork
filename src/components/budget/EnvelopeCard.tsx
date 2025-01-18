@@ -6,7 +6,7 @@ interface EnvelopeCardProps {
   title: string;
   budget: number;
   spent: number;
-  type: "income" | "expense";
+  type: "income" | "expense" | "budget";
   onClick?: () => void;
 }
 
@@ -19,7 +19,9 @@ export const EnvelopeCard = ({ title, budget, spent, type, onClick }: EnvelopeCa
     <Card 
       className={cn(
         "transition-all hover:shadow-lg cursor-pointer",
-        type === "income" ? "hover:border-budget-income" : "hover:border-budget-expense"
+        type === "income" ? "hover:border-budget-income" : 
+        type === "expense" ? "hover:border-budget-expense" :
+        "hover:border-blue-500"
       )}
       onClick={onClick}
     >
@@ -37,7 +39,9 @@ export const EnvelopeCard = ({ title, budget, spent, type, onClick }: EnvelopeCa
             className={cn(
               "h-2",
               isOverBudget ? "bg-red-200" : "bg-gray-200",
-              type === "income" ? "text-budget-income" : "text-budget-expense"
+              type === "income" ? "text-budget-income" : 
+              type === "expense" ? "text-budget-expense" :
+              "text-blue-500"
             )}
           />
           <div className="flex justify-end">
