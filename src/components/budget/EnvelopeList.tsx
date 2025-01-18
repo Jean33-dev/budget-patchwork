@@ -7,12 +7,12 @@ interface Envelope {
   title: string;
   budget: number;
   spent: number;
-  type: "income" | "expense";
+  type: "income" | "expense" | "budget";
 }
 
 interface EnvelopeListProps {
   envelopes: Envelope[];
-  type: "income" | "expense";
+  type: "income" | "expense" | "budget";
   onAddClick: () => void;
   onEnvelopeClick: (envelope: Envelope) => void;
 }
@@ -20,15 +20,41 @@ interface EnvelopeListProps {
 export const EnvelopeList = ({ envelopes, type, onAddClick, onEnvelopeClick }: EnvelopeListProps) => {
   const filteredEnvelopes = envelopes.filter((env) => env.type === type);
 
+  const getTypeLabel = (type: "income" | "expense" | "budget") => {
+    switch (type) {
+      case "income":
+        return "Revenus";
+      case "expense":
+        return "Dépenses";
+      case "budget":
+        return "Budgets";
+      default:
+        return "";
+    }
+  };
+
+  const getAddButtonLabel = (type: "income" | "expense" | "budget") => {
+    switch (type) {
+      case "income":
+        return "un revenu";
+      case "expense":
+        return "une dépense";
+      case "budget":
+        return "un budget";
+      default:
+        return "";
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold">
-          {type === "income" ? "Revenus" : "Dépenses"}
+          {getTypeLabel(type)}
         </h2>
         <Button onClick={onAddClick} variant="outline" size="sm">
           <PlusCircle className="h-4 w-4 mr-2" />
-          Ajouter {type === "income" ? "un revenu" : "une dépense"}
+          Ajouter {getAddButtonLabel(type)}
         </Button>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

@@ -8,10 +8,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useExpenseCategories } from "./ExpenseCategories";
 
 interface AddEnvelopeDialogProps {
-  type: "income" | "expense";
+  type: "income" | "expense" | "budget";
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onAdd: (envelope: { title: string; budget: number; type: "income" | "expense"; category?: string }) => void;
+  onAdd: (envelope: { title: string; budget: number; type: "income" | "expense" | "budget"; category?: string }) => void;
 }
 
 export const AddEnvelopeDialog = ({ type, open, onOpenChange, onAdd }: AddEnvelopeDialogProps) => {
@@ -24,7 +24,7 @@ export const AddEnvelopeDialog = ({ type, open, onOpenChange, onAdd }: AddEnvelo
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onAdd({ title, budget, type, category: type === "expense" ? category : undefined });
+    onAdd({ title, budget, type, category: type === "expense" || type === "budget" ? category : undefined });
     setTitle("");
     setBudget(0);
     setCategory("");
@@ -40,11 +40,24 @@ export const AddEnvelopeDialog = ({ type, open, onOpenChange, onAdd }: AddEnvelo
     }
   };
 
+  const getTypeLabel = (type: "income" | "expense" | "budget") => {
+    switch (type) {
+      case "income":
+        return "revenu";
+      case "expense":
+        return "dépense";
+      case "budget":
+        return "budget";
+      default:
+        return "";
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Ajouter un nouveau {type === "income" ? "revenu" : "budget"}</DialogTitle>
+          <DialogTitle>Ajouter un nouveau {getTypeLabel(type)}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
@@ -53,12 +66,12 @@ export const AddEnvelopeDialog = ({ type, open, onOpenChange, onAdd }: AddEnvelo
               id="title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder={`Entrez le titre du ${type === "income" ? "revenu" : "budget"}`}
+              placeholder={`Entrez le titre du ${getTypeLabel(type)}`}
               required
             />
           </div>
           
-          {type === "expense" && (
+          {(type === "expense" || type === "budget") && (
             <div className="space-y-2">
               <Label>Catégorie</Label>
               {!showNewCategoryInput ? (
@@ -122,7 +135,7 @@ export const AddEnvelopeDialog = ({ type, open, onOpenChange, onAdd }: AddEnvelo
             />
           </div>
           <DialogFooter>
-            <Button type="submit">Ajouter {type === "income" ? "le revenu" : "le budget"}</Button>
+            <Button type="submit">Ajouter {getTypeLabel(type)}</Button>
           </DialogFooter>
         </form>
       </DialogContent>

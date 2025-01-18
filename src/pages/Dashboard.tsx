@@ -13,7 +13,7 @@ interface Envelope {
   title: string;
   budget: number;
   spent: number;
-  type: "income" | "expense";
+  type: "income" | "expense" | "budget";
   category?: string;
 }
 
@@ -29,7 +29,6 @@ const Dashboard = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [monthlyBudgets, setMonthlyBudgets] = useState<MonthlyBudget[]>([]);
   
-  // Initialize current month's budget if it doesn't exist
   useEffect(() => {
     const currentMonthKey = currentDate.toISOString().slice(0, 7);
     if (!monthlyBudgets.find(mb => mb.date === currentMonthKey)) {
@@ -38,7 +37,6 @@ const Dashboard = () => {
       const previousMonthKey = previousMonth.toISOString().slice(0, 7);
       const previousBudget = monthlyBudgets.find(mb => mb.date === previousMonthKey);
       
-      // Calculate remaining budget from previous month
       const previousRemainingBudget = previousBudget ? 
         previousBudget.envelopes
           .filter(env => env.type === "expense")
@@ -53,6 +51,8 @@ const Dashboard = () => {
           { id: "3", title: "Loyer", budget: 1500, spent: 1500, type: "expense", category: "Logement" },
           { id: "4", title: "Courses", budget: 600, spent: 450, type: "expense", category: "Alimentation" },
           { id: "5", title: "Loisirs", budget: 200, spent: 180, type: "expense", category: "Loisirs" },
+          { id: "6", title: "Budget Logement", budget: 2000, spent: 1500, type: "budget", category: "Logement" },
+          { id: "7", title: "Budget Alimentation", budget: 800, spent: 600, type: "budget", category: "Alimentation" },
         ],
         remainingBudget: previousRemainingBudget
       }]);
@@ -89,14 +89,14 @@ const Dashboard = () => {
   const unusedBudget = totalExpenseBudget - totalExpenses;
 
   const [addDialogOpen, setAddDialogOpen] = useState(false);
-  const [activeType, setActiveType] = useState<"income" | "expense">("income");
+  const [activeType, setActiveType] = useState<"income" | "expense" | "budget">("income");
 
-  const handleAddClick = (type: "income" | "expense") => {
+  const handleAddClick = (type: "income" | "expense" | "budget") => {
     setActiveType(type);
     setAddDialogOpen(true);
   };
 
-  const handleAddEnvelope = (newEnvelope: { title: string; budget: number; type: "income" | "expense"; category?: string }) => {
+  const handleAddEnvelope = (newEnvelope: { title: string; budget: number; type: "income" | "expense" | "budget"; category?: string }) => {
     const envelope: Envelope = {
       id: Date.now().toString(),
       ...newEnvelope,
@@ -112,7 +112,13 @@ const Dashboard = () => {
 
     toast({
       title: "Succès",
-      description: `Nouvelle enveloppe ${newEnvelope.type === "income" ? "de revenu" : "de dépense"} créée`,
+      description: `Nouvelle enveloppe ${
+        newEnvelope.type === "income" 
+          ? "de revenu" 
+          : newEnvelope.type === "expense"
+          ? "de dépense"
+          : "de budget"
+      } créée`,
     });
   };
 
@@ -167,6 +173,13 @@ const Dashboard = () => {
           envelopes={currentMonthBudget.envelopes}
           type="income"
           onAddClick={() => handleAddClick("income")}
+          onEnvelopeClick={handleEnvelopeClick}
+        />
+        
+        <EnvelopeList
+          envelopes={currentMonthBudget.envelopes}
+          type="budget"
+          onAddClick={() => handleAddClick("budget")}
           onEnvelopeClick={handleEnvelopeClick}
         />
         
