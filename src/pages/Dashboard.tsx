@@ -158,6 +158,13 @@ const Dashboard = () => {
       category: budget.category || ""
     }));
 
+  const handleEnvelopeClick = (envelope: Envelope) => {
+    toast({
+      title: envelope.title,
+      description: `Budget: ${envelope.budget.toFixed(2)} € - Dépensé: ${envelope.spent.toFixed(2)} €`,
+    });
+  };
+
   return (
     <div className="container mx-auto py-8 space-y-8">
       <div className="flex items-center justify-between">
