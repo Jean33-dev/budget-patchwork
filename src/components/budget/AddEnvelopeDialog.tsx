@@ -5,7 +5,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MoneyInput } from "../shared/MoneyInput";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useExpenseCategories } from "./ExpenseCategories";
 
 interface AddEnvelopeDialogProps {
   type: "income" | "expense" | "budget";
@@ -14,11 +13,10 @@ interface AddEnvelopeDialogProps {
   onAdd: (envelope: { 
     title: string; 
     budget: number; 
-    type: "income" | "expense" | "budget"; 
-    category?: string;
+    type: "income" | "expense" | "budget";
     linkedBudgetId?: string;
   }) => void;
-  availableBudgets?: Array<{ id: string; title: string; category: string }>;
+  availableBudgets?: Array<{ id: string; title: string }>;
 }
 
 export const AddEnvelopeDialog = ({ 
@@ -30,16 +28,11 @@ export const AddEnvelopeDialog = ({
 }: AddEnvelopeDialogProps) => {
   const [title, setTitle] = useState("");
   const [budget, setBudget] = useState(0);
-  const [category, setCategory] = useState("");
   const [linkedBudgetId, setLinkedBudgetId] = useState("");
-  const [newCategory, setNewCategory] = useState("");
-  const { categories, addCategory } = useExpenseCategories();
-  const [showNewCategoryInput, setShowNewCategoryInput] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Vérifier si un budget est sélectionné pour les dépenses
     if (type === "expense" && !linkedBudgetId) {
       alert("Veuillez sélectionner un budget pour cette dépense");
       return;
@@ -48,25 +41,14 @@ export const AddEnvelopeDialog = ({
     onAdd({ 
       title, 
       budget, 
-      type, 
-      category: type === "expense" || type === "budget" ? category : undefined,
+      type,
       linkedBudgetId: type === "expense" ? linkedBudgetId : undefined
     });
     
     setTitle("");
     setBudget(0);
-    setCategory("");
     setLinkedBudgetId("");
     onOpenChange(false);
-  };
-
-  const handleAddNewCategory = () => {
-    if (newCategory) {
-      addCategory(newCategory);
-      setCategory(newCategory);
-      setNewCategory("");
-      setShowNewCategoryInput(false);
-    }
   };
 
   const getTypeLabel = (type: "income" | "expense" | "budget") => {
@@ -99,60 +81,6 @@ export const AddEnvelopeDialog = ({
               required
             />
           </div>
-          
-          {(type === "expense" || type === "budget") && (
-            <div className="space-y-2">
-              <Label>Catégorie</Label>
-              {!showNewCategoryInput ? (
-                <div className="flex gap-2">
-                  <Select value={category} onValueChange={setCategory}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Sélectionnez une catégorie" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {categories.map((cat) => (
-                        <SelectItem key={cat.id} value={cat.name}>
-                          {cat.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setShowNewCategoryInput(true)}
-                  >
-                    Nouvelle
-                  </Button>
-                </div>
-              ) : (
-                <div className="flex gap-2">
-                  <Input
-                    value={newCategory}
-                    onChange={(e) => setNewCategory(e.target.value)}
-                    placeholder="Nom de la nouvelle catégorie"
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleAddNewCategory}
-                  >
-                    Ajouter
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => {
-                      setShowNewCategoryInput(false);
-                      setNewCategory("");
-                    }}
-                  >
-                    Annuler
-                  </Button>
-                </div>
-              )}
-            </div>
-          )}
 
           {type === "expense" && (
             <div className="space-y-2">
@@ -162,24 +90,16 @@ export const AddEnvelopeDialog = ({
                   <SelectValue placeholder="Sélectionnez un budget" />
                 </SelectTrigger>
                 <SelectContent>
-                  {availableBudgets
-                    .filter(budget => !category || budget.category === category)
-                    .map((budget) => (
-                      <SelectItem key={budget.id} value={budget.id}>
-                        {budget.title}
-                      </SelectItem>
-                    ))}
+                  {availableBudgets.map((budget) => (
+                    <SelectItem key={budget.id} value={budget.id}>
+                      {budget.title}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               {availableBudgets.length === 0 && (
                 <p className="text-sm text-red-500">
                   Aucun budget disponible. Veuillez d'abord créer un budget.
-                </p>
-              )}
-              {availableBudgets.length > 0 && 
-               availableBudgets.filter(budget => !category || budget.category === category).length === 0 && (
-                <p className="text-sm text-red-500">
-                  Aucun budget disponible pour cette catégorie. Veuillez d'abord créer un budget dans cette catégorie.
                 </p>
               )}
             </div>
