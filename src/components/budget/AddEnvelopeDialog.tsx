@@ -82,11 +82,6 @@ export const AddEnvelopeDialog = ({
     }
   };
 
-  // Filtrer les budgets disponibles par catégorie sélectionnée
-  const filteredBudgets = availableBudgets.filter(
-    budget => !category || budget.category === category
-  );
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
@@ -110,10 +105,7 @@ export const AddEnvelopeDialog = ({
               <Label>Catégorie</Label>
               {!showNewCategoryInput ? (
                 <div className="flex gap-2">
-                  <Select value={category} onValueChange={(value) => {
-                    setCategory(value);
-                    setLinkedBudgetId(""); // Réinitialiser le budget sélectionné lors du changement de catégorie
-                  }}>
+                  <Select value={category} onValueChange={setCategory}>
                     <SelectTrigger>
                       <SelectValue placeholder="Sélectionnez une catégorie" />
                     </SelectTrigger>
@@ -162,7 +154,7 @@ export const AddEnvelopeDialog = ({
             </div>
           )}
 
-          {type === "expense" && category && (
+          {type === "expense" && (
             <div className="space-y-2">
               <Label>Budget associé</Label>
               <Select value={linkedBudgetId} onValueChange={setLinkedBudgetId} required>
@@ -170,16 +162,24 @@ export const AddEnvelopeDialog = ({
                   <SelectValue placeholder="Sélectionnez un budget" />
                 </SelectTrigger>
                 <SelectContent>
-                  {filteredBudgets.map((budget) => (
-                    <SelectItem key={budget.id} value={budget.id}>
-                      {budget.title}
-                    </SelectItem>
-                  ))}
+                  {availableBudgets
+                    .filter(budget => !category || budget.category === category)
+                    .map((budget) => (
+                      <SelectItem key={budget.id} value={budget.id}>
+                        {budget.title}
+                      </SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
-              {filteredBudgets.length === 0 && (
+              {availableBudgets.length === 0 && (
                 <p className="text-sm text-red-500">
-                  Aucun budget disponible pour cette catégorie. Veuillez d'abord créer un budget.
+                  Aucun budget disponible. Veuillez d'abord créer un budget.
+                </p>
+              )}
+              {availableBudgets.length > 0 && 
+               availableBudgets.filter(budget => !category || budget.category === category).length === 0 && (
+                <p className="text-sm text-red-500">
+                  Aucun budget disponible pour cette catégorie. Veuillez d'abord créer un budget dans cette catégorie.
                 </p>
               )}
             </div>
