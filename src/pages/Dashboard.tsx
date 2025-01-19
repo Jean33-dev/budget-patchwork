@@ -14,7 +14,6 @@ interface Envelope {
   budget: number;
   spent: number;
   type: "income" | "expense" | "budget";
-  category?: string;
 }
 
 interface MonthlyBudget {
@@ -28,6 +27,8 @@ const Dashboard = () => {
   const { toast } = useToast();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [monthlyBudgets, setMonthlyBudgets] = useState<MonthlyBudget[]>([]);
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [activeType, setActiveType] = useState<"income" | "expense" | "budget">("income");
   
   useEffect(() => {
     const currentMonthKey = currentDate.toISOString().slice(0, 7);
@@ -48,11 +49,11 @@ const Dashboard = () => {
         envelopes: [
           { id: "1", title: "Salaire", budget: 5000, spent: 5000, type: "income" },
           { id: "2", title: "Freelance", budget: 1000, spent: 800, type: "income" },
-          { id: "3", title: "Loyer", budget: 1500, spent: 1500, type: "expense", category: "Logement" },
-          { id: "4", title: "Courses", budget: 600, spent: 450, type: "expense", category: "Alimentation" },
-          { id: "5", title: "Loisirs", budget: 200, spent: 180, type: "expense", category: "Loisirs" },
-          { id: "6", title: "Budget Logement", budget: 2000, spent: 1500, type: "budget", category: "Logement" },
-          { id: "7", title: "Budget Alimentation", budget: 800, spent: 600, type: "budget", category: "Alimentation" },
+          { id: "3", title: "Loyer", budget: 1500, spent: 1500, type: "expense" },
+          { id: "4", title: "Courses", budget: 600, spent: 450, type: "expense" },
+          { id: "5", title: "Loisirs", budget: 200, spent: 180, type: "expense" },
+          { id: "6", title: "Budget Logement", budget: 2000, spent: 1500, type: "budget" },
+          { id: "7", title: "Budget Alimentation", budget: 800, spent: 600, type: "budget" },
         ],
         remainingBudget: previousRemainingBudget
       }]);
@@ -72,9 +73,9 @@ const Dashboard = () => {
     .filter((env) => env.type === "income")
     .reduce((sum, env) => sum + env.budget, 0);
 
-  // Calcul du budget total des dépenses
-  const totalExpenseBudget = currentMonthBudget.envelopes
-    .filter((env) => env.type === "expense")
+  // Calcul du total des budgets alloués
+  const totalBudgets = currentMonthBudget.envelopes
+    .filter((env) => env.type === "budget")
     .reduce((sum, env) => sum + env.budget, 0);
 
   // Calcul des dépenses réelles
@@ -82,14 +83,8 @@ const Dashboard = () => {
     .filter((env) => env.type === "expense")
     .reduce((sum, env) => sum + env.spent, 0);
 
-  // Calcul du budget restant après allocation aux dépenses
-  const remainingBudget = totalIncome - totalExpenseBudget;
-
-  // Calcul du budget non utilisé (différence entre budget alloué et dépenses réelles)
-  const unusedBudget = totalExpenseBudget - totalExpenses;
-
-  const [addDialogOpen, setAddDialogOpen] = useState(false);
-  const [activeType, setActiveType] = useState<"income" | "expense" | "budget">("income");
+  // Calcul du budget restant après allocation (revenus - budgets alloués)
+  const remainingBudget = totalIncome - totalBudgets;
 
   const handleAddClick = (type: "income" | "expense" | "budget") => {
     setActiveType(type);
@@ -99,8 +94,7 @@ const Dashboard = () => {
   const handleAddEnvelope = (newEnvelope: { 
     title: string; 
     budget: number; 
-    type: "income" | "expense" | "budget"; 
-    category?: string;
+    type: "income" | "expense" | "budget";
     linkedBudgetId?: string;
   }) => {
     const envelope: Envelope = {
@@ -111,7 +105,6 @@ const Dashboard = () => {
     
     const currentMonthKey = currentDate.toISOString().slice(0, 7);
     
-    // Si c'est une dépense, mettre à jour le montant dépensé du budget associé
     if (newEnvelope.type === "expense" && newEnvelope.linkedBudgetId) {
       setMonthlyBudgets(prev => prev.map(mb => 
         mb.date === currentMonthKey 
@@ -129,7 +122,6 @@ const Dashboard = () => {
           : mb
       ));
     } else {
-      // Pour les autres types (revenus et budgets)
       setMonthlyBudgets(prev => prev.map(mb => 
         mb.date === currentMonthKey 
           ? { ...mb, envelopes: [...mb.envelopes, envelope] }
@@ -148,15 +140,6 @@ const Dashboard = () => {
       } créée`,
     });
   };
-
-  // Obtenir les budgets disponibles pour la sélection dans le dialogue d'ajout de dépense
-  const availableBudgets = currentMonthBudget.envelopes
-    .filter(env => env.type === "budget")
-    .map(budget => ({
-      id: budget.id,
-      title: budget.title,
-      category: budget.category || ""
-    }));
 
   const handleEnvelopeClick = (envelope: Envelope) => {
     toast({
@@ -194,14 +177,6 @@ const Dashboard = () => {
             Budget restant après allocation : {remainingBudget.toFixed(2)} €
           </p>
         </div>
-
-        {unusedBudget > 0 && (
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-            <p className="text-green-800">
-              Budget non utilisé : {unusedBudget.toFixed(2)} €
-            </p>
-          </div>
-        )}
       </div>
 
       <div className="space-y-8">
@@ -232,7 +207,12 @@ const Dashboard = () => {
         open={addDialogOpen}
         onOpenChange={setAddDialogOpen}
         onAdd={handleAddEnvelope}
-        availableBudgets={availableBudgets}
+        availableBudgets={currentMonthBudget.envelopes
+          .filter(env => env.type === "budget")
+          .map(budget => ({
+            id: budget.id,
+            title: budget.title
+          }))}
       />
     </div>
   );
