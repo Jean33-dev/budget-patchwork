@@ -86,6 +86,9 @@ const Dashboard = () => {
   // Calcul du budget restant après allocation (revenus - budgets alloués)
   const remainingBudget = totalIncome - totalBudgets;
 
+  // Calcul du budget restant (budgets alloués - dépenses)
+  const remainingBudgetAfterExpenses = totalBudgets - totalExpenses;
+
   const handleAddClick = (type: "income" | "expense" | "budget") => {
     setActiveType(type);
     setAddDialogOpen(true);
@@ -172,9 +175,12 @@ const Dashboard = () => {
       />
       
       <div className="space-y-4">
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-2">
           <p className="text-blue-800">
             Budget restant après allocation : {remainingBudget.toFixed(2)} €
+          </p>
+          <p className="text-blue-800">
+            Budget restant : {remainingBudgetAfterExpenses.toFixed(2)} €
           </p>
         </div>
       </div>
