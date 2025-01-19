@@ -11,23 +11,52 @@ interface AddEnvelopeDialogProps {
   type: "income" | "expense" | "budget";
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onAdd: (envelope: { title: string; budget: number; type: "income" | "expense" | "budget"; category?: string }) => void;
+  onAdd: (envelope: { 
+    title: string; 
+    budget: number; 
+    type: "income" | "expense" | "budget"; 
+    category?: string;
+    linkedBudgetId?: string;
+  }) => void;
+  availableBudgets?: Array<{ id: string; title: string; category: string }>;
 }
 
-export const AddEnvelopeDialog = ({ type, open, onOpenChange, onAdd }: AddEnvelopeDialogProps) => {
+export const AddEnvelopeDialog = ({ 
+  type, 
+  open, 
+  onOpenChange, 
+  onAdd,
+  availableBudgets = []
+}: AddEnvelopeDialogProps) => {
   const [title, setTitle] = useState("");
   const [budget, setBudget] = useState(0);
   const [category, setCategory] = useState("");
+  const [linkedBudgetId, setLinkedBudgetId] = useState("");
   const [newCategory, setNewCategory] = useState("");
   const { categories, addCategory } = useExpenseCategories();
   const [showNewCategoryInput, setShowNewCategoryInput] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onAdd({ title, budget, type, category: type === "expense" || type === "budget" ? category : undefined });
+    
+    // Vérifier si un budget est sélectionné pour les dépenses
+    if (type === "expense" && !linkedBudgetId) {
+      alert("Veuillez sélectionner un budget pour cette dépense");
+      return;
+    }
+
+    onAdd({ 
+      title, 
+      budget, 
+      type, 
+      category: type === "expense" || type === "budget" ? category : undefined,
+      linkedBudgetId: type === "expense" ? linkedBudgetId : undefined
+    });
+    
     setTitle("");
     setBudget(0);
     setCategory("");
+    setLinkedBudgetId("");
     onOpenChange(false);
   };
 
@@ -53,6 +82,11 @@ export const AddEnvelopeDialog = ({ type, open, onOpenChange, onAdd }: AddEnvelo
     }
   };
 
+  // Filtrer les budgets disponibles par catégorie sélectionnée
+  const filteredBudgets = availableBudgets.filter(
+    budget => !category || budget.category === category
+  );
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
@@ -76,7 +110,10 @@ export const AddEnvelopeDialog = ({ type, open, onOpenChange, onAdd }: AddEnvelo
               <Label>Catégorie</Label>
               {!showNewCategoryInput ? (
                 <div className="flex gap-2">
-                  <Select value={category} onValueChange={setCategory}>
+                  <Select value={category} onValueChange={(value) => {
+                    setCategory(value);
+                    setLinkedBudgetId(""); // Réinitialiser le budget sélectionné lors du changement de catégorie
+                  }}>
                     <SelectTrigger>
                       <SelectValue placeholder="Sélectionnez une catégorie" />
                     </SelectTrigger>
@@ -121,6 +158,29 @@ export const AddEnvelopeDialog = ({ type, open, onOpenChange, onAdd }: AddEnvelo
                     Annuler
                   </Button>
                 </div>
+              )}
+            </div>
+          )}
+
+          {type === "expense" && category && (
+            <div className="space-y-2">
+              <Label>Budget associé</Label>
+              <Select value={linkedBudgetId} onValueChange={setLinkedBudgetId} required>
+                <SelectTrigger>
+                  <SelectValue placeholder="Sélectionnez un budget" />
+                </SelectTrigger>
+                <SelectContent>
+                  {filteredBudgets.map((budget) => (
+                    <SelectItem key={budget.id} value={budget.id}>
+                      {budget.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {filteredBudgets.length === 0 && (
+                <p className="text-sm text-red-500">
+                  Aucun budget disponible pour cette catégorie. Veuillez d'abord créer un budget.
+                </p>
               )}
             </div>
           )}

@@ -96,7 +96,13 @@ const Dashboard = () => {
     setAddDialogOpen(true);
   };
 
-  const handleAddEnvelope = (newEnvelope: { title: string; budget: number; type: "income" | "expense" | "budget"; category?: string }) => {
+  const handleAddEnvelope = (newEnvelope: { 
+    title: string; 
+    budget: number; 
+    type: "income" | "expense" | "budget"; 
+    category?: string;
+    linkedBudgetId?: string;
+  }) => {
     const envelope: Envelope = {
       id: Date.now().toString(),
       ...newEnvelope,
@@ -104,11 +110,32 @@ const Dashboard = () => {
     };
     
     const currentMonthKey = currentDate.toISOString().slice(0, 7);
-    setMonthlyBudgets(prev => prev.map(mb => 
-      mb.date === currentMonthKey 
-        ? { ...mb, envelopes: [...mb.envelopes, envelope] }
-        : mb
-    ));
+    
+    // Si c'est une dépense, mettre à jour le montant dépensé du budget associé
+    if (newEnvelope.type === "expense" && newEnvelope.linkedBudgetId) {
+      setMonthlyBudgets(prev => prev.map(mb => 
+        mb.date === currentMonthKey 
+          ? {
+              ...mb,
+              envelopes: [
+                ...mb.envelopes,
+                envelope,
+              ].map(env => 
+                env.id === newEnvelope.linkedBudgetId
+                  ? { ...env, spent: env.spent + newEnvelope.budget }
+                  : env
+              )
+            }
+          : mb
+      ));
+    } else {
+      // Pour les autres types (revenus et budgets)
+      setMonthlyBudgets(prev => prev.map(mb => 
+        mb.date === currentMonthKey 
+          ? { ...mb, envelopes: [...mb.envelopes, envelope] }
+          : mb
+      ));
+    }
 
     toast({
       title: "Succès",
@@ -122,12 +149,14 @@ const Dashboard = () => {
     });
   };
 
-  const handleEnvelopeClick = (envelope: Envelope) => {
-    toast({
-      title: envelope.title,
-      description: `Budget : ${envelope.budget.toFixed(2)} €, Dépensé : ${envelope.spent.toFixed(2)} €${envelope.category ? `, Catégorie : ${envelope.category}` : ""}`,
-    });
-  };
+  // Obtenir les budgets disponibles pour la sélection dans le dialogue d'ajout de dépense
+  const availableBudgets = currentMonthBudget.envelopes
+    .filter(env => env.type === "budget")
+    .map(budget => ({
+      id: budget.id,
+      title: budget.title,
+      category: budget.category || ""
+    }));
 
   return (
     <div className="container mx-auto py-8 space-y-8">
@@ -196,6 +225,7 @@ const Dashboard = () => {
         open={addDialogOpen}
         onOpenChange={setAddDialogOpen}
         onAdd={handleAddEnvelope}
+        availableBudgets={availableBudgets}
       />
     </div>
   );
