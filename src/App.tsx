@@ -7,6 +7,7 @@ import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
 import Budgets from "./pages/Budgets";
 import Expenses from "./pages/Expenses";
+import Income from "./pages/Income";
 
 const queryClient = new QueryClient();
 
@@ -21,6 +22,7 @@ const App = () => (
           <Route path="/dashboard/budget" element={<Dashboard />} />
           <Route path="/dashboard/budget/budgets" element={<Budgets />} />
           <Route path="/dashboard/budget/expenses" element={<Expenses />} />
+          <Route path="/dashboard/budget/income" element={<Income />} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>

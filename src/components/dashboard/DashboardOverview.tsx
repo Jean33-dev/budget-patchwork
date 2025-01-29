@@ -64,6 +64,12 @@ export const DashboardOverview = ({ totalIncome, totalExpenses, envelopes }: Das
       <div className="flex gap-4 justify-end">
         <Button 
           variant="outline"
+          onClick={() => navigate("/dashboard/budget/income")}
+        >
+          Gérer les Revenus
+        </Button>
+        <Button 
+          variant="outline"
           onClick={() => navigate("/dashboard/budget/budgets")}
         >
           Gérer les Budgets
