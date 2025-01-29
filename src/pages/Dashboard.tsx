@@ -1,12 +1,11 @@
 import { useState, useEffect } from "react";
-import { DashboardOverview } from "@/components/dashboard/DashboardOverview";
-import { EnvelopeList } from "@/components/budget/EnvelopeList";
-import { AddEnvelopeDialog } from "@/components/budget/AddEnvelopeDialog";
-import { useToast } from "@/hooks/use-toast";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { MonthSelector } from "@/components/budget/MonthSelector";
+import { useToast } from "@/hooks/use-toast";
+import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
+import { DashboardOverview } from "@/components/dashboard/DashboardOverview";
+import { BudgetStats } from "@/components/dashboard/BudgetStats";
+import { EnvelopeManager } from "@/components/dashboard/EnvelopeManager";
+import { AddEnvelopeDialog } from "@/components/budget/AddEnvelopeDialog";
 
 interface Envelope {
   id: string;
@@ -29,7 +28,7 @@ const Dashboard = () => {
   const [monthlyBudgets, setMonthlyBudgets] = useState<MonthlyBudget[]>([]);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [activeType, setActiveType] = useState<"income" | "expense" | "budget">("income");
-  
+
   useEffect(() => {
     const currentMonthKey = currentDate.toISOString().slice(0, 7);
     if (!monthlyBudgets.find(mb => mb.date === currentMonthKey)) {
@@ -64,29 +63,19 @@ const Dashboard = () => {
     mb => mb.date === currentDate.toISOString().slice(0, 7)
   ) || { envelopes: [], remainingBudget: 0 };
 
-  const handleMonthChange = (newDate: Date) => {
-    setCurrentDate(newDate);
-  };
-
-  // Calcul des revenus totaux
   const totalIncome = currentMonthBudget.envelopes
     .filter((env) => env.type === "income")
     .reduce((sum, env) => sum + env.budget, 0);
 
-  // Calcul du total des budgets alloués
   const totalBudgets = currentMonthBudget.envelopes
     .filter((env) => env.type === "budget")
     .reduce((sum, env) => sum + env.budget, 0);
 
-  // Calcul des dépenses réelles
   const totalExpenses = currentMonthBudget.envelopes
     .filter((env) => env.type === "expense")
     .reduce((sum, env) => sum + env.spent, 0);
 
-  // Calcul du budget restant après allocation (revenus - budgets alloués)
   const remainingBudget = totalIncome - totalBudgets;
-
-  // Calcul du budget restant (budgets alloués - dépenses)
   const remainingBudgetAfterExpenses = totalBudgets - totalExpenses;
 
   const handleAddClick = (type: "income" | "expense" | "budget") => {
@@ -153,20 +142,11 @@ const Dashboard = () => {
 
   return (
     <div className="container mx-auto py-8 space-y-8">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button 
-            variant="outline" 
-            size="icon"
-            onClick={() => navigate("/")}
-            className="shrink-0"
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <h1 className="text-4xl font-bold">Tableau de Bord Budget</h1>
-        </div>
-        <MonthSelector currentDate={currentDate} onMonthChange={handleMonthChange} />
-      </div>
+      <DashboardHeader
+        currentDate={currentDate}
+        onMonthChange={setCurrentDate}
+        onBackClick={() => navigate("/")}
+      />
       
       <DashboardOverview
         totalIncome={totalIncome}
@@ -174,39 +154,16 @@ const Dashboard = () => {
         envelopes={currentMonthBudget.envelopes}
       />
       
-      <div className="space-y-4">
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-2">
-          <p className="text-blue-800">
-            Budget restant après allocation : {remainingBudget.toFixed(2)} €
-          </p>
-          <p className="text-blue-800">
-            Budget restant : {remainingBudgetAfterExpenses.toFixed(2)} €
-          </p>
-        </div>
-      </div>
-
-      <div className="space-y-8">
-        <EnvelopeList
-          envelopes={currentMonthBudget.envelopes}
-          type="income"
-          onAddClick={() => handleAddClick("income")}
-          onEnvelopeClick={handleEnvelopeClick}
-        />
-        
-        <EnvelopeList
-          envelopes={currentMonthBudget.envelopes}
-          type="budget"
-          onAddClick={() => handleAddClick("budget")}
-          onEnvelopeClick={handleEnvelopeClick}
-        />
-        
-        <EnvelopeList
-          envelopes={currentMonthBudget.envelopes}
-          type="expense"
-          onAddClick={() => handleAddClick("expense")}
-          onEnvelopeClick={handleEnvelopeClick}
-        />
-      </div>
+      <BudgetStats
+        remainingBudget={remainingBudget}
+        remainingBudgetAfterExpenses={remainingBudgetAfterExpenses}
+      />
+      
+      <EnvelopeManager
+        envelopes={currentMonthBudget.envelopes}
+        onAddClick={handleAddClick}
+        onEnvelopeClick={handleEnvelopeClick}
+      />
 
       <AddEnvelopeDialog
         type={activeType}
