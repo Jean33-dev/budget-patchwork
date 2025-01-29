@@ -20,10 +20,10 @@ export const DashboardOverview = ({ totalIncome, totalExpenses, envelopes }: Das
   const balance = totalIncome - totalExpenses;
   
   const chartData = envelopes
-    .filter(env => env.type !== "budget")
+    .filter(env => env.type === "budget")
     .map((env) => ({
       name: env.title,
-      value: env.type === "income" ? env.budget : env.spent,
+      value: env.budget,
       type: env.type,
     }));
 
@@ -84,7 +84,7 @@ export const DashboardOverview = ({ totalIncome, totalExpenses, envelopes }: Das
 
       <Card className="md:col-span-2 lg:col-span-3">
         <CardHeader>
-          <CardTitle>Aperçu du Budget</CardTitle>
+          <CardTitle>Répartition des Budgets</CardTitle>
         </CardHeader>
         <CardContent>
           <BudgetChart data={chartData} />
