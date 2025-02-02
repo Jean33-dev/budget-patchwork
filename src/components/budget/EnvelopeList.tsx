@@ -48,11 +48,11 @@ export const EnvelopeList = ({ envelopes, type, onAddClick, onEnvelopeClick }: E
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <h2 className="text-2xl font-bold">
           {getTypeLabel(type)}
         </h2>
-        <Button onClick={onAddClick} variant="outline" size="sm">
+        <Button onClick={onAddClick} variant="outline" size="sm" className="w-full sm:w-auto">
           <PlusCircle className="h-4 w-4 mr-2" />
           Ajouter {getAddButtonLabel(type)}
         </Button>

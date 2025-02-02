@@ -28,8 +28,8 @@ export const DashboardOverview = ({ totalIncome, totalExpenses, envelopes }: Das
     }));
 
   return (
-    <div className="space-y-4">
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+    <div className="space-y-6">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Revenus Totaux</CardTitle>
@@ -46,7 +46,7 @@ export const DashboardOverview = ({ totalIncome, totalExpenses, envelopes }: Das
             <div className="text-2xl font-bold text-budget-expense">{totalExpenses.toFixed(2)} €</div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="sm:col-span-2 lg:col-span-1">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Solde</CardTitle>
           </CardHeader>
@@ -61,33 +61,40 @@ export const DashboardOverview = ({ totalIncome, totalExpenses, envelopes }: Das
         </Card>
       </div>
 
-      <div className="flex gap-4 justify-end">
+      <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 justify-end">
         <Button 
           variant="outline"
+          className="w-full sm:w-auto"
           onClick={() => navigate("/dashboard/budget/income")}
         >
           Gérer les Revenus
         </Button>
         <Button 
           variant="outline"
+          className="w-full sm:w-auto"
           onClick={() => navigate("/dashboard/budget/budgets")}
         >
           Gérer les Budgets
         </Button>
         <Button 
           variant="outline"
+          className="w-full sm:w-auto"
           onClick={() => navigate("/dashboard/budget/expenses")}
         >
           Gérer les Dépenses
         </Button>
       </div>
 
-      <Card className="md:col-span-2 lg:col-span-3">
+      <Card>
         <CardHeader>
           <CardTitle>Répartition des Budgets</CardTitle>
         </CardHeader>
-        <CardContent>
-          <BudgetChart data={chartData} totalIncome={totalIncome} />
+        <CardContent className="p-0 sm:p-6">
+          <div className="w-full overflow-x-auto">
+            <div className="min-w-[300px] h-[400px]">
+              <BudgetChart data={chartData} totalIncome={totalIncome} />
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>
