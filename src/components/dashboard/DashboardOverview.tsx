@@ -87,7 +87,7 @@ export const DashboardOverview = ({ totalIncome, totalExpenses, envelopes }: Das
           <CardTitle>Répartition des Budgets</CardTitle>
         </CardHeader>
         <CardContent>
-          <BudgetChart data={chartData} />
+          <BudgetChart data={chartData} totalIncome={totalIncome} />
         </CardContent>
       </Card>
     </div>

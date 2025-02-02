@@ -8,6 +8,7 @@ interface BudgetData {
 
 interface BudgetChartProps {
   data: BudgetData[];
+  totalIncome?: number;
 }
 
 const COLORS = {
@@ -16,22 +17,43 @@ const COLORS = {
   budget: ["#3B82F6", "#60A5FA", "#93C5FD", "#BFDBFE", "#DBEAFE"],
 };
 
-export const BudgetChart = ({ data }: BudgetChartProps) => {
+export const BudgetChart = ({ data, totalIncome = 0 }: BudgetChartProps) => {
+  // Calculer le total des budgets alloués
+  const totalAllocated = data.reduce((sum, item) => sum + item.value, 0);
+  
+  // Ajouter le budget non alloué aux données
+  const remainingBudget = totalIncome - totalAllocated;
+  const chartData = [
+    ...data,
+    {
+      name: "Budget non alloué",
+      value: remainingBudget > 0 ? remainingBudget : 0,
+      type: "budget" as const,
+    },
+  ];
+
+  // Calculer les pourcentages
+  const getPercentage = (value: number) => {
+    return ((value / totalIncome) * 100).toFixed(1);
+  };
+
   return (
     <div className="w-full h-[300px]">
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Pie
-            data={data}
+            data={chartData}
             cx="50%"
             cy="50%"
             labelLine={false}
             outerRadius={80}
             fill="#8884d8"
             dataKey="value"
-            label={({ name, value }) => `${name}: ${value.toFixed(2)} €`}
+            label={({ name, value }) => 
+              `${name}: ${value.toFixed(2)} € (${getPercentage(value)}%)`
+            }
           >
-            {data.map((entry, index) => (
+            {chartData.map((entry, index) => (
               <Cell
                 key={`cell-${index}`}
                 fill={COLORS[entry.type][index % COLORS[entry.type].length]}
@@ -39,9 +61,17 @@ export const BudgetChart = ({ data }: BudgetChartProps) => {
             ))}
           </Pie>
           <Tooltip
-            formatter={(value: number) => [`${value.toFixed(2)} €`, "Montant"]}
+            formatter={(value: number) => [
+              `${value.toFixed(2)} € (${getPercentage(value)}%)`,
+              "Montant"
+            ]}
           />
-          <Legend />
+          <Legend 
+            formatter={(value, entry) => {
+              const { payload } = entry as any;
+              return `${value} (${getPercentage(payload.value)}%)`;
+            }}
+          />
         </PieChart>
       </ResponsiveContainer>
     </div>
