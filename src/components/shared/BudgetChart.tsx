@@ -14,7 +14,18 @@ interface BudgetChartProps {
 const COLORS = {
   income: ["#10B981", "#34D399", "#6EE7B7"],
   expense: ["#EF4444", "#F87171", "#FCA5A5"],
-  budget: ["#3B82F6", "#60A5FA", "#93C5FD", "#BFDBFE", "#DBEAFE"],
+  budget: [
+    "#8B5CF6", // Violet vif
+    "#D946EF", // Rose magenta
+    "#F97316", // Orange vif
+    "#0EA5E9", // Bleu océan
+    "#F2FCE2", // Vert doux
+    "#FEF7CD", // Jaune doux
+    "#FEC6A1", // Orange doux
+    "#E5DEFF", // Violet doux
+    "#FFDEE2", // Rose doux
+    "#FDE1D3", // Pêche doux
+  ],
 };
 
 export const BudgetChart = ({ data, totalIncome = 0 }: BudgetChartProps) => {
