@@ -29,29 +29,29 @@ export const DashboardOverview = ({ totalIncome, totalExpenses, envelopes }: Das
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+      <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+        <Card className="p-2">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1">
             <CardTitle className="text-sm font-medium">Revenus Totaux</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-budget-income">{totalIncome.toFixed(2)} €</div>
+          <CardContent className="pb-2">
+            <div className="text-xl font-bold text-budget-income">{totalIncome.toFixed(2)} €</div>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <Card className="p-2">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1">
             <CardTitle className="text-sm font-medium">Dépenses Totales</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-budget-expense">{totalExpenses.toFixed(2)} €</div>
+          <CardContent className="pb-2">
+            <div className="text-xl font-bold text-budget-expense">{totalExpenses.toFixed(2)} €</div>
           </CardContent>
         </Card>
-        <Card className="sm:col-span-2 lg:col-span-1">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <Card className="p-2 sm:col-span-2 lg:col-span-1">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1">
             <CardTitle className="text-sm font-medium">Solde</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className={`text-2xl font-bold ${balance >= 0 ? "text-budget-income" : "text-budget-expense"}`}>
+          <CardContent className="pb-2">
+            <div className={`text-xl font-bold ${balance >= 0 ? "text-budget-income" : "text-budget-expense"}`}>
               {Math.abs(balance).toFixed(2)} €
               <span className="text-sm font-normal text-gray-500 ml-2">
                 {balance >= 0 ? "Restant" : "Dépassement"}
