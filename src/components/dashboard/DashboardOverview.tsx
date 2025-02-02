@@ -72,6 +72,13 @@ export const DashboardOverview = ({ totalIncome, totalExpenses, envelopes }: Das
         <Button 
           variant="outline"
           className="w-full sm:w-auto"
+          onClick={() => navigate("/dashboard/budget/categories")}
+        >
+          Gérer les Catégories
+        </Button>
+        <Button 
+          variant="outline"
+          className="w-full sm:w-auto"
           onClick={() => navigate("/dashboard/budget/budgets")}
         >
           Gérer les Budgets
