@@ -93,9 +93,6 @@ export const DashboardOverview = ({ totalIncome, totalExpenses, envelopes }: Das
       </div>
 
       <Card>
-        <CardHeader>
-          <CardTitle>Répartition des Budgets</CardTitle>
-        </CardHeader>
         <CardContent className="p-0 sm:p-6">
           <div className="w-full overflow-x-auto">
             <div className="min-w-[300px] h-[400px]">
