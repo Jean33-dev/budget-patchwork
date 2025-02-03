@@ -15,13 +15,29 @@ export const EnvelopeCard = ({ title, budget, spent, type, onClick }: EnvelopeCa
   const remaining = budget - spent;
   const isOverBudget = remaining < 0;
 
+  if (type === "income") {
+    return (
+      <Card 
+        className="transition-all hover:shadow-lg cursor-pointer hover:border-budget-income"
+        onClick={onClick}
+      >
+        <CardHeader className="pb-2">
+          <CardTitle className="text-lg font-medium">{title}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-xl font-bold text-budget-income">
+            {budget.toFixed(2)} €
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card 
       className={cn(
         "transition-all hover:shadow-lg cursor-pointer",
-        type === "income" ? "hover:border-budget-income" : 
-        type === "expense" ? "hover:border-budget-expense" :
-        "hover:border-blue-500"
+        type === "expense" ? "hover:border-budget-expense" : "hover:border-blue-500"
       )}
       onClick={onClick}
     >
@@ -39,9 +55,7 @@ export const EnvelopeCard = ({ title, budget, spent, type, onClick }: EnvelopeCa
             className={cn(
               "h-2",
               isOverBudget ? "bg-red-200" : "bg-gray-200",
-              type === "income" ? "text-budget-income" : 
-              type === "expense" ? "text-budget-expense" :
-              "text-blue-500"
+              type === "expense" ? "text-budget-expense" : "text-blue-500"
             )}
           />
           <div className="flex justify-end">
