@@ -16,6 +16,8 @@ interface Envelope {
   budget: number;
   spent: number;
   type: "income" | "expense" | "budget";
+  linkedBudgetId?: string;
+  date?: string;
 }
 
 interface EnvelopeListProps {
@@ -23,9 +25,16 @@ interface EnvelopeListProps {
   type: "income" | "expense" | "budget";
   onAddClick: () => void;
   onEnvelopeClick: (envelope: Envelope) => void;
+  availableBudgets?: Array<{ id: string; title: string }>;
 }
 
-export const EnvelopeList = ({ envelopes, type, onAddClick, onEnvelopeClick }: EnvelopeListProps) => {
+export const EnvelopeList = ({ 
+  envelopes, 
+  type, 
+  onAddClick, 
+  onEnvelopeClick,
+  availableBudgets = []
+}: EnvelopeListProps) => {
   const filteredEnvelopes = envelopes.filter((env) => env.type === type);
 
   const getTypeLabel = (type: "income" | "expense" | "budget") => {
@@ -54,6 +63,12 @@ export const EnvelopeList = ({ envelopes, type, onAddClick, onEnvelopeClick }: E
     }
   };
 
+  const getBudgetTitle = (budgetId?: string) => {
+    if (!budgetId) return "Non assigné";
+    const budget = availableBudgets.find(b => b.id === budgetId);
+    return budget ? budget.title : "Budget inconnu";
+  };
+
   if (type === "expense") {
     return (
       <div className="space-y-4">
@@ -72,9 +87,9 @@ export const EnvelopeList = ({ envelopes, type, onAddClick, onEnvelopeClick }: E
             <TableHeader>
               <TableRow>
                 <TableHead>Nom</TableHead>
-                <TableHead>Budget</TableHead>
-                <TableHead>Dépensé</TableHead>
-                <TableHead className="text-right">Restant</TableHead>
+                <TableHead>Date</TableHead>
+                <TableHead>Budget associé</TableHead>
+                <TableHead className="text-right">Montant</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -85,13 +100,10 @@ export const EnvelopeList = ({ envelopes, type, onAddClick, onEnvelopeClick }: E
                   onClick={() => onEnvelopeClick(envelope)}
                 >
                   <TableCell className="font-medium">{envelope.title}</TableCell>
-                  <TableCell>{envelope.budget.toFixed(2)} €</TableCell>
-                  <TableCell>{envelope.spent.toFixed(2)} €</TableCell>
+                  <TableCell>{envelope.date || "Non spécifiée"}</TableCell>
+                  <TableCell>{getBudgetTitle(envelope.linkedBudgetId)}</TableCell>
                   <TableCell className="text-right">
-                    <span className={envelope.budget - envelope.spent < 0 ? "text-budget-expense" : "text-budget-income"}>
-                      {Math.abs(envelope.budget - envelope.spent).toFixed(2)} €
-                      {envelope.budget - envelope.spent < 0 ? " dépassé" : " restant"}
-                    </span>
+                    {envelope.budget.toFixed(2)} €
                   </TableCell>
                 </TableRow>
               ))}
