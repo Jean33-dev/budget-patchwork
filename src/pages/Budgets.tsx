@@ -4,6 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import { EnvelopeList } from "@/components/budget/EnvelopeList";
 import { AddEnvelopeDialog } from "@/components/budget/AddEnvelopeDialog";
 import { useState } from "react";
+import { toast } from "@/components/ui/use-toast";
 
 const Budgets = () => {
   const navigate = useNavigate();
@@ -16,7 +17,18 @@ const Budgets = () => {
   ];
 
   const handleEnvelopeClick = (envelope: any) => {
-    console.log("Clicked envelope:", envelope);
+    // Ici, vous pouvez ouvrir une boîte de dialogue pour modifier le budget
+    toast({
+      title: "Modification du budget",
+      description: `Vous modifiez le budget "${envelope.title}"`,
+    });
+    console.log("Modification du budget:", envelope);
+  };
+
+  const handleViewExpenses = (envelope: any) => {
+    // Rediriger vers la page des dépenses avec le budget sélectionné
+    navigate(`/dashboard/budget/expenses?budgetId=${envelope.id}`);
+    console.log("Voir les dépenses du budget:", envelope);
   };
 
   const handleAddEnvelope = (envelope: any) => {
@@ -38,6 +50,7 @@ const Budgets = () => {
         type="budget"
         onAddClick={() => setAddDialogOpen(true)}
         onEnvelopeClick={handleEnvelopeClick}
+        onViewExpenses={handleViewExpenses}
       />
 
       <AddEnvelopeDialog
