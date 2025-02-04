@@ -15,6 +15,7 @@ interface AddEnvelopeDialogProps {
     budget: number; 
     type: "income" | "expense" | "budget";
     linkedBudgetId?: string;
+    date?: string;
   }) => void;
   availableBudgets?: Array<{ id: string; title: string }>;
 }
@@ -29,6 +30,7 @@ export const AddEnvelopeDialog = ({
   const [title, setTitle] = useState("");
   const [budget, setBudget] = useState(0);
   const [linkedBudgetId, setLinkedBudgetId] = useState("");
+  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,12 +44,14 @@ export const AddEnvelopeDialog = ({
       title, 
       budget, 
       type,
-      linkedBudgetId: type === "expense" ? linkedBudgetId : undefined
+      linkedBudgetId: type === "expense" ? linkedBudgetId : undefined,
+      date: type === "expense" ? date : undefined
     });
     
     setTitle("");
     setBudget(0);
     setLinkedBudgetId("");
+    setDate(new Date().toISOString().split('T')[0]);
     onOpenChange(false);
   };
 
@@ -83,26 +87,39 @@ export const AddEnvelopeDialog = ({
           </div>
 
           {type === "expense" && (
-            <div className="space-y-2">
-              <Label>Budget associé</Label>
-              <Select value={linkedBudgetId} onValueChange={setLinkedBudgetId} required>
-                <SelectTrigger>
-                  <SelectValue placeholder="Sélectionnez un budget" />
-                </SelectTrigger>
-                <SelectContent>
-                  {availableBudgets.map((budget) => (
-                    <SelectItem key={budget.id} value={budget.id}>
-                      {budget.title}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {availableBudgets.length === 0 && (
-                <p className="text-sm text-red-500">
-                  Aucun budget disponible. Veuillez d'abord créer un budget.
-                </p>
-              )}
-            </div>
+            <>
+              <div className="space-y-2">
+                <Label>Budget associé</Label>
+                <Select value={linkedBudgetId} onValueChange={setLinkedBudgetId} required>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sélectionnez un budget" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableBudgets.map((budget) => (
+                      <SelectItem key={budget.id} value={budget.id}>
+                        {budget.title}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {availableBudgets.length === 0 && (
+                  <p className="text-sm text-red-500">
+                    Aucun budget disponible. Veuillez d'abord créer un budget.
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="date">Date</Label>
+                <Input
+                  id="date"
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  required
+                />
+              </div>
+            </>
           )}
 
           <div className="space-y-2">
