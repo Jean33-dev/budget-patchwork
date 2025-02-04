@@ -25,6 +25,7 @@ interface EnvelopeListProps {
   type: "income" | "expense" | "budget";
   onAddClick: () => void;
   onEnvelopeClick: (envelope: Envelope) => void;
+  onViewExpenses?: (envelope: Envelope) => void;
   availableBudgets?: Array<{ id: string; title: string }>;
 }
 
@@ -33,6 +34,7 @@ export const EnvelopeList = ({
   type, 
   onAddClick, 
   onEnvelopeClick,
+  onViewExpenses,
   availableBudgets = []
 }: EnvelopeListProps) => {
   const filteredEnvelopes = envelopes.filter((env) => env.type === type);
@@ -147,6 +149,7 @@ export const EnvelopeList = ({
             key={envelope.id}
             {...envelope}
             onClick={() => onEnvelopeClick(envelope)}
+            onViewExpenses={onViewExpenses ? () => onViewExpenses(envelope) : undefined}
           />
         ))}
       </div>

@@ -1,6 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
+import { MoreHorizontal, Eye } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface EnvelopeCardProps {
   title: string;
@@ -8,9 +10,17 @@ interface EnvelopeCardProps {
   spent: number;
   type: "income" | "expense" | "budget";
   onClick?: () => void;
+  onViewExpenses?: () => void;
 }
 
-export const EnvelopeCard = ({ title, budget, spent, type, onClick }: EnvelopeCardProps) => {
+export const EnvelopeCard = ({ 
+  title, 
+  budget, 
+  spent, 
+  type, 
+  onClick,
+  onViewExpenses 
+}: EnvelopeCardProps) => {
   const progress = (spent / budget) * 100;
   const remaining = budget - spent;
   const isOverBudget = remaining < 0;
@@ -52,12 +62,29 @@ export const EnvelopeCard = ({ title, budget, spent, type, onClick }: EnvelopeCa
   }
 
   return (
-    <Card 
-      className="transition-all hover:shadow-lg cursor-pointer hover:border-blue-500"
-      onClick={onClick}
-    >
+    <Card className="transition-all hover:shadow-lg hover:border-blue-500">
       <CardHeader className="pb-2">
-        <CardTitle className="text-lg font-medium">{title}</CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-lg font-medium">{title}</CardTitle>
+          <div className="flex gap-2">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-8 w-8" 
+              onClick={onClick}
+            >
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-8 w-8" 
+              onClick={onViewExpenses}
+            >
+              <Eye className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
       </CardHeader>
       <CardContent>
         <div className="space-y-2">
