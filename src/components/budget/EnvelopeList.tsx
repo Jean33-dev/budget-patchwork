@@ -82,33 +82,49 @@ export const EnvelopeList = ({
           </Button>
         </div>
         
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Nom</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Budget associé</TableHead>
-                <TableHead className="text-right">Montant</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredEnvelopes.map((envelope) => (
-                <TableRow 
-                  key={envelope.id}
-                  className="cursor-pointer hover:bg-muted"
-                  onClick={() => onEnvelopeClick(envelope)}
-                >
-                  <TableCell className="font-medium">{envelope.title}</TableCell>
-                  <TableCell>{envelope.date || "Non spécifiée"}</TableCell>
-                  <TableCell>{getBudgetTitle(envelope.linkedBudgetId)}</TableCell>
-                  <TableCell className="text-right">
-                    {envelope.budget.toFixed(2)} €
-                  </TableCell>
+        <div className="rounded-md border overflow-hidden">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nom</TableHead>
+                  <TableHead className="hidden sm:table-cell">Date</TableHead>
+                  <TableHead className="hidden sm:table-cell">Budget associé</TableHead>
+                  <TableHead className="text-right">Montant</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {filteredEnvelopes.map((envelope) => (
+                  <TableRow 
+                    key={envelope.id}
+                    className="cursor-pointer hover:bg-muted"
+                    onClick={() => onEnvelopeClick(envelope)}
+                  >
+                    <TableCell className="font-medium">
+                      <div>
+                        {envelope.title}
+                        <div className="sm:hidden text-sm text-muted-foreground">
+                          {envelope.date || "Non spécifiée"}
+                        </div>
+                        <div className="sm:hidden text-sm text-muted-foreground">
+                          {getBudgetTitle(envelope.linkedBudgetId)}
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="hidden sm:table-cell">
+                      {envelope.date || "Non spécifiée"}
+                    </TableCell>
+                    <TableCell className="hidden sm:table-cell">
+                      {getBudgetTitle(envelope.linkedBudgetId)}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {envelope.budget.toFixed(2)} €
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </div>
       </div>
     );
