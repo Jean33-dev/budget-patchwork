@@ -18,6 +18,7 @@ interface AddEnvelopeDialogProps {
     date?: string;
   }) => void;
   availableBudgets?: Array<{ id: string; title: string }>;
+  defaultBudgetId?: string;
 }
 
 export const AddEnvelopeDialog = ({ 
@@ -25,11 +26,12 @@ export const AddEnvelopeDialog = ({
   open, 
   onOpenChange, 
   onAdd,
-  availableBudgets = []
+  availableBudgets = [],
+  defaultBudgetId
 }: AddEnvelopeDialogProps) => {
   const [title, setTitle] = useState("");
   const [budget, setBudget] = useState(0);
-  const [linkedBudgetId, setLinkedBudgetId] = useState("");
+  const [linkedBudgetId, setLinkedBudgetId] = useState(defaultBudgetId || "");
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -50,7 +52,7 @@ export const AddEnvelopeDialog = ({
     
     setTitle("");
     setBudget(0);
-    setLinkedBudgetId("");
+    setLinkedBudgetId(defaultBudgetId || "");
     setDate(new Date().toISOString().split('T')[0]);
     onOpenChange(false);
   };
