@@ -75,7 +75,7 @@ const Dashboard = () => {
   const remainingBudgetAfterExpenses = totalBudgets - totalExpenses;
 
   return (
-    <div className="container mx-auto py-8 space-y-8">
+    <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-8 space-y-6 sm:space-y-8">
       <DashboardHeader
         currentDate={currentDate}
         onMonthChange={setCurrentDate}
