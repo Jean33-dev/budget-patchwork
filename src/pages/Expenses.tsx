@@ -1,3 +1,4 @@
+
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
@@ -59,7 +60,7 @@ const Expenses = () => {
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
       <div className="flex items-center gap-4 sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-10 pb-4 border-b">
-        <Button variant="outline" size="icon" onClick={() => navigate("/dashboard/budget")}>
+        <Button variant="outline" size="icon" onClick={() => navigate("/dashboard/budget/budgets")}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <h1 className="text-xl font-semibold">
