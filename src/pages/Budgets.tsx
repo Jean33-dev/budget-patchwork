@@ -1,3 +1,4 @@
+
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
@@ -5,30 +6,54 @@ import { EnvelopeList } from "@/components/budget/EnvelopeList";
 import { AddEnvelopeDialog } from "@/components/budget/AddEnvelopeDialog";
 import { useState } from "react";
 import { toast } from "@/components/ui/use-toast";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { MoneyInput } from "@/components/shared/MoneyInput";
+import { Input } from "@/components/ui/input";
 
 const Budgets = () => {
   const navigate = useNavigate();
   const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [selectedBudget, setSelectedBudget] = useState<any>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editBudget, setEditBudget] = useState(0);
 
   // Temporary mock data - you should replace this with your actual data management
-  const budgets = [
+  const [budgets, setBudgets] = useState([
     { id: "1", title: "Budget Logement", budget: 2000, spent: 1500, type: "budget" as const },
     { id: "2", title: "Budget Alimentation", budget: 800, spent: 600, type: "budget" as const },
-  ];
+  ]);
 
   const handleEnvelopeClick = (envelope: any) => {
-    // Ici, vous pouvez ouvrir une boîte de dialogue pour modifier le budget
-    toast({
-      title: "Modification du budget",
-      description: `Vous modifiez le budget "${envelope.title}"`,
+    setSelectedBudget(envelope);
+    setEditTitle(envelope.title);
+    setEditBudget(envelope.budget);
+    setEditDialogOpen(true);
+  };
+
+  const handleEditSubmit = () => {
+    const updatedBudgets = budgets.map(budget => {
+      if (budget.id === selectedBudget.id) {
+        return {
+          ...budget,
+          title: editTitle,
+          budget: editBudget
+        };
+      }
+      return budget;
     });
-    console.log("Modification du budget:", envelope);
+
+    setBudgets(updatedBudgets);
+    setEditDialogOpen(false);
+    toast({
+      title: "Budget modifié",
+      description: `Le budget "${editTitle}" a été mis à jour.`,
+    });
   };
 
   const handleViewExpenses = (envelope: any) => {
-    // Rediriger vers la page des dépenses avec le budget sélectionné
     navigate(`/dashboard/budget/expenses?budgetId=${envelope.id}`);
-    console.log("Voir les dépenses du budget:", envelope);
   };
 
   const handleAddEnvelope = (envelope: any) => {
@@ -59,6 +84,36 @@ const Budgets = () => {
         onOpenChange={setAddDialogOpen}
         onAdd={handleAddEnvelope}
       />
+
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Modifier le budget</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="title">Titre du budget</Label>
+              <Input
+                id="title"
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+                placeholder="Entrez le titre du budget"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="budget">Montant du budget</Label>
+              <MoneyInput
+                id="budget"
+                value={editBudget}
+                onChange={setEditBudget}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button onClick={handleEditSubmit}>Enregistrer les modifications</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
