@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Label } from "@/components/ui/label";
 import { MoneyInput } from "@/components/shared/MoneyInput";
 import { Input } from "@/components/ui/input";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const Budgets = () => {
   const navigate = useNavigate();
@@ -24,6 +25,15 @@ const Budgets = () => {
     { id: "1", title: "Budget Logement", budget: 2000, spent: 1500, type: "budget" as const },
     { id: "2", title: "Budget Alimentation", budget: 800, spent: 600, type: "budget" as const },
   ]);
+
+  // Mock revenus data (à remplacer par vos données réelles)
+  const totalRevenues = 2500; // Example: 2500€ de revenus
+
+  // Calcul du montant total des budgets
+  const totalBudgets = budgets.reduce((sum, budget) => sum + budget.budget, 0);
+
+  // Calcul du montant restant à répartir
+  const remainingAmount = totalRevenues - totalBudgets;
 
   const handleEnvelopeClick = (envelope: any) => {
     setSelectedBudget(envelope);
@@ -67,7 +77,19 @@ const Budgets = () => {
         <Button variant="outline" size="icon" onClick={() => navigate("/dashboard/budget")}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <h1 className="text-2xl font-bold">Gestion des Budgets</h1>
+        <div className="space-y-2">
+          <p className={`text-sm font-medium ${remainingAmount < 0 ? 'text-red-500' : ''}`}>
+            Montant restant à répartir : {remainingAmount.toFixed(2)}€
+          </p>
+          {remainingAmount < 0 && (
+            <Alert variant="destructive" className="py-2">
+              <AlertDescription>
+                Le total des budgets dépasse vos revenus. Veuillez réduire certains budgets.
+              </AlertDescription>
+            </Alert>
+          )}
+          <h1 className="text-2xl font-bold">Gestion des Budgets</h1>
+        </div>
       </div>
 
       <EnvelopeList
