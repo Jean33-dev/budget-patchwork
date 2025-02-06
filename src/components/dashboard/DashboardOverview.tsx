@@ -40,7 +40,32 @@ export const DashboardOverview = ({ totalIncome, totalExpenses, envelopes }: Das
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         <Card className="p-3 sm:p-4">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2">
-            <CardTitle className="text-sm sm:text-base font-medium">Revenus Totaux</CardTitle>
+            <CardTitle className="text-sm sm:text-base font-medium">
+              <div className="flex items-center gap-4">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="icon" className="h-8 w-8">
+                      <Menu className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start">
+                    <DropdownMenuItem onClick={() => navigate("/dashboard/budget/income")}>
+                      Gérer les Revenus
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate("/dashboard/budget/categories")}>
+                      Gérer les Catégories
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate("/dashboard/budget/budgets")}>
+                      Gérer les Budgets
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate("/dashboard/budget/expenses")}>
+                      Gérer les Dépenses
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                Revenus Totaux
+              </div>
+            </CardTitle>
           </CardHeader>
           <CardContent className="pb-2 sm:pb-3">
             <div className="text-lg sm:text-xl font-bold text-budget-income">{totalIncome.toFixed(2)} €</div>
@@ -69,30 +94,6 @@ export const DashboardOverview = ({ totalIncome, totalExpenses, envelopes }: Das
         </Card>
       </div>
 
-      <div className="flex justify-end">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="icon">
-              <Menu className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => navigate("/dashboard/budget/income")}>
-              Gérer les Revenus
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate("/dashboard/budget/categories")}>
-              Gérer les Catégories
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate("/dashboard/budget/budgets")}>
-              Gérer les Budgets
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate("/dashboard/budget/expenses")}>
-              Gérer les Dépenses
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-
       <Card>
         <CardHeader>
           <CardTitle className="text-base sm:text-lg">Répartition des Budgets</CardTitle>
@@ -108,3 +109,4 @@ export const DashboardOverview = ({ totalIncome, totalExpenses, envelopes }: Das
     </div>
   );
 };
+
