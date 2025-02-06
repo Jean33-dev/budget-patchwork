@@ -1,15 +1,6 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BudgetChart } from "../shared/BudgetChart";
-import { useNavigate } from "react-router-dom";
-import { Menu } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
 
 interface DashboardOverviewProps {
   totalIncome: number;
@@ -24,7 +15,6 @@ interface DashboardOverviewProps {
 }
 
 export const DashboardOverview = ({ totalIncome, totalExpenses, envelopes }: DashboardOverviewProps) => {
-  const navigate = useNavigate();
   const balance = totalIncome - totalExpenses;
   
   const chartData = envelopes
@@ -38,28 +28,6 @@ export const DashboardOverview = ({ totalIncome, totalExpenses, envelopes }: Das
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="icon">
-              <Menu className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start">
-            <DropdownMenuItem onClick={() => navigate("/dashboard/budget/income")}>
-              Gérer les Revenus
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate("/dashboard/budget/categories")}>
-              Gérer les Catégories
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate("/dashboard/budget/budgets")}>
-              Gérer les Budgets
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate("/dashboard/budget/expenses")}>
-              Gérer les Dépenses
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-
         <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           <Card className="p-3 sm:p-4">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2">
