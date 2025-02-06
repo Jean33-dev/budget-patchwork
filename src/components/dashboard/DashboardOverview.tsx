@@ -1,7 +1,15 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { BudgetChart } from "../shared/BudgetChart";
 import { useNavigate } from "react-router-dom";
+import { Menu } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 
 interface DashboardOverviewProps {
   totalIncome: number;
@@ -61,35 +69,28 @@ export const DashboardOverview = ({ totalIncome, totalExpenses, envelopes }: Das
         </Card>
       </div>
 
-      <div className="flex flex-col gap-3">
-        <Button 
-          variant="outline"
-          className="w-full sm:w-auto"
-          onClick={() => navigate("/dashboard/budget/income")}
-        >
-          Gérer les Revenus
-        </Button>
-        <Button 
-          variant="outline"
-          className="w-full sm:w-auto"
-          onClick={() => navigate("/dashboard/budget/categories")}
-        >
-          Gérer les Catégories
-        </Button>
-        <Button 
-          variant="outline"
-          className="w-full sm:w-auto"
-          onClick={() => navigate("/dashboard/budget/budgets")}
-        >
-          Gérer les Budgets
-        </Button>
-        <Button 
-          variant="outline"
-          className="w-full sm:w-auto"
-          onClick={() => navigate("/dashboard/budget/expenses")}
-        >
-          Gérer les Dépenses
-        </Button>
+      <div className="flex justify-end">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="icon">
+              <Menu className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => navigate("/dashboard/budget/income")}>
+              Gérer les Revenus
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate("/dashboard/budget/categories")}>
+              Gérer les Catégories
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate("/dashboard/budget/budgets")}>
+              Gérer les Budgets
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate("/dashboard/budget/expenses")}>
+              Gérer les Dépenses
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       <Card>
