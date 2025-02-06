@@ -1,10 +1,17 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { EnvelopeList } from "@/components/budget/EnvelopeList";
 import { AddEnvelopeDialog } from "@/components/budget/AddEnvelopeDialog";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Menu } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Income = () => {
   const navigate = useNavigate();
@@ -19,7 +26,7 @@ const Income = () => {
     const income = {
       id: Date.now().toString(),
       ...newIncome,
-      spent: newIncome.budget, // Pour les revenus, on considère qu'ils sont déjà "dépensés"
+      spent: newIncome.budget,
     };
     
     setEnvelopes(prev => [...prev, income]);
@@ -53,6 +60,32 @@ const Income = () => {
         >
           <ArrowLeft className="h-4 w-4" />
         </Button>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="icon">
+              <Menu className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            <DropdownMenuItem onClick={() => navigate("/dashboard/budget")}>
+              Tableau de Bord
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate("/dashboard/budget/income")}>
+              Gérer les Revenus
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate("/dashboard/budget/categories")}>
+              Gérer les Catégories
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate("/dashboard/budget/budgets")}>
+              Gérer les Budgets
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate("/dashboard/budget/expenses")}>
+              Gérer les Dépenses
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
         <h1 className="text-3xl font-bold">Gestion des Revenus</h1>
       </div>
 

@@ -1,7 +1,7 @@
 
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Menu } from "lucide-react";
 import { EnvelopeList } from "@/components/budget/EnvelopeList";
 import { AddEnvelopeDialog } from "@/components/budget/AddEnvelopeDialog";
 import { useState } from "react";
@@ -11,6 +11,12 @@ import { Label } from "@/components/ui/label";
 import { MoneyInput } from "@/components/shared/MoneyInput";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Budgets = () => {
   const navigate = useNavigate();
@@ -77,6 +83,32 @@ const Budgets = () => {
         <Button variant="outline" size="icon" onClick={() => navigate("/dashboard/budget")}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="icon">
+              <Menu className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            <DropdownMenuItem onClick={() => navigate("/dashboard/budget")}>
+              Tableau de Bord
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate("/dashboard/budget/income")}>
+              Gérer les Revenus
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate("/dashboard/budget/categories")}>
+              Gérer les Catégories
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate("/dashboard/budget/budgets")}>
+              Gérer les Budgets
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate("/dashboard/budget/expenses")}>
+              Gérer les Dépenses
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
         <div className="space-y-2">
           <p className={`text-sm font-medium ${remainingAmount < 0 ? 'text-red-500' : ''}`}>
             Montant restant à répartir : {remainingAmount.toFixed(2)}€

@@ -1,10 +1,16 @@
 
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Menu } from "lucide-react";
 import { EnvelopeList } from "@/components/budget/EnvelopeList";
 import { AddEnvelopeDialog } from "@/components/budget/AddEnvelopeDialog";
 import { useState } from "react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Expenses = () => {
   const navigate = useNavigate();
@@ -63,6 +69,32 @@ const Expenses = () => {
         <Button variant="outline" size="icon" onClick={() => navigate("/dashboard/budget/budgets")}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="icon">
+              <Menu className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            <DropdownMenuItem onClick={() => navigate("/dashboard/budget")}>
+              Tableau de Bord
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate("/dashboard/budget/income")}>
+              Gérer les Revenus
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate("/dashboard/budget/categories")}>
+              Gérer les Catégories
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate("/dashboard/budget/budgets")}>
+              Gérer les Budgets
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate("/dashboard/budget/expenses")}>
+              Gérer les Dépenses
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
         <h1 className="text-xl font-semibold">
           {currentBudget 
             ? `Dépenses - ${currentBudget}`
