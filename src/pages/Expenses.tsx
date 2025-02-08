@@ -26,7 +26,8 @@ const Expenses = () => {
       budget: 1500, 
       spent: 1500, 
       type: "expense" as const,
-      linkedBudgetId: "1"
+      linkedBudgetId: "1",
+      date: "2024-04-01"
     },
     { 
       id: "2", 
@@ -34,7 +35,8 @@ const Expenses = () => {
       budget: 600, 
       spent: 450, 
       type: "expense" as const,
-      linkedBudgetId: "2"
+      linkedBudgetId: "2",
+      date: "2024-04-05"
     },
   ];
 
