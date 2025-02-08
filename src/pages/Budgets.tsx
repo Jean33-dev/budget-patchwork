@@ -109,19 +109,20 @@ const Budgets = () => {
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <div className="space-y-2">
-          <p className={`text-sm font-medium ${remainingAmount < 0 ? 'text-red-500' : ''}`}>
-            Montant restant à répartir : {remainingAmount.toFixed(2)}€
-          </p>
-          {remainingAmount < 0 && (
-            <Alert variant="destructive" className="py-2">
-              <AlertDescription>
-                Le total des budgets dépasse vos revenus. Veuillez réduire certains budgets.
-              </AlertDescription>
-            </Alert>
-          )}
-          <h1 className="text-2xl font-bold">Gestion des Budgets</h1>
+        <h1 className="text-2xl font-bold">Gestion des Budgets</h1>
+      </div>
+
+      <div className="space-y-4">
+        <div className={`text-sm font-medium ${remainingAmount < 0 ? 'text-red-500' : ''}`}>
+          Montant restant à répartir : {remainingAmount.toFixed(2)}€
         </div>
+        {remainingAmount < 0 && (
+          <Alert variant="destructive" className="py-2">
+            <AlertDescription>
+              Le total des budgets dépasse vos revenus. Veuillez réduire certains budgets.
+            </AlertDescription>
+          </Alert>
+        )}
       </div>
 
       <EnvelopeList
