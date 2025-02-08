@@ -11,15 +11,17 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useToast } from "@/components/ui/use-toast";
 
 const Expenses = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const budgetId = searchParams.get('budgetId');
   const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const { toast } = useToast();
 
-  // Temporary mock data - you should replace this with your actual data management
-  const expenses = [
+  // Initial mock data
+  const [expenses, setExpenses] = useState([
     { 
       id: "1", 
       title: "Loyer", 
@@ -38,7 +40,7 @@ const Expenses = () => {
       linkedBudgetId: "2",
       date: "2024-04-05"
     },
-  ];
+  ]);
 
   // Temporary mock data for available budgets
   const availableBudgets = [
@@ -60,9 +62,21 @@ const Expenses = () => {
     console.log("Clicked envelope:", envelope);
   };
 
-  const handleAddEnvelope = (envelope: any) => {
-    console.log("New envelope:", envelope);
+  const handleAddEnvelope = (newExpense: any) => {
+    const expense = {
+      ...newExpense,
+      id: (expenses.length + 1).toString(),
+      spent: 0,
+      type: "expense" as const,
+    };
+    
+    setExpenses(prevExpenses => [...prevExpenses, expense]);
     setAddDialogOpen(false);
+    
+    toast({
+      title: "Dépense ajoutée",
+      description: `La dépense "${expense.title}" a été ajoutée avec succès.`,
+    });
   };
 
   return (
