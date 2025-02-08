@@ -2,12 +2,14 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Menu } from "lucide-react";
+import { ArrowLeft, Menu, Plus, Pencil } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,6 +34,11 @@ const Categories = () => {
       total: 800
     }
   ]);
+
+  // État pour le dialogue de création/modification
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<any>(null);
+  const [newCategoryName, setNewCategoryName] = useState("");
 
   // Liste des budgets disponibles
   const availableBudgets = [
@@ -61,6 +68,61 @@ const Categories = () => {
       title: "Budget assigné",
       description: "Le budget a été assigné à la catégorie avec succès."
     });
+  };
+
+  const handleAddCategory = () => {
+    setEditingCategory(null);
+    setNewCategoryName("");
+    setDialogOpen(true);
+  };
+
+  const handleEditCategory = (category: any) => {
+    setEditingCategory(category);
+    setNewCategoryName(category.name);
+    setDialogOpen(true);
+  };
+
+  const handleSaveCategory = () => {
+    if (!newCategoryName.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Le nom de la catégorie ne peut pas être vide."
+      });
+      return;
+    }
+
+    if (editingCategory) {
+      // Modification d'une catégorie existante
+      setCategories(prevCategories =>
+        prevCategories.map(cat =>
+          cat.id === editingCategory.id
+            ? { ...cat, name: newCategoryName }
+            : cat
+        )
+      );
+      toast({
+        title: "Catégorie modifiée",
+        description: "La catégorie a été modifiée avec succès."
+      });
+    } else {
+      // Création d'une nouvelle catégorie
+      const newCategory = {
+        id: Date.now().toString(),
+        name: newCategoryName,
+        budgets: [],
+        total: 0
+      };
+      setCategories(prev => [...prev, newCategory]);
+      toast({
+        title: "Catégorie créée",
+        description: "La nouvelle catégorie a été créée avec succès."
+      });
+    }
+
+    setDialogOpen(false);
+    setNewCategoryName("");
+    setEditingCategory(null);
   };
 
   return (
@@ -102,6 +164,13 @@ const Categories = () => {
         <h1 className="text-2xl font-bold">Gestion des Catégories</h1>
       </div>
 
+      <div className="flex justify-end">
+        <Button onClick={handleAddCategory}>
+          <Plus className="h-4 w-4 mr-2" />
+          Nouvelle Catégorie
+        </Button>
+      </div>
+
       <Tabs defaultValue="categories" className="w-full">
         <TabsList className="w-full justify-start">
           <TabsTrigger value="categories">Catégories</TabsTrigger>
@@ -112,7 +181,12 @@ const Categories = () => {
           {categories.map((category) => (
             <Card key={category.id}>
               <CardHeader>
-                <CardTitle className="text-lg">{category.name}</CardTitle>
+                <div className="flex justify-between items-center">
+                  <CardTitle className="text-lg">{category.name}</CardTitle>
+                  <Button variant="ghost" size="icon" onClick={() => handleEditCategory(category)}>
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="text-sm text-muted-foreground">
@@ -163,6 +237,35 @@ const Categories = () => {
           ))}
         </TabsContent>
       </Tabs>
+
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {editingCategory ? "Modifier la catégorie" : "Nouvelle catégorie"}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="categoryName">Nom de la catégorie</Label>
+              <Input
+                id="categoryName"
+                value={newCategoryName}
+                onChange={(e) => setNewCategoryName(e.target.value)}
+                placeholder="Entrez le nom de la catégorie"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDialogOpen(false)}>
+              Annuler
+            </Button>
+            <Button onClick={handleSaveCategory}>
+              {editingCategory ? "Modifier" : "Créer"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
