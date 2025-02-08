@@ -2,10 +2,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Menu, Plus, Pencil } from "lucide-react";
+import { ArrowLeft, Menu, Plus, Pencil, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -67,6 +67,25 @@ const Categories = () => {
     toast({
       title: "Budget assigné",
       description: "Le budget a été assigné à la catégorie avec succès."
+    });
+  };
+
+  const handleRemoveBudget = (categoryId: string, budgetTitle: string) => {
+    setCategories(prevCategories => {
+      return prevCategories.map(category => {
+        if (category.id === categoryId) {
+          return {
+            ...category,
+            budgets: category.budgets.filter(b => b !== budgetTitle)
+          };
+        }
+        return category;
+      });
+    });
+
+    toast({
+      title: "Budget retiré",
+      description: "Le budget a été retiré de la catégorie avec succès."
     });
   };
 
@@ -228,7 +247,17 @@ const Categories = () => {
                   <p className="font-medium mb-2">Budgets actuellement assignés :</p>
                   <ul className="list-disc pl-4 space-y-1">
                     {category.budgets.map((budget, index) => (
-                      <li key={index}>{budget}</li>
+                      <li key={index} className="flex items-center justify-between">
+                        <span>{budget}</span>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleRemoveBudget(category.id, budget)}
+                          className="h-6 w-6"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </li>
                     ))}
                   </ul>
                 </div>
