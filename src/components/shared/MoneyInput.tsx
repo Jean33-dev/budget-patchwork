@@ -11,6 +11,14 @@ interface MoneyInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElemen
 
 export const MoneyInput = ({ value, onChange, className, ...props }: MoneyInputProps) => {
   const [isEditing, setIsEditing] = useState(false);
+
+  const formatValue = (num: number): string => {
+    if (isEditing) {
+      return num.toString();
+    }
+    return num.toFixed(2).replace(".", ",");
+  };
+
   const [inputValue, setInputValue] = useState(formatValue(value));
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -32,13 +40,6 @@ export const MoneyInput = ({ value, onChange, className, ...props }: MoneyInputP
     const numVal = parseFloat(val) || 0;
     onChange(numVal);
   };
-
-  function formatValue(num: number): string {
-    if (isEditing) {
-      return inputValue;
-    }
-    return num.toFixed(2).replace(".", ",");
-  }
 
   const handleFocus = () => {
     setIsEditing(true);
