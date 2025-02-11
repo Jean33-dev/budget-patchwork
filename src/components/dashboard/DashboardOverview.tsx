@@ -9,6 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useState } from "react";
 
 interface DashboardOverviewProps {
   totalIncome: number;
@@ -23,7 +24,10 @@ interface DashboardOverviewProps {
   }>;
 }
 
+type ChartType = "budget" | "category";
+
 export const DashboardOverview = ({ totalIncome, totalExpenses, envelopes }: DashboardOverviewProps) => {
+  const [chartType, setChartType] = useState<ChartType>("budget");
   const balance = totalIncome - totalExpenses;
   
   const budgetChartData = envelopes
@@ -82,61 +86,44 @@ export const DashboardOverview = ({ totalIncome, totalExpenses, envelopes }: Das
         </div>
       </div>
 
-      <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <div className="flex items-center space-x-2">
-              <CardTitle className="text-base sm:text-lg">Répartition des Budgets</CardTitle>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <MoreVertical className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  <DropdownMenuItem>
-                    Exporter les données
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          </CardHeader>
-          <CardContent className="p-2 sm:p-6">
-            <div className="w-full overflow-x-auto">
-              <div className="min-w-[300px] h-[300px] sm:h-[400px]">
+      <Card>
+        <CardHeader>
+          <div className="flex items-center space-x-2">
+            <CardTitle className="text-base sm:text-lg">
+              {chartType === "budget" ? "Répartition des Budgets" : "Répartition par Catégories"}
+            </CardTitle>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => setChartType("budget")}>
+                  Voir les budgets
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setChartType("category")}>
+                  Voir les catégories
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  Exporter les données
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </CardHeader>
+        <CardContent className="p-2 sm:p-6">
+          <div className="w-full overflow-x-auto">
+            <div className="min-w-[300px] h-[300px] sm:h-[400px]">
+              {chartType === "budget" ? (
                 <BudgetChart data={budgetChartData} totalIncome={totalIncome} />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <div className="flex items-center space-x-2">
-              <CardTitle className="text-base sm:text-lg">Répartition par Catégories</CardTitle>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <MoreVertical className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  <DropdownMenuItem>
-                    Exporter les données
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          </CardHeader>
-          <CardContent className="p-2 sm:p-6">
-            <div className="w-full overflow-x-auto">
-              <div className="min-w-[300px] h-[300px] sm:h-[400px]">
+              ) : (
                 <BudgetChart data={categoryChartData} totalIncome={totalExpenses} />
-              </div>
+              )}
             </div>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
