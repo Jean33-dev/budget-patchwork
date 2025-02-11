@@ -17,10 +17,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const availableBudgets = [
-  { id: "1", title: "Budget Logement" },
-  { id: "2", title: "Budget Alimentation" },
-  { id: "3", title: "Budget Transport" },
-  { id: "4", title: "Budget Loisirs" }
+  { id: "1", title: "Budget Logement", amount: 1000, spent: 800 },
+  { id: "2", title: "Budget Alimentation", amount: 500, spent: 450 },
+  { id: "3", title: "Budget Transport", amount: 200, spent: 180 },
+  { id: "4", title: "Budget Loisirs", amount: 300, spent: 250 }
 ];
 
 const Categories = () => {
