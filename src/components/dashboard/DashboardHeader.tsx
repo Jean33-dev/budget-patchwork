@@ -20,8 +20,8 @@ export const DashboardHeader = ({ currentDate, onMonthChange, onBackClick }: Das
   const navigate = useNavigate();
 
   return (
-    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-10 pb-4 border-b">
-      <div className="flex items-center gap-4 w-full sm:w-auto">
+    <div className="space-y-4">
+      <div className="flex items-center gap-4 sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-10 pb-4 border-b">
         <Button 
           variant="outline" 
           size="icon"
@@ -58,7 +58,9 @@ export const DashboardHeader = ({ currentDate, onMonthChange, onBackClick }: Das
 
         <h1 className="text-xl font-semibold">Tableau de Bord Budget</h1>
       </div>
-      <MonthSelector currentDate={currentDate} onMonthChange={onMonthChange} />
+      <div className="flex justify-end">
+        <MonthSelector currentDate={currentDate} onMonthChange={onMonthChange} />
+      </div>
     </div>
   );
 };
