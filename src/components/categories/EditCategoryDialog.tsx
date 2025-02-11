@@ -16,7 +16,7 @@ interface EditCategoryDialogProps {
   category: Category | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSave: (categoryId: string, newName: string) => void;
+  onSave: (categoryId: string, newName: string) => boolean;
 }
 
 export const EditCategoryDialog = ({
@@ -35,7 +35,8 @@ export const EditCategoryDialog = ({
 
   const handleSave = () => {
     if (category) {
-      if (onSave(category.id, newCategoryName)) {
+      const success = onSave(category.id, newCategoryName);
+      if (success) {
         onOpenChange(false);
         setNewCategoryName("");
       }
