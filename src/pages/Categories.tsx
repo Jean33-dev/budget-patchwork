@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Menu, Plus, Pencil, X } from "lucide-react";
+import { ArrowLeft, Menu, Pencil, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -44,7 +44,7 @@ const Categories = () => {
     }
   ]);
 
-  // État pour le dialogue de création/modification
+  // État pour le dialogue de modification
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<any>(null);
   const [newCategoryName, setNewCategoryName] = useState("");
@@ -98,12 +98,6 @@ const Categories = () => {
     });
   };
 
-  const handleAddCategory = () => {
-    setEditingCategory(null);
-    setNewCategoryName("");
-    setDialogOpen(true);
-  };
-
   const handleEditCategory = (category: any) => {
     setEditingCategory(category);
     setNewCategoryName(category.name);
@@ -120,34 +114,18 @@ const Categories = () => {
       return;
     }
 
-    if (editingCategory) {
-      // Modification d'une catégorie existante
-      setCategories(prevCategories =>
-        prevCategories.map(cat =>
-          cat.id === editingCategory.id
-            ? { ...cat, name: newCategoryName }
-            : cat
-        )
-      );
-      toast({
-        title: "Catégorie modifiée",
-        description: "La catégorie a été modifiée avec succès."
-      });
-    } else {
-      // Création d'une nouvelle catégorie
-      const newCategory = {
-        id: Date.now().toString(),
-        name: newCategoryName,
-        budgets: [],
-        total: 0,
-        description: "" // Ajout de la propriété description
-      };
-      setCategories(prev => [...prev, newCategory]);
-      toast({
-        title: "Catégorie créée",
-        description: "La nouvelle catégorie a été créée avec succès."
-      });
-    }
+    // Modification d'une catégorie existante
+    setCategories(prevCategories =>
+      prevCategories.map(cat =>
+        cat.id === editingCategory.id
+          ? { ...cat, name: newCategoryName }
+          : cat
+      )
+    );
+    toast({
+      title: "Catégorie modifiée",
+      description: "La catégorie a été modifiée avec succès."
+    });
 
     setDialogOpen(false);
     setNewCategoryName("");
@@ -191,13 +169,6 @@ const Categories = () => {
         </DropdownMenu>
 
         <h1 className="text-2xl font-bold">Gestion des Catégories</h1>
-      </div>
-
-      <div className="flex justify-end">
-        <Button onClick={handleAddCategory}>
-          <Plus className="h-4 w-4 mr-2" />
-          Nouvelle Catégorie
-        </Button>
       </div>
 
       <Tabs defaultValue="categories" className="w-full">
@@ -288,7 +259,7 @@ const Categories = () => {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {editingCategory ? "Modifier la catégorie" : "Nouvelle catégorie"}
+              Modifier la catégorie
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -307,7 +278,7 @@ const Categories = () => {
               Annuler
             </Button>
             <Button onClick={handleSaveCategory}>
-              {editingCategory ? "Modifier" : "Créer"}
+              Modifier
             </Button>
           </DialogFooter>
         </DialogContent>
