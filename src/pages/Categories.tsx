@@ -139,7 +139,8 @@ const Categories = () => {
         id: Date.now().toString(),
         name: newCategoryName,
         budgets: [],
-        total: 0
+        total: 0,
+        description: "" // Ajout de la propriété description
       };
       setCategories(prev => [...prev, newCategory]);
       toast({
