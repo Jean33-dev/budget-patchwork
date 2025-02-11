@@ -2,14 +2,13 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Menu, Pencil, X } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { ArrowLeft, Menu } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Category } from "@/types/categories";
+import { CategoryCard } from "@/components/categories/CategoryCard";
+import { AssignmentCard } from "@/components/categories/AssignmentCard";
+import { EditCategoryDialog } from "@/components/categories/EditCategoryDialog";
+import { useCategories } from "@/hooks/useCategories";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,153 +16,29 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+const availableBudgets = [
+  { id: "1", title: "Budget Logement" },
+  { id: "2", title: "Budget Alimentation" },
+  { id: "3", title: "Budget Transport" },
+  { id: "4", title: "Budget Loisirs" }
+];
+
 const Categories = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
-  const [categories, setCategories] = useState([
-    { 
-      id: "necessaire", 
-      name: "Nécessaire", 
-      budgets: [],
-      total: 0,
-      description: "Dépenses essentielles comme le logement, l'alimentation, etc."
-    },
-    { 
-      id: "plaisir", 
-      name: "Plaisir", 
-      budgets: [],
-      total: 0,
-      description: "Loisirs, sorties, shopping, etc."
-    },
-    { 
-      id: "epargne", 
-      name: "Épargne", 
-      budgets: [],
-      total: 0,
-      description: "Économies et investissements"
-    }
-  ]);
+  const { 
+    categories, 
+    handleAssignBudget, 
+    handleRemoveBudget, 
+    updateCategoryName,
+    getAvailableBudgetsForCategory 
+  } = useCategories();
 
-  // État pour le dialogue de modification
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<any>(null);
-  const [newCategoryName, setNewCategoryName] = useState("");
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
 
-  // Liste des budgets disponibles
-  const availableBudgets = [
-    { id: "1", title: "Budget Logement" },
-    { id: "2", title: "Budget Alimentation" },
-    { id: "3", title: "Budget Transport" },
-    { id: "4", title: "Budget Loisirs" }
-  ];
-
-  // Fonction pour obtenir les budgets déjà assignés
-  const getAssignedBudgets = () => {
-    const assignedBudgets = new Set<string>();
-    categories.forEach(category => {
-      category.budgets.forEach(budget => {
-        assignedBudgets.add(budget);
-      });
-    });
-    return assignedBudgets;
-  };
-
-  const handleAssignBudget = (categoryId: string, budgetId: string) => {
-    const selectedBudget = availableBudgets.find(b => b.id === budgetId);
-    if (!selectedBudget) return;
-
-    // Vérifier si le budget n'est pas déjà assigné à une autre catégorie
-    const assignedBudgets = getAssignedBudgets();
-    if (assignedBudgets.has(selectedBudget.title)) {
-      toast({
-        variant: "destructive",
-        title: "Budget déjà assigné",
-        description: "Ce budget est déjà assigné à une autre catégorie."
-      });
-      return;
-    }
-
-    setCategories(prevCategories => {
-      return prevCategories.map(category => {
-        if (category.id === categoryId) {
-          if (!category.budgets.includes(selectedBudget.title)) {
-            return {
-              ...category,
-              budgets: [...category.budgets, selectedBudget.title]
-            };
-          }
-        }
-        return category;
-      });
-    });
-
-    toast({
-      title: "Budget assigné",
-      description: "Le budget a été assigné à la catégorie avec succès."
-    });
-  };
-
-  const handleRemoveBudget = (categoryId: string, budgetTitle: string) => {
-    setCategories(prevCategories => {
-      return prevCategories.map(category => {
-        if (category.id === categoryId) {
-          return {
-            ...category,
-            budgets: category.budgets.filter(b => b !== budgetTitle)
-          };
-        }
-        return category;
-      });
-    });
-
-    toast({
-      title: "Budget retiré",
-      description: "Le budget a été retiré de la catégorie avec succès."
-    });
-  };
-
-  const handleEditCategory = (category: any) => {
+  const handleEditCategory = (category: Category) => {
     setEditingCategory(category);
-    setNewCategoryName(category.name);
     setDialogOpen(true);
-  };
-
-  const handleSaveCategory = () => {
-    if (!newCategoryName.trim()) {
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Le nom de la catégorie ne peut pas être vide."
-      });
-      return;
-    }
-
-    setCategories(prevCategories =>
-      prevCategories.map(cat =>
-        cat.id === editingCategory.id
-          ? { ...cat, name: newCategoryName }
-          : cat
-      )
-    );
-    toast({
-      title: "Catégorie modifiée",
-      description: "La catégorie a été modifiée avec succès."
-    });
-
-    setDialogOpen(false);
-    setNewCategoryName("");
-    setEditingCategory(null);
-  };
-
-  // Filtrer les budgets disponibles pour exclure ceux déjà assignés
-  const getAvailableBudgetsForCategory = (categoryId: string) => {
-    const assignedBudgets = getAssignedBudgets();
-    const currentCategory = categories.find(cat => cat.id === categoryId);
-    
-    return availableBudgets.filter(budget => 
-      !assignedBudgets.has(budget.title) || // Le budget n'est assigné à aucune catégorie
-      (currentCategory && currentCategory.budgets.includes(budget.title)) // Ou le budget est déjà assigné à cette catégorie
-    );
   };
 
   return (
@@ -213,108 +88,38 @@ const Categories = () => {
         
         <TabsContent value="categories" className="space-y-4">
           {categories.map((category) => (
-            <Card key={category.id}>
-              <CardHeader>
-                <div className="flex justify-between items-center">
-                  <div>
-                    <CardTitle className="text-lg">{category.name}</CardTitle>
-                    {category.description && (
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {category.description}
-                      </p>
-                    )}
-                  </div>
-                  <Button variant="ghost" size="icon" onClick={() => handleEditCategory(category)}>
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="text-sm text-muted-foreground">
-                  Budgets associés : {category.budgets.length > 0 ? category.budgets.join(", ") : "Aucun budget assigné"}
-                </div>
-                <div className="mt-2 font-semibold">
-                  Total : {category.total.toFixed(2)} €
-                </div>
-              </CardContent>
-            </Card>
+            <CategoryCard
+              key={category.id}
+              category={category}
+              onEdit={handleEditCategory}
+            />
           ))}
         </TabsContent>
 
         <TabsContent value="assignments" className="space-y-4">
           {categories.map((category) => (
-            <Card key={category.id}>
-              <CardHeader>
-                <CardTitle className="text-lg">{category.name}</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Assigner un budget</Label>
-                  <Select onValueChange={(value) => handleAssignBudget(category.id, value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Sélectionner un budget" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {getAvailableBudgetsForCategory(category.id).map((budget) => (
-                        <SelectItem key={budget.id} value={budget.id}>
-                          {budget.title}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="text-sm">
-                  <p className="font-medium mb-2">Budgets actuellement assignés :</p>
-                  <ul className="list-disc pl-4 space-y-1">
-                    {category.budgets.map((budget, index) => (
-                      <li key={index} className="flex items-center justify-between">
-                        <span>{budget}</span>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleRemoveBudget(category.id, budget)}
-                          className="h-6 w-6"
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </CardContent>
-            </Card>
+            <AssignmentCard
+              key={category.id}
+              category={category}
+              availableBudgets={availableBudgets}
+              onAssign={(categoryId, budgetId) => 
+                handleAssignBudget(categoryId, budgetId, availableBudgets)
+              }
+              onRemove={handleRemoveBudget}
+              getAvailableBudgets={(categoryId) => 
+                getAvailableBudgetsForCategory(categoryId, availableBudgets)
+              }
+            />
           ))}
         </TabsContent>
       </Tabs>
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              Modifier la catégorie
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="categoryName">Nom de la catégorie</Label>
-              <Input
-                id="categoryName"
-                value={newCategoryName}
-                onChange={(e) => setNewCategoryName(e.target.value)}
-                placeholder="Entrez le nom de la catégorie"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>
-              Annuler
-            </Button>
-            <Button onClick={handleSaveCategory}>
-              Modifier
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <EditCategoryDialog
+        category={editingCategory}
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        onSave={updateCategoryName}
+      />
     </div>
   );
 };
