@@ -1,6 +1,5 @@
 
-import { useState } from "react";
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Bar, XAxis, YAxis } from "recharts";
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts";
 
 interface BudgetData {
   name: string;
@@ -23,8 +22,6 @@ const COLORS = {
 };
 
 export const BudgetChart = ({ data, totalIncome = 0 }: BudgetChartProps) => {
-  const [chartType, setChartType] = useState<"pie" | "bar">("pie");
-  
   // Calculer le total des budgets alloués
   const totalAllocated = data.reduce((sum, item) => sum + item.value, 0);
   
@@ -44,62 +41,34 @@ export const BudgetChart = ({ data, totalIncome = 0 }: BudgetChartProps) => {
     return ((value / totalIncome) * 100).toFixed(1);
   };
 
-  const renderPieChart = () => (
-    <PieChart>
-      <Pie
-        data={chartData}
-        cx="50%"
-        cy="50%"
-        labelLine={false}
-        outerRadius={80}
-        fill="#8884d8"
-        dataKey="value"
-      >
-        {chartData.map((entry, index) => (
-          <Cell
-            key={`cell-${index}`}
-            fill={COLORS[entry.type][index % COLORS[entry.type].length]}
-          />
-        ))}
-      </Pie>
-      <Tooltip
-        formatter={(value: number, name: string) => [
-          `${value.toFixed(2)} € (${getPercentage(value)}%)`,
-          name
-        ]}
-      />
-      <Legend />
-    </PieChart>
-  );
-
-  const renderBarChart = () => (
-    <BarChart data={chartData} layout="vertical">
-      <XAxis type="number" />
-      <YAxis type="category" dataKey="name" width={150} />
-      <Tooltip
-        formatter={(value: number, name: string) => [
-          `${value.toFixed(2)} € (${getPercentage(value)}%)`,
-          name
-        ]}
-      />
-      <Bar
-        dataKey="value"
-        fill="#8B5CF6"
-      >
-        {chartData.map((entry, index) => (
-          <Cell
-            key={`cell-${index}`}
-            fill={COLORS[entry.type][index % COLORS[entry.type].length]}
-          />
-        ))}
-      </Bar>
-    </BarChart>
-  );
-
   return (
     <div className="relative w-full h-[300px]">
       <ResponsiveContainer width="100%" height="100%">
-        {chartType === "pie" ? renderPieChart() : renderBarChart()}
+        <PieChart>
+          <Pie
+            data={chartData}
+            cx="50%"
+            cy="50%"
+            labelLine={false}
+            outerRadius={80}
+            fill="#8884d8"
+            dataKey="value"
+          >
+            {chartData.map((entry, index) => (
+              <Cell
+                key={`cell-${index}`}
+                fill={COLORS[entry.type][index % COLORS[entry.type].length]}
+              />
+            ))}
+          </Pie>
+          <Tooltip
+            formatter={(value: number, name: string) => [
+              `${value.toFixed(2)} € (${getPercentage(value)}%)`,
+              name
+            ]}
+          />
+          <Legend />
+        </PieChart>
       </ResponsiveContainer>
     </div>
   );
