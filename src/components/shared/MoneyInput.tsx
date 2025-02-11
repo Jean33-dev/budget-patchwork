@@ -22,28 +22,33 @@ export const MoneyInput = ({ value, onChange, className, ...props }: MoneyInputP
   const [inputValue, setInputValue] = useState(formatValue(value));
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Remove any non-digit characters except dots and commas
-    let val = e.target.value.replace(/[^0-9.,]/g, "");
+    let val = e.target.value;
+
+    // Autorise uniquement les chiffres et une seule virgule/point
+    val = val.replace(/[^\d.,]/g, "");
     
-    // Replace comma with dot for decimal
+    // Remplace la virgule par un point pour le calcul
     val = val.replace(",", ".");
     
-    // Ensure only one decimal point
+    // S'assure qu'il n'y a qu'un seul point décimal
     const parts = val.split(".");
     if (parts.length > 2) {
       val = parts[0] + "." + parts.slice(1).join("");
     }
+    
+    // Limite à 2 décimales pendant la saisie
+    if (parts[1] && parts[1].length > 2) {
+      val = parts[0] + "." + parts[1].slice(0, 2);
+    }
 
     setInputValue(val);
-    
-    // Convert to number and update parent
     const numVal = parseFloat(val) || 0;
     onChange(numVal);
   };
 
   const handleFocus = () => {
     setIsEditing(true);
-    setInputValue(value.toString());
+    setInputValue(value.toString().replace(".", ","));
   };
 
   const handleBlur = () => {
@@ -55,14 +60,14 @@ export const MoneyInput = ({ value, onChange, className, ...props }: MoneyInputP
     <div className={cn("relative", className)}>
       <Input
         type="text"
-        value={formatValue(value)}
+        value={inputValue}
         onChange={handleChange}
         onFocus={handleFocus}
         onBlur={handleBlur}
         className="pl-8"
         {...props}
       />
-      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">€</span>
+      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">€</span>
     </div>
   );
 };
