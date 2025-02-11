@@ -2,7 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BudgetChart } from "../shared/BudgetChart";
 import { Button } from "@/components/ui/button";
-import { MoreVertical, ChartPie, ChartBar } from "lucide-react";
+import { MoreVertical } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,19 +19,36 @@ interface DashboardOverviewProps {
     budget: number;
     spent: number;
     type: "income" | "expense" | "budget";
+    category?: string;
   }>;
 }
 
 export const DashboardOverview = ({ totalIncome, totalExpenses, envelopes }: DashboardOverviewProps) => {
   const balance = totalIncome - totalExpenses;
   
-  const chartData = envelopes
+  const budgetChartData = envelopes
     .filter(env => env.type === "budget")
     .map((env) => ({
       name: env.title,
       value: env.budget,
       type: env.type,
     }));
+
+  const categoryChartData = envelopes
+    .filter(env => env.type === "expense" && env.category)
+    .reduce((acc, env) => {
+      const categoryIndex = acc.findIndex(item => item.name === env.category);
+      if (categoryIndex >= 0) {
+        acc[categoryIndex].value += env.spent;
+      } else if (env.category) {
+        acc.push({
+          name: env.category,
+          value: env.spent,
+          type: "expense" as const,
+        });
+      }
+      return acc;
+    }, [] as Array<{ name: string; value: number; type: "expense" }>);
 
   return (
     <div className="space-y-6">
@@ -65,37 +82,61 @@ export const DashboardOverview = ({ totalIncome, totalExpenses, envelopes }: Das
         </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <div className="flex items-center space-x-2">
-            <CardTitle className="text-base sm:text-lg">Répartition des Budgets</CardTitle>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                  <MoreVertical className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem>
-                  <ChartPie className="mr-2 h-4 w-4" />
-                  Graphique Circulaire
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <ChartBar className="mr-2 h-4 w-4" />
-                  Graphique en Barres
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </CardHeader>
-        <CardContent className="p-2 sm:p-6">
-          <div className="w-full overflow-x-auto">
-            <div className="min-w-[300px] h-[300px] sm:h-[400px]">
-              <BudgetChart data={chartData} totalIncome={totalIncome} />
+      <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <div className="flex items-center space-x-2">
+              <CardTitle className="text-base sm:text-lg">Répartition des Budgets</CardTitle>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem>
+                    Exporter les données
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardHeader>
+          <CardContent className="p-2 sm:p-6">
+            <div className="w-full overflow-x-auto">
+              <div className="min-w-[300px] h-[300px] sm:h-[400px]">
+                <BudgetChart data={budgetChartData} totalIncome={totalIncome} />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <div className="flex items-center space-x-2">
+              <CardTitle className="text-base sm:text-lg">Répartition par Catégories</CardTitle>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem>
+                    Exporter les données
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </CardHeader>
+          <CardContent className="p-2 sm:p-6">
+            <div className="w-full overflow-x-auto">
+              <div className="min-w-[300px] h-[300px] sm:h-[400px]">
+                <BudgetChart data={categoryChartData} totalIncome={totalExpenses} />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };
