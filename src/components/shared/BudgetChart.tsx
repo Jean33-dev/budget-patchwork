@@ -1,14 +1,6 @@
 
 import { useState } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Bar, XAxis, YAxis } from "recharts";
-import { Button } from "@/components/ui/button";
-import { MoreVertical, ChartPie, ChartBar } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 interface BudgetData {
   name: string;
@@ -106,25 +98,6 @@ export const BudgetChart = ({ data, totalIncome = 0 }: BudgetChartProps) => {
 
   return (
     <div className="relative w-full h-[300px]">
-      <div className="absolute top-0 left-0 z-10">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon">
-              <MoreVertical className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuItem onClick={() => setChartType("pie")}>
-              <ChartPie className="mr-2 h-4 w-4" />
-              Graphique Circulaire
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setChartType("bar")}>
-              <ChartBar className="mr-2 h-4 w-4" />
-              Graphique en Barres
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
       <ResponsiveContainer width="100%" height="100%">
         {chartType === "pie" ? renderPieChart() : renderBarChart()}
       </ResponsiveContainer>
