@@ -3,6 +3,7 @@ import { Category } from "@/types/categories";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Pencil } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
 
 interface CategoryCardProps {
   category: Category;
@@ -10,6 +11,10 @@ interface CategoryCardProps {
 }
 
 export const CategoryCard = ({ category, onEdit }: CategoryCardProps) => {
+  // Calculer le pourcentage de consommation du budget
+  const percentage = category.total > 0 ? (category.spent / category.total) * 100 : 0;
+  const isOverBudget = percentage > 100;
+
   return (
     <Card>
       <CardHeader>
@@ -27,12 +32,32 @@ export const CategoryCard = ({ category, onEdit }: CategoryCardProps) => {
           </Button>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-4">
         <div className="text-sm text-muted-foreground">
           Budgets associés : {category.budgets.length > 0 ? category.budgets.join(", ") : "Aucun budget assigné"}
         </div>
-        <div className="mt-2 font-semibold">
-          Total : {category.total.toFixed(2)} €
+        <div className="space-y-2">
+          <div className="flex justify-between items-center">
+            <div className="font-semibold">Budget total :</div>
+            <div>{category.total.toFixed(2)} €</div>
+          </div>
+          <div className="flex justify-between items-center">
+            <div className="font-semibold">Dépenses :</div>
+            <div className={isOverBudget ? "text-budget-expense" : ""}>{category.spent.toFixed(2)} €</div>
+          </div>
+          <div className="space-y-1">
+            <div className="flex justify-between text-sm">
+              <span>Progression :</span>
+              <span className={isOverBudget ? "text-budget-expense" : ""}>
+                {percentage.toFixed(1)}%
+              </span>
+            </div>
+            <Progress 
+              value={Math.min(percentage, 100)} 
+              className={isOverBudget ? "bg-red-200" : ""}
+              indicatorClassName={isOverBudget ? "bg-budget-expense" : "bg-budget-income"}
+            />
+          </div>
         </div>
       </CardContent>
     </Card>

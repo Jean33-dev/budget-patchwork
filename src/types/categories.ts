@@ -4,6 +4,7 @@ export interface Category {
   name: string;
   budgets: string[];
   total: number;
+  spent: number;
   description: string;
 }
 

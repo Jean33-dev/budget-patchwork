@@ -11,6 +11,7 @@ export const useCategories = () => {
       name: "Nécessaire", 
       budgets: [],
       total: 0,
+      spent: 0,
       description: "Dépenses essentielles comme le logement, l'alimentation, etc."
     },
     { 
@@ -18,6 +19,7 @@ export const useCategories = () => {
       name: "Plaisir", 
       budgets: [],
       total: 0,
+      spent: 0,
       description: "Loisirs, sorties, shopping, etc."
     },
     { 
@@ -25,6 +27,7 @@ export const useCategories = () => {
       name: "Épargne", 
       budgets: [],
       total: 0,
+      spent: 0,
       description: "Économies et investissements"
     }
   ]);
@@ -37,6 +40,31 @@ export const useCategories = () => {
       });
     });
     return assignedBudgets;
+  };
+
+  const updateCategoryTotals = (categoryId: string, availableBudgets: Budget[]) => {
+    setCategories(prevCategories => {
+      return prevCategories.map(category => {
+        if (category.id === categoryId) {
+          const total = category.budgets.reduce((sum, budgetTitle) => {
+            const budget = availableBudgets.find(b => b.title === budgetTitle);
+            return sum + (budget?.amount || 0);
+          }, 0);
+
+          const spent = category.budgets.reduce((sum, budgetTitle) => {
+            const budget = availableBudgets.find(b => b.title === budgetTitle);
+            return sum + (budget?.spent || 0);
+          }, 0);
+
+          return {
+            ...category,
+            total,
+            spent
+          };
+        }
+        return category;
+      });
+    });
   };
 
   const handleAssignBudget = (categoryId: string, budgetId: string, availableBudgets: Budget[]) => {
@@ -66,6 +94,8 @@ export const useCategories = () => {
         return category;
       });
     });
+
+    updateCategoryTotals(categoryId, availableBudgets);
 
     toast({
       title: "Budget assigné",
@@ -133,6 +163,7 @@ export const useCategories = () => {
     handleAssignBudget,
     handleRemoveBudget,
     updateCategoryName,
-    getAvailableBudgetsForCategory
+    getAvailableBudgetsForCategory,
+    updateCategoryTotals
   };
 };
