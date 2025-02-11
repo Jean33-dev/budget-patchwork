@@ -57,12 +57,36 @@ const Categories = () => {
     { id: "4", title: "Budget Loisirs" }
   ];
 
+  // Fonction pour obtenir les budgets déjà assignés
+  const getAssignedBudgets = () => {
+    const assignedBudgets = new Set<string>();
+    categories.forEach(category => {
+      category.budgets.forEach(budget => {
+        assignedBudgets.add(budget);
+      });
+    });
+    return assignedBudgets;
+  };
+
   const handleAssignBudget = (categoryId: string, budgetId: string) => {
+    const selectedBudget = availableBudgets.find(b => b.id === budgetId);
+    if (!selectedBudget) return;
+
+    // Vérifier si le budget n'est pas déjà assigné à une autre catégorie
+    const assignedBudgets = getAssignedBudgets();
+    if (assignedBudgets.has(selectedBudget.title)) {
+      toast({
+        variant: "destructive",
+        title: "Budget déjà assigné",
+        description: "Ce budget est déjà assigné à une autre catégorie."
+      });
+      return;
+    }
+
     setCategories(prevCategories => {
       return prevCategories.map(category => {
         if (category.id === categoryId) {
-          const selectedBudget = availableBudgets.find(b => b.id === budgetId);
-          if (selectedBudget && !category.budgets.includes(selectedBudget.title)) {
+          if (!category.budgets.includes(selectedBudget.title)) {
             return {
               ...category,
               budgets: [...category.budgets, selectedBudget.title]
@@ -114,7 +138,6 @@ const Categories = () => {
       return;
     }
 
-    // Modification d'une catégorie existante
     setCategories(prevCategories =>
       prevCategories.map(cat =>
         cat.id === editingCategory.id
@@ -130,6 +153,17 @@ const Categories = () => {
     setDialogOpen(false);
     setNewCategoryName("");
     setEditingCategory(null);
+  };
+
+  // Filtrer les budgets disponibles pour exclure ceux déjà assignés
+  const getAvailableBudgetsForCategory = (categoryId: string) => {
+    const assignedBudgets = getAssignedBudgets();
+    const currentCategory = categories.find(cat => cat.id === categoryId);
+    
+    return availableBudgets.filter(budget => 
+      !assignedBudgets.has(budget.title) || // Le budget n'est assigné à aucune catégorie
+      (currentCategory && currentCategory.budgets.includes(budget.title)) // Ou le budget est déjà assigné à cette catégorie
+    );
   };
 
   return (
@@ -221,13 +255,11 @@ const Categories = () => {
                       <SelectValue placeholder="Sélectionner un budget" />
                     </SelectTrigger>
                     <SelectContent>
-                      {availableBudgets
-                        .filter(budget => !category.budgets.includes(budget.title))
-                        .map((budget) => (
-                          <SelectItem key={budget.id} value={budget.id}>
-                            {budget.title}
-                          </SelectItem>
-                        ))}
+                      {getAvailableBudgetsForCategory(category.id).map((budget) => (
+                        <SelectItem key={budget.id} value={budget.id}>
+                          {budget.title}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
