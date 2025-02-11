@@ -108,7 +108,7 @@ const Budgets = () => {
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <h1 className="text-xl font-semibold">Gestion des Budgets</h1>
+        <h1 className="text-xl">Gestion des Budgets</h1>
       </div>
 
       <div className="space-y-4">

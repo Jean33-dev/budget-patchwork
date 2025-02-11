@@ -86,7 +86,7 @@ const Income = () => {
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <h1 className="text-xl font-semibold">Gestion des Revenus</h1>
+        <h1 className="text-xl">Gestion des Revenus</h1>
       </div>
 
       <EnvelopeList
