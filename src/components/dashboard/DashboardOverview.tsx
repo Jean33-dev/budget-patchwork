@@ -24,7 +24,7 @@ interface DashboardOverviewProps {
   }>;
 }
 
-type ChartType = "budget" | "category";
+type ChartType = "budget" | "category" | "type";
 
 export const DashboardOverview = ({ totalIncome, totalExpenses, envelopes }: DashboardOverviewProps) => {
   const [chartType, setChartType] = useState<ChartType>("budget");
@@ -53,6 +53,46 @@ export const DashboardOverview = ({ totalIncome, totalExpenses, envelopes }: Das
       }
       return acc;
     }, [] as Array<{ name: string; value: number; type: "expense" }>);
+
+  const typeChartData = envelopes.reduce((acc, env) => {
+    const typeIndex = acc.findIndex(item => item.name === env.type);
+    if (typeIndex >= 0) {
+      acc[typeIndex].value += env.type === "expense" ? env.spent : env.budget;
+    } else {
+      acc.push({
+        name: env.type,
+        value: env.type === "expense" ? env.spent : env.budget,
+        type: env.type,
+      });
+    }
+    return acc;
+  }, [] as Array<{ name: string; value: number; type: "income" | "expense" | "budget" }>);
+
+  const getChartTitle = () => {
+    switch (chartType) {
+      case "budget":
+        return "Répartition des Budgets";
+      case "category":
+        return "Répartition par Catégories";
+      case "type":
+        return "Répartition par Type";
+      default:
+        return "Répartition";
+    }
+  };
+
+  const getChartData = () => {
+    switch (chartType) {
+      case "budget":
+        return { data: budgetChartData, total: totalIncome };
+      case "category":
+        return { data: categoryChartData, total: totalExpenses };
+      case "type":
+        return { data: typeChartData, total: totalIncome };
+      default:
+        return { data: [], total: 0 };
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -90,7 +130,7 @@ export const DashboardOverview = ({ totalIncome, totalExpenses, envelopes }: Das
         <CardHeader>
           <div className="flex items-center space-x-2">
             <CardTitle className="text-base sm:text-lg">
-              {chartType === "budget" ? "Répartition des Budgets" : "Répartition par Catégories"}
+              {getChartTitle()}
             </CardTitle>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -105,8 +145,8 @@ export const DashboardOverview = ({ totalIncome, totalExpenses, envelopes }: Das
                 <DropdownMenuItem onClick={() => setChartType("category")}>
                   Voir les catégories
                 </DropdownMenuItem>
-                <DropdownMenuItem>
-                  Exporter les données
+                <DropdownMenuItem onClick={() => setChartType("type")}>
+                  Voir par type
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -115,11 +155,10 @@ export const DashboardOverview = ({ totalIncome, totalExpenses, envelopes }: Das
         <CardContent className="p-2 sm:p-6">
           <div className="w-full overflow-x-auto">
             <div className="min-w-[300px] h-[300px] sm:h-[400px]">
-              {chartType === "budget" ? (
-                <BudgetChart data={budgetChartData} totalIncome={totalIncome} />
-              ) : (
-                <BudgetChart data={categoryChartData} totalIncome={totalExpenses} />
-              )}
+              <BudgetChart 
+                data={getChartData().data} 
+                totalIncome={getChartData().total} 
+              />
             </div>
           </div>
         </CardContent>
