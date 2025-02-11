@@ -22,16 +22,25 @@ const Categories = () => {
   const { toast } = useToast();
   const [categories, setCategories] = useState([
     { 
-      id: "1", 
-      name: "Logement", 
-      budgets: ["Budget Logement"],
-      total: 2000
+      id: "necessaire", 
+      name: "Nécessaire", 
+      budgets: [],
+      total: 0,
+      description: "Dépenses essentielles comme le logement, l'alimentation, etc."
     },
     { 
-      id: "2", 
-      name: "Alimentation", 
-      budgets: ["Budget Alimentation"],
-      total: 800
+      id: "plaisir", 
+      name: "Plaisir", 
+      budgets: [],
+      total: 0,
+      description: "Loisirs, sorties, shopping, etc."
+    },
+    { 
+      id: "epargne", 
+      name: "Épargne", 
+      budgets: [],
+      total: 0,
+      description: "Économies et investissements"
     }
   ]);
 
@@ -201,7 +210,14 @@ const Categories = () => {
             <Card key={category.id}>
               <CardHeader>
                 <div className="flex justify-between items-center">
-                  <CardTitle className="text-lg">{category.name}</CardTitle>
+                  <div>
+                    <CardTitle className="text-lg">{category.name}</CardTitle>
+                    {category.description && (
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {category.description}
+                      </p>
+                    )}
+                  </div>
                   <Button variant="ghost" size="icon" onClick={() => handleEditCategory(category)}>
                     <Pencil className="h-4 w-4" />
                   </Button>
@@ -209,7 +225,7 @@ const Categories = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-sm text-muted-foreground">
-                  Budgets associés : {category.budgets.join(", ")}
+                  Budgets associés : {category.budgets.length > 0 ? category.budgets.join(", ") : "Aucun budget assigné"}
                 </div>
                 <div className="mt-2 font-semibold">
                   Total : {category.total.toFixed(2)} €
