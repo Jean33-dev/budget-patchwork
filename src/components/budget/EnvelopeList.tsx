@@ -1,3 +1,4 @@
+
 import { EnvelopeCard } from "./EnvelopeCard";
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
@@ -9,6 +10,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
 
 interface Envelope {
   id: string;
@@ -71,6 +74,16 @@ export const EnvelopeList = ({
     return budget ? budget.title : "Budget inconnu";
   };
 
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return "Non spécifiée";
+    try {
+      const date = new Date(dateString);
+      return format(date, 'dd/MM/yyyy', { locale: fr });
+    } catch {
+      return "Date invalide";
+    }
+  };
+
   if (type === "expense") {
     return (
       <div className="space-y-4">
@@ -106,7 +119,7 @@ export const EnvelopeList = ({
                       <div>
                         {envelope.title}
                         <div className="sm:hidden text-sm text-muted-foreground">
-                          {envelope.date || "Non spécifiée"}
+                          {formatDate(envelope.date)}
                         </div>
                         <div className="sm:hidden text-sm text-muted-foreground">
                           {getBudgetTitle(envelope.linkedBudgetId)}
@@ -114,7 +127,7 @@ export const EnvelopeList = ({
                       </div>
                     </TableCell>
                     <TableCell className="hidden sm:table-cell">
-                      {envelope.date || "Non spécifiée"}
+                      {formatDate(envelope.date)}
                     </TableCell>
                     <TableCell className="hidden sm:table-cell">
                       {getBudgetTitle(envelope.linkedBudgetId)}
