@@ -54,19 +54,29 @@ export const DashboardOverview = ({ totalIncome, totalExpenses, envelopes }: Das
       return acc;
     }, [] as Array<{ name: string; value: number; type: "expense" }>);
 
-  const typeChartData = envelopes.reduce((acc, env) => {
-    const typeIndex = acc.findIndex(item => item.name === env.type);
-    if (typeIndex >= 0) {
-      acc[typeIndex].value += env.type === "expense" ? env.spent : env.budget;
-    } else {
-      acc.push({
-        name: env.type,
-        value: env.type === "expense" ? env.spent : env.budget,
-        type: env.type,
-      });
-    }
-    return acc;
-  }, [] as Array<{ name: string; value: number; type: "income" | "expense" | "budget" }>);
+  const budgetByCategoryData = [
+    {
+      name: "Nécessaire",
+      value: envelopes
+        .filter(env => env.type === "budget" && env.category === "necessaire")
+        .reduce((sum, env) => sum + env.budget, 0),
+      type: "budget" as const,
+    },
+    {
+      name: "Plaisir",
+      value: envelopes
+        .filter(env => env.type === "budget" && env.category === "plaisir")
+        .reduce((sum, env) => sum + env.budget, 0),
+      type: "budget" as const,
+    },
+    {
+      name: "Épargne",
+      value: envelopes
+        .filter(env => env.type === "budget" && env.category === "epargne")
+        .reduce((sum, env) => sum + env.budget, 0),
+      type: "budget" as const,
+    },
+  ];
 
   const getChartTitle = () => {
     switch (chartType) {
@@ -75,7 +85,7 @@ export const DashboardOverview = ({ totalIncome, totalExpenses, envelopes }: Das
       case "category":
         return "Répartition par Catégories";
       case "type":
-        return "Répartition par Type";
+        return "Répartition par Type de Catégorie";
       default:
         return "Répartition";
     }
@@ -88,7 +98,7 @@ export const DashboardOverview = ({ totalIncome, totalExpenses, envelopes }: Das
       case "category":
         return { data: categoryChartData, total: totalExpenses };
       case "type":
-        return { data: typeChartData, total: totalIncome };
+        return { data: budgetByCategoryData, total: totalIncome };
       default:
         return { data: [], total: 0 };
     }
@@ -146,7 +156,7 @@ export const DashboardOverview = ({ totalIncome, totalExpenses, envelopes }: Das
                   Voir les catégories
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setChartType("type")}>
-                  Voir par type
+                  Voir par type de catégorie
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
