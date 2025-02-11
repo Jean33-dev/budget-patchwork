@@ -1,36 +1,46 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Category, Budget } from "@/types/categories";
 import { useToast } from "@/hooks/use-toast";
 
+const CATEGORIES_STORAGE_KEY = "app_categories";
+
+const defaultCategories: Category[] = [
+  { 
+    id: "necessaire", 
+    name: "Nécessaire", 
+    budgets: [],
+    total: 0,
+    spent: 0,
+    description: "Dépenses essentielles comme le logement, l'alimentation, etc."
+  },
+  { 
+    id: "plaisir", 
+    name: "Plaisir", 
+    budgets: [],
+    total: 0,
+    spent: 0,
+    description: "Loisirs, sorties, shopping, etc."
+  },
+  { 
+    id: "epargne", 
+    name: "Épargne", 
+    budgets: [],
+    total: 0,
+    spent: 0,
+    description: "Économies et investissements"
+  }
+];
+
 export const useCategories = () => {
   const { toast } = useToast();
-  const [categories, setCategories] = useState<Category[]>([
-    { 
-      id: "necessaire", 
-      name: "Nécessaire", 
-      budgets: [],
-      total: 0,
-      spent: 0,
-      description: "Dépenses essentielles comme le logement, l'alimentation, etc."
-    },
-    { 
-      id: "plaisir", 
-      name: "Plaisir", 
-      budgets: [],
-      total: 0,
-      spent: 0,
-      description: "Loisirs, sorties, shopping, etc."
-    },
-    { 
-      id: "epargne", 
-      name: "Épargne", 
-      budgets: [],
-      total: 0,
-      spent: 0,
-      description: "Économies et investissements"
-    }
-  ]);
+  const [categories, setCategories] = useState<Category[]>(() => {
+    const saved = localStorage.getItem(CATEGORIES_STORAGE_KEY);
+    return saved ? JSON.parse(saved) : defaultCategories;
+  });
+
+  useEffect(() => {
+    localStorage.setItem(CATEGORIES_STORAGE_KEY, JSON.stringify(categories));
+  }, [categories]);
 
   const getAssignedBudgets = () => {
     const assignedBudgets = new Set<string>();

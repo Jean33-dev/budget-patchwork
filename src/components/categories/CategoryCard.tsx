@@ -15,6 +15,7 @@ export const CategoryCard = ({ category, onEdit }: CategoryCardProps) => {
   // Calculer le pourcentage de consommation du budget
   const percentage = category.total > 0 ? (category.spent / category.total) * 100 : 0;
   const isOverBudget = percentage > 100;
+  const remaining = category.total - category.spent;
 
   return (
     <Card>
@@ -45,6 +46,12 @@ export const CategoryCard = ({ category, onEdit }: CategoryCardProps) => {
           <div className="flex justify-between items-center">
             <div className="font-semibold">Dépenses :</div>
             <div className={isOverBudget ? "text-budget-expense" : ""}>{category.spent.toFixed(2)} €</div>
+          </div>
+          <div className="flex justify-between items-center">
+            <div className="font-semibold">Reste :</div>
+            <div className={isOverBudget ? "text-budget-expense" : "text-budget-income"}>
+              {remaining.toFixed(2)} €
+            </div>
           </div>
           <div className="space-y-1">
             <div className="flex justify-between text-sm">
