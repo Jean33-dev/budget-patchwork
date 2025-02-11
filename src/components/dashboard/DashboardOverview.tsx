@@ -38,21 +38,47 @@ export const DashboardOverview = ({ totalIncome, totalExpenses, envelopes }: Das
       type: env.type,
     }));
 
-  const categoryChartData = envelopes
-    .filter(env => env.type === "expense" && env.category)
-    .reduce((acc, env) => {
-      const categoryIndex = acc.findIndex(item => item.name === env.category);
-      if (categoryIndex >= 0) {
-        acc[categoryIndex].value += env.spent;
-      } else if (env.category) {
-        acc.push({
-          name: env.category,
-          value: env.spent,
-          type: "expense" as const,
-        });
-      }
-      return acc;
-    }, [] as Array<{ name: string; value: number; type: "expense" }>);
+  // Calcul des totaux par catégorie principale
+  const categoryTotals = {
+    necessaire: envelopes
+      .filter(env => env.type === "budget" && env.category === "necessaire")
+      .reduce((sum, env) => sum + env.budget, 0),
+    plaisir: envelopes
+      .filter(env => env.type === "budget" && env.category === "plaisir")
+      .reduce((sum, env) => sum + env.budget, 0),
+    epargne: envelopes
+      .filter(env => env.type === "budget" && env.category === "epargne")
+      .reduce((sum, env) => sum + env.budget, 0)
+  };
+
+  const totalAllocated = categoryTotals.necessaire + categoryTotals.plaisir + categoryTotals.epargne;
+  const unallocated = totalIncome - totalAllocated;
+
+  const categoryChartData = [
+    {
+      name: "Nécessaire",
+      value: categoryTotals.necessaire,
+      type: "budget" as const,
+    },
+    {
+      name: "Plaisir",
+      value: categoryTotals.plaisir,
+      type: "budget" as const,
+    },
+    {
+      name: "Épargne",
+      value: categoryTotals.epargne,
+      type: "budget" as const,
+    }
+  ];
+
+  if (unallocated > 0) {
+    categoryChartData.push({
+      name: "Budget non alloué",
+      value: unallocated,
+      type: "budget" as const,
+    });
+  }
 
   const budgetByCategoryData = [
     {
@@ -96,7 +122,7 @@ export const DashboardOverview = ({ totalIncome, totalExpenses, envelopes }: Das
       case "budget":
         return { data: budgetChartData, total: totalIncome };
       case "category":
-        return { data: categoryChartData, total: totalExpenses };
+        return { data: categoryChartData, total: totalIncome };
       case "type":
         return { data: budgetByCategoryData, total: totalIncome };
       default:
