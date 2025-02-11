@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Pencil } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import { cn } from "@/lib/utils";
 
 interface CategoryCardProps {
   category: Category;
@@ -54,8 +55,10 @@ export const CategoryCard = ({ category, onEdit }: CategoryCardProps) => {
             </div>
             <Progress 
               value={Math.min(percentage, 100)} 
-              className={isOverBudget ? "bg-red-200" : ""}
-              indicatorClassName={isOverBudget ? "bg-budget-expense" : "bg-budget-income"}
+              className={cn(
+                "h-2",
+                isOverBudget ? "[&>div]:bg-budget-expense bg-red-200" : "[&>div]:bg-budget-income"
+              )}
             />
           </div>
         </div>
