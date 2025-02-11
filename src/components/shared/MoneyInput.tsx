@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
@@ -10,6 +10,9 @@ interface MoneyInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElemen
 }
 
 export const MoneyInput = ({ value, onChange, className, ...props }: MoneyInputProps) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [inputValue, setInputValue] = useState(formatValue(value));
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     // Remove any non-digit characters except dots and commas
     let val = e.target.value.replace(/[^0-9.,]/g, "");
@@ -22,15 +25,29 @@ export const MoneyInput = ({ value, onChange, className, ...props }: MoneyInputP
     if (parts.length > 2) {
       val = parts[0] + "." + parts.slice(1).join("");
     }
+
+    setInputValue(val);
     
-    // Convert to number
+    // Convert to number and update parent
     const numVal = parseFloat(val) || 0;
     onChange(numVal);
   };
 
-  const formatValue = (num: number) => {
-    // Format the number with commas for decimal points
+  function formatValue(num: number): string {
+    if (isEditing) {
+      return inputValue;
+    }
     return num.toFixed(2).replace(".", ",");
+  }
+
+  const handleFocus = () => {
+    setIsEditing(true);
+    setInputValue(value.toString());
+  };
+
+  const handleBlur = () => {
+    setIsEditing(false);
+    setInputValue(formatValue(value));
   };
 
   return (
@@ -39,6 +56,8 @@ export const MoneyInput = ({ value, onChange, className, ...props }: MoneyInputP
         type="text"
         value={formatValue(value)}
         onChange={handleChange}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
         className="pl-8"
         {...props}
       />
