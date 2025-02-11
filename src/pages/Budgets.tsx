@@ -1,4 +1,3 @@
-
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Menu } from "lucide-react";
@@ -78,8 +77,8 @@ const Budgets = () => {
   };
 
   return (
-    <div className="container mx-auto py-8 space-y-8">
-      <div className="flex items-center gap-4">
+    <div className="container mx-auto px-4 py-6 space-y-6">
+      <div className="flex items-center gap-4 sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-10 pb-4 border-b">
         <Button variant="outline" size="icon" onClick={() => navigate("/dashboard/budget")}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
@@ -109,7 +108,7 @@ const Budgets = () => {
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <h1 className="text-2xl font-bold">Gestion des Budgets</h1>
+        <h1 className="text-xl font-semibold">Gestion des Budgets</h1>
       </div>
 
       <div className="space-y-4">

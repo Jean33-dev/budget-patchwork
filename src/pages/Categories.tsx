@@ -42,8 +42,8 @@ const Categories = () => {
   };
 
   return (
-    <div className="container mx-auto py-8 space-y-8">
-      <div className="flex items-center gap-4">
+    <div className="container mx-auto px-4 py-6 space-y-6">
+      <div className="flex items-center gap-4 sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-10 pb-4 border-b">
         <Button
           variant="outline"
           size="icon"
@@ -77,7 +77,7 @@ const Categories = () => {
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <h1 className="text-2xl font-bold">Gestion des Catégories</h1>
+        <h1 className="text-xl font-semibold">Gestion des Catégories</h1>
       </div>
 
       <Tabs defaultValue="categories" className="w-full">
