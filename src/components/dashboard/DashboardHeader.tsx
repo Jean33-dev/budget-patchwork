@@ -20,7 +20,7 @@ export const DashboardHeader = ({ currentDate, onMonthChange, onBackClick }: Das
   const navigate = useNavigate();
 
   return (
-    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-10 pb-4 border-b">
       <div className="flex items-center gap-4 w-full sm:w-auto">
         <Button 
           variant="outline" 
@@ -56,7 +56,7 @@ export const DashboardHeader = ({ currentDate, onMonthChange, onBackClick }: Das
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <h1 className="text-2xl sm:text-4xl font-bold">Tableau de Bord Budget</h1>
+        <h1 className="text-xl font-semibold">Tableau de Bord Budget</h1>
       </div>
       <MonthSelector currentDate={currentDate} onMonthChange={onMonthChange} />
     </div>
