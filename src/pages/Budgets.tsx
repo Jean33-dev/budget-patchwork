@@ -1,3 +1,4 @@
+
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Menu } from "lucide-react";
@@ -71,8 +72,32 @@ const Budgets = () => {
     navigate(`/dashboard/budget/expenses?budgetId=${envelope.id}`);
   };
 
-  const handleAddEnvelope = (envelope: any) => {
-    console.log("New envelope:", envelope);
+  const handleAddEnvelope = (envelope: { 
+    title: string; 
+    budget: number; 
+    type: "income" | "expense" | "budget";
+  }) => {
+    // Créer un nouvel ID unique
+    const newId = (budgets.length + 1).toString();
+    
+    // Créer le nouveau budget
+    const newBudget = {
+      id: newId,
+      title: envelope.title,
+      budget: envelope.budget,
+      spent: 0,
+      type: envelope.type,
+    };
+
+    // Mettre à jour la liste des budgets
+    setBudgets([...budgets, newBudget]);
+
+    // Afficher une notification de succès
+    toast({
+      title: "Budget ajouté",
+      description: `Le budget "${envelope.title}" a été créé avec succès.`
+    });
+
     setAddDialogOpen(false);
   };
 
