@@ -16,15 +16,21 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-const availableBudgets = [
-  { id: "1", title: "Budget Logement", amount: 1000, spent: 800 },
-  { id: "2", title: "Budget Alimentation", amount: 500, spent: 450 },
-  { id: "3", title: "Budget Transport", amount: 200, spent: 180 },
-  { id: "4", title: "Budget Loisirs", amount: 300, spent: 250 }
-];
+// On charge les budgets depuis le localStorage
+const BUDGETS_STORAGE_KEY = "app_budgets";
+const getStoredBudgets = () => {
+  const stored = localStorage.getItem(BUDGETS_STORAGE_KEY);
+  return stored ? JSON.parse(stored) : [
+    { id: "1", title: "Budget Logement", amount: 1000, spent: 800 },
+    { id: "2", title: "Budget Alimentation", amount: 500, spent: 450 },
+    { id: "3", title: "Budget Transport", amount: 200, spent: 180 },
+    { id: "4", title: "Budget Loisirs", amount: 300, spent: 250 }
+  ];
+};
 
 const Categories = () => {
   const navigate = useNavigate();
+  const [availableBudgets, setAvailableBudgets] = useState(getStoredBudgets());
   const { 
     categories, 
     handleAssignBudget, 
@@ -40,6 +46,13 @@ const Categories = () => {
     setEditingCategory(category);
     setDialogOpen(true);
   };
+
+  // Mettre à jour la liste des budgets quand le localStorage change
+  window.addEventListener('storage', (e) => {
+    if (e.key === BUDGETS_STORAGE_KEY) {
+      setAvailableBudgets(getStoredBudgets());
+    }
+  });
 
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">

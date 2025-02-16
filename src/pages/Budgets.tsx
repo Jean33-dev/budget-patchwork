@@ -1,10 +1,9 @@
-
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Menu } from "lucide-react";
 import { EnvelopeList } from "@/components/budget/EnvelopeList";
 import { AddEnvelopeDialog } from "@/components/budget/AddEnvelopeDialog";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "@/components/ui/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
@@ -18,7 +17,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-// Définition du type Budget
 type Budget = {
   id: string;
   title: string;
@@ -26,6 +24,8 @@ type Budget = {
   spent: number;
   type: "budget";
 };
+
+const BUDGETS_STORAGE_KEY = "app_budgets";
 
 const Budgets = () => {
   const navigate = useNavigate();
@@ -35,10 +35,23 @@ const Budgets = () => {
   const [editTitle, setEditTitle] = useState("");
   const [editBudget, setEditBudget] = useState(0);
 
-  const [budgets, setBudgets] = useState<Budget[]>([
-    { id: "1", title: "Budget Logement", budget: 2000, spent: 1500, type: "budget" },
-    { id: "2", title: "Budget Alimentation", budget: 800, spent: 600, type: "budget" },
-  ]);
+  const [budgets, setBudgets] = useState<Budget[]>(() => {
+    const stored = localStorage.getItem(BUDGETS_STORAGE_KEY);
+    return stored ? JSON.parse(stored) : [
+      { id: "1", title: "Budget Logement", budget: 2000, spent: 1500, type: "budget" },
+      { id: "2", title: "Budget Alimentation", budget: 800, spent: 600, type: "budget" },
+    ];
+  });
+
+  useEffect(() => {
+    const budgetsForStorage = budgets.map(budget => ({
+      id: budget.id,
+      title: budget.title,
+      amount: budget.budget,
+      spent: budget.spent
+    }));
+    localStorage.setItem(BUDGETS_STORAGE_KEY, JSON.stringify(budgetsForStorage));
+  }, [budgets]);
 
   const totalRevenues = 2500;
   const totalBudgets = budgets.reduce((sum, budget) => sum + budget.budget, 0);
