@@ -18,30 +18,33 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+// Définition du type Budget
+type Budget = {
+  id: string;
+  title: string;
+  budget: number;
+  spent: number;
+  type: "budget";
+};
+
 const Budgets = () => {
   const navigate = useNavigate();
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [selectedBudget, setSelectedBudget] = useState<any>(null);
+  const [selectedBudget, setSelectedBudget] = useState<Budget | null>(null);
   const [editTitle, setEditTitle] = useState("");
   const [editBudget, setEditBudget] = useState(0);
 
-  // Temporary mock data - you should replace this with your actual data management
-  const [budgets, setBudgets] = useState([
-    { id: "1", title: "Budget Logement", budget: 2000, spent: 1500, type: "budget" as const },
-    { id: "2", title: "Budget Alimentation", budget: 800, spent: 600, type: "budget" as const },
+  const [budgets, setBudgets] = useState<Budget[]>([
+    { id: "1", title: "Budget Logement", budget: 2000, spent: 1500, type: "budget" },
+    { id: "2", title: "Budget Alimentation", budget: 800, spent: 600, type: "budget" },
   ]);
 
-  // Mock revenus data (à remplacer par vos données réelles)
-  const totalRevenues = 2500; // Example: 2500€ de revenus
-
-  // Calcul du montant total des budgets
+  const totalRevenues = 2500;
   const totalBudgets = budgets.reduce((sum, budget) => sum + budget.budget, 0);
-
-  // Calcul du montant restant à répartir
   const remainingAmount = totalRevenues - totalBudgets;
 
-  const handleEnvelopeClick = (envelope: any) => {
+  const handleEnvelopeClick = (envelope: Budget) => {
     setSelectedBudget(envelope);
     setEditTitle(envelope.title);
     setEditBudget(envelope.budget);
@@ -49,6 +52,8 @@ const Budgets = () => {
   };
 
   const handleEditSubmit = () => {
+    if (!selectedBudget) return;
+
     const updatedBudgets = budgets.map(budget => {
       if (budget.id === selectedBudget.id) {
         return {
@@ -68,7 +73,7 @@ const Budgets = () => {
     });
   };
 
-  const handleViewExpenses = (envelope: any) => {
+  const handleViewExpenses = (envelope: Budget) => {
     navigate(`/dashboard/budget/expenses?budgetId=${envelope.id}`);
   };
 
@@ -77,22 +82,27 @@ const Budgets = () => {
     budget: number; 
     type: "income" | "expense" | "budget";
   }) => {
-    // Créer un nouvel ID unique
+    if (envelope.type !== "budget") {
+      toast({
+        variant: "destructive",
+        title: "Type invalide",
+        description: "Seuls les budgets peuvent être ajoutés ici."
+      });
+      return;
+    }
+
     const newId = (budgets.length + 1).toString();
     
-    // Créer le nouveau budget
-    const newBudget = {
+    const newBudget: Budget = {
       id: newId,
       title: envelope.title,
       budget: envelope.budget,
       spent: 0,
-      type: envelope.type,
+      type: "budget"
     };
 
-    // Mettre à jour la liste des budgets
     setBudgets([...budgets, newBudget]);
 
-    // Afficher une notification de succès
     toast({
       title: "Budget ajouté",
       description: `Le budget "${envelope.title}" a été créé avec succès.`
