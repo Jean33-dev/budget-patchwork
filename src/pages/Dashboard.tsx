@@ -30,13 +30,23 @@ interface MonthlyBudget {
   remainingBudget: number;
 }
 
+const MONTHLY_BUDGETS_KEY = "app_monthly_budgets";
+
 const Dashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [monthlyBudgets, setMonthlyBudgets] = useState<MonthlyBudget[]>([]);
+  const [monthlyBudgets, setMonthlyBudgets] = useState<MonthlyBudget[]>(() => {
+    const stored = localStorage.getItem(MONTHLY_BUDGETS_KEY);
+    return stored ? JSON.parse(stored) : [];
+  });
   const [showTransitionDialog, setShowTransitionDialog] = useState(false);
   const [nextDate, setNextDate] = useState<Date | null>(null);
+
+  // Sauvegarder les budgets mensuels dans le localStorage
+  useEffect(() => {
+    localStorage.setItem(MONTHLY_BUDGETS_KEY, JSON.stringify(monthlyBudgets));
+  }, [monthlyBudgets]);
 
   useEffect(() => {
     const currentMonthKey = currentDate.toISOString().slice(0, 7);
@@ -45,17 +55,26 @@ const Dashboard = () => {
       previousMonth.setMonth(previousMonth.getMonth() - 1);
       const previousMonthKey = previousMonth.toISOString().slice(0, 7);
       const previousBudget = monthlyBudgets.find(mb => mb.date === previousMonthKey);
+
+      // Récupérer les budgets actuels du localStorage
+      const storedBudgets = localStorage.getItem("app_budgets");
+      const currentBudgets = storedBudgets ? JSON.parse(storedBudgets) : [];
       
+      // Créer les enveloppes à partir des budgets stockés
+      const budgetEnvelopes = currentBudgets.map((budget: any) => ({
+        id: budget.id,
+        title: budget.title,
+        budget: budget.amount || budget.budget,
+        spent: budget.spent,
+        type: "budget" as const
+      }));
+
       setMonthlyBudgets(prev => [...prev, {
         date: currentMonthKey,
         envelopes: [
-          { id: "1", title: "Salaire", budget: 5000, spent: 5000, type: "income" },
-          { id: "2", title: "Freelance", budget: 1000, spent: 800, type: "income" },
-          { id: "3", title: "Loyer", budget: 1500, spent: 1500, type: "expense" },
-          { id: "4", title: "Courses", budget: 600, spent: 450, type: "expense" },
-          { id: "5", title: "Loisirs", budget: 200, spent: 180, type: "expense" },
-          { id: "6", title: "Budget Logement", budget: 2000, spent: 1500, type: "budget" },
-          { id: "7", title: "Budget Alimentation", budget: 800, spent: 600, type: "budget" },
+          ...budgetEnvelopes,
+          { id: "1", title: "Salaire", budget: 5000, spent: 5000, type: "income" as const },
+          { id: "2", title: "Freelance", budget: 1000, spent: 800, type: "income" as const }
         ],
         remainingBudget: previousBudget ? previousBudget.remainingBudget : 0
       }]);
