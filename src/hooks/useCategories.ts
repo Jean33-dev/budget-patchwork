@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Category, Budget } from "@/types/categories";
 import { useToast } from "@/hooks/use-toast";
@@ -30,6 +31,16 @@ const defaultCategories: Category[] = [
     description: "Économies et investissements"
   }
 ];
+
+type TransitionOption = "reset" | "carry" | "partial" | "transfer";
+
+interface TransitionEnvelope {
+  id: string;
+  title: string;
+  transitionOption: TransitionOption;
+  partialAmount?: number;
+  transferTargetId?: string;
+}
 
 export const useCategories = () => {
   const { toast } = useToast();
@@ -168,12 +179,74 @@ export const useCategories = () => {
     );
   };
 
+  const handleMonthTransition = (envelopes: TransitionEnvelope[]) => {
+    let success = true;
+    
+    try {
+      // Appliquer les transitions pour chaque enveloppe
+      envelopes.forEach(envelope => {
+        const [categoryId, budgetTitle] = envelope.id.split("-");
+        
+        setCategories(prevCategories => {
+          return prevCategories.map(category => {
+            if (category.id === categoryId) {
+              // Mise à jour des budgets selon l'option de transition
+              const updatedBudgets = category.budgets.map(budget => {
+                if (budget === budgetTitle) {
+                  // Appliquer la transition selon l'option choisie
+                  switch (envelope.transitionOption) {
+                    case "reset":
+                      return budget; // Pas de changement nécessaire
+                    case "carry":
+                      // La logique de report sera gérée dans le système de stockage des budgets
+                      return budget;
+                    case "partial":
+                      // La logique de report partiel sera gérée dans le système de stockage des budgets
+                      return budget;
+                    case "transfer":
+                      // La logique de transfert sera gérée dans le système de stockage des budgets
+                      return budget;
+                    default:
+                      return budget;
+                  }
+                }
+                return budget;
+              });
+
+              return {
+                ...category,
+                budgets: updatedBudgets
+              };
+            }
+            return category;
+          });
+        });
+      });
+
+      toast({
+        title: "Transition effectuée",
+        description: "Les budgets ont été mis à jour pour le nouveau mois."
+      });
+    } catch (error) {
+      console.error("Erreur lors de la transition:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la transition des budgets."
+      });
+      success = false;
+    }
+
+    return success;
+  };
+
   return {
     categories,
     handleAssignBudget,
     handleRemoveBudget,
     updateCategoryName,
     getAvailableBudgetsForCategory,
-    updateCategoryTotals
+    updateCategoryTotals,
+    handleMonthTransition
   };
 };

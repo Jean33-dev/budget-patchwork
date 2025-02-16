@@ -1,9 +1,8 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Save, ChevronRight } from "lucide-react";
+import { ArrowLeft, Save } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -20,7 +19,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { MoneyInput } from "@/components/shared/MoneyInput";
 import { useCategories } from "@/hooks/useCategories";
 
@@ -40,7 +38,7 @@ interface BudgetEnvelope {
 const BudgetTransition = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { categories } = useCategories();
+  const { categories, handleMonthTransition } = useCategories();
   
   // État pour les enveloppes
   const [envelopes, setEnvelopes] = useState<BudgetEnvelope[]>([]);
@@ -148,21 +146,21 @@ const BudgetTransition = () => {
       return;
     }
 
-    // Appliquer les transitions
-    envelopes.forEach(envelope => {
-      const impact = calculateTransitionImpact(envelope);
-      console.log(`Transition pour ${envelope.title}:`, {
-        option: envelope.transitionOption,
-        impact,
-        targetId: envelope.transferTargetId
-      });
-    });
+    // Préparer les données pour la transition
+    const transitionData = envelopes.map(envelope => ({
+      id: envelope.id,
+      title: envelope.title,
+      transitionOption: envelope.transitionOption,
+      partialAmount: envelope.partialAmount,
+      transferTargetId: envelope.transferTargetId
+    }));
 
-    toast({
-      title: "Transition effectuée",
-      description: "Les budgets ont été mis à jour pour le nouveau mois.",
-    });
-    navigate("/dashboard/budget");
+    // Appliquer les transitions
+    const success = handleMonthTransition(transitionData);
+    
+    if (success) {
+      navigate("/dashboard/budget");
+    }
   };
 
   return (
