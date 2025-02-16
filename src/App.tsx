@@ -9,26 +9,30 @@ import Budgets from "./pages/Budgets";
 import Expenses from "./pages/Expenses";
 import Income from "./pages/Income";
 import Categories from "./pages/Categories";
+import BudgetTransition from "./pages/BudgetTransition";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/dashboard/budget" element={<Dashboard />} />
-          <Route path="/dashboard/budget/budgets" element={<Budgets />} />
-          <Route path="/dashboard/budget/expenses" element={<Expenses />} />
-          <Route path="/dashboard/budget/income" element={<Income />} />
-          <Route path="/dashboard/budget/categories" element={<Categories />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/dashboard/budget" element={<Dashboard />} />
+            <Route path="/dashboard/budget/budgets" element={<Budgets />} />
+            <Route path="/dashboard/budget/expenses" element={<Expenses />} />
+            <Route path="/dashboard/budget/income" element={<Income />} />
+            <Route path="/dashboard/budget/categories" element={<Categories />} />
+            <Route path="/dashboard/budget/transition" element={<BudgetTransition />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+}
 
 export default App;
