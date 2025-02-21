@@ -14,26 +14,26 @@ export const useBudgetAssignment = (categories: any[], setCategories: (categorie
       console.log("Mise à jour des totaux pour la catégorie:", categoryId);
       console.log("Budgets disponibles:", availableBudgets);
       
-      const updatedCategories = categories.map(category => {
-        if (category.id === categoryId) {
-          const { total, spent } = calculateCategoryTotals(category.budgets, availableBudgets);
-          console.log("Nouveaux totaux calculés:", { total, spent });
-          return {
-            ...category,
-            total,
-            spent
-          };
-        }
-        return category;
-      });
-
-      setCategories(updatedCategories);
-      
-      const updatedCategory = updatedCategories.find(c => c.id === categoryId);
-      if (updatedCategory) {
-        console.log("Mise à jour de la catégorie dans la DB:", updatedCategory);
-        await db.updateCategory(updatedCategory);
+      const currentCategory = categories.find(c => c.id === categoryId);
+      if (!currentCategory) {
+        throw new Error("Catégorie non trouvée pour la mise à jour des totaux");
       }
+
+      const { total, spent } = calculateCategoryTotals(currentCategory.budgets, availableBudgets);
+      console.log("Nouveaux totaux calculés:", { total, spent });
+
+      const updatedCategory = {
+        ...currentCategory,
+        total,
+        spent
+      };
+
+      await db.updateCategory(updatedCategory);
+      
+      const updatedCategories = categories.map(category =>
+        category.id === categoryId ? updatedCategory : category
+      );
+      setCategories(updatedCategories);
     } catch (error) {
       console.error("Erreur lors de la mise à jour des totaux:", error);
       toast({
@@ -46,35 +46,35 @@ export const useBudgetAssignment = (categories: any[], setCategories: (categorie
 
   const handleAssignBudget = async (categoryId: string, budgetId: string, availableBudgets: Budget[]) => {
     try {
-      console.log("Assignation du budget:", { categoryId, budgetId });
+      console.log("Début de l'assignation du budget:", { categoryId, budgetId });
       
-      // Trouver la catégorie actuelle
       const currentCategory = categories.find(c => c.id === categoryId);
       if (!currentCategory) {
         throw new Error("Catégorie non trouvée");
       }
 
-      // Créer le nouveau tableau de budgets pour la catégorie
       const currentBudgets = Array.isArray(currentCategory.budgets) ? currentCategory.budgets : [];
-      const newBudgets = [...new Set([...currentBudgets, budgetId])]; // Utiliser Set pour éviter les doublons
-      console.log("Nouveaux budgets de la catégorie:", newBudgets);
+      console.log("Budgets actuels:", currentBudgets);
+      
+      const newBudgets = [...new Set([...currentBudgets, budgetId])];
+      console.log("Nouveaux budgets après ajout:", newBudgets);
 
-      // Créer la catégorie mise à jour
+      const { total, spent } = calculateCategoryTotals(newBudgets, availableBudgets);
+      console.log("Nouveaux totaux calculés:", { total, spent });
+
       const updatedCategory = {
         ...currentCategory,
-        budgets: newBudgets
+        budgets: newBudgets,
+        total,
+        spent
       };
 
-      // Mettre à jour l'état local des catégories
+      console.log("Catégorie mise à jour avant sauvegarde:", updatedCategory);
+      await db.updateCategory(updatedCategory);
+
       const updatedCategories = categories.map(category =>
         category.id === categoryId ? updatedCategory : category
       );
-
-      // Sauvegarder dans la base de données AVANT de mettre à jour l'état
-      console.log("Sauvegarde de la catégorie dans la DB:", updatedCategory);
-      await db.updateCategory(updatedCategory);
-
-      // Mettre à jour l'état global APRÈS la sauvegarde réussie
       setCategories(updatedCategories);
 
       toast({
@@ -88,36 +88,38 @@ export const useBudgetAssignment = (categories: any[], setCategories: (categorie
         title: "Erreur",
         description: "Impossible d'assigner le budget"
       });
-      throw error; // Propager l'erreur pour la gestion dans le composant
+      throw error;
     }
   };
 
   const handleRemoveBudget = async (categoryId: string, budgetId: string, availableBudgets: Budget[]) => {
     try {
-      console.log("Retrait du budget:", { categoryId, budgetId });
+      console.log("Début du retrait du budget:", { categoryId, budgetId });
       
-      // Trouver la catégorie actuelle
       const currentCategory = categories.find(c => c.id === categoryId);
       if (!currentCategory) {
         throw new Error("Catégorie non trouvée");
       }
 
-      // Créer le nouveau tableau de budgets pour la catégorie
       const currentBudgets = Array.isArray(currentCategory.budgets) ? currentCategory.budgets : [];
+      console.log("Budgets actuels:", currentBudgets);
+      
       const newBudgets = currentBudgets.filter(b => b !== budgetId);
-      console.log("Nouveaux budgets de la catégorie après retrait:", newBudgets);
+      console.log("Nouveaux budgets après retrait:", newBudgets);
 
-      // Créer la catégorie mise à jour
+      const { total, spent } = calculateCategoryTotals(newBudgets, availableBudgets);
+      console.log("Nouveaux totaux calculés:", { total, spent });
+
       const updatedCategory = {
         ...currentCategory,
-        budgets: newBudgets
+        budgets: newBudgets,
+        total,
+        spent
       };
 
-      // Sauvegarder dans la base de données AVANT de mettre à jour l'état
-      console.log("Sauvegarde de la catégorie dans la DB:", updatedCategory);
+      console.log("Catégorie mise à jour avant sauvegarde:", updatedCategory);
       await db.updateCategory(updatedCategory);
 
-      // Mettre à jour l'état local des catégories APRÈS la sauvegarde réussie
       const updatedCategories = categories.map(category =>
         category.id === categoryId ? updatedCategory : category
       );
@@ -134,7 +136,7 @@ export const useBudgetAssignment = (categories: any[], setCategories: (categorie
         title: "Erreur",
         description: "Impossible de retirer le budget"
       });
-      throw error; // Propager l'erreur pour la gestion dans le composant
+      throw error;
     }
   };
 

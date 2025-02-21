@@ -276,15 +276,42 @@ class Database {
   async getCategories(): Promise<Category[]> {
     if (!this.initialized) await this.init();
     
-    const result = this.db.exec('SELECT * FROM categories');
-    return result[0]?.values?.map((row: any[]) => ({
-      id: row[0],
-      name: row[1],
-      budgets: JSON.parse(row[2]),
-      total: row[3],
-      spent: row[4],
-      description: row[5]
-    })) || [];
+    try {
+      console.log("Début du chargement des catégories");
+      const result = this.db.exec('SELECT * FROM categories');
+      console.log("Résultat brut de la requête:", result);
+      
+      if (!result[0]?.values) {
+        console.log("Aucune catégorie trouvée");
+        return [];
+      }
+
+      const categories = result[0].values.map((row: any[]) => {
+        let budgets;
+        try {
+          budgets = JSON.parse(row[2] || '[]');
+          console.log(`Budgets parsés pour la catégorie ${row[0]}:`, budgets);
+        } catch (e) {
+          console.error(`Erreur de parsing des budgets pour la catégorie ${row[0]}:`, e);
+          budgets = [];
+        }
+
+        return {
+          id: row[0],
+          name: row[1],
+          budgets: budgets,
+          total: row[3] || 0,
+          spent: row[4] || 0,
+          description: row[5] || ''
+        };
+      });
+
+      console.log("Catégories chargées avec succès:", categories);
+      return categories;
+    } catch (error) {
+      console.error("Erreur lors du chargement des catégories:", error);
+      throw error;
+    }
   }
 
   async addCategory(category: Category) {
@@ -299,10 +326,32 @@ class Database {
   async updateCategory(category: Category) {
     if (!this.initialized) await this.init();
     
-    this.db.run(
-      'UPDATE categories SET name = ?, budgets = ?, total = ?, spent = ?, description = ? WHERE id = ?',
-      [category.name, JSON.stringify(category.budgets), category.total, category.spent, category.description, category.id]
-    );
+    try {
+      console.log("Début de la mise à jour de la catégorie:", category);
+      console.log("Budgets avant stringify:", category.budgets);
+      
+      // S'assurer que les budgets sont un tableau
+      const budgets = Array.isArray(category.budgets) ? category.budgets : [];
+      
+      // Convertir le tableau en JSON pour le stockage
+      const budgetsJson = JSON.stringify(budgets);
+      console.log("Budgets après stringify:", budgetsJson);
+
+      this.db.run(
+        'UPDATE categories SET name = ?, budgets = ?, total = ?, spent = ?, description = ? WHERE id = ?',
+        [category.name, budgetsJson, category.total, category.spent, category.description, category.id]
+      );
+      
+      // Vérifier immédiatement la mise à jour
+      const result = this.db.exec(
+        'SELECT * FROM categories WHERE id = ?',
+        [category.id]
+      );
+      console.log("Résultat de la vérification après mise à jour:", result);
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour de la catégorie:", error);
+      throw error;
+    }
   }
 
   async deleteCategory(id: string) {
