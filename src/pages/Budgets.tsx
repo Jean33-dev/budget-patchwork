@@ -51,10 +51,20 @@ const Budgets = () => {
   }) => {
     if (envelope.type !== "budget") return;
     
-    const success = await addBudget(envelope);
+    const budgetData = {
+      title: envelope.title,
+      budget: envelope.budget,
+      type: "budget" as const // Force le type à être strictement "budget"
+    };
+    
+    const success = await addBudget(budgetData);
     if (success) {
       setAddDialogOpen(false);
     }
+  };
+
+  const handleDeleteBudget = (envelope: Budget) => {
+    deleteBudget(envelope.id);
   };
 
   return (
@@ -80,7 +90,7 @@ const Budgets = () => {
         onAddClick={() => setAddDialogOpen(true)}
         onEnvelopeClick={handleEnvelopeClick}
         onViewExpenses={handleViewExpenses}
-        onDeleteClick={deleteBudget}
+        onDeleteClick={handleDeleteBudget}
       />
 
       <AddEnvelopeDialog
