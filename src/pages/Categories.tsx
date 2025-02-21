@@ -16,26 +16,24 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { db } from "@/services/database";
+import { useToast } from "@/hooks/use-toast";
 
 const Categories = () => {
   const navigate = useNavigate();
   const [availableBudgets, setAvailableBudgets] = useState<Budget[]>([]);
+  const { toast } = useToast();
 
   const { 
     categories, 
     handleAssignBudget, 
     handleRemoveBudget, 
     updateCategoryName,
-    getAvailableBudgetsForCategory 
+    getAvailableBudgetsForCategory,
+    updateCategoryTotals
   } = useCategories();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
-
-  const handleEditCategory = (category: Category) => {
-    setEditingCategory(category);
-    setDialogOpen(true);
-  };
 
   useEffect(() => {
     const loadBudgets = async () => {
@@ -45,11 +43,26 @@ const Categories = () => {
         setAvailableBudgets(budgets);
       } catch (error) {
         console.error("Erreur lors du chargement des budgets:", error);
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Impossible de charger les budgets"
+        });
       }
     };
     
     loadBudgets();
-  }, []);
+  }, [toast]);
+
+  const handleEditCategory = (category: Category) => {
+    setEditingCategory(category);
+    setDialogOpen(true);
+  };
+
+  const handleBudgetAssignment = async (categoryId: string, budgetId: string) => {
+    await handleAssignBudget(categoryId, budgetId, availableBudgets);
+    updateCategoryTotals(categoryId, availableBudgets);
+  };
 
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
@@ -112,9 +125,7 @@ const Categories = () => {
               key={category.id}
               category={category}
               availableBudgets={availableBudgets}
-              onAssign={(categoryId, budgetId) => 
-                handleAssignBudget(categoryId, budgetId, availableBudgets)
-              }
+              onAssign={handleBudgetAssignment}
               onRemove={handleRemoveBudget}
               getAvailableBudgets={(categoryId) => 
                 getAvailableBudgetsForCategory(categoryId, availableBudgets)
