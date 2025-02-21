@@ -52,10 +52,14 @@ export const useCategoryManagement = () => {
         dbCategories = defaultCategories;
       }
 
-      // S'assurer que toutes les catégories ont un tableau budgets valide
+      // S'assurer que toutes les catégories ont les bonnes propriétés
       dbCategories = dbCategories.map(category => ({
-        ...category,
-        budgets: Array.isArray(category.budgets) ? category.budgets : []
+        id: category.id,
+        name: category.name,
+        budgets: Array.isArray(category.budgets) ? category.budgets : [], // Assure que budgets est un tableau
+        total: Number(category.total) || 0, // Assure que total est un nombre
+        spent: Number(category.spent) || 0, // Assure que spent est un nombre
+        description: category.description || ''
       }));
       
       console.log("Catégories finales après traitement:", dbCategories);

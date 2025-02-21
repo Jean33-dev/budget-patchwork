@@ -62,12 +62,16 @@ const Categories = () => {
 
   const handleBudgetAssignment = async (categoryId: string, budgetId: string) => {
     try {
-      console.log('Assignation de budget:', { categoryId, budgetId });
+      console.log('Assignation de budget - Début:', { categoryId, budgetId });
+      console.log('Categories actuelles:', categories);
+      console.log('Budgets disponibles:', availableBudgets);
+      
       await handleAssignBudget(categoryId, budgetId, availableBudgets);
       await updateCategoryTotals(categoryId, availableBudgets);
       await loadBudgets();
-      await refreshCategories(); // Forcer le rafraîchissement après l'assignation
-      console.log('Assignation terminée, rafraîchissement effectué');
+      await refreshCategories();
+      
+      console.log('Assignation terminée avec succès');
     } catch (error) {
       console.error("Erreur lors de l'assignation du budget:", error);
       toast({
@@ -83,7 +87,7 @@ const Categories = () => {
       await handleRemoveBudget(categoryId, budgetId, availableBudgets);
       await updateCategoryTotals(categoryId, availableBudgets);
       await loadBudgets();
-      await refreshCategories(); // Forcer le rafraîchissement après le retrait
+      await refreshCategories();
     } catch (error) {
       console.error("Erreur lors du retrait du budget:", error);
       toast({
