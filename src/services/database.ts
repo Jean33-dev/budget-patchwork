@@ -1,4 +1,3 @@
-
 import initSqlJs from 'sql.js';
 import { toast } from "@/components/ui/use-toast";
 
@@ -53,28 +52,18 @@ class Database {
       this.db = new SQL.Database();
       
       // Tables SQL
-      const createIncomes = "CREATE TABLE IF NOT EXISTS incomes (id TEXT PRIMARY KEY, title TEXT, budget REAL, spent REAL, type TEXT)";
-      const createExpenses = "CREATE TABLE IF NOT EXISTS expenses (id TEXT PRIMARY KEY, title TEXT, budget REAL, spent REAL, type TEXT, linkedBudgetId TEXT, date TEXT)";
-      const createBudgets = "CREATE TABLE IF NOT EXISTS budgets (id TEXT PRIMARY KEY, title TEXT, budget REAL, spent REAL, type TEXT)";
-      const createCategories = "CREATE TABLE IF NOT EXISTS categories (id TEXT PRIMARY KEY, name TEXT, budgets TEXT, total REAL, spent REAL, description TEXT)";
-
-      // Créer les tables
-      try {
-        this.db.run(createIncomes);
-        this.db.run(createExpenses);
-        this.db.run(createBudgets);
-        this.db.run(createCategories);
-      } catch (error) {
-        console.error('Erreur lors de la création des tables:', error);
-      }
+      this.db.run('CREATE TABLE IF NOT EXISTS incomes (id TEXT PRIMARY KEY, title TEXT, budget REAL, spent REAL, type TEXT)');
+      this.db.run('CREATE TABLE IF NOT EXISTS expenses (id TEXT PRIMARY KEY, title TEXT, budget REAL, spent REAL, type TEXT, linkedBudgetId TEXT, date TEXT)');
+      this.db.run('CREATE TABLE IF NOT EXISTS budgets (id TEXT PRIMARY KEY, title TEXT, budget REAL, spent REAL, type TEXT)');
+      this.db.run('CREATE TABLE IF NOT EXISTS categories (id TEXT PRIMARY KEY, name TEXT, budgets TEXT, total REAL, spent REAL, description TEXT)');
 
       this.initialized = true;
 
       // Charger les données existantes depuis le localStorage
-      this.migrateFromLocalStorage();
+      await this.migrateFromLocalStorage();
 
     } catch (err) {
-      console.error('Erreur lors de l'initialisation de la base de données:', err);
+      console.error('Erreur lors de l\'initialisation de la base de données:', err);
       toast({
         variant: "destructive",
         title: "Erreur de base de données",
