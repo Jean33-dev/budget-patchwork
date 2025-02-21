@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -82,9 +83,7 @@ const Categories = () => {
   const handleBudgetRemoval = async (categoryId: string, budgetId: string) => {
     try {
       await handleRemoveBudget(categoryId, budgetId, availableBudgets);
-      await updateCategoryTotals(categoryId, availableBudgets);
       await loadBudgets();
-      await refreshCategories();
     } catch (error) {
       console.error("Erreur lors du retrait du budget:", error);
       toast({

@@ -1,3 +1,4 @@
+
 import { Budget } from "@/types/categories";
 import { useToast } from "@/hooks/use-toast";
 import { db } from "@/services/database";
@@ -118,24 +119,15 @@ export const useBudgetAssignment = (categories: any[], setCategories: (categorie
 
   const handleRemoveBudget = async (categoryId: string, budgetId: string, availableBudgets: Budget[]) => {
     try {
-      console.log("=== Début du retrait du budget ===");
-      console.log("CategoryId:", categoryId);
-      console.log("BudgetId:", budgetId);
-      
       const currentCategory = categories.find(c => c.id === categoryId);
       if (!currentCategory) {
         throw new Error("Catégorie non trouvée");
       }
 
-      console.log("Catégorie trouvée:", currentCategory);
       const currentBudgets = Array.isArray(currentCategory.budgets) ? currentCategory.budgets : [];
-      console.log("Budgets actuels:", currentBudgets);
-      
       const newBudgets = currentBudgets.filter(b => b !== budgetId);
-      console.log("Nouveaux budgets après retrait:", newBudgets);
 
       const { total, spent } = calculateCategoryTotals(newBudgets, availableBudgets);
-      console.log("Nouveaux totaux calculés:", { total, spent });
 
       const updatedCategory = {
         ...currentCategory,
@@ -144,24 +136,17 @@ export const useBudgetAssignment = (categories: any[], setCategories: (categorie
         spent
       };
 
-      console.log("=== Tentative de sauvegarde de la catégorie ===");
-      console.log("Catégorie à sauvegarder:", updatedCategory);
       await db.updateCategory(updatedCategory);
-      console.log("Sauvegarde réussie !");
 
-      console.log("=== Mise à jour du state local ===");
       const updatedCategories = categories.map(category =>
         category.id === categoryId ? updatedCategory : category
       );
-      console.log("Nouvelles catégories:", updatedCategories);
       setCategories(updatedCategories);
 
       toast({
         title: "Budget retiré",
         description: "Le budget a été retiré de la catégorie avec succès."
       });
-      
-      console.log("=== Retrait terminé avec succès ===");
     } catch (error) {
       console.error("Erreur lors du retrait du budget:", error);
       toast({
@@ -171,11 +156,6 @@ export const useBudgetAssignment = (categories: any[], setCategories: (categorie
       });
       throw error;
     }
-  };
-
-  const refreshCategories = async () => {
-    const freshCategories = await db.getCategories();
-    setCategories(freshCategories);
   };
 
   return {
