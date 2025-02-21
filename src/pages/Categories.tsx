@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -87,16 +86,48 @@ const Categories = () => {
     setDialogOpen(true);
   };
 
-  const handleBudgetAssignment = async (categoryId: string, budgetId: string) => {
+  const handleBudgetAssignment = (categoryId: string, budgetId: string) => {
     console.log('Assignation de budget:', { categoryId, budgetId });
     console.log('Budgets disponibles:', availableBudgets);
-    await handleAssignBudget(categoryId, budgetId, availableBudgets);
-    updateCategoryTotals(categoryId, availableBudgets);
+    handleAssignBudget(categoryId, budgetId, availableBudgets)
+      .then(() => {
+        updateCategoryTotals(categoryId, availableBudgets);
+        
+        // Forcer le rechargement des budgets après l'assignation
+        const loadBudgets = async () => {
+          try {
+            const budgets = await db.getBudgets();
+            setAvailableBudgets(budgets);
+          } catch (error) {
+            console.error("Erreur lors du rechargement des budgets:", error);
+          }
+        };
+        loadBudgets();
+      })
+      .catch(error => {
+        console.error("Erreur lors de l'assignation du budget:", error);
+      });
   };
 
-  const handleBudgetRemoval = async (categoryId: string, budgetId: string) => {
-    await handleRemoveBudget(categoryId, budgetId, availableBudgets);
-    updateCategoryTotals(categoryId, availableBudgets);
+  const handleBudgetRemoval = (categoryId: string, budgetId: string) => {
+    handleRemoveBudget(categoryId, budgetId, availableBudgets)
+      .then(() => {
+        updateCategoryTotals(categoryId, availableBudgets);
+        
+        // Forcer le rechargement des budgets après le retrait
+        const loadBudgets = async () => {
+          try {
+            const budgets = await db.getBudgets();
+            setAvailableBudgets(budgets);
+          } catch (error) {
+            console.error("Erreur lors du rechargement des budgets:", error);
+          }
+        };
+        loadBudgets();
+      })
+      .catch(error => {
+        console.error("Erreur lors du retrait du budget:", error);
+      });
   };
 
   return (
