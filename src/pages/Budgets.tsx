@@ -44,25 +44,31 @@ const Budgets = () => {
         const budgetsData = await db.getBudgets();
         console.log("Budgets chargés:", budgetsData);
         
-        const validatedBudgets = budgetsData.map(budget => ({
-          ...budget,
-          budget: Number(budget.budget) || 0,
-          spent: Number(budget.spent) || 0
-        }));
+        const expenses = await db.getExpenses();
+        console.log("Dépenses chargées:", expenses);
+        
+        const validatedBudgets = budgetsData.map(budget => {
+          const budgetExpenses = expenses.filter(expense => expense.linkedBudgetId === budget.id);
+          const totalSpent = budgetExpenses.reduce((sum, expense) => sum + (Number(expense.budget) || 0), 0);
+          
+          return {
+            ...budget,
+            budget: Number(budget.budget) || 0,
+            spent: totalSpent
+          };
+        });
         
         setBudgets(validatedBudgets);
-        console.log("Budgets validés:", validatedBudgets);
+        console.log("Budgets validés avec dépenses:", validatedBudgets);
 
         const incomesData = await db.getIncomes();
         console.log("Revenus chargés:", incomesData);
         
         const totalIncome = incomesData.reduce((sum, income) => {
           const budgetAmount = Number(income.budget) || 0;
-          console.log(`Revenu ${income.title}:`, budgetAmount);
           return sum + budgetAmount;
         }, 0);
         
-        console.log("Total des revenus calculé:", totalIncome);
         setTotalRevenues(totalIncome);
       } catch (error) {
         console.error("Erreur lors du chargement des données:", error);
