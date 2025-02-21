@@ -21,10 +21,22 @@ export const AssignmentCard = ({
   onRemove,
   getAvailableBudgets 
 }: AssignmentCardProps) => {
+  console.log('Category:', category);
+  console.log('Available Budgets:', availableBudgets);
+  
   const unassignedBudgets = getAvailableBudgets(category.id);
-  const assignedBudgets = category.budgets.map(budgetId => 
-    availableBudgets.find(b => b.id === budgetId)
-  ).filter((b): b is Budget => b !== undefined);
+  console.log('Unassigned Budgets:', unassignedBudgets);
+  
+  const assignedBudgets = category.budgets
+    .map(budgetId => availableBudgets.find(b => b.id === budgetId))
+    .filter((b): b is Budget => b !== undefined);
+  
+  console.log('Assigned Budgets:', assignedBudgets);
+
+  const handleBudgetAssignment = (value: string) => {
+    console.log('Assigning budget:', value, 'to category:', category.id);
+    onAssign(category.id, value);
+  };
 
   return (
     <Card>
@@ -35,13 +47,19 @@ export const AssignmentCard = ({
         <div className="space-y-2">
           <Label>Assigner un budget</Label>
           {unassignedBudgets.length > 0 ? (
-            <Select onValueChange={(value) => onAssign(category.id, value)}>
-              <SelectTrigger>
+            <Select 
+              onValueChange={handleBudgetAssignment}
+            >
+              <SelectTrigger className="w-full">
                 <SelectValue placeholder="Sélectionner un budget" />
               </SelectTrigger>
               <SelectContent>
                 {unassignedBudgets.map((budget) => (
-                  <SelectItem key={budget.id} value={budget.id}>
+                  <SelectItem 
+                    key={budget.id} 
+                    value={budget.id}
+                    className="cursor-pointer"
+                  >
                     {budget.title} ({budget.budget}€)
                   </SelectItem>
                 ))}
