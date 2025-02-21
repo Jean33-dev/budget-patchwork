@@ -291,18 +291,13 @@ class Database {
         let budgets;
         try {
           // S'assurer que le string JSON est valide avant de le parser
-          if (budgetsStr && typeof budgetsStr === 'string') {
-            budgets = JSON.parse(budgetsStr);
-          } else {
-            console.warn(`Budgets invalides pour la catégorie ${id}, utilisation d'un tableau vide`);
-            budgets = [];
-          }
+          budgets = budgetsStr && typeof budgetsStr === 'string' ? JSON.parse(budgetsStr) : [];
+          console.log(`Budgets parsés pour la catégorie ${id}:`, budgets);
         } catch (e) {
           console.error(`Erreur de parsing des budgets pour la catégorie ${id}:`, e);
           budgets = [];
         }
 
-        console.log(`Budgets parsés pour la catégorie ${id}:`, budgets);
         return {
           id,
           name,
