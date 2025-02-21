@@ -1,37 +1,12 @@
 
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft, Menu, Pencil, Trash2 } from "lucide-react";
-import { EnvelopeList } from "@/components/budget/EnvelopeList";
-import { AddEnvelopeDialog } from "@/components/budget/AddEnvelopeDialog";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { MoneyInput } from "@/components/shared/MoneyInput";
-import { Input } from "@/components/ui/input";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { EnvelopeList } from "@/components/budget/EnvelopeList";
+import { AddEnvelopeDialog } from "@/components/budget/AddEnvelopeDialog";
+import { ExpensesHeader } from "@/components/budget/ExpensesHeader";
+import { EditExpenseDialog } from "@/components/budget/EditExpenseDialog";
+import { DeleteExpenseDialog } from "@/components/budget/DeleteExpenseDialog";
 
 const EXPENSES_STORAGE_KEY = "app_expenses";
 
@@ -49,6 +24,13 @@ const Expenses = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const budgetId = searchParams.get('budgetId');
+  const { toast } = useToast();
+
+  // États
+  const [expenses, setExpenses] = useState<Expense[]>(() => {
+    const stored = localStorage.getItem(EXPENSES_STORAGE_KEY);
+    return stored ? JSON.parse(stored) : [];
+  });
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -56,22 +38,18 @@ const Expenses = () => {
   const [editTitle, setEditTitle] = useState("");
   const [editBudget, setEditBudget] = useState(0);
   const [editDate, setEditDate] = useState("");
-  const { toast } = useToast();
 
-  const [expenses, setExpenses] = useState<Expense[]>(() => {
-    const stored = localStorage.getItem(EXPENSES_STORAGE_KEY);
-    return stored ? JSON.parse(stored) : [];
-  });
-
+  // Effets
   useEffect(() => {
     localStorage.setItem(EXPENSES_STORAGE_KEY, JSON.stringify(expenses));
   }, [expenses]);
 
-  // Filtrer les dépenses si un budgetId est spécifié
+  // Filtrage des dépenses
   const filteredExpenses = budgetId 
     ? expenses.filter(expense => expense.linkedBudgetId === budgetId)
     : expenses;
 
+  // Handlers
   const handleEnvelopeClick = (expense: Expense) => {
     setSelectedExpense(expense);
     setEditTitle(expense.title);
@@ -160,38 +138,7 @@ const Expenses = () => {
 
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
-      <div className="flex items-center gap-4 sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-10 pb-4 border-b">
-        <Button variant="outline" size="icon" onClick={() => navigate("/dashboard/budget/budgets")}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="icon">
-              <Menu className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start">
-            <DropdownMenuItem onClick={() => navigate("/dashboard/budget")}>
-              Tableau de Bord
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate("/dashboard/budget/income")}>
-              Gérer les Revenus
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate("/dashboard/budget/categories")}>
-              Gérer les Catégories
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate("/dashboard/budget/budgets")}>
-              Gérer les Budgets
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate("/dashboard/budget/expenses")}>
-              Gérer les Dépenses
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-
-        <h1 className="text-xl">Gestion des Dépenses</h1>
-      </div>
+      <ExpensesHeader onNavigate={navigate} />
 
       <div className="mt-6">
         <EnvelopeList
@@ -211,63 +158,25 @@ const Expenses = () => {
         defaultBudgetId={budgetId || undefined}
       />
 
-      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Modifier la dépense</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="title">Titre de la dépense</Label>
-              <Input
-                id="title"
-                value={editTitle}
-                onChange={(e) => setEditTitle(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="amount">Montant</Label>
-              <MoneyInput
-                id="amount"
-                value={editBudget}
-                onChange={setEditBudget}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="date">Date</Label>
-              <Input
-                id="date"
-                type="date"
-                value={editDate}
-                onChange={(e) => setEditDate(e.target.value)}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button onClick={handleEditSubmit}>Enregistrer</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <EditExpenseDialog
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        title={editTitle}
+        onTitleChange={setEditTitle}
+        budget={editBudget}
+        onBudgetChange={setEditBudget}
+        date={editDate}
+        onDateChange={setEditDate}
+        onSubmit={handleEditSubmit}
+      />
 
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Supprimer la dépense</AlertDialogTitle>
-            <AlertDialogDescription>
-              Êtes-vous sûr de vouloir supprimer cette dépense ? Cette action ne peut pas être annulée.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Annuler</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteConfirm}>
-              Supprimer
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DeleteExpenseDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleDeleteConfirm}
+      />
     </div>
   );
 };
 
 export default Expenses;
-
