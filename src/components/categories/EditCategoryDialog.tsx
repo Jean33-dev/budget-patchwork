@@ -16,7 +16,7 @@ interface EditCategoryDialogProps {
   category: Category | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSave: (categoryId: string, newName: string) => boolean;
+  onSave: (categoryId: string, newName: string) => Promise<boolean>;
 }
 
 export const EditCategoryDialog = ({
@@ -33,9 +33,9 @@ export const EditCategoryDialog = ({
     }
   }, [category]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (category) {
-      const success = onSave(category.id, newCategoryName);
+      const success = await onSave(category.id, newCategoryName);
       if (success) {
         onOpenChange(false);
         setNewCategoryName("");
