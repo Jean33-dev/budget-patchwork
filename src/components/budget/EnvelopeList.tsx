@@ -1,7 +1,7 @@
 
 import { EnvelopeCard } from "./EnvelopeCard";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Trash2 } from "lucide-react";
+import { PlusCircle, Pencil, Trash2 } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -110,7 +110,7 @@ export const EnvelopeList = ({
                   <TableHead className="hidden sm:table-cell">Date</TableHead>
                   <TableHead className="hidden sm:table-cell">Budget associé</TableHead>
                   <TableHead className="text-right">Montant</TableHead>
-                  {onDeleteClick && <TableHead className="w-[50px]"></TableHead>}
+                  <TableHead className="w-[100px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -121,7 +121,6 @@ export const EnvelopeList = ({
                   >
                     <TableCell 
                       className="font-medium"
-                      onClick={() => onEnvelopeClick(envelope)}
                     >
                       <div>
                         {envelope.title}
@@ -135,37 +134,47 @@ export const EnvelopeList = ({
                     </TableCell>
                     <TableCell 
                       className="hidden sm:table-cell"
-                      onClick={() => onEnvelopeClick(envelope)}
                     >
                       {formatDate(envelope.date)}
                     </TableCell>
                     <TableCell 
                       className="hidden sm:table-cell"
-                      onClick={() => onEnvelopeClick(envelope)}
                     >
                       {getBudgetTitle(envelope.linkedBudgetId)}
                     </TableCell>
                     <TableCell 
                       className="text-right"
-                      onClick={() => onEnvelopeClick(envelope)}
                     >
                       {envelope.budget.toFixed(2)} €
                     </TableCell>
-                    {onDeleteClick && (
-                      <TableCell className="p-2">
+                    <TableCell className="p-2">
+                      <div className="flex justify-end gap-2">
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 hover:bg-destructive hover:text-destructive-foreground"
+                          className="h-8 w-8 hover:bg-blue-100 hover:text-blue-600"
                           onClick={(e) => {
                             e.stopPropagation();
-                            onDeleteClick(envelope);
+                            onEnvelopeClick(envelope);
                           }}
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Pencil className="h-4 w-4" />
                         </Button>
-                      </TableCell>
-                    )}
+                        {onDeleteClick && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 hover:bg-destructive hover:text-destructive-foreground"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onDeleteClick(envelope);
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
