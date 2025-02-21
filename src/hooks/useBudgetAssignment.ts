@@ -1,4 +1,3 @@
-
 import { Budget } from "@/types/categories";
 import { useToast } from "@/hooks/use-toast";
 import { db } from "@/services/database";
@@ -151,17 +150,49 @@ export const useBudgetAssignment = (categories: any[], setCategories: (categorie
   };
 
   const getAvailableBudgetsForCategory = (categoryId: string, availableBudgets: Budget[]) => {
+    console.log('=== Début getAvailableBudgetsForCategory ===');
+    console.log('categoryId:', categoryId);
+    console.log('Tous les budgets disponibles:', availableBudgets);
+
+    // Vérifier que les budgets sont bien formés
+    if (!Array.isArray(availableBudgets)) {
+      console.error('availableBudgets n\'est pas un tableau');
+      return [];
+    }
+
     const assignedBudgets = getAssignedBudgets();
+    console.log('Budgets déjà assignés (Set):', Array.from(assignedBudgets));
+
     const currentCategory = categories.find(cat => cat.id === categoryId);
-    
-    console.log("Filtrage des budgets pour la catégorie:", categoryId);
-    console.log("Budgets disponibles:", availableBudgets);
-    console.log("Budgets déjà assignés:", assignedBudgets);
-    
-    return availableBudgets.filter(budget => 
-      !assignedBudgets.has(budget.id) || 
-      (currentCategory && Array.isArray(currentCategory.budgets) && currentCategory.budgets.includes(budget.id))
-    );
+    console.log('Catégorie courante:', currentCategory);
+
+    if (!currentCategory) {
+      console.warn('Catégorie non trouvée');
+      return [];
+    }
+
+    // S'assurer que currentCategory.budgets est un tableau
+    if (!Array.isArray(currentCategory.budgets)) {
+      console.warn('Les budgets de la catégorie ne sont pas un tableau');
+      currentCategory.budgets = [];
+    }
+
+    const availableBudgetsForCategory = availableBudgets.filter(budget => {
+      const isAssignedToOtherCategory = assignedBudgets.has(budget.id) && 
+        !currentCategory.budgets.includes(budget.id);
+      
+      console.log(`Budget ${budget.id} (${budget.title}):`, {
+        isAssignedToOtherCategory,
+        isInCurrentCategory: currentCategory.budgets.includes(budget.id)
+      });
+
+      return !isAssignedToOtherCategory;
+    });
+
+    console.log('Budgets disponibles pour cette catégorie:', availableBudgetsForCategory);
+    console.log('=== Fin getAvailableBudgetsForCategory ===');
+
+    return availableBudgetsForCategory;
   };
 
   return {

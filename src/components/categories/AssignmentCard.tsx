@@ -21,20 +21,34 @@ export const AssignmentCard = ({
   onRemove,
   getAvailableBudgets 
 }: AssignmentCardProps) => {
-  console.log('Category:', category);
-  console.log('Available Budgets:', availableBudgets);
+  console.log('Rendu AssignmentCard pour catégorie:', category.name);
+  console.log('Tous les budgets disponibles:', availableBudgets);
+  
+  // S'assurer que category.budgets est un tableau
+  if (!Array.isArray(category.budgets)) {
+    console.warn(`Les budgets de la catégorie ${category.name} ne sont pas un tableau:`, category.budgets);
+    category.budgets = [];
+  }
   
   const unassignedBudgets = getAvailableBudgets(category.id);
-  console.log('Unassigned Budgets:', unassignedBudgets);
+  console.log('Budgets non assignés pour cette catégorie:', unassignedBudgets);
   
   const assignedBudgets = category.budgets
-    .map(budgetId => availableBudgets.find(b => b.id === budgetId))
+    .map(budgetId => {
+      const budget = availableBudgets.find(b => b.id === budgetId);
+      if (!budget) {
+        console.warn(`Budget ${budgetId} non trouvé dans les budgets disponibles`);
+      }
+      return budget;
+    })
     .filter((b): b is Budget => b !== undefined);
   
-  console.log('Assigned Budgets:', assignedBudgets);
+  console.log('Budgets assignés à cette catégorie:', assignedBudgets);
 
   const handleBudgetAssignment = (value: string) => {
-    console.log('Assigning budget:', value, 'to category:', category.id);
+    console.log('Tentative d\'assignation du budget:', value);
+    console.log('À la catégorie:', category.id);
+    console.log('État actuel des budgets de la catégorie:', category.budgets);
     onAssign(category.id, value);
   };
 
@@ -46,31 +60,32 @@ export const AssignmentCard = ({
       <CardContent className="space-y-4">
         <div className="space-y-2">
           <Label>Assigner un budget</Label>
-          {unassignedBudgets.length > 0 ? (
-            <Select 
-              onValueChange={handleBudgetAssignment}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Sélectionner un budget" />
-              </SelectTrigger>
-              <SelectContent>
-                {unassignedBudgets.map((budget) => (
-                  <SelectItem 
-                    key={budget.id} 
-                    value={budget.id}
-                    className="cursor-pointer"
-                  >
-                    {budget.title} ({budget.budget}€)
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          ) : (
-            <div className="text-sm text-gray-500">
-              Tous les budgets disponibles ont déjà été assignés.
-            </div>
-          )}
+          <div className="relative">
+            {unassignedBudgets.length > 0 ? (
+              <Select onValueChange={handleBudgetAssignment}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Sélectionner un budget" />
+                </SelectTrigger>
+                <SelectContent>
+                  {unassignedBudgets.map((budget) => (
+                    <SelectItem 
+                      key={budget.id} 
+                      value={budget.id}
+                      className="cursor-pointer hover:bg-accent"
+                    >
+                      {budget.title} ({budget.budget}€)
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            ) : (
+              <div className="text-sm text-gray-500">
+                Tous les budgets disponibles ont déjà été assignés.
+              </div>
+            )}
+          </div>
         </div>
+
         <div className="text-sm">
           <p className="font-medium mb-2">Budgets actuellement assignés :</p>
           {assignedBudgets.length > 0 ? (
@@ -82,7 +97,7 @@ export const AssignmentCard = ({
                     variant="ghost"
                     size="icon"
                     onClick={() => onRemove(category.id, budget.id)}
-                    className="h-6 w-6"
+                    className="h-6 w-6 hover:bg-destructive hover:text-destructive-foreground"
                   >
                     <X className="h-4 w-4" />
                   </Button>
