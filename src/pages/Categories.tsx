@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -39,12 +38,11 @@ const Categories = () => {
     const loadBudgets = async () => {
       try {
         console.log("Chargement des budgets...");
-        const budgets = await db.getBudgets();
+        let budgets = await db.getBudgets();
         console.log('Budgets chargés dans Categories:', budgets);
         
         if (!budgets || budgets.length === 0) {
-          console.log("Aucun budget disponible");
-          // Optionnel : ajouter des budgets par défaut pour le test
+          console.log("Aucun budget disponible, création des budgets par défaut");
           const defaultBudgets: Budget[] = [
             {
               id: "budget1",
@@ -66,10 +64,11 @@ const Categories = () => {
             await db.addBudget(budget);
           }
           
-          setAvailableBudgets(defaultBudgets);
-        } else {
-          setAvailableBudgets(budgets);
+          budgets = await db.getBudgets();
         }
+        
+        console.log('Budgets finaux:', budgets);
+        setAvailableBudgets(budgets);
       } catch (error) {
         console.error("Erreur lors du chargement des budgets:", error);
         toast({
@@ -89,6 +88,7 @@ const Categories = () => {
   };
 
   const handleBudgetAssignment = async (categoryId: string, budgetId: string) => {
+    console.log('Début de l\'assignation:', { categoryId, budgetId, availableBudgets });
     await handleAssignBudget(categoryId, budgetId, availableBudgets);
     updateCategoryTotals(categoryId, availableBudgets);
   };

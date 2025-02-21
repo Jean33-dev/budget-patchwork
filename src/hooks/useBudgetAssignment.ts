@@ -9,9 +9,11 @@ export const useBudgetAssignment = (categories: any[], setCategories: (categorie
   const getAssignedBudgets = () => {
     const assignedBudgets = new Set<string>();
     categories.forEach(category => {
-      category.budgets.forEach((budgetId: string) => {
-        assignedBudgets.add(budgetId);
-      });
+      if (Array.isArray(category.budgets)) {
+        category.budgets.forEach((budgetId: string) => {
+          assignedBudgets.add(budgetId);
+        });
+      }
     });
     return assignedBudgets;
   };
@@ -57,16 +59,15 @@ export const useBudgetAssignment = (categories: any[], setCategories: (categorie
 
   const handleAssignBudget = async (categoryId: string, budgetId: string, availableBudgets: Budget[]) => {
     try {
+      console.log("Tentative d'assignation:", { categoryId, budgetId });
       const selectedBudget = availableBudgets.find(b => b.id === budgetId);
       if (!selectedBudget) {
         console.error("Budget non trouvé:", budgetId);
         return;
       }
 
-      console.log("Budget sélectionné:", selectedBudget);
-
       const assignedBudgets = getAssignedBudgets();
-      if (assignedBudgets.has(selectedBudget.id)) {
+      if (assignedBudgets.has(budgetId)) {
         toast({
           variant: "destructive",
           title: "Budget déjà assigné",
@@ -77,19 +78,25 @@ export const useBudgetAssignment = (categories: any[], setCategories: (categorie
 
       const updatedCategories = categories.map(category => {
         if (category.id === categoryId) {
+          const newBudgets = Array.isArray(category.budgets) ? 
+            [...category.budgets, budgetId] : 
+            [budgetId];
+          
           return {
             ...category,
-            budgets: [...category.budgets, selectedBudget.id]
+            budgets: newBudgets
           };
         }
         return category;
       });
 
+      console.log("Catégories mises à jour:", updatedCategories);
       setCategories(updatedCategories);
       
       const updatedCategory = updatedCategories.find(c => c.id === categoryId);
       if (updatedCategory) {
         await db.updateCategory(updatedCategory);
+        console.log("Catégorie sauvegardée en DB:", updatedCategory);
       }
 
       await updateCategoryTotals(categoryId, availableBudgets);
@@ -114,7 +121,9 @@ export const useBudgetAssignment = (categories: any[], setCategories: (categorie
         if (category.id === categoryId) {
           return {
             ...category,
-            budgets: category.budgets.filter(b => b !== budgetId)
+            budgets: Array.isArray(category.budgets) ? 
+              category.budgets.filter(b => b !== budgetId) : 
+              []
           };
         }
         return category;
@@ -145,9 +154,13 @@ export const useBudgetAssignment = (categories: any[], setCategories: (categorie
     const assignedBudgets = getAssignedBudgets();
     const currentCategory = categories.find(cat => cat.id === categoryId);
     
+    console.log("Filtrage des budgets pour la catégorie:", categoryId);
+    console.log("Budgets disponibles:", availableBudgets);
+    console.log("Budgets déjà assignés:", assignedBudgets);
+    
     return availableBudgets.filter(budget => 
       !assignedBudgets.has(budget.id) || 
-      (currentCategory && currentCategory.budgets.includes(budget.id))
+      (currentCategory && Array.isArray(currentCategory.budgets) && currentCategory.budgets.includes(budget.id))
     );
   };
 
