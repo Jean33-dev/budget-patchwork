@@ -1,4 +1,3 @@
-
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -80,88 +79,50 @@ const Expenses = () => {
   };
 
   const handleDeleteClick = (expense: Expense) => {
-    // Vérifie si l'enveloppe a des dépenses affectées
-    const hasLinkedExpenses = expenses.some(e => e.linkedBudgetId === expense.id);
-    
-    if (hasLinkedExpenses) {
-      toast({
-        variant: "destructive",
-        title: "Suppression impossible",
-        description: "Cette dépense a des dépenses qui lui sont affectées."
-      });
-      return;
-    }
-
     setSelectedExpense(expense);
     setDeleteDialogOpen(true);
   };
 
-  const handleEditSubmit = async () => {
+  const handleEditSubmit = () => {
     if (!selectedExpense) return;
 
-    try {
-      const updatedExpense: Expense = {
-        ...selectedExpense,
-        title: editTitle,
-        budget: editBudget,
-        spent: editBudget,
-        date: editDate
-      };
+    const updatedExpenses = expenses.map(expense => {
+      if (expense.id === selectedExpense.id) {
+        return {
+          ...expense,
+          title: editTitle,
+          budget: editBudget,
+          spent: editBudget,
+          date: editDate
+        };
+      }
+      return expense;
+    });
 
-      await db.updateExpense(updatedExpense);
-
-      const updatedExpenses = expenses.map(expense => {
-        if (expense.id === selectedExpense.id) {
-          return updatedExpense;
-        }
-        return expense;
-      });
-
-      setExpenses(updatedExpenses);
-      setEditDialogOpen(false);
-      
-      toast({
-        title: "Dépense modifiée",
-        description: `La dépense "${editTitle}" a été mise à jour.`
-      });
-    } catch (error) {
-      console.error("Erreur lors de la modification de la dépense:", error);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Impossible de modifier la dépense"
-      });
-    }
+    setExpenses(updatedExpenses);
+    setEditDialogOpen(false);
+    toast({
+      title: "Dépense modifiée",
+      description: `La dépense "${editTitle}" a été mise à jour.`
+    });
   };
 
-  const handleDeleteConfirm = async () => {
+  const handleDeleteConfirm = () => {
     if (!selectedExpense) return;
 
-    try {
-      await db.deleteExpense(selectedExpense.id);
+    const updatedExpenses = expenses.filter(
+      expense => expense.id !== selectedExpense.id
+    );
 
-      const updatedExpenses = expenses.filter(
-        expense => expense.id !== selectedExpense.id
-      );
-
-      setExpenses(updatedExpenses);
-      setDeleteDialogOpen(false);
-      
-      toast({
-        title: "Dépense supprimée",
-        description: `La dépense "${selectedExpense.title}" a été supprimée.`
-      });
-    } catch (error) {
-      console.error("Erreur lors de la suppression de la dépense:", error);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Impossible de supprimer la dépense"
-      });
-    }
+    setExpenses(updatedExpenses);
+    setDeleteDialogOpen(false);
+    toast({
+      title: "Dépense supprimée",
+      description: `La dépense "${selectedExpense.title}" a été supprimée.`
+    });
   };
 
-  const handleAddEnvelope = async (envelope: {
+  const handleAddEnvelope = (envelope: {
     title: string;
     budget: number;
     type: "income" | "expense" | "budget";
@@ -177,33 +138,22 @@ const Expenses = () => {
       return;
     }
 
-    try {
-      const newExpense: Expense = {
-        id: Date.now().toString(),
-        title: envelope.title,
-        budget: envelope.budget,
-        spent: envelope.budget,
-        type: "expense",
-        linkedBudgetId: budgetId || envelope.linkedBudgetId,
-        date: envelope.date || new Date().toISOString().split('T')[0]
-      };
+    const newExpense: Expense = {
+      id: (expenses.length + 1).toString(),
+      title: envelope.title,
+      budget: envelope.budget,
+      spent: envelope.budget,
+      type: "expense",
+      linkedBudgetId: budgetId || envelope.linkedBudgetId,
+      date: envelope.date || new Date().toISOString().split('T')[0]
+    };
 
-      await db.addExpense(newExpense);
-      setExpenses([...expenses, newExpense]);
-      setAddDialogOpen(false);
-      
-      toast({
-        title: "Dépense ajoutée",
-        description: `La dépense "${envelope.title}" a été créée avec succès.`
-      });
-    } catch (error) {
-      console.error("Erreur lors de l'ajout de la dépense:", error);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Impossible d'ajouter la dépense"
-      });
-    }
+    setExpenses([...expenses, newExpense]);
+    setAddDialogOpen(false);
+    toast({
+      title: "Dépense ajoutée",
+      description: `La dépense "${envelope.title}" a été créée avec succès.`
+    });
   };
 
   return (
