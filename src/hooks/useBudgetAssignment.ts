@@ -24,11 +24,12 @@ export const useBudgetAssignment = (categories: any[], setCategories: (categorie
       const { total, spent } = calculateCategoryTotals(currentCategory.budgets, availableBudgets);
       console.log("Nouveaux totaux calculés:", { total, spent });
 
+      // IMPORTANT : Garder les budgets existants !
       const updatedCategory = {
         ...currentCategory,
         total,
         spent,
-        budgets: currentCategory.budgets
+        budgets: [...currentCategory.budgets] // Créer une copie du tableau des budgets
       };
 
       console.log("=== Sauvegarde de la catégorie avec les nouveaux totaux ===");

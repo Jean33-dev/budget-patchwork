@@ -277,7 +277,7 @@ class Database {
     if (!this.initialized) await this.init();
     
     try {
-      console.log("Début du chargement des catégories");
+      console.log("=== Début du chargement des catégories ===");
       const result = this.db.exec('SELECT * FROM categories');
       console.log("Résultat brut de la requête:", result);
       
@@ -287,22 +287,29 @@ class Database {
       }
 
       const categories = result[0].values.map((row: any[]) => {
+        const [id, name, budgetsStr, total, spent, description] = row;
         let budgets;
         try {
-          budgets = JSON.parse(row[2] || '[]');
-          console.log(`Budgets parsés pour la catégorie ${row[0]}:`, budgets);
+          // S'assurer que le string JSON est valide avant de le parser
+          if (budgetsStr && typeof budgetsStr === 'string') {
+            budgets = JSON.parse(budgetsStr);
+          } else {
+            console.warn(`Budgets invalides pour la catégorie ${id}, utilisation d'un tableau vide`);
+            budgets = [];
+          }
         } catch (e) {
-          console.error(`Erreur de parsing des budgets pour la catégorie ${row[0]}:`, e);
+          console.error(`Erreur de parsing des budgets pour la catégorie ${id}:`, e);
           budgets = [];
         }
 
+        console.log(`Budgets parsés pour la catégorie ${id}:`, budgets);
         return {
-          id: row[0],
-          name: row[1],
-          budgets: budgets,
-          total: row[3] || 0,
-          spent: row[4] || 0,
-          description: row[5] || ''
+          id,
+          name,
+          budgets: Array.isArray(budgets) ? budgets : [],
+          total: Number(total) || 0,
+          spent: Number(spent) || 0,
+          description: description || ''
         };
       });
 
@@ -330,6 +337,11 @@ class Database {
       console.log("=== Début de la mise à jour de la catégorie dans la base de données ===");
       console.log("Catégorie reçue:", category);
       
+      // Validation des données
+      if (!category || !category.id) {
+        throw new Error("Catégorie invalide");
+      }
+      
       // S'assurer que les budgets sont un tableau
       const budgets = Array.isArray(category.budgets) ? category.budgets : [];
       const total = Number(category.total) || 0;
@@ -337,8 +349,12 @@ class Database {
       
       // Convertir le tableau en JSON pour le stockage
       const budgetsJson = JSON.stringify(budgets);
-      console.log("Budgets après JSON.stringify:", budgetsJson);
-
+      console.log("Budgets avant stringify:", budgets);
+      console.log("Budgets après stringify:", budgetsJson);
+      
+      // Utiliser une transaction pour s'assurer que tout est mis à jour correctement
+      this.db.run('BEGIN TRANSACTION');
+      
       const stmt = this.db.prepare(
         'UPDATE categories SET name = ?, budgets = ?, total = ?, spent = ?, description = ? WHERE id = ?'
       );
@@ -346,6 +362,9 @@ class Database {
       stmt.run(
         [category.name, budgetsJson, total, spent, category.description, category.id]
       );
+      stmt.free();
+      
+      this.db.run('COMMIT');
       
       // Vérifier immédiatement la mise à jour
       const result = this.db.exec(
@@ -354,6 +373,7 @@ class Database {
       );
       console.log("Vérification après mise à jour:", result);
       
+      // Si la catégorie n'existe pas, on la crée
       if (!result[0]) {
         console.error("La catégorie n'existe pas, tentative de création");
         await this.addCategory(category);
@@ -363,6 +383,7 @@ class Database {
       console.log("=== Mise à jour terminée avec succès ===");
     } catch (error) {
       console.error("Erreur lors de la mise à jour de la catégorie:", error);
+      this.db.run('ROLLBACK');
       throw error;
     }
   }
