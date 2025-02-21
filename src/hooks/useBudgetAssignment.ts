@@ -47,41 +47,43 @@ export const useBudgetAssignment = (categories: any[], setCategories: (categorie
   const handleAssignBudget = async (categoryId: string, budgetId: string, availableBudgets: Budget[]) => {
     try {
       console.log("Assignation du budget:", { categoryId, budgetId });
-      console.log("État actuel des catégories:", categories);
       
-      const selectedBudget = availableBudgets.find(b => b.id === budgetId);
-      if (!selectedBudget) {
-        console.error("Budget non trouvé:", budgetId);
-        return;
+      // Trouver la catégorie actuelle
+      const currentCategory = categories.find(c => c.id === categoryId);
+      if (!currentCategory) {
+        throw new Error("Catégorie non trouvée");
       }
 
-      const updatedCategories = categories.map(category => {
-        if (category.id === categoryId) {
-          const currentBudgets = Array.isArray(category.budgets) ? category.budgets : [];
-          const newBudgets = [...currentBudgets, budgetId];
-          console.log("Nouveaux budgets de la catégorie:", newBudgets);
-          return {
-            ...category,
-            budgets: newBudgets
-          };
-        }
-        return category;
-      });
+      // Créer le nouveau tableau de budgets pour la catégorie
+      const currentBudgets = Array.isArray(currentCategory.budgets) ? currentCategory.budgets : [];
+      const newBudgets = [...currentBudgets, budgetId];
+      console.log("Nouveaux budgets de la catégorie:", newBudgets);
 
-      console.log("Catégories mises à jour:", updatedCategories);
+      // Créer la catégorie mise à jour
+      const updatedCategory = {
+        ...currentCategory,
+        budgets: newBudgets
+      };
+
+      // Mettre à jour l'état local des catégories
+      const updatedCategories = categories.map(category =>
+        category.id === categoryId ? updatedCategory : category
+      );
+
+      // Mettre à jour l'état global
       setCategories(updatedCategories);
       
-      const updatedCategory = updatedCategories.find(c => c.id === categoryId);
-      if (updatedCategory) {
-        console.log("Sauvegarde de la catégorie dans la DB:", updatedCategory);
-        await db.updateCategory(updatedCategory);
-        await updateCategoryTotals(categoryId, availableBudgets);
+      // Sauvegarder dans la base de données
+      console.log("Sauvegarde de la catégorie dans la DB:", updatedCategory);
+      await db.updateCategory(updatedCategory);
 
-        toast({
-          title: "Budget assigné",
-          description: "Le budget a été assigné à la catégorie avec succès."
-        });
-      }
+      // Mettre à jour les totaux
+      await updateCategoryTotals(categoryId, availableBudgets);
+
+      toast({
+        title: "Budget assigné",
+        description: "Le budget a été assigné à la catégorie avec succès."
+      });
     } catch (error) {
       console.error("Erreur lors de l'assignation du budget:", error);
       toast({
@@ -96,33 +98,42 @@ export const useBudgetAssignment = (categories: any[], setCategories: (categorie
     try {
       console.log("Retrait du budget:", { categoryId, budgetId });
       
-      const updatedCategories = categories.map(category => {
-        if (category.id === categoryId) {
-          const currentBudgets = Array.isArray(category.budgets) ? category.budgets : [];
-          const newBudgets = currentBudgets.filter(b => b !== budgetId);
-          console.log("Nouveaux budgets de la catégorie après retrait:", newBudgets);
-          return {
-            ...category,
-            budgets: newBudgets
-          };
-        }
-        return category;
-      });
+      // Trouver la catégorie actuelle
+      const currentCategory = categories.find(c => c.id === categoryId);
+      if (!currentCategory) {
+        throw new Error("Catégorie non trouvée");
+      }
 
-      console.log("Catégories mises à jour après retrait:", updatedCategories);
+      // Créer le nouveau tableau de budgets pour la catégorie
+      const currentBudgets = Array.isArray(currentCategory.budgets) ? currentCategory.budgets : [];
+      const newBudgets = currentBudgets.filter(b => b !== budgetId);
+      console.log("Nouveaux budgets de la catégorie après retrait:", newBudgets);
+
+      // Créer la catégorie mise à jour
+      const updatedCategory = {
+        ...currentCategory,
+        budgets: newBudgets
+      };
+
+      // Mettre à jour l'état local des catégories
+      const updatedCategories = categories.map(category =>
+        category.id === categoryId ? updatedCategory : category
+      );
+
+      // Mettre à jour l'état global
       setCategories(updatedCategories);
       
-      const updatedCategory = updatedCategories.find(c => c.id === categoryId);
-      if (updatedCategory) {
-        console.log("Sauvegarde de la catégorie dans la DB après retrait:", updatedCategory);
-        await db.updateCategory(updatedCategory);
-        await updateCategoryTotals(categoryId, availableBudgets);
+      // Sauvegarder dans la base de données
+      console.log("Sauvegarde de la catégorie dans la DB:", updatedCategory);
+      await db.updateCategory(updatedCategory);
 
-        toast({
-          title: "Budget retiré",
-          description: "Le budget a été retiré de la catégorie avec succès."
-        });
-      }
+      // Mettre à jour les totaux
+      await updateCategoryTotals(categoryId, availableBudgets);
+
+      toast({
+        title: "Budget retiré",
+        description: "Le budget a été retiré de la catégorie avec succès."
+      });
     } catch (error) {
       console.error("Erreur lors du retrait du budget:", error);
       toast({
