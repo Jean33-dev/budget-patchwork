@@ -10,7 +10,7 @@ interface AssignmentCardProps {
   category: Category;
   availableBudgets: Budget[];
   onAssign: (categoryId: string, budgetId: string) => void;
-  onRemove: (categoryId: string, budgetTitle: string) => void;
+  onRemove: (categoryId: string, budgetId: string) => void;
   getAvailableBudgets: (categoryId: string) => Budget[];
 }
 
@@ -22,6 +22,9 @@ export const AssignmentCard = ({
   getAvailableBudgets 
 }: AssignmentCardProps) => {
   const unassignedBudgets = getAvailableBudgets(category.id);
+  const assignedBudgets = category.budgets.map(budgetId => 
+    availableBudgets.find(b => b.id === budgetId)
+  ).filter((b): b is Budget => b !== undefined);
 
   return (
     <Card>
@@ -52,15 +55,15 @@ export const AssignmentCard = ({
         </div>
         <div className="text-sm">
           <p className="font-medium mb-2">Budgets actuellement assignés :</p>
-          {category.budgets.length > 0 ? (
+          {assignedBudgets.length > 0 ? (
             <ul className="list-disc pl-4 space-y-1">
-              {category.budgets.map((budget, index) => (
-                <li key={index} className="flex items-center justify-between">
-                  <span>{budget}</span>
+              {assignedBudgets.map((budget) => (
+                <li key={budget.id} className="flex items-center justify-between">
+                  <span>{budget.title} ({budget.budget}€)</span>
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => onRemove(category.id, budget)}
+                    onClick={() => onRemove(category.id, budget.id)}
                     className="h-6 w-6"
                   >
                     <X className="h-4 w-4" />

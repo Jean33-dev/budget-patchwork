@@ -9,8 +9,8 @@ export const useBudgetAssignment = (categories: any[], setCategories: (categorie
   const getAssignedBudgets = () => {
     const assignedBudgets = new Set<string>();
     categories.forEach(category => {
-      category.budgets.forEach((budget: string) => {
-        assignedBudgets.add(budget);
+      category.budgets.forEach((budgetId: string) => {
+        assignedBudgets.add(budgetId);
       });
     });
     return assignedBudgets;
@@ -20,13 +20,13 @@ export const useBudgetAssignment = (categories: any[], setCategories: (categorie
     try {
       const updatedCategories = categories.map(category => {
         if (category.id === categoryId) {
-          const total = category.budgets.reduce((sum: number, budgetTitle: string) => {
-            const budget = availableBudgets.find(b => b.title === budgetTitle);
+          const total = category.budgets.reduce((sum: number, budgetId: string) => {
+            const budget = availableBudgets.find(b => b.id === budgetId);
             return sum + (budget?.budget || 0);
           }, 0);
 
-          const spent = category.budgets.reduce((sum: number, budgetTitle: string) => {
-            const budget = availableBudgets.find(b => b.title === budgetTitle);
+          const spent = category.budgets.reduce((sum: number, budgetId: string) => {
+            const budget = availableBudgets.find(b => b.id === budgetId);
             return sum + (budget?.spent || 0);
           }, 0);
 
@@ -58,10 +58,15 @@ export const useBudgetAssignment = (categories: any[], setCategories: (categorie
   const handleAssignBudget = async (categoryId: string, budgetId: string, availableBudgets: Budget[]) => {
     try {
       const selectedBudget = availableBudgets.find(b => b.id === budgetId);
-      if (!selectedBudget) return;
+      if (!selectedBudget) {
+        console.error("Budget non trouvé:", budgetId);
+        return;
+      }
+
+      console.log("Budget sélectionné:", selectedBudget);
 
       const assignedBudgets = getAssignedBudgets();
-      if (assignedBudgets.has(selectedBudget.title)) {
+      if (assignedBudgets.has(selectedBudget.id)) {
         toast({
           variant: "destructive",
           title: "Budget déjà assigné",
@@ -74,7 +79,7 @@ export const useBudgetAssignment = (categories: any[], setCategories: (categorie
         if (category.id === categoryId) {
           return {
             ...category,
-            budgets: [...category.budgets, selectedBudget.title]
+            budgets: [...category.budgets, selectedBudget.id]
           };
         }
         return category;
@@ -103,13 +108,13 @@ export const useBudgetAssignment = (categories: any[], setCategories: (categorie
     }
   };
 
-  const handleRemoveBudget = async (categoryId: string, budgetTitle: string) => {
+  const handleRemoveBudget = async (categoryId: string, budgetId: string) => {
     try {
       const updatedCategories = categories.map(category => {
         if (category.id === categoryId) {
           return {
             ...category,
-            budgets: category.budgets.filter(b => b !== budgetTitle)
+            budgets: category.budgets.filter(b => b !== budgetId)
           };
         }
         return category;
@@ -141,8 +146,8 @@ export const useBudgetAssignment = (categories: any[], setCategories: (categorie
     const currentCategory = categories.find(cat => cat.id === categoryId);
     
     return availableBudgets.filter(budget => 
-      !assignedBudgets.has(budget.title) || 
-      (currentCategory && currentCategory.budgets.includes(budget.title))
+      !assignedBudgets.has(budget.id) || 
+      (currentCategory && currentCategory.budgets.includes(budget.id))
     );
   };
 
