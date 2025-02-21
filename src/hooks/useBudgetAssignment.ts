@@ -21,7 +21,7 @@ export const useBudgetAssignment = (categories: any[], setCategories: (categorie
       }
 
       console.log("Catégorie courante:", currentCategory);
-      const { total, spent } = calculateCategoryTotals(currentCategory.budgets, availableBudgets);
+      const { total, spent } = await calculateCategoryTotals(currentCategory.budgets, availableBudgets);
       console.log("Nouveaux totaux calculés:", { total, spent });
 
       const updatedCategory = {
@@ -78,7 +78,7 @@ export const useBudgetAssignment = (categories: any[], setCategories: (categorie
       const newBudgets = [...currentBudgets, budgetId];
       console.log("Nouveaux budgets après ajout:", newBudgets);
 
-      const { total, spent } = calculateCategoryTotals(newBudgets, availableBudgets);
+      const { total, spent } = await calculateCategoryTotals(newBudgets, availableBudgets);
       console.log("Nouveaux totaux calculés:", { total, spent });
 
       const updatedCategory = {
@@ -127,7 +127,7 @@ export const useBudgetAssignment = (categories: any[], setCategories: (categorie
       const currentBudgets = Array.isArray(currentCategory.budgets) ? currentCategory.budgets : [];
       const newBudgets = currentBudgets.filter(b => b !== budgetId);
 
-      const { total, spent } = calculateCategoryTotals(newBudgets, availableBudgets);
+      const { total, spent } = await calculateCategoryTotals(newBudgets, availableBudgets);
 
       const updatedCategory = {
         ...currentCategory,
