@@ -51,15 +51,17 @@ class Database {
       
       this.db = new SQL.Database();
       
-      // Créer les tables une par une
+      // Créer les tables une par une avec des template literals
       const tables = [
-        'CREATE TABLE IF NOT EXISTS incomes (id TEXT PRIMARY KEY, title TEXT, budget REAL, spent REAL, type TEXT)',
-        'CREATE TABLE IF NOT EXISTS expenses (id TEXT PRIMARY KEY, title TEXT, budget REAL, spent REAL, type TEXT, linkedBudgetId TEXT, date TEXT)',
-        'CREATE TABLE IF NOT EXISTS budgets (id TEXT PRIMARY KEY, title TEXT, budget REAL, spent REAL, type TEXT)',
-        'CREATE TABLE IF NOT EXISTS categories (id TEXT PRIMARY KEY, name TEXT, budgets TEXT, total REAL, spent REAL, description TEXT)'
+        `CREATE TABLE IF NOT EXISTS incomes (id TEXT PRIMARY KEY, title TEXT, budget REAL, spent REAL, type TEXT)`,
+        `CREATE TABLE IF NOT EXISTS expenses (id TEXT PRIMARY KEY, title TEXT, budget REAL, spent REAL, type TEXT, linkedBudgetId TEXT, date TEXT)`,
+        `CREATE TABLE IF NOT EXISTS budgets (id TEXT PRIMARY KEY, title TEXT, budget REAL, spent REAL, type TEXT)`,
+        `CREATE TABLE IF NOT EXISTS categories (id TEXT PRIMARY KEY, name TEXT, budgets TEXT, total REAL, spent REAL, description TEXT)`
       ];
       
-      tables.forEach(query => this.db.run(query));
+      tables.forEach(query => {
+        this.db.run(query);
+      });
 
       this.initialized = true;
 
