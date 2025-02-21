@@ -25,22 +25,13 @@ export const AssignmentCard = ({
   console.log('Tous les budgets disponibles:', availableBudgets);
   
   // S'assurer que category.budgets est un tableau
-  if (!Array.isArray(category.budgets)) {
-    console.warn(`Les budgets de la catégorie ${category.name} ne sont pas un tableau:`, category.budgets);
-    category.budgets = [];
-  }
+  const budgets = Array.isArray(category.budgets) ? category.budgets : [];
   
   const unassignedBudgets = getAvailableBudgets(category.id);
   console.log('Budgets non assignés pour cette catégorie:', unassignedBudgets);
   
-  const assignedBudgets = category.budgets
-    .map(budgetId => {
-      const budget = availableBudgets.find(b => b.id === budgetId);
-      if (!budget) {
-        console.warn(`Budget ${budgetId} non trouvé dans les budgets disponibles`);
-      }
-      return budget;
-    })
+  const assignedBudgets = budgets
+    .map(budgetId => availableBudgets.find(b => b.id === budgetId))
     .filter((b): b is Budget => b !== undefined);
   
   console.log('Budgets assignés à cette catégorie:', assignedBudgets);
@@ -48,7 +39,7 @@ export const AssignmentCard = ({
   const handleBudgetAssignment = (value: string) => {
     console.log('Tentative d\'assignation du budget:', value);
     console.log('À la catégorie:', category.id);
-    console.log('État actuel des budgets de la catégorie:', category.budgets);
+    console.log('État actuel des budgets de la catégorie:', budgets);
     onAssign(category.id, value);
   };
 

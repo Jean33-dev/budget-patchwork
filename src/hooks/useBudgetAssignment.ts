@@ -1,3 +1,4 @@
+
 import { Budget } from "@/types/categories";
 import { useToast } from "@/hooks/use-toast";
 import { db } from "@/services/database";
@@ -21,15 +22,17 @@ export const useBudgetAssignment = (categories: any[], setCategories: (categorie
     try {
       const updatedCategories = categories.map(category => {
         if (category.id === categoryId) {
-          const total = category.budgets.reduce((sum: number, budgetId: string) => {
-            const budget = availableBudgets.find(b => b.id === budgetId);
-            return sum + (budget?.budget || 0);
-          }, 0);
+          const total = (Array.isArray(category.budgets) ? category.budgets : [])
+            .reduce((sum: number, budgetId: string) => {
+              const budget = availableBudgets.find(b => b.id === budgetId);
+              return sum + (budget?.budget || 0);
+            }, 0);
 
-          const spent = category.budgets.reduce((sum: number, budgetId: string) => {
-            const budget = availableBudgets.find(b => b.id === budgetId);
-            return sum + (budget?.spent || 0);
-          }, 0);
+          const spent = (Array.isArray(category.budgets) ? category.budgets : [])
+            .reduce((sum: number, budgetId: string) => {
+              const budget = availableBudgets.find(b => b.id === budgetId);
+              return sum + (budget?.spent || 0);
+            }, 0);
 
           return {
             ...category,
@@ -59,31 +62,20 @@ export const useBudgetAssignment = (categories: any[], setCategories: (categorie
   const handleAssignBudget = async (categoryId: string, budgetId: string, availableBudgets: Budget[]) => {
     try {
       console.log("Tentative d'assignation:", { categoryId, budgetId });
+      console.log("État actuel des catégories:", categories);
+      
       const selectedBudget = availableBudgets.find(b => b.id === budgetId);
       if (!selectedBudget) {
         console.error("Budget non trouvé:", budgetId);
         return;
       }
 
-      const assignedBudgets = getAssignedBudgets();
-      if (assignedBudgets.has(budgetId)) {
-        toast({
-          variant: "destructive",
-          title: "Budget déjà assigné",
-          description: "Ce budget est déjà assigné à une autre catégorie."
-        });
-        return;
-      }
-
       const updatedCategories = categories.map(category => {
         if (category.id === categoryId) {
-          const newBudgets = Array.isArray(category.budgets) ? 
-            [...category.budgets, budgetId] : 
-            [budgetId];
-          
+          const currentBudgets = Array.isArray(category.budgets) ? category.budgets : [];
           return {
             ...category,
-            budgets: newBudgets
+            budgets: [...currentBudgets, budgetId]
           };
         }
         return category;
@@ -96,14 +88,15 @@ export const useBudgetAssignment = (categories: any[], setCategories: (categorie
       if (updatedCategory) {
         await db.updateCategory(updatedCategory);
         console.log("Catégorie sauvegardée en DB:", updatedCategory);
+        
+        // Mettre à jour les totaux après l'assignation
+        await updateCategoryTotals(categoryId, availableBudgets);
+
+        toast({
+          title: "Budget assigné",
+          description: "Le budget a été assigné à la catégorie avec succès."
+        });
       }
-
-      await updateCategoryTotals(categoryId, availableBudgets);
-
-      toast({
-        title: "Budget assigné",
-        description: "Le budget a été assigné à la catégorie avec succès."
-      });
     } catch (error) {
       console.error("Erreur lors de l'assignation du budget:", error);
       toast({
@@ -118,11 +111,10 @@ export const useBudgetAssignment = (categories: any[], setCategories: (categorie
     try {
       const updatedCategories = categories.map(category => {
         if (category.id === categoryId) {
+          const currentBudgets = Array.isArray(category.budgets) ? category.budgets : [];
           return {
             ...category,
-            budgets: Array.isArray(category.budgets) ? 
-              category.budgets.filter(b => b !== budgetId) : 
-              []
+            budgets: currentBudgets.filter(b => b !== budgetId)
           };
         }
         return category;
@@ -172,18 +164,15 @@ export const useBudgetAssignment = (categories: any[], setCategories: (categorie
     }
 
     // S'assurer que currentCategory.budgets est un tableau
-    if (!Array.isArray(currentCategory.budgets)) {
-      console.warn('Les budgets de la catégorie ne sont pas un tableau');
-      currentCategory.budgets = [];
-    }
+    const categoryBudgets = Array.isArray(currentCategory.budgets) ? currentCategory.budgets : [];
 
     const availableBudgetsForCategory = availableBudgets.filter(budget => {
       const isAssignedToOtherCategory = assignedBudgets.has(budget.id) && 
-        !currentCategory.budgets.includes(budget.id);
+        !categoryBudgets.includes(budget.id);
       
       console.log(`Budget ${budget.id} (${budget.title}):`, {
         isAssignedToOtherCategory,
-        isInCurrentCategory: currentCategory.budgets.includes(budget.id)
+        isInCurrentCategory: categoryBudgets.includes(budget.id)
       });
 
       return !isAssignedToOtherCategory;
