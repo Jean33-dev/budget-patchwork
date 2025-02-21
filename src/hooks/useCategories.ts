@@ -89,7 +89,7 @@ export const useCategories = () => {
         if (category.id === categoryId) {
           const total = category.budgets.reduce((sum, budgetTitle) => {
             const budget = availableBudgets.find(b => b.title === budgetTitle);
-            return sum + (budget?.amount || 0);
+            return sum + (budget?.budget || 0);
           }, 0);
 
           const spent = category.budgets.reduce((sum, budgetTitle) => {

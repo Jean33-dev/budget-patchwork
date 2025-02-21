@@ -1,4 +1,3 @@
-
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -7,7 +6,7 @@ import { AddEnvelopeDialog } from "@/components/budget/AddEnvelopeDialog";
 import { ExpensesHeader } from "@/components/budget/ExpensesHeader";
 import { EditExpenseDialog } from "@/components/budget/EditExpenseDialog";
 import { DeleteExpenseDialog } from "@/components/budget/DeleteExpenseDialog";
-import { db } from "@/services/database"; // Ajout de l'import manquant
+import { db } from "@/services/database";
 
 type Expense = {
   id: string;
@@ -19,15 +18,22 @@ type Expense = {
   date: string;
 };
 
+type Budget = {
+  id: string;
+  title: string;
+  budget: number;
+  spent: number;
+  type: "budget";
+};
+
 const Expenses = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const budgetId = searchParams.get('budgetId');
   const { toast } = useToast();
 
-  // États
   const [expenses, setExpenses] = useState<Expense[]>([]);
-  const [availableBudgets, setAvailableBudgets] = useState([]);
+  const [availableBudgets, setAvailableBudgets] = useState<Budget[]>([]);
 
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -37,29 +43,33 @@ const Expenses = () => {
   const [editBudget, setEditBudget] = useState(0);
   const [editDate, setEditDate] = useState("");
 
-  // Charger les données depuis SQLite
   useEffect(() => {
     const loadData = async () => {
       try {
         const budgets = await db.getBudgets();
+        console.log('Budgets chargés:', budgets);
         setAvailableBudgets(budgets);
         
         const expenses = await db.getExpenses();
+        console.log('Dépenses chargées:', expenses);
         setExpenses(expenses);
       } catch (error) {
         console.error("Erreur lors du chargement des données:", error);
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Impossible de charger les données"
+        });
       }
     };
     
     loadData();
   }, []);
 
-  // Filtrage des dépenses
   const filteredExpenses = budgetId 
     ? expenses.filter(expense => expense.linkedBudgetId === budgetId)
     : expenses;
 
-  // Handlers
   const handleEnvelopeClick = (expense: Expense) => {
     setSelectedExpense(expense);
     setEditTitle(expense.title);
