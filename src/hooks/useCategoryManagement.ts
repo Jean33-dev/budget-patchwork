@@ -35,42 +35,42 @@ export const useCategoryManagement = () => {
   const { toast } = useToast();
   const [categories, setCategories] = useState<Category[]>([]);
 
-  useEffect(() => {
-    const loadCategories = async () => {
-      try {
-        console.log("Chargement des catégories...");
-        let dbCategories = await db.getCategories();
-        console.log("Catégories chargées:", dbCategories);
-        
-        if (!dbCategories || dbCategories.length === 0) {
-          console.log("Création des catégories par défaut...");
-          for (const category of defaultCategories) {
-            await db.addCategory({
-              ...category,
-              budgets: [] // S'assurer que budgets est un tableau vide
-            });
-          }
-          dbCategories = defaultCategories;
+  const loadCategories = async () => {
+    try {
+      console.log("Chargement des catégories...");
+      let dbCategories = await db.getCategories();
+      console.log("Catégories chargées:", dbCategories);
+      
+      if (!dbCategories || dbCategories.length === 0) {
+        console.log("Création des catégories par défaut...");
+        for (const category of defaultCategories) {
+          await db.addCategory({
+            ...category,
+            budgets: []
+          });
         }
-
-        // S'assurer que toutes les catégories ont un tableau budgets valide
-        dbCategories = dbCategories.map(category => ({
-          ...category,
-          budgets: Array.isArray(category.budgets) ? category.budgets : []
-        }));
-        
-        console.log("Catégories finales:", dbCategories);
-        setCategories(dbCategories);
-      } catch (error) {
-        console.error("Erreur lors du chargement des catégories:", error);
-        toast({
-          variant: "destructive",
-          title: "Erreur",
-          description: "Impossible de charger les catégories"
-        });
+        dbCategories = defaultCategories;
       }
-    };
 
+      // S'assurer que toutes les catégories ont un tableau budgets valide
+      dbCategories = dbCategories.map(category => ({
+        ...category,
+        budgets: Array.isArray(category.budgets) ? category.budgets : []
+      }));
+      
+      console.log("Catégories finales:", dbCategories);
+      setCategories(dbCategories);
+    } catch (error) {
+      console.error("Erreur lors du chargement des catégories:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible de charger les catégories"
+      });
+    }
+  };
+
+  useEffect(() => {
     loadCategories();
   }, [toast]);
 
@@ -92,8 +92,7 @@ export const useCategoryManagement = () => {
 
       const updatedCategory: Category = {
         ...categoryToUpdate,
-        name: newName,
-        budgets: Array.isArray(categoryToUpdate.budgets) ? categoryToUpdate.budgets : []
+        name: newName
       };
 
       const updatedCategories = categories.map(cat =>
@@ -120,9 +119,14 @@ export const useCategoryManagement = () => {
     }
   };
 
+  const refreshCategories = () => {
+    loadCategories();
+  };
+
   return {
     categories,
     updateCategoryName,
-    setCategories
+    setCategories,
+    refreshCategories
   };
 };

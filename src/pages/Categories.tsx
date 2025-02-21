@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -28,56 +29,29 @@ const Categories = () => {
     handleRemoveBudget, 
     updateCategoryName,
     getAvailableBudgetsForCategory,
-    updateCategoryTotals
+    updateCategoryTotals,
+    refreshCategories 
   } = useCategories();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
 
+  const loadBudgets = async () => {
+    try {
+      const budgets = await db.getBudgets();
+      console.log('État actuel des budgets:', budgets);
+      setAvailableBudgets(budgets);
+    } catch (error) {
+      console.error("Erreur lors du chargement des budgets:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible de charger les budgets"
+      });
+    }
+  };
+
   useEffect(() => {
-    const loadBudgets = async () => {
-      try {
-        let budgets = await db.getBudgets();
-        console.log('État initial des budgets:', budgets);
-        
-        if (!budgets || budgets.length === 0) {
-          console.log("Création des budgets par défaut...");
-          const defaultBudgets: Budget[] = [
-            {
-              id: "budget1",
-              title: "Budget Test 1",
-              budget: 1000,
-              spent: 0,
-              type: "budget"
-            },
-            {
-              id: "budget2",
-              title: "Budget Test 2",
-              budget: 2000,
-              spent: 0,
-              type: "budget"
-            }
-          ];
-          
-          for (const budget of defaultBudgets) {
-            await db.addBudget(budget);
-          }
-          
-          budgets = defaultBudgets;
-        }
-        
-        console.log('Budgets disponibles après initialisation:', budgets);
-        setAvailableBudgets(budgets);
-      } catch (error) {
-        console.error("Erreur lors du chargement des budgets:", error);
-        toast({
-          variant: "destructive",
-          title: "Erreur",
-          description: "Impossible de charger les budgets"
-        });
-      }
-    };
-    
     loadBudgets();
   }, [toast]);
 
@@ -86,48 +60,37 @@ const Categories = () => {
     setDialogOpen(true);
   };
 
-  const handleBudgetAssignment = (categoryId: string, budgetId: string) => {
-    console.log('Assignation de budget:', { categoryId, budgetId });
-    console.log('Budgets disponibles:', availableBudgets);
-    handleAssignBudget(categoryId, budgetId, availableBudgets)
-      .then(() => {
-        updateCategoryTotals(categoryId, availableBudgets);
-        
-        // Forcer le rechargement des budgets après l'assignation
-        const loadBudgets = async () => {
-          try {
-            const budgets = await db.getBudgets();
-            setAvailableBudgets(budgets);
-          } catch (error) {
-            console.error("Erreur lors du rechargement des budgets:", error);
-          }
-        };
-        loadBudgets();
-      })
-      .catch(error => {
-        console.error("Erreur lors de l'assignation du budget:", error);
+  const handleBudgetAssignment = async (categoryId: string, budgetId: string) => {
+    try {
+      console.log('Assignation de budget:', { categoryId, budgetId });
+      await handleAssignBudget(categoryId, budgetId, availableBudgets);
+      await updateCategoryTotals(categoryId, availableBudgets);
+      await loadBudgets();
+      refreshCategories(); // Rafraîchir les catégories après l'assignation
+    } catch (error) {
+      console.error("Erreur lors de l'assignation du budget:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible d'assigner le budget"
       });
+    }
   };
 
-  const handleBudgetRemoval = (categoryId: string, budgetId: string) => {
-    handleRemoveBudget(categoryId, budgetId, availableBudgets)
-      .then(() => {
-        updateCategoryTotals(categoryId, availableBudgets);
-        
-        // Forcer le rechargement des budgets après le retrait
-        const loadBudgets = async () => {
-          try {
-            const budgets = await db.getBudgets();
-            setAvailableBudgets(budgets);
-          } catch (error) {
-            console.error("Erreur lors du rechargement des budgets:", error);
-          }
-        };
-        loadBudgets();
-      })
-      .catch(error => {
-        console.error("Erreur lors du retrait du budget:", error);
+  const handleBudgetRemoval = async (categoryId: string, budgetId: string) => {
+    try {
+      await handleRemoveBudget(categoryId, budgetId, availableBudgets);
+      await updateCategoryTotals(categoryId, availableBudgets);
+      await loadBudgets();
+      refreshCategories(); // Rafraîchir les catégories après le retrait
+    } catch (error) {
+      console.error("Erreur lors du retrait du budget:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible de retirer le budget"
       });
+    }
   };
 
   return (
