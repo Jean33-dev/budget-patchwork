@@ -21,25 +21,17 @@ export const AssignmentCard = ({
   onRemove,
   getAvailableBudgets 
 }: AssignmentCardProps) => {
-  console.log('Rendu AssignmentCard pour catégorie:', category.name);
-  console.log('Budgets de la catégorie:', category.budgets);
-  console.log('Tous les budgets disponibles:', availableBudgets);
-  
   // S'assurer que category.budgets est un tableau
   const budgets = Array.isArray(category.budgets) ? category.budgets : [];
-  console.log('Budgets après vérification du tableau:', budgets);
   
+  // Récupérer uniquement les budgets non assignés
   const unassignedBudgets = getAvailableBudgets(category.id);
-  console.log('Budgets non assignés pour cette catégorie:', unassignedBudgets);
   
   const assignedBudgets = budgets
     .map(budgetId => availableBudgets.find(b => b.id === budgetId))
     .filter((b): b is Budget => b !== undefined);
-  
-  console.log('Budgets assignés à cette catégorie:', assignedBudgets);
 
   const handleAssign = (budgetId: string) => {
-    console.log('Tentative d\'assignation du budget:', budgetId, 'à la catégorie:', category.id);
     onAssign(category.id, budgetId);
   };
 
