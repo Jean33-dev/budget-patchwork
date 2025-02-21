@@ -28,6 +28,7 @@ interface EnvelopeListProps {
   type: "income" | "expense" | "budget";
   onAddClick: () => void;
   onEnvelopeClick: (envelope: Envelope) => void;
+  onDeleteClick?: (envelope: Envelope) => void;
   onViewExpenses?: (envelope: Envelope) => void;
   onDeleteEnvelope?: (id: string) => void;
   availableBudgets?: Array<{ id: string; title: string }>;
@@ -38,6 +39,7 @@ export const EnvelopeList = ({
   type, 
   onAddClick, 
   onEnvelopeClick,
+  onDeleteClick,
   onViewExpenses,
   onDeleteEnvelope,
   availableBudgets = []
@@ -108,6 +110,7 @@ export const EnvelopeList = ({
                   <TableHead className="hidden sm:table-cell">Date</TableHead>
                   <TableHead className="hidden sm:table-cell">Budget associé</TableHead>
                   <TableHead className="text-right">Montant</TableHead>
+                  {onDeleteClick && <TableHead className="w-[50px]"></TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -115,9 +118,11 @@ export const EnvelopeList = ({
                   <TableRow 
                     key={envelope.id}
                     className="cursor-pointer hover:bg-muted"
-                    onClick={() => onEnvelopeClick(envelope)}
                   >
-                    <TableCell className="font-medium">
+                    <TableCell 
+                      className="font-medium"
+                      onClick={() => onEnvelopeClick(envelope)}
+                    >
                       <div>
                         {envelope.title}
                         <div className="sm:hidden text-sm text-muted-foreground">
@@ -128,15 +133,39 @@ export const EnvelopeList = ({
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="hidden sm:table-cell">
+                    <TableCell 
+                      className="hidden sm:table-cell"
+                      onClick={() => onEnvelopeClick(envelope)}
+                    >
                       {formatDate(envelope.date)}
                     </TableCell>
-                    <TableCell className="hidden sm:table-cell">
+                    <TableCell 
+                      className="hidden sm:table-cell"
+                      onClick={() => onEnvelopeClick(envelope)}
+                    >
                       {getBudgetTitle(envelope.linkedBudgetId)}
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell 
+                      className="text-right"
+                      onClick={() => onEnvelopeClick(envelope)}
+                    >
                       {envelope.budget.toFixed(2)} €
                     </TableCell>
+                    {onDeleteClick && (
+                      <TableCell className="p-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 hover:bg-destructive hover:text-destructive-foreground"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onDeleteClick(envelope);
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))}
               </TableBody>
