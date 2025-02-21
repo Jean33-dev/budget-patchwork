@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
@@ -15,14 +16,18 @@ interface EnvelopeCardProps {
 
 export const EnvelopeCard = ({ 
   title, 
-  budget, 
-  spent, 
+  budget = 0, 
+  spent = 0, 
   type, 
   onClick,
   onViewExpenses 
 }: EnvelopeCardProps) => {
-  const progress = (spent / budget) * 100;
-  const remaining = budget - spent;
+  // Assurons-nous que budget et spent sont des nombres valides
+  const safeSpent = Number(spent) || 0;
+  const safeBudget = Number(budget) || 0;
+  
+  const progress = safeBudget > 0 ? (safeSpent / safeBudget) * 100 : 0;
+  const remaining = safeBudget - safeSpent;
   const isOverBudget = remaining < 0;
 
   if (type === "income") {
@@ -36,7 +41,7 @@ export const EnvelopeCard = ({
         </CardHeader>
         <CardContent>
           <div className="text-xl font-bold text-budget-income">
-            {budget.toFixed(2)} €
+            {safeBudget.toFixed(2)} €
           </div>
         </CardContent>
       </Card>
@@ -54,7 +59,7 @@ export const EnvelopeCard = ({
         </CardHeader>
         <CardContent>
           <div className="text-xl font-bold text-budget-expense">
-            {spent.toFixed(2)} €
+            {safeSpent.toFixed(2)} €
           </div>
         </CardContent>
       </Card>
@@ -89,8 +94,8 @@ export const EnvelopeCard = ({
       <CardContent>
         <div className="space-y-2">
           <div className="flex justify-between text-sm text-gray-500">
-            <span>Budget : {budget.toFixed(2)} €</span>
-            <span>Dépensé : {spent.toFixed(2)} €</span>
+            <span>Budget : {safeBudget.toFixed(2)} €</span>
+            <span>Dépensé : {safeSpent.toFixed(2)} €</span>
           </div>
           <Progress 
             value={Math.min(progress, 100)} 
