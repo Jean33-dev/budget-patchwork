@@ -1,10 +1,10 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useToast } from "@/hooks/use-toast";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { DashboardOverview } from "@/components/dashboard/DashboardOverview";
 import { BudgetStats } from "@/components/dashboard/BudgetStats";
+import { useBudgets } from "@/hooks/useBudgets";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,112 +16,20 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-interface Envelope {
-  id: string;
-  title: string;
-  budget: number;
-  spent: number;
-  type: "income" | "expense" | "budget";
-}
-
-interface MonthlyBudget {
-  date: string;
-  envelopes: Envelope[];
-  remainingBudget: number;
-}
-
-const MONTHLY_BUDGETS_KEY = "app_monthly_budgets";
-const INCOMES_KEY = "app_incomes";
-const EXPENSES_KEY = "app_expenses";
-const BUDGETS_KEY = "app_budgets";
-
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [monthlyBudgets, setMonthlyBudgets] = useState<MonthlyBudget[]>(() => {
-    const stored = localStorage.getItem(MONTHLY_BUDGETS_KEY);
-    return stored ? JSON.parse(stored) : [];
-  });
   const [showTransitionDialog, setShowTransitionDialog] = useState(false);
   const [nextDate, setNextDate] = useState<Date | null>(null);
 
-  // Sauvegarder les budgets mensuels dans le localStorage
-  useEffect(() => {
-    localStorage.setItem(MONTHLY_BUDGETS_KEY, JSON.stringify(monthlyBudgets));
-  }, [monthlyBudgets]);
-
-  useEffect(() => {
-    const currentMonthKey = currentDate.toISOString().slice(0, 7);
-    if (!monthlyBudgets.find(mb => mb.date === currentMonthKey)) {
-      const previousMonth = new Date(currentDate);
-      previousMonth.setMonth(previousMonth.getMonth() - 1);
-      const previousMonthKey = previousMonth.toISOString().slice(0, 7);
-      const previousBudget = monthlyBudgets.find(mb => mb.date === previousMonthKey);
-
-      // Récupérer toutes les données stockées
-      const storedBudgets = localStorage.getItem(BUDGETS_KEY);
-      const storedIncomes = localStorage.getItem(INCOMES_KEY);
-      const storedExpenses = localStorage.getItem(EXPENSES_KEY);
-
-      const currentBudgets = storedBudgets ? JSON.parse(storedBudgets) : [];
-      const currentIncomes = storedIncomes ? JSON.parse(storedIncomes) : [];
-      const currentExpenses = storedExpenses ? JSON.parse(storedExpenses) : [];
-      
-      // Créer les enveloppes à partir des données stockées
-      const budgetEnvelopes = currentBudgets.map((budget: any) => ({
-        id: budget.id,
-        title: budget.title,
-        budget: budget.amount || budget.budget,
-        spent: budget.spent || 0,
-        type: "budget" as const
-      }));
-
-      const incomeEnvelopes = currentIncomes.map((income: any) => ({
-        id: income.id,
-        title: income.title,
-        budget: income.budget,
-        spent: income.spent || income.budget,
-        type: "income" as const
-      }));
-
-      const expenseEnvelopes = currentExpenses.map((expense: any) => ({
-        id: expense.id,
-        title: expense.title,
-        budget: expense.budget,
-        spent: expense.spent,
-        type: "expense" as const
-      }));
-
-      // Si c'est le premier mois et qu'il n'y a pas de données stockées, ajouter des données par défaut
-      const defaultIncomes = incomeEnvelopes.length === 0 ? [
-        { id: "1", title: "Salaire", budget: 5000, spent: 5000, type: "income" as const },
-        { id: "2", title: "Freelance", budget: 1000, spent: 800, type: "income" as const }
-      ] : [];
-
-      setMonthlyBudgets(prev => [...prev, {
-        date: currentMonthKey,
-        envelopes: [
-          ...budgetEnvelopes,
-          ...incomeEnvelopes,
-          ...expenseEnvelopes,
-          ...defaultIncomes
-        ],
-        remainingBudget: previousBudget ? previousBudget.remainingBudget : 0
-      }]);
-
-      // Sauvegarder les nouvelles données
-      if (budgetEnvelopes.length > 0) {
-        localStorage.setItem(BUDGETS_KEY, JSON.stringify(budgetEnvelopes));
-      }
-      if (incomeEnvelopes.length > 0 || defaultIncomes.length > 0) {
-        localStorage.setItem(INCOMES_KEY, JSON.stringify([...incomeEnvelopes, ...defaultIncomes]));
-      }
-      if (expenseEnvelopes.length > 0) {
-        localStorage.setItem(EXPENSES_KEY, JSON.stringify(expenseEnvelopes));
-      }
-    }
-  }, [currentDate, monthlyBudgets]);
+  // Utilisation du hook useBudgets pour obtenir toutes les données
+  const { 
+    budgets, 
+    totalRevenues, 
+    totalExpenses, 
+    totalBudgets,
+    remainingAmount 
+  } = useBudgets();
 
   const handleMonthChange = (newDate: Date) => {
     const newMonthKey = newDate.toISOString().slice(0, 7);
@@ -145,24 +53,14 @@ const Dashboard = () => {
     setShowTransitionDialog(false);
   };
 
-  const currentMonthBudget = monthlyBudgets.find(
-    mb => mb.date === currentDate.toISOString().slice(0, 7)
-  ) || { envelopes: [], remainingBudget: 0 };
-
-  const totalIncome = currentMonthBudget.envelopes
-    .filter((env) => env.type === "income")
-    .reduce((sum, env) => sum + env.budget, 0);
-
-  const totalBudgets = currentMonthBudget.envelopes
-    .filter((env) => env.type === "budget")
-    .reduce((sum, env) => sum + env.budget, 0);
-
-  const totalExpenses = currentMonthBudget.envelopes
-    .filter((env) => env.type === "expense")
-    .reduce((sum, env) => sum + env.spent, 0);
-
-  const remainingBudget = totalIncome - totalBudgets;
-  const remainingBudgetAfterExpenses = totalBudgets - totalExpenses;
+  // Créer la liste des enveloppes à partir des budgets
+  const envelopes = budgets.map(budget => ({
+    id: budget.id,
+    title: budget.title,
+    budget: budget.budget,
+    spent: budget.spent,
+    type: budget.type
+  }));
 
   return (
     <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-8 space-y-6 sm:space-y-8">
@@ -173,14 +71,14 @@ const Dashboard = () => {
       />
       
       <DashboardOverview
-        totalIncome={totalIncome}
+        totalIncome={totalRevenues}
         totalExpenses={totalExpenses}
-        envelopes={currentMonthBudget.envelopes}
+        envelopes={envelopes}
       />
       
       <BudgetStats
-        remainingBudget={remainingBudget}
-        remainingBudgetAfterExpenses={remainingBudgetAfterExpenses}
+        remainingBudget={remainingAmount}
+        remainingBudgetAfterExpenses={totalBudgets - totalExpenses}
       />
 
       <AlertDialog open={showTransitionDialog} onOpenChange={setShowTransitionDialog}>
