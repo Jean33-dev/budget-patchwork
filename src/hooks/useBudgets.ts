@@ -161,7 +161,7 @@ export const useBudgets = () => {
   };
 
   const totalBudgets = budgets.reduce((sum, budget) => sum + budget.budget, 0);
-  const remainingAmount = totalRevenues - totalExpenses;
+  const remainingAmount = totalRevenues - totalBudgets; // Changé pour utiliser totalBudgets au lieu de totalExpenses
 
   return {
     budgets,

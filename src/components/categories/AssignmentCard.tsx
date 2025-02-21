@@ -36,19 +36,6 @@ export const AssignmentCard = ({
   
   console.log('Budgets assignés à cette catégorie:', assignedBudgets);
 
-  const handleBudgetAssignment = (value: string) => {
-    console.log('Tentative d\'assignation du budget:', value);
-    console.log('À la catégorie:', category.id);
-    console.log('État actuel des budgets de la catégorie:', budgets);
-    onAssign(category.id, value);
-  };
-
-  const handleBudgetRemoval = (budgetId: string) => {
-    console.log('Tentative de retrait du budget:', budgetId);
-    console.log('De la catégorie:', category.id);
-    onRemove(category.id, budgetId);
-  };
-
   return (
     <Card>
       <CardHeader>
@@ -59,7 +46,7 @@ export const AssignmentCard = ({
           <Label>Assigner un budget</Label>
           <div className="relative">
             {unassignedBudgets.length > 0 ? (
-              <Select onValueChange={handleBudgetAssignment}>
+              <Select onValueChange={(value) => onAssign(category.id, value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Sélectionner un budget" />
                 </SelectTrigger>
@@ -93,7 +80,7 @@ export const AssignmentCard = ({
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => handleBudgetRemoval(budget.id)}
+                    onClick={() => onRemove(category.id, budget.id)}
                     className="h-6 w-6 hover:bg-destructive hover:text-destructive-foreground"
                   >
                     <X className="h-4 w-4" />
