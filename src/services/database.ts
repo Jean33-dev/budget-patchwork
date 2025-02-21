@@ -130,6 +130,8 @@ class Database {
 
   // Méthodes pour les revenus
   async getIncomes(): Promise<Income[]> {
+    if (!this.initialized) await this.init();
+    
     const result = this.db.exec('SELECT * FROM incomes');
     return result[0]?.values?.map((row: any[]) => ({
       id: row[0],
@@ -141,6 +143,8 @@ class Database {
   }
 
   async addIncome(income: Income) {
+    if (!this.initialized) await this.init();
+    
     this.db.run(
       'INSERT INTO incomes (id, title, budget, spent, type) VALUES (?, ?, ?, ?, ?)',
       [income.id, income.title, income.budget, income.spent, income.type]
@@ -148,6 +152,8 @@ class Database {
   }
 
   async updateIncome(income: Income) {
+    if (!this.initialized) await this.init();
+    
     this.db.run(
       'UPDATE incomes SET title = ?, budget = ?, spent = ? WHERE id = ?',
       [income.title, income.budget, income.spent, income.id]
@@ -155,11 +161,14 @@ class Database {
   }
 
   async deleteIncome(id: string) {
+    if (!this.initialized) await this.init();
     this.db.run('DELETE FROM incomes WHERE id = ?', [id]);
   }
 
   // Méthodes pour les dépenses
   async getExpenses(): Promise<Expense[]> {
+    if (!this.initialized) await this.init();
+    
     const result = this.db.exec('SELECT * FROM expenses');
     return result[0]?.values?.map((row: any[]) => ({
       id: row[0],
@@ -173,6 +182,8 @@ class Database {
   }
 
   async addExpense(expense: Expense) {
+    if (!this.initialized) await this.init();
+    
     this.db.run(
       'INSERT INTO expenses (id, title, budget, spent, type, linkedBudgetId, date) VALUES (?, ?, ?, ?, ?, ?, ?)',
       [expense.id, expense.title, expense.budget, expense.spent, expense.type, expense.linkedBudgetId, expense.date]
@@ -180,6 +191,8 @@ class Database {
   }
 
   async updateExpense(expense: Expense) {
+    if (!this.initialized) await this.init();
+    
     this.db.run(
       'UPDATE expenses SET title = ?, budget = ?, spent = ?, linkedBudgetId = ?, date = ? WHERE id = ?',
       [expense.title, expense.budget, expense.spent, expense.linkedBudgetId, expense.date, expense.id]
@@ -187,11 +200,14 @@ class Database {
   }
 
   async deleteExpense(id: string) {
+    if (!this.initialized) await this.init();
     this.db.run('DELETE FROM expenses WHERE id = ?', [id]);
   }
 
   // Méthodes pour les budgets
   async getBudgets(): Promise<Budget[]> {
+    if (!this.initialized) await this.init();
+    
     const result = this.db.exec('SELECT * FROM budgets');
     return result[0]?.values?.map((row: any[]) => ({
       id: row[0],
@@ -203,6 +219,8 @@ class Database {
   }
 
   async addBudget(budget: Budget) {
+    if (!this.initialized) await this.init();
+    
     this.db.run(
       'INSERT INTO budgets (id, title, budget, spent, type) VALUES (?, ?, ?, ?, ?)',
       [budget.id, budget.title, budget.budget, budget.spent, budget.type]
@@ -210,6 +228,8 @@ class Database {
   }
 
   async updateBudget(budget: Budget) {
+    if (!this.initialized) await this.init();
+    
     this.db.run(
       'UPDATE budgets SET title = ?, budget = ?, spent = ? WHERE id = ?',
       [budget.title, budget.budget, budget.spent, budget.id]
@@ -217,11 +237,14 @@ class Database {
   }
 
   async deleteBudget(id: string) {
+    if (!this.initialized) await this.init();
     this.db.run('DELETE FROM budgets WHERE id = ?', [id]);
   }
 
   // Méthodes pour les catégories
   async getCategories(): Promise<Category[]> {
+    if (!this.initialized) await this.init();
+    
     const result = this.db.exec('SELECT * FROM categories');
     return result[0]?.values?.map((row: any[]) => ({
       id: row[0],
@@ -234,6 +257,8 @@ class Database {
   }
 
   async addCategory(category: Category) {
+    if (!this.initialized) await this.init();
+    
     this.db.run(
       'INSERT INTO categories (id, name, budgets, total, spent, description) VALUES (?, ?, ?, ?, ?, ?)',
       [category.id, category.name, JSON.stringify(category.budgets), category.total, category.spent, category.description]
@@ -241,6 +266,8 @@ class Database {
   }
 
   async updateCategory(category: Category) {
+    if (!this.initialized) await this.init();
+    
     this.db.run(
       'UPDATE categories SET name = ?, budgets = ?, total = ?, spent = ?, description = ? WHERE id = ?',
       [category.name, JSON.stringify(category.budgets), category.total, category.spent, category.description, category.id]
@@ -248,6 +275,7 @@ class Database {
   }
 
   async deleteCategory(id: string) {
+    if (!this.initialized) await this.init();
     this.db.run('DELETE FROM categories WHERE id = ?', [id]);
   }
 

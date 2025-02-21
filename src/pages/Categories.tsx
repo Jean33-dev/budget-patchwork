@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Menu } from "lucide-react";
@@ -18,10 +19,7 @@ import { db } from "@/services/database";
 
 const Categories = () => {
   const navigate = useNavigate();
-  const [availableBudgets, setAvailableBudgets] = useState(() => {
-    const stored = localStorage.getItem("app_budgets");
-    return stored ? JSON.parse(stored) : [];
-  });
+  const [availableBudgets, setAvailableBudgets] = useState([]);
 
   const { 
     categories, 
@@ -39,12 +37,19 @@ const Categories = () => {
     setDialogOpen(true);
   };
 
-  // Mettre à jour la liste des budgets quand le localStorage change
-  window.addEventListener('storage', (e) => {
-    if (e.key === "app_budgets") {
-      setAvailableBudgets(e.newValue ? JSON.parse(e.newValue) : []);
-    }
-  });
+  // Charger les budgets depuis SQLite
+  useEffect(() => {
+    const loadBudgets = async () => {
+      try {
+        const budgets = await db.getBudgets();
+        setAvailableBudgets(budgets);
+      } catch (error) {
+        console.error("Erreur lors du chargement des budgets:", error);
+      }
+    };
+    
+    loadBudgets();
+  }, []);
 
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">

@@ -1,4 +1,3 @@
-
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -25,15 +24,8 @@ const Expenses = () => {
   const { toast } = useToast();
 
   // États
-  const [expenses, setExpenses] = useState<Expense[]>(() => {
-    const stored = localStorage.getItem('app_expenses');
-    return stored ? JSON.parse(stored) : [];
-  });
-
-  const [availableBudgets, setAvailableBudgets] = useState(() => {
-    const stored = localStorage.getItem('app_budgets');
-    return stored ? JSON.parse(stored) : [];
-  });
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [availableBudgets, setAvailableBudgets] = useState([]);
 
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -43,21 +35,22 @@ const Expenses = () => {
   const [editBudget, setEditBudget] = useState(0);
   const [editDate, setEditDate] = useState("");
 
-  // Effets
+  // Charger les données depuis SQLite
   useEffect(() => {
-    localStorage.setItem('app_expenses', JSON.stringify(expenses));
-  }, [expenses]);
-
-  // Mettre à jour la liste des budgets quand le localStorage change
-  useEffect(() => {
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'app_budgets') {
-        setAvailableBudgets(e.newValue ? JSON.parse(e.newValue) : []);
+    const loadData = async () => {
+      try {
+        const budgets = await db.getBudgets();
+        setAvailableBudgets(budgets);
+        
+        // Nous devrons aussi implémenter getExpenses dans la classe Database
+        const expenses = await db.getExpenses();
+        setExpenses(expenses);
+      } catch (error) {
+        console.error("Erreur lors du chargement des données:", error);
       }
     };
-
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+    
+    loadData();
   }, []);
 
   // Filtrage des dépenses
