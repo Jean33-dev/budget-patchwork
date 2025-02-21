@@ -9,14 +9,16 @@ interface MoneyInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElemen
   className?: string;
 }
 
-export const MoneyInput = ({ value, onChange, className, ...props }: MoneyInputProps) => {
+export const MoneyInput = ({ value = 0, onChange, className, ...props }: MoneyInputProps) => {
   const [isEditing, setIsEditing] = useState(false);
 
   const formatValue = (num: number): string => {
     if (isEditing) {
       return num.toString();
     }
-    return num.toFixed(2).replace(".", ",");
+    // Assurons-nous que num est un nombre valide
+    const safeNum = typeof num === 'number' && !isNaN(num) ? num : 0;
+    return safeNum.toFixed(2).replace(".", ",");
   };
 
   const [inputValue, setInputValue] = useState(formatValue(value));
@@ -48,13 +50,20 @@ export const MoneyInput = ({ value, onChange, className, ...props }: MoneyInputP
 
   const handleFocus = () => {
     setIsEditing(true);
-    setInputValue(value.toString().replace(".", ","));
+    // Assurons-nous que value est un nombre valide
+    const safeValue = typeof value === 'number' && !isNaN(value) ? value : 0;
+    setInputValue(safeValue.toString().replace(".", ","));
   };
 
   const handleBlur = () => {
     setIsEditing(false);
     setInputValue(formatValue(value));
   };
+
+  // Mettre à jour la valeur affichée si la prop value change
+  React.useEffect(() => {
+    setInputValue(formatValue(value));
+  }, [value]);
 
   return (
     <div className={cn("relative", className)}>
