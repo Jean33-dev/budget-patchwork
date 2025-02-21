@@ -1,3 +1,4 @@
+
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -6,6 +7,7 @@ import { AddEnvelopeDialog } from "@/components/budget/AddEnvelopeDialog";
 import { ExpensesHeader } from "@/components/budget/ExpensesHeader";
 import { EditExpenseDialog } from "@/components/budget/EditExpenseDialog";
 import { DeleteExpenseDialog } from "@/components/budget/DeleteExpenseDialog";
+import { db } from "@/services/database"; // Ajout de l'import manquant
 
 type Expense = {
   id: string;
@@ -42,7 +44,6 @@ const Expenses = () => {
         const budgets = await db.getBudgets();
         setAvailableBudgets(budgets);
         
-        // Nous devrons aussi implémenter getExpenses dans la classe Database
         const expenses = await db.getExpenses();
         setExpenses(expenses);
       } catch (error) {
