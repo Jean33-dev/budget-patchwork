@@ -36,18 +36,28 @@ const Budgets = () => {
   const [editTitle, setEditTitle] = useState("");
   const [editBudget, setEditBudget] = useState(0);
   const [budgets, setBudgets] = useState<Budget[]>([]);
+  const [totalRevenues, setTotalRevenues] = useState(0);
 
   useEffect(() => {
     const loadData = async () => {
       try {
+        console.log("Chargement des budgets et revenus...");
         const budgetsData = await db.getBudgets();
+        console.log("Budgets chargés:", budgetsData);
         setBudgets(budgetsData);
+
+        // Charger les revenus depuis la base de données
+        const incomesData = await db.getIncomes();
+        console.log("Revenus chargés:", incomesData);
+        const totalIncome = incomesData.reduce((sum, income) => sum + income.budget, 0);
+        console.log("Total des revenus:", totalIncome);
+        setTotalRevenues(totalIncome);
       } catch (error) {
-        console.error("Erreur lors du chargement des budgets:", error);
+        console.error("Erreur lors du chargement des données:", error);
         toast({
           variant: "destructive",
           title: "Erreur",
-          description: "Impossible de charger les budgets"
+          description: "Impossible de charger les données"
         });
       }
     };
@@ -55,9 +65,14 @@ const Budgets = () => {
     loadData();
   }, []);
 
-  const totalRevenues = 2500;
-  const totalBudgets = budgets.reduce((sum, budget) => sum + budget.budget, 0);
+  // Calculer le total des budgets alloués
+  const totalBudgets = budgets.reduce((sum, budget) => sum + (budget.budget || 0), 0);
+  console.log("Total des budgets:", totalBudgets);
+  console.log("Total des revenus:", totalRevenues);
+  
+  // Calculer le montant restant
   const remainingAmount = totalRevenues - totalBudgets;
+  console.log("Montant restant:", remainingAmount);
 
   const handleEnvelopeClick = (envelope: Budget) => {
     setSelectedBudget(envelope);
