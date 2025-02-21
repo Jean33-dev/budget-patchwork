@@ -1,4 +1,3 @@
-
 import { Budget } from "@/types/categories";
 import { useToast } from "@/hooks/use-toast";
 import { db } from "@/services/database";
@@ -24,12 +23,11 @@ export const useBudgetAssignment = (categories: any[], setCategories: (categorie
       const { total, spent } = calculateCategoryTotals(currentCategory.budgets, availableBudgets);
       console.log("Nouveaux totaux calculés:", { total, spent });
 
-      // IMPORTANT : Garder les budgets existants !
+      // Garder exactement les mêmes budgets
       const updatedCategory = {
         ...currentCategory,
         total,
-        spent,
-        budgets: [...currentCategory.budgets] // Créer une copie du tableau des budgets
+        spent
       };
 
       console.log("=== Sauvegarde de la catégorie avec les nouveaux totaux ===");
@@ -108,8 +106,6 @@ export const useBudgetAssignment = (categories: any[], setCategories: (categorie
       });
       
       console.log("=== Assignation terminée avec succès ===");
-      
-      // Ne pas appeler updateCategoryTotals ici car les totaux sont déjà à jour
     } catch (error) {
       console.error("Erreur lors de l'assignation du budget:", error);
       toast({
