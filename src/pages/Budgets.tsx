@@ -1,4 +1,3 @@
-
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Menu } from "lucide-react";
@@ -44,13 +43,26 @@ const Budgets = () => {
         console.log("Chargement des budgets et revenus...");
         const budgetsData = await db.getBudgets();
         console.log("Budgets chargés:", budgetsData);
-        setBudgets(budgetsData);
+        
+        const validatedBudgets = budgetsData.map(budget => ({
+          ...budget,
+          budget: Number(budget.budget) || 0,
+          spent: Number(budget.spent) || 0
+        }));
+        
+        setBudgets(validatedBudgets);
+        console.log("Budgets validés:", validatedBudgets);
 
-        // Charger les revenus depuis la base de données
         const incomesData = await db.getIncomes();
         console.log("Revenus chargés:", incomesData);
-        const totalIncome = incomesData.reduce((sum, income) => sum + income.budget, 0);
-        console.log("Total des revenus:", totalIncome);
+        
+        const totalIncome = incomesData.reduce((sum, income) => {
+          const budgetAmount = Number(income.budget) || 0;
+          console.log(`Revenu ${income.title}:`, budgetAmount);
+          return sum + budgetAmount;
+        }, 0);
+        
+        console.log("Total des revenus calculé:", totalIncome);
         setTotalRevenues(totalIncome);
       } catch (error) {
         console.error("Erreur lors du chargement des données:", error);
@@ -65,14 +77,17 @@ const Budgets = () => {
     loadData();
   }, []);
 
-  // Calculer le total des budgets alloués
-  const totalBudgets = budgets.reduce((sum, budget) => sum + (budget.budget || 0), 0);
-  console.log("Total des budgets:", totalBudgets);
-  console.log("Total des revenus:", totalRevenues);
+  const totalBudgets = budgets.reduce((sum, budget) => {
+    const budgetAmount = Number(budget.budget) || 0;
+    console.log(`Budget ${budget.title}:`, budgetAmount);
+    return sum + budgetAmount;
+  }, 0);
   
-  // Calculer le montant restant
-  const remainingAmount = totalRevenues - totalBudgets;
-  console.log("Montant restant:", remainingAmount);
+  console.log("Total des budgets calculé:", totalBudgets);
+  console.log("Total des revenus disponible:", totalRevenues);
+  
+  const remainingAmount = Number(totalRevenues) - Number(totalBudgets);
+  console.log("Montant restant calculé:", remainingAmount);
 
   const handleEnvelopeClick = (envelope: Budget) => {
     setSelectedBudget(envelope);
@@ -123,7 +138,6 @@ const Budgets = () => {
 
   const handleDeleteBudget = async (budget: Budget) => {
     try {
-      // Vérifie si le budget a des dépenses associées
       const expenses = await db.getExpenses();
       const hasLinkedExpenses = expenses.some(expense => expense.linkedBudgetId === budget.id);
       
@@ -232,7 +246,7 @@ const Budgets = () => {
 
       <div className="space-y-4">
         <div className={`text-sm font-medium ${remainingAmount < 0 ? 'text-red-500' : ''}`}>
-          Montant restant à répartir : {remainingAmount.toFixed(2)}€
+          Montant restant à répartir : {Number.isFinite(remainingAmount) ? remainingAmount.toFixed(2) : "0.00"}€
         </div>
         {remainingAmount < 0 && (
           <Alert variant="destructive" className="py-2">
