@@ -1,3 +1,4 @@
+
 import initSqlJs from 'sql.js';
 import { toast } from "@/components/ui/use-toast";
 
@@ -51,15 +52,51 @@ class Database {
       
       this.db = new SQL.Database();
       
-      // Tables SQL
-      this.db.run('CREATE TABLE IF NOT EXISTS incomes (id TEXT PRIMARY KEY, title TEXT, budget REAL, spent REAL, type TEXT)');
-      this.db.run('CREATE TABLE IF NOT EXISTS expenses (id TEXT PRIMARY KEY, title TEXT, budget REAL, spent REAL, type TEXT, linkedBudgetId TEXT, date TEXT)');
-      this.db.run('CREATE TABLE IF NOT EXISTS budgets (id TEXT PRIMARY KEY, title TEXT, budget REAL, spent REAL, type TEXT)');
-      this.db.run('CREATE TABLE IF NOT EXISTS categories (id TEXT PRIMARY KEY, name TEXT, budgets TEXT, total REAL, spent REAL, description TEXT)');
+      // Tables SQL avec des valeurs par défaut pour les colonnes numériques
+      this.db.run(`
+        CREATE TABLE IF NOT EXISTS incomes (
+          id TEXT PRIMARY KEY,
+          title TEXT,
+          budget REAL DEFAULT 0,
+          spent REAL DEFAULT 0,
+          type TEXT
+        )
+      `);
+      
+      this.db.run(`
+        CREATE TABLE IF NOT EXISTS expenses (
+          id TEXT PRIMARY KEY,
+          title TEXT,
+          budget REAL DEFAULT 0,
+          spent REAL DEFAULT 0,
+          type TEXT,
+          linkedBudgetId TEXT,
+          date TEXT
+        )
+      `);
+      
+      this.db.run(`
+        CREATE TABLE IF NOT EXISTS budgets (
+          id TEXT PRIMARY KEY,
+          title TEXT,
+          budget REAL DEFAULT 0,
+          spent REAL DEFAULT 0,
+          type TEXT
+        )
+      `);
+      
+      this.db.run(`
+        CREATE TABLE IF NOT EXISTS categories (
+          id TEXT PRIMARY KEY,
+          name TEXT,
+          budgets TEXT,
+          total REAL DEFAULT 0,
+          spent REAL DEFAULT 0,
+          description TEXT
+        )
+      `);
 
       this.initialized = true;
-
-      // Charger les données existantes depuis le localStorage
       await this.migrateFromLocalStorage();
 
     } catch (err) {
@@ -72,53 +109,41 @@ class Database {
     }
   }
 
-  private migrateFromLocalStorage() {
+  private async migrateFromLocalStorage() {
     // Migrer les revenus
     const storedIncomes = localStorage.getItem('app_incomes');
     if (storedIncomes) {
       const incomes = JSON.parse(storedIncomes);
-      incomes.forEach((income: Income) => {
-        this.db.run(
-          'INSERT OR REPLACE INTO incomes (id, title, budget, spent, type) VALUES (?, ?, ?, ?, ?)',
-          [income.id, income.title, income.budget, income.spent, income.type]
-        );
-      });
+      for (const income of incomes) {
+        await this.addIncome(income);
+      }
     }
 
     // Migrer les dépenses
     const storedExpenses = localStorage.getItem('app_expenses');
     if (storedExpenses) {
       const expenses = JSON.parse(storedExpenses);
-      expenses.forEach((expense: Expense) => {
-        this.db.run(
-          'INSERT OR REPLACE INTO expenses (id, title, budget, spent, type, linkedBudgetId, date) VALUES (?, ?, ?, ?, ?, ?, ?)',
-          [expense.id, expense.title, expense.budget, expense.spent, expense.type, expense.linkedBudgetId, expense.date]
-        );
-      });
+      for (const expense of expenses) {
+        await this.addExpense(expense);
+      }
     }
 
     // Migrer les budgets
     const storedBudgets = localStorage.getItem('app_budgets');
     if (storedBudgets) {
       const budgets = JSON.parse(storedBudgets);
-      budgets.forEach((budget: Budget) => {
-        this.db.run(
-          'INSERT OR REPLACE INTO budgets (id, title, budget, spent, type) VALUES (?, ?, ?, ?, ?)',
-          [budget.id, budget.title, budget.budget, budget.spent, budget.type]
-        );
-      });
+      for (const budget of budgets) {
+        await this.addBudget(budget);
+      }
     }
 
     // Migrer les catégories
     const storedCategories = localStorage.getItem('app_categories');
     if (storedCategories) {
       const categories = JSON.parse(storedCategories);
-      categories.forEach((category: Category) => {
-        this.db.run(
-          'INSERT OR REPLACE INTO categories (id, name, budgets, total, spent, description) VALUES (?, ?, ?, ?, ?, ?)',
-          [category.id, category.name, JSON.stringify(category.budgets), category.total, category.spent, category.description]
-        );
-      });
+      for (const category of categories) {
+        await this.addCategory(category);
+      }
     }
 
     // Supprimer les anciennes données du localStorage
