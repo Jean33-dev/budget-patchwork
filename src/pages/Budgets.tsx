@@ -44,13 +44,7 @@ const Budgets = () => {
   });
 
   useEffect(() => {
-    const budgetsForStorage = budgets.map(budget => ({
-      id: budget.id,
-      title: budget.title,
-      amount: budget.budget,
-      spent: budget.spent
-    }));
-    localStorage.setItem(BUDGETS_STORAGE_KEY, JSON.stringify(budgetsForStorage));
+    localStorage.setItem(BUDGETS_STORAGE_KEY, JSON.stringify(budgets));
   }, [budgets]);
 
   const totalRevenues = 2500;
