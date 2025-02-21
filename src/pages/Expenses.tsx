@@ -8,8 +8,6 @@ import { ExpensesHeader } from "@/components/budget/ExpensesHeader";
 import { EditExpenseDialog } from "@/components/budget/EditExpenseDialog";
 import { DeleteExpenseDialog } from "@/components/budget/DeleteExpenseDialog";
 
-const EXPENSES_STORAGE_KEY = "app_expenses";
-
 type Expense = {
   id: string;
   title: string;
@@ -28,9 +26,15 @@ const Expenses = () => {
 
   // États
   const [expenses, setExpenses] = useState<Expense[]>(() => {
-    const stored = localStorage.getItem(EXPENSES_STORAGE_KEY);
+    const stored = localStorage.getItem('app_expenses');
     return stored ? JSON.parse(stored) : [];
   });
+
+  const [availableBudgets, setAvailableBudgets] = useState(() => {
+    const stored = localStorage.getItem('app_budgets');
+    return stored ? JSON.parse(stored) : [];
+  });
+
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -41,8 +45,20 @@ const Expenses = () => {
 
   // Effets
   useEffect(() => {
-    localStorage.setItem(EXPENSES_STORAGE_KEY, JSON.stringify(expenses));
+    localStorage.setItem('app_expenses', JSON.stringify(expenses));
   }, [expenses]);
+
+  // Mettre à jour la liste des budgets quand le localStorage change
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'app_budgets') {
+        setAvailableBudgets(e.newValue ? JSON.parse(e.newValue) : []);
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
 
   // Filtrage des dépenses
   const filteredExpenses = budgetId 
@@ -147,6 +163,7 @@ const Expenses = () => {
           onAddClick={() => setAddDialogOpen(true)}
           onEnvelopeClick={handleEnvelopeClick}
           onDeleteClick={handleDeleteClick}
+          availableBudgets={availableBudgets}
         />
       </div>
 
@@ -156,6 +173,7 @@ const Expenses = () => {
         onOpenChange={setAddDialogOpen}
         onAdd={handleAddEnvelope}
         defaultBudgetId={budgetId || undefined}
+        availableBudgets={availableBudgets}
       />
 
       <EditExpenseDialog

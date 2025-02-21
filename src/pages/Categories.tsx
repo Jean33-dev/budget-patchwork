@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -15,22 +14,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
-// On charge les budgets depuis le localStorage
-const BUDGETS_STORAGE_KEY = "app_budgets";
-const getStoredBudgets = () => {
-  const stored = localStorage.getItem(BUDGETS_STORAGE_KEY);
-  return stored ? JSON.parse(stored) : [
-    { id: "1", title: "Budget Logement", amount: 1000, spent: 800 },
-    { id: "2", title: "Budget Alimentation", amount: 500, spent: 450 },
-    { id: "3", title: "Budget Transport", amount: 200, spent: 180 },
-    { id: "4", title: "Budget Loisirs", amount: 300, spent: 250 }
-  ];
-};
+import { db } from "@/services/database";
 
 const Categories = () => {
   const navigate = useNavigate();
-  const [availableBudgets, setAvailableBudgets] = useState(getStoredBudgets());
+  const [availableBudgets, setAvailableBudgets] = useState(() => {
+    const stored = localStorage.getItem("app_budgets");
+    return stored ? JSON.parse(stored) : [];
+  });
+
   const { 
     categories, 
     handleAssignBudget, 
@@ -49,8 +41,8 @@ const Categories = () => {
 
   // Mettre à jour la liste des budgets quand le localStorage change
   window.addEventListener('storage', (e) => {
-    if (e.key === BUDGETS_STORAGE_KEY) {
-      setAvailableBudgets(getStoredBudgets());
+    if (e.key === "app_budgets") {
+      setAvailableBudgets(e.newValue ? JSON.parse(e.newValue) : []);
     }
   });
 
