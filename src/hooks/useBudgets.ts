@@ -14,6 +14,7 @@ export type Budget = {
 export const useBudgets = () => {
   const [budgets, setBudgets] = useState<Budget[]>([]);
   const [totalRevenues, setTotalRevenues] = useState(0);
+  const [totalExpenses, setTotalExpenses] = useState(0);
 
   useEffect(() => {
     loadData();
@@ -21,36 +22,47 @@ export const useBudgets = () => {
 
   const loadData = async () => {
     try {
-      console.log("Chargement des budgets et revenus...");
+      // Chargement des budgets
       const budgetsData = await db.getBudgets();
-      console.log("Budgets chargés:", budgetsData);
       
+      // Chargement des dépenses
       const expenses = await db.getExpenses();
-      console.log("Dépenses chargées:", expenses);
+      console.log("Dépenses totales chargées:", expenses);
       
+      // Calcul du total des dépenses
+      const totalSpent = expenses.reduce((sum, expense) => 
+        sum + (Number(expense.budget) || 0), 0
+      );
+      setTotalExpenses(totalSpent);
+      
+      // Mise à jour des budgets avec leurs dépenses associées
       const validatedBudgets = budgetsData.map(budget => {
-        const budgetExpenses = expenses.filter(expense => expense.linkedBudgetId === budget.id);
-        const totalSpent = budgetExpenses.reduce((sum, expense) => sum + (Number(expense.budget) || 0), 0);
+        const budgetExpenses = expenses.filter(expense => 
+          expense.linkedBudgetId === budget.id
+        );
+        const budgetSpent = budgetExpenses.reduce((sum, expense) => 
+          sum + (Number(expense.budget) || 0), 0
+        );
         
         return {
           ...budget,
           budget: Number(budget.budget) || 0,
-          spent: totalSpent
+          spent: budgetSpent
         };
       });
       
       setBudgets(validatedBudgets);
-      console.log("Budgets validés avec dépenses:", validatedBudgets);
+      console.log("Budgets mis à jour avec dépenses:", validatedBudgets);
 
+      // Chargement et calcul des revenus
       const incomesData = await db.getIncomes();
-      console.log("Revenus chargés:", incomesData);
-      
-      const totalIncome = incomesData.reduce((sum, income) => {
-        const budgetAmount = Number(income.budget) || 0;
-        return sum + budgetAmount;
-      }, 0);
+      const totalIncome = incomesData.reduce((sum, income) => 
+        sum + (Number(income.budget) || 0), 0
+      );
       
       setTotalRevenues(totalIncome);
+      console.log("Revenus totaux calculés:", totalIncome);
+      
     } catch (error) {
       console.error("Erreur lors du chargement des données:", error);
       toast({
@@ -72,7 +84,7 @@ export const useBudgets = () => {
       };
 
       await db.addBudget(budgetToAdd);
-      setBudgets([...budgets, budgetToAdd]);
+      setBudgets(prevBudgets => [...prevBudgets, budgetToAdd]);
       
       toast({
         title: "Budget ajouté",
@@ -93,7 +105,9 @@ export const useBudgets = () => {
   const updateBudget = async (budgetToUpdate: Budget) => {
     try {
       await db.updateBudget(budgetToUpdate);
-      setBudgets(budgets.map(b => b.id === budgetToUpdate.id ? budgetToUpdate : b));
+      setBudgets(prevBudgets => 
+        prevBudgets.map(b => b.id === budgetToUpdate.id ? budgetToUpdate : b)
+      );
       
       toast({
         title: "Budget modifié",
@@ -114,7 +128,9 @@ export const useBudgets = () => {
   const deleteBudget = async (budgetId: string) => {
     try {
       const expenses = await db.getExpenses();
-      const hasLinkedExpenses = expenses.some(expense => expense.linkedBudgetId === budgetId);
+      const hasLinkedExpenses = expenses.some(expense => 
+        expense.linkedBudgetId === budgetId
+      );
       
       if (hasLinkedExpenses) {
         toast({
@@ -126,7 +142,7 @@ export const useBudgets = () => {
       }
 
       await db.deleteBudget(budgetId);
-      setBudgets(budgets.filter(b => b.id !== budgetId));
+      setBudgets(prevBudgets => prevBudgets.filter(b => b.id !== budgetId));
       
       toast({
         title: "Budget supprimé",
@@ -145,15 +161,17 @@ export const useBudgets = () => {
   };
 
   const totalBudgets = budgets.reduce((sum, budget) => sum + budget.budget, 0);
-  const remainingAmount = totalRevenues - totalBudgets;
+  const remainingAmount = totalRevenues - totalExpenses;
 
   return {
     budgets,
     totalRevenues,
     totalBudgets,
+    totalExpenses,
     remainingAmount,
     addBudget,
     updateBudget,
-    deleteBudget
+    deleteBudget,
+    refreshData: loadData
   };
 };
