@@ -21,6 +21,10 @@ export const AssignmentCard = ({
   onRemove,
   getAvailableBudgets 
 }: AssignmentCardProps) => {
+  // Filtrer les budgets déjà assignés à cette catégorie
+  const unassignedBudgets = getAvailableBudgets(category.id)
+    .filter(budget => !category.budgets.includes(budget.title));
+
   return (
     <Card>
       <CardHeader>
@@ -34,7 +38,7 @@ export const AssignmentCard = ({
               <SelectValue placeholder="Sélectionner un budget" />
             </SelectTrigger>
             <SelectContent>
-              {getAvailableBudgets(category.id).map((budget) => (
+              {unassignedBudgets.map((budget) => (
                 <SelectItem key={budget.id} value={budget.id}>
                   {budget.title}
                 </SelectItem>
