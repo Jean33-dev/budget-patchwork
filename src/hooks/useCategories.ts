@@ -2,8 +2,7 @@
 import { useState, useEffect } from "react";
 import { Category, Budget } from "@/types/categories";
 import { useToast } from "@/hooks/use-toast";
-
-const CATEGORIES_STORAGE_KEY = "app_categories";
+import { db } from "@/services/database";
 
 const defaultCategories: Category[] = [
   { 
@@ -44,14 +43,35 @@ interface TransitionEnvelope {
 
 export const useCategories = () => {
   const { toast } = useToast();
-  const [categories, setCategories] = useState<Category[]>(() => {
-    const saved = localStorage.getItem(CATEGORIES_STORAGE_KEY);
-    return saved ? JSON.parse(saved) : defaultCategories;
-  });
+  const [categories, setCategories] = useState<Category[]>([]);
 
+  // Charger les catégories depuis SQLite
   useEffect(() => {
-    localStorage.setItem(CATEGORIES_STORAGE_KEY, JSON.stringify(categories));
-  }, [categories]);
+    const loadCategories = async () => {
+      try {
+        let dbCategories = await db.getCategories();
+        
+        // Si aucune catégorie n'existe, initialiser avec les catégories par défaut
+        if (dbCategories.length === 0) {
+          for (const category of defaultCategories) {
+            await db.addCategory(category);
+          }
+          dbCategories = defaultCategories;
+        }
+        
+        setCategories(dbCategories);
+      } catch (error) {
+        console.error("Erreur lors du chargement des catégories:", error);
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Impossible de charger les catégories"
+        });
+      }
+    };
+
+    loadCategories();
+  }, [toast]);
 
   const getAssignedBudgets = () => {
     const assignedBudgets = new Set<string>();
@@ -63,9 +83,9 @@ export const useCategories = () => {
     return assignedBudgets;
   };
 
-  const updateCategoryTotals = (categoryId: string, availableBudgets: Budget[]) => {
-    setCategories(prevCategories => {
-      return prevCategories.map(category => {
+  const updateCategoryTotals = async (categoryId: string, availableBudgets: Budget[]) => {
+    try {
+      const updatedCategories = categories.map(category => {
         if (category.id === categoryId) {
           const total = category.budgets.reduce((sum, budgetTitle) => {
             const budget = availableBudgets.find(b => b.title === budgetTitle);
@@ -85,25 +105,40 @@ export const useCategories = () => {
         }
         return category;
       });
-    });
-  };
 
-  const handleAssignBudget = (categoryId: string, budgetId: string, availableBudgets: Budget[]) => {
-    const selectedBudget = availableBudgets.find(b => b.id === budgetId);
-    if (!selectedBudget) return;
-
-    const assignedBudgets = getAssignedBudgets();
-    if (assignedBudgets.has(selectedBudget.title)) {
+      setCategories(updatedCategories);
+      
+      // Mettre à jour la catégorie dans SQLite
+      const updatedCategory = updatedCategories.find(c => c.id === categoryId);
+      if (updatedCategory) {
+        await db.updateCategory(updatedCategory);
+      }
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour des totaux:", error);
       toast({
         variant: "destructive",
-        title: "Budget déjà assigné",
-        description: "Ce budget est déjà assigné à une autre catégorie."
+        title: "Erreur",
+        description: "Impossible de mettre à jour les totaux"
       });
-      return;
     }
+  };
 
-    setCategories(prevCategories => {
-      return prevCategories.map(category => {
+  const handleAssignBudget = async (categoryId: string, budgetId: string, availableBudgets: Budget[]) => {
+    try {
+      const selectedBudget = availableBudgets.find(b => b.id === budgetId);
+      if (!selectedBudget) return;
+
+      const assignedBudgets = getAssignedBudgets();
+      if (assignedBudgets.has(selectedBudget.title)) {
+        toast({
+          variant: "destructive",
+          title: "Budget déjà assigné",
+          description: "Ce budget est déjà assigné à une autre catégorie."
+        });
+        return;
+      }
+
+      const updatedCategories = categories.map(category => {
         if (category.id === categoryId) {
           if (!category.budgets.includes(selectedBudget.title)) {
             return {
@@ -114,19 +149,34 @@ export const useCategories = () => {
         }
         return category;
       });
-    });
 
-    updateCategoryTotals(categoryId, availableBudgets);
+      setCategories(updatedCategories);
+      
+      // Mettre à jour la catégorie dans SQLite
+      const updatedCategory = updatedCategories.find(c => c.id === categoryId);
+      if (updatedCategory) {
+        await db.updateCategory(updatedCategory);
+      }
 
-    toast({
-      title: "Budget assigné",
-      description: "Le budget a été assigné à la catégorie avec succès."
-    });
+      await updateCategoryTotals(categoryId, availableBudgets);
+
+      toast({
+        title: "Budget assigné",
+        description: "Le budget a été assigné à la catégorie avec succès."
+      });
+    } catch (error) {
+      console.error("Erreur lors de l'assignation du budget:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible d'assigner le budget"
+      });
+    }
   };
 
-  const handleRemoveBudget = (categoryId: string, budgetTitle: string) => {
-    setCategories(prevCategories => {
-      return prevCategories.map(category => {
+  const handleRemoveBudget = async (categoryId: string, budgetTitle: string) => {
+    try {
+      const updatedCategories = categories.map(category => {
         if (category.id === categoryId) {
           return {
             ...category,
@@ -135,15 +185,30 @@ export const useCategories = () => {
         }
         return category;
       });
-    });
 
-    toast({
-      title: "Budget retiré",
-      description: "Le budget a été retiré de la catégorie avec succès."
-    });
+      setCategories(updatedCategories);
+      
+      // Mettre à jour la catégorie dans SQLite
+      const updatedCategory = updatedCategories.find(c => c.id === categoryId);
+      if (updatedCategory) {
+        await db.updateCategory(updatedCategory);
+      }
+
+      toast({
+        title: "Budget retiré",
+        description: "Le budget a été retiré de la catégorie avec succès."
+      });
+    } catch (error) {
+      console.error("Erreur lors du retrait du budget:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible de retirer le budget"
+      });
+    }
   };
 
-  const updateCategoryName = (categoryId: string, newName: string) => {
+  const updateCategoryName = async (categoryId: string, newName: string) => {
     if (!newName.trim()) {
       toast({
         variant: "destructive",
@@ -153,20 +218,36 @@ export const useCategories = () => {
       return false;
     }
 
-    setCategories(prevCategories =>
-      prevCategories.map(cat =>
+    try {
+      const updatedCategories = categories.map(cat =>
         cat.id === categoryId
           ? { ...cat, name: newName }
           : cat
-      )
-    );
+      );
 
-    toast({
-      title: "Catégorie modifiée",
-      description: "La catégorie a été modifiée avec succès."
-    });
+      setCategories(updatedCategories);
+      
+      // Mettre à jour la catégorie dans SQLite
+      const updatedCategory = updatedCategories.find(c => c.id === categoryId);
+      if (updatedCategory) {
+        await db.updateCategory(updatedCategory);
+      }
 
-    return true;
+      toast({
+        title: "Catégorie modifiée",
+        description: "La catégorie a été modifiée avec succès."
+      });
+
+      return true;
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour du nom:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible de modifier le nom de la catégorie"
+      });
+      return false;
+    }
   };
 
   const getAvailableBudgetsForCategory = (categoryId: string, availableBudgets: Budget[]) => {
@@ -179,49 +260,55 @@ export const useCategories = () => {
     );
   };
 
-  const handleMonthTransition = (envelopes: TransitionEnvelope[]) => {
+  const handleMonthTransition = async (envelopes: TransitionEnvelope[]) => {
     let success = true;
     
     try {
       // Appliquer les transitions pour chaque enveloppe
-      envelopes.forEach(envelope => {
+      for (const envelope of envelopes) {
         const [categoryId, budgetTitle] = envelope.id.split("-");
         
-        setCategories(prevCategories => {
-          return prevCategories.map(category => {
-            if (category.id === categoryId) {
-              // Mise à jour des budgets selon l'option de transition
-              const updatedBudgets = category.budgets.map(budget => {
-                if (budget === budgetTitle) {
-                  // Appliquer la transition selon l'option choisie
-                  switch (envelope.transitionOption) {
-                    case "reset":
-                      return budget; // Pas de changement nécessaire
-                    case "carry":
-                      // La logique de report sera gérée dans le système de stockage des budgets
-                      return budget;
-                    case "partial":
-                      // La logique de report partiel sera gérée dans le système de stockage des budgets
-                      return budget;
-                    case "transfer":
-                      // La logique de transfert sera gérée dans le système de stockage des budgets
-                      return budget;
-                    default:
-                      return budget;
-                  }
+        const updatedCategories = categories.map(category => {
+          if (category.id === categoryId) {
+            // Mise à jour des budgets selon l'option de transition
+            const updatedBudgets = category.budgets.map(budget => {
+              if (budget === budgetTitle) {
+                // Appliquer la transition selon l'option choisie
+                switch (envelope.transitionOption) {
+                  case "reset":
+                    return budget;
+                  case "carry":
+                    // La logique de report sera gérée dans le système de stockage des budgets
+                    return budget;
+                  case "partial":
+                    // La logique de report partiel sera gérée dans le système de stockage des budgets
+                    return budget;
+                  case "transfer":
+                    // La logique de transfert sera gérée dans le système de stockage des budgets
+                    return budget;
+                  default:
+                    return budget;
                 }
-                return budget;
-              });
+              }
+              return budget;
+            });
 
-              return {
-                ...category,
-                budgets: updatedBudgets
-              };
-            }
-            return category;
-          });
+            return {
+              ...category,
+              budgets: updatedBudgets
+            };
+          }
+          return category;
         });
-      });
+
+        setCategories(updatedCategories);
+        
+        // Mettre à jour la catégorie dans SQLite
+        const updatedCategory = updatedCategories.find(c => c.id === categoryId);
+        if (updatedCategory) {
+          await db.updateCategory(updatedCategory);
+        }
+      }
 
       toast({
         title: "Transition effectuée",
