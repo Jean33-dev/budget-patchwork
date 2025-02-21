@@ -28,6 +28,7 @@ export const useBudgetAssignment = (categories: any[], setCategories: (categorie
         spent
       };
 
+      console.log("Sauvegarde de la catégorie avec les nouveaux totaux:", updatedCategory);
       await db.updateCategory(updatedCategory);
       
       const updatedCategories = categories.map(category =>
@@ -46,18 +47,21 @@ export const useBudgetAssignment = (categories: any[], setCategories: (categorie
 
   const handleAssignBudget = async (categoryId: string, budgetId: string, availableBudgets: Budget[]) => {
     try {
-      console.log("Début de l'assignation du budget:", { categoryId, budgetId });
+      console.log("=== Début de l'assignation du budget ===");
+      console.log("CategoryId:", categoryId);
+      console.log("BudgetId:", budgetId);
+      console.log("Categories actuelles:", categories);
       
       const currentCategory = categories.find(c => c.id === categoryId);
       if (!currentCategory) {
         throw new Error("Catégorie non trouvée");
       }
 
-      console.log("Catégorie avant mise à jour:", currentCategory);
+      console.log("Catégorie trouvée:", currentCategory);
       
       // S'assurer que budgets est un tableau
       const currentBudgets = Array.isArray(currentCategory.budgets) ? currentCategory.budgets : [];
-      console.log("Budgets actuels:", currentBudgets);
+      console.log("Budgets actuels de la catégorie:", currentBudgets);
       
       // Vérifier si le budget n'est pas déjà assigné
       if (currentBudgets.includes(budgetId)) {
@@ -78,18 +82,24 @@ export const useBudgetAssignment = (categories: any[], setCategories: (categorie
         spent
       };
 
-      console.log("Catégorie mise à jour avant sauvegarde:", updatedCategory);
+      console.log("=== Tentative de sauvegarde de la catégorie ===");
+      console.log("Catégorie à sauvegarder:", updatedCategory);
       await db.updateCategory(updatedCategory);
+      console.log("Sauvegarde réussie !");
 
+      console.log("=== Mise à jour du state local ===");
       const updatedCategories = categories.map(category =>
         category.id === categoryId ? updatedCategory : category
       );
+      console.log("Nouvelles catégories:", updatedCategories);
       setCategories(updatedCategories);
 
       toast({
         title: "Budget assigné",
         description: "Le budget a été assigné à la catégorie avec succès."
       });
+      
+      console.log("=== Assignation terminée avec succès ===");
     } catch (error) {
       console.error("Erreur lors de l'assignation du budget:", error);
       toast({
@@ -103,13 +113,16 @@ export const useBudgetAssignment = (categories: any[], setCategories: (categorie
 
   const handleRemoveBudget = async (categoryId: string, budgetId: string, availableBudgets: Budget[]) => {
     try {
-      console.log("Début du retrait du budget:", { categoryId, budgetId });
+      console.log("=== Début du retrait du budget ===");
+      console.log("CategoryId:", categoryId);
+      console.log("BudgetId:", budgetId);
       
       const currentCategory = categories.find(c => c.id === categoryId);
       if (!currentCategory) {
         throw new Error("Catégorie non trouvée");
       }
 
+      console.log("Catégorie trouvée:", currentCategory);
       const currentBudgets = Array.isArray(currentCategory.budgets) ? currentCategory.budgets : [];
       console.log("Budgets actuels:", currentBudgets);
       
@@ -126,18 +139,24 @@ export const useBudgetAssignment = (categories: any[], setCategories: (categorie
         spent
       };
 
-      console.log("Catégorie mise à jour avant sauvegarde:", updatedCategory);
+      console.log("=== Tentative de sauvegarde de la catégorie ===");
+      console.log("Catégorie à sauvegarder:", updatedCategory);
       await db.updateCategory(updatedCategory);
+      console.log("Sauvegarde réussie !");
 
+      console.log("=== Mise à jour du state local ===");
       const updatedCategories = categories.map(category =>
         category.id === categoryId ? updatedCategory : category
       );
+      console.log("Nouvelles catégories:", updatedCategories);
       setCategories(updatedCategories);
 
       toast({
         title: "Budget retiré",
         description: "Le budget a été retiré de la catégorie avec succès."
       });
+      
+      console.log("=== Retrait terminé avec succès ===");
     } catch (error) {
       console.error("Erreur lors du retrait du budget:", error);
       toast({
