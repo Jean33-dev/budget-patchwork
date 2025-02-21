@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Pencil } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
+import { db } from "@/services/database";
+import { useEffect, useState } from "react";
 
 interface CategoryCardProps {
   category: Category;
@@ -12,7 +14,21 @@ interface CategoryCardProps {
 }
 
 export const CategoryCard = ({ category, onEdit }: CategoryCardProps) => {
-  // Calculer le pourcentage de consommation du budget
+  const [budgetNames, setBudgetNames] = useState<string[]>([]);
+
+  useEffect(() => {
+    const loadBudgetNames = async () => {
+      const allBudgets = await db.getBudgets();
+      const names = category.budgets.map(budgetId => {
+        const budget = allBudgets.find(b => b.id === budgetId);
+        return budget ? budget.title : budgetId;
+      });
+      setBudgetNames(names);
+    };
+
+    loadBudgetNames();
+  }, [category.budgets]);
+
   const percentage = category.total > 0 ? (category.spent / category.total) * 100 : 0;
   const isOverBudget = percentage > 100;
   const remaining = category.total - category.spent;
@@ -36,7 +52,7 @@ export const CategoryCard = ({ category, onEdit }: CategoryCardProps) => {
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="text-sm text-muted-foreground">
-          Budgets associés : {category.budgets.length > 0 ? category.budgets.join(", ") : "Aucun budget assigné"}
+          Budgets associés : {budgetNames.length > 0 ? budgetNames.join(", ") : "Aucun budget assigné"}
         </div>
         <div className="space-y-2">
           <div className="flex justify-between items-center">
