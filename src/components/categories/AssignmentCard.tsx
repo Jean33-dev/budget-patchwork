@@ -31,36 +31,46 @@ export const AssignmentCard = ({
       <CardContent className="space-y-4">
         <div className="space-y-2">
           <Label>Assigner un budget</Label>
-          <Select onValueChange={(value) => onAssign(category.id, value)}>
-            <SelectTrigger>
-              <SelectValue placeholder="Sélectionner un budget" />
-            </SelectTrigger>
-            <SelectContent>
-              {unassignedBudgets.map((budget) => (
-                <SelectItem key={budget.id} value={budget.id}>
-                  {budget.title}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {unassignedBudgets.length > 0 ? (
+            <Select onValueChange={(value) => onAssign(category.id, value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Sélectionner un budget" />
+              </SelectTrigger>
+              <SelectContent>
+                {unassignedBudgets.map((budget) => (
+                  <SelectItem key={budget.id} value={budget.id}>
+                    {budget.title} ({budget.budget}€)
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : (
+            <div className="text-sm text-gray-500">
+              Tous les budgets disponibles ont déjà été assignés.
+            </div>
+          )}
         </div>
         <div className="text-sm">
           <p className="font-medium mb-2">Budgets actuellement assignés :</p>
-          <ul className="list-disc pl-4 space-y-1">
-            {category.budgets.map((budget, index) => (
-              <li key={index} className="flex items-center justify-between">
-                <span>{budget}</span>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => onRemove(category.id, budget)}
-                  className="h-6 w-6"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </li>
-            ))}
-          </ul>
+          {category.budgets.length > 0 ? (
+            <ul className="list-disc pl-4 space-y-1">
+              {category.budgets.map((budget, index) => (
+                <li key={index} className="flex items-center justify-between">
+                  <span>{budget}</span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => onRemove(category.id, budget)}
+                    className="h-6 w-6"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-gray-500">Aucun budget assigné</p>
+          )}
         </div>
       </CardContent>
     </Card>

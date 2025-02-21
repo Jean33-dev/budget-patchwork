@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Category, Budget } from "@/types/categories";
 import { useToast } from "@/hooks/use-toast";
@@ -136,12 +137,10 @@ export const useCategories = () => {
 
       const updatedCategories = categories.map(category => {
         if (category.id === categoryId) {
-          if (!category.budgets.includes(selectedBudget.title)) {
-            return {
-              ...category,
-              budgets: [...category.budgets, selectedBudget.title]
-            };
-          }
+          return {
+            ...category,
+            budgets: [...category.budgets, selectedBudget.title]
+          };
         }
         return category;
       });
