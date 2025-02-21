@@ -4,7 +4,7 @@ import { useBudgetAssignment } from "./useBudgetAssignment";
 import { useTransitionHandling } from "./useTransitionHandling";
 
 export const useCategories = () => {
-  const { categories, updateCategoryName, setCategories } = useCategoryManagement();
+  const { categories, updateCategoryName, setCategories, refreshCategories } = useCategoryManagement();
   const { 
     handleAssignBudget, 
     handleRemoveBudget, 
@@ -20,6 +20,7 @@ export const useCategories = () => {
     updateCategoryName,
     getAvailableBudgetsForCategory,
     updateCategoryTotals,
-    handleMonthTransition
+    handleMonthTransition,
+    refreshCategories
   };
 };
