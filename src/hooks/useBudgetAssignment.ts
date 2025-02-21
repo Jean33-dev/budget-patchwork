@@ -53,10 +53,19 @@ export const useBudgetAssignment = (categories: any[], setCategories: (categorie
         throw new Error("Catégorie non trouvée");
       }
 
+      console.log("Catégorie avant mise à jour:", currentCategory);
+      
+      // S'assurer que budgets est un tableau
       const currentBudgets = Array.isArray(currentCategory.budgets) ? currentCategory.budgets : [];
       console.log("Budgets actuels:", currentBudgets);
       
-      const newBudgets = [...new Set([...currentBudgets, budgetId])];
+      // Vérifier si le budget n'est pas déjà assigné
+      if (currentBudgets.includes(budgetId)) {
+        console.log("Budget déjà assigné, pas de modification nécessaire");
+        return;
+      }
+      
+      const newBudgets = [...currentBudgets, budgetId];
       console.log("Nouveaux budgets après ajout:", newBudgets);
 
       const { total, spent } = calculateCategoryTotals(newBudgets, availableBudgets);
