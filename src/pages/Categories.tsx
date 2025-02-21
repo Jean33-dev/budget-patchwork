@@ -53,7 +53,7 @@ const Categories = () => {
 
   useEffect(() => {
     loadBudgets();
-  }, [toast]);
+  }, []);
 
   const handleEditCategory = (category: Category) => {
     setEditingCategory(category);
@@ -66,7 +66,8 @@ const Categories = () => {
       await handleAssignBudget(categoryId, budgetId, availableBudgets);
       await updateCategoryTotals(categoryId, availableBudgets);
       await loadBudgets();
-      refreshCategories(); // Rafraîchir les catégories après l'assignation
+      await refreshCategories(); // Forcer le rafraîchissement après l'assignation
+      console.log('Assignation terminée, rafraîchissement effectué');
     } catch (error) {
       console.error("Erreur lors de l'assignation du budget:", error);
       toast({
@@ -82,7 +83,7 @@ const Categories = () => {
       await handleRemoveBudget(categoryId, budgetId, availableBudgets);
       await updateCategoryTotals(categoryId, availableBudgets);
       await loadBudgets();
-      refreshCategories(); // Rafraîchir les catégories après le retrait
+      await refreshCategories(); // Forcer le rafraîchissement après le retrait
     } catch (error) {
       console.error("Erreur lors du retrait du budget:", error);
       toast({
