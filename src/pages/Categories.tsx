@@ -38,9 +38,38 @@ const Categories = () => {
   useEffect(() => {
     const loadBudgets = async () => {
       try {
+        console.log("Chargement des budgets...");
         const budgets = await db.getBudgets();
         console.log('Budgets chargés dans Categories:', budgets);
-        setAvailableBudgets(budgets);
+        
+        if (!budgets || budgets.length === 0) {
+          console.log("Aucun budget disponible");
+          // Optionnel : ajouter des budgets par défaut pour le test
+          const defaultBudgets: Budget[] = [
+            {
+              id: "budget1",
+              title: "Budget Test 1",
+              budget: 1000,
+              spent: 0,
+              type: "budget"
+            },
+            {
+              id: "budget2",
+              title: "Budget Test 2",
+              budget: 2000,
+              spent: 0,
+              type: "budget"
+            }
+          ];
+          
+          for (const budget of defaultBudgets) {
+            await db.addBudget(budget);
+          }
+          
+          setAvailableBudgets(defaultBudgets);
+        } else {
+          setAvailableBudgets(budgets);
+        }
       } catch (error) {
         console.error("Erreur lors du chargement des budgets:", error);
         toast({

@@ -1,4 +1,3 @@
-
 import initSqlJs from 'sql.js';
 import { toast } from "@/components/ui/use-toast";
 
@@ -246,10 +245,17 @@ class Database {
   async addBudget(budget: Budget) {
     if (!this.initialized) await this.init();
     
-    this.db.run(
-      'INSERT INTO budgets (id, title, budget, spent, type) VALUES (?, ?, ?, ?, ?)',
-      [budget.id, budget.title, budget.budget, budget.spent, budget.type]
-    );
+    try {
+      console.log("Ajout d'un nouveau budget:", budget);
+      this.db.run(
+        'INSERT INTO budgets (id, title, budget, spent, type) VALUES (?, ?, ?, ?, ?)',
+        [budget.id, budget.title, budget.budget, budget.spent, budget.type]
+      );
+      console.log("Budget ajouté avec succès");
+    } catch (error) {
+      console.error("Erreur lors de l'ajout du budget:", error);
+      throw error;
+    }
   }
 
   async updateBudget(budget: Budget) {
