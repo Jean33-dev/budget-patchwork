@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -67,9 +66,7 @@ const Categories = () => {
       console.log('Budgets disponibles:', availableBudgets);
       
       await handleAssignBudget(categoryId, budgetId, availableBudgets);
-      await updateCategoryTotals(categoryId, availableBudgets);
       await loadBudgets();
-      await refreshCategories();
       
       console.log('Assignation terminée avec succès');
     } catch (error) {

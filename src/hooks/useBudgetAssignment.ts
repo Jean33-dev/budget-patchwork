@@ -8,7 +8,7 @@ export const useBudgetAssignment = (categories: any[], setCategories: (categorie
   const { toast } = useToast();
   const budgetUtils = createBudgetAssignmentUtils(categories);
 
-  const updateCategoryTotals = async (categoryId: string, availableBudgets: Budget[], keepExistingBudgets = true) => {
+  const updateCategoryTotals = async (categoryId: string, availableBudgets: Budget[]) => {
     try {
       console.log("=== Mise à jour des totaux pour la catégorie ===");
       console.log("CategoryId:", categoryId);
@@ -23,15 +23,10 @@ export const useBudgetAssignment = (categories: any[], setCategories: (categorie
       const { total, spent } = calculateCategoryTotals(currentCategory.budgets, availableBudgets);
       console.log("Nouveaux totaux calculés:", { total, spent });
 
-      const updatedCategory = keepExistingBudgets ? {
+      const updatedCategory = {
         ...currentCategory,
         total,
         spent
-      } : {
-        ...currentCategory,
-        budgets: [],
-        total: 0,
-        spent: 0
       };
 
       console.log("=== Sauvegarde de la catégorie avec les nouveaux totaux ===");
@@ -110,9 +105,6 @@ export const useBudgetAssignment = (categories: any[], setCategories: (categorie
       });
       
       console.log("=== Assignation terminée avec succès ===");
-      
-      // Pas besoin de mettre à jour les totaux ici car ils sont déjà à jour
-      await refreshCategories();
     } catch (error) {
       console.error("Erreur lors de l'assignation du budget:", error);
       toast({
