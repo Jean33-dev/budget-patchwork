@@ -1,3 +1,4 @@
+
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Menu } from "lucide-react";
@@ -10,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { MoneyInput } from "@/components/shared/MoneyInput";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { db } from "@/services/database";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,27 +27,33 @@ type Budget = {
   type: "budget";
 };
 
-const BUDGETS_STORAGE_KEY = "app_budgets";
-
 const Budgets = () => {
   const navigate = useNavigate();
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedBudget, setSelectedBudget] = useState<Budget | null>(null);
   const [editTitle, setEditTitle] = useState("");
   const [editBudget, setEditBudget] = useState(0);
-
-  const [budgets, setBudgets] = useState<Budget[]>(() => {
-    const stored = localStorage.getItem(BUDGETS_STORAGE_KEY);
-    return stored ? JSON.parse(stored) : [
-      { id: "1", title: "Budget Logement", budget: 2000, spent: 1500, type: "budget" },
-      { id: "2", title: "Budget Alimentation", budget: 800, spent: 600, type: "budget" },
-    ];
-  });
+  const [budgets, setBudgets] = useState<Budget[]>([]);
 
   useEffect(() => {
-    localStorage.setItem(BUDGETS_STORAGE_KEY, JSON.stringify(budgets));
-  }, [budgets]);
+    const loadData = async () => {
+      try {
+        const budgetsData = await db.getBudgets();
+        setBudgets(budgetsData);
+      } catch (error) {
+        console.error("Erreur lors du chargement des budgets:", error);
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Impossible de charger les budgets"
+        });
+      }
+    };
+    
+    loadData();
+  }, []);
 
   const totalRevenues = 2500;
   const totalBudgets = budgets.reduce((sum, budget) => sum + budget.budget, 0);
@@ -58,33 +66,80 @@ const Budgets = () => {
     setEditDialogOpen(true);
   };
 
-  const handleEditSubmit = () => {
+  const handleEditSubmit = async () => {
     if (!selectedBudget) return;
 
-    const updatedBudgets = budgets.map(budget => {
-      if (budget.id === selectedBudget.id) {
-        return {
-          ...budget,
-          title: editTitle,
-          budget: editBudget
-        };
-      }
-      return budget;
-    });
+    try {
+      const updatedBudget = {
+        ...selectedBudget,
+        title: editTitle,
+        budget: editBudget
+      };
 
-    setBudgets(updatedBudgets);
-    setEditDialogOpen(false);
-    toast({
-      title: "Budget modifié",
-      description: `Le budget "${editTitle}" a été mis à jour.`,
-    });
+      await db.updateBudget(updatedBudget);
+
+      const updatedBudgets = budgets.map(budget => {
+        if (budget.id === selectedBudget.id) {
+          return updatedBudget;
+        }
+        return budget;
+      });
+
+      setBudgets(updatedBudgets);
+      setEditDialogOpen(false);
+      
+      toast({
+        title: "Budget modifié",
+        description: `Le budget "${editTitle}" a été mis à jour.`
+      });
+    } catch (error) {
+      console.error("Erreur lors de la modification du budget:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible de modifier le budget"
+      });
+    }
   };
 
   const handleViewExpenses = (envelope: Budget) => {
     navigate(`/dashboard/budget/expenses?budgetId=${envelope.id}`);
   };
 
-  const handleAddEnvelope = (envelope: { 
+  const handleDeleteBudget = async (budget: Budget) => {
+    try {
+      // Vérifie si le budget a des dépenses associées
+      const expenses = await db.getExpenses();
+      const hasLinkedExpenses = expenses.some(expense => expense.linkedBudgetId === budget.id);
+      
+      if (hasLinkedExpenses) {
+        toast({
+          variant: "destructive",
+          title: "Suppression impossible",
+          description: "Ce budget a des dépenses qui lui sont affectées."
+        });
+        return;
+      }
+
+      await db.deleteBudget(budget.id);
+      
+      setBudgets(budgets.filter(b => b.id !== budget.id));
+      
+      toast({
+        title: "Budget supprimé",
+        description: `Le budget "${budget.title}" a été supprimé.`
+      });
+    } catch (error) {
+      console.error("Erreur lors de la suppression du budget:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible de supprimer le budget"
+      });
+    }
+  };
+
+  const handleAddEnvelope = async (envelope: { 
     title: string; 
     budget: number; 
     type: "income" | "expense" | "budget";
@@ -98,24 +153,31 @@ const Budgets = () => {
       return;
     }
 
-    const newId = (budgets.length + 1).toString();
-    
-    const newBudget: Budget = {
-      id: newId,
-      title: envelope.title,
-      budget: envelope.budget,
-      spent: 0,
-      type: "budget"
-    };
+    try {
+      const newBudget: Budget = {
+        id: Date.now().toString(),
+        title: envelope.title,
+        budget: envelope.budget,
+        spent: 0,
+        type: "budget"
+      };
 
-    setBudgets([...budgets, newBudget]);
-
-    toast({
-      title: "Budget ajouté",
-      description: `Le budget "${envelope.title}" a été créé avec succès.`
-    });
-
-    setAddDialogOpen(false);
+      await db.addBudget(newBudget);
+      setBudgets([...budgets, newBudget]);
+      setAddDialogOpen(false);
+      
+      toast({
+        title: "Budget ajouté",
+        description: `Le budget "${envelope.title}" a été créé avec succès.`
+      });
+    } catch (error) {
+      console.error("Erreur lors de l'ajout du budget:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible d'ajouter le budget"
+      });
+    }
   };
 
   return (
@@ -172,6 +234,7 @@ const Budgets = () => {
         onAddClick={() => setAddDialogOpen(true)}
         onEnvelopeClick={handleEnvelopeClick}
         onViewExpenses={handleViewExpenses}
+        onDeleteClick={handleDeleteBudget}
       />
 
       <AddEnvelopeDialog
