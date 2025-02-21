@@ -22,10 +22,12 @@ export const AssignmentCard = ({
   getAvailableBudgets 
 }: AssignmentCardProps) => {
   console.log('Rendu AssignmentCard pour catégorie:', category.name);
+  console.log('Budgets de la catégorie:', category.budgets);
   console.log('Tous les budgets disponibles:', availableBudgets);
   
   // S'assurer que category.budgets est un tableau
   const budgets = Array.isArray(category.budgets) ? category.budgets : [];
+  console.log('Budgets après vérification du tableau:', budgets);
   
   const unassignedBudgets = getAvailableBudgets(category.id);
   console.log('Budgets non assignés pour cette catégorie:', unassignedBudgets);
@@ -35,6 +37,11 @@ export const AssignmentCard = ({
     .filter((b): b is Budget => b !== undefined);
   
   console.log('Budgets assignés à cette catégorie:', assignedBudgets);
+
+  const handleAssign = (budgetId: string) => {
+    console.log('Tentative d\'assignation du budget:', budgetId, 'à la catégorie:', category.id);
+    onAssign(category.id, budgetId);
+  };
 
   return (
     <Card>
@@ -46,7 +53,7 @@ export const AssignmentCard = ({
           <Label>Assigner un budget</Label>
           <div className="relative">
             {unassignedBudgets.length > 0 ? (
-              <Select onValueChange={(value) => onAssign(category.id, value)}>
+              <Select onValueChange={handleAssign}>
                 <SelectTrigger>
                   <SelectValue placeholder="Sélectionner un budget" />
                 </SelectTrigger>

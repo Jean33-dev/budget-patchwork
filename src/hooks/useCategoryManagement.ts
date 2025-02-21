@@ -37,12 +37,12 @@ export const useCategoryManagement = () => {
 
   const loadCategories = async () => {
     try {
-      console.log("Chargement des catégories...");
+      console.log("Début du chargement des catégories...");
       let dbCategories = await db.getCategories();
-      console.log("Catégories chargées:", dbCategories);
+      console.log("Catégories chargées depuis la DB:", dbCategories);
       
       if (!dbCategories || dbCategories.length === 0) {
-        console.log("Création des catégories par défaut...");
+        console.log("Aucune catégorie trouvée, création des catégories par défaut...");
         for (const category of defaultCategories) {
           await db.addCategory({
             ...category,
@@ -58,7 +58,7 @@ export const useCategoryManagement = () => {
         budgets: Array.isArray(category.budgets) ? category.budgets : []
       }));
       
-      console.log("Catégories finales:", dbCategories);
+      console.log("Catégories finales après traitement:", dbCategories);
       setCategories(dbCategories);
     } catch (error) {
       console.error("Erreur lors du chargement des catégories:", error);
@@ -70,9 +70,17 @@ export const useCategoryManagement = () => {
     }
   };
 
+  // Charger les catégories au montage du composant
   useEffect(() => {
+    console.log("useEffect: Chargement initial des catégories");
     loadCategories();
-  }, [toast]);
+  }, []);
+
+  const refreshCategories = async () => {
+    console.log("Début du rafraîchissement des catégories");
+    await loadCategories();
+    console.log("Rafraîchissement des catégories terminé");
+  };
 
   const updateCategoryName = async (categoryId: string, newName: string) => {
     if (!newName.trim()) {
@@ -99,6 +107,7 @@ export const useCategoryManagement = () => {
         cat.id === categoryId ? updatedCategory : cat
       );
 
+      console.log("Mise à jour du nom de la catégorie:", updatedCategory);
       await db.updateCategory(updatedCategory);
       setCategories(updatedCategories);
 
@@ -117,10 +126,6 @@ export const useCategoryManagement = () => {
       });
       return false;
     }
-  };
-
-  const refreshCategories = () => {
-    loadCategories();
   };
 
   return {
