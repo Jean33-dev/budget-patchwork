@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Category, Budget } from "@/types/categories";
 import { useToast } from "@/hooks/use-toast";
@@ -45,13 +44,11 @@ export const useCategories = () => {
   const { toast } = useToast();
   const [categories, setCategories] = useState<Category[]>([]);
 
-  // Charger les catégories depuis SQLite
   useEffect(() => {
     const loadCategories = async () => {
       try {
         let dbCategories = await db.getCategories();
         
-        // Si aucune catégorie n'existe, initialiser avec les catégories par défaut
         if (dbCategories.length === 0) {
           for (const category of defaultCategories) {
             await db.addCategory(category);
@@ -108,7 +105,6 @@ export const useCategories = () => {
 
       setCategories(updatedCategories);
       
-      // Mettre à jour la catégorie dans SQLite
       const updatedCategory = updatedCategories.find(c => c.id === categoryId);
       if (updatedCategory) {
         await db.updateCategory(updatedCategory);
@@ -152,7 +148,6 @@ export const useCategories = () => {
 
       setCategories(updatedCategories);
       
-      // Mettre à jour la catégorie dans SQLite
       const updatedCategory = updatedCategories.find(c => c.id === categoryId);
       if (updatedCategory) {
         await db.updateCategory(updatedCategory);
@@ -188,7 +183,6 @@ export const useCategories = () => {
 
       setCategories(updatedCategories);
       
-      // Mettre à jour la catégorie dans SQLite
       const updatedCategory = updatedCategories.find(c => c.id === categoryId);
       if (updatedCategory) {
         await db.updateCategory(updatedCategory);
@@ -227,7 +221,6 @@ export const useCategories = () => {
 
       setCategories(updatedCategories);
       
-      // Mettre à jour la catégorie dans SQLite
       const updatedCategory = updatedCategories.find(c => c.id === categoryId);
       if (updatedCategory) {
         await db.updateCategory(updatedCategory);
@@ -264,27 +257,21 @@ export const useCategories = () => {
     let success = true;
     
     try {
-      // Appliquer les transitions pour chaque enveloppe
       for (const envelope of envelopes) {
         const [categoryId, budgetTitle] = envelope.id.split("-");
         
         const updatedCategories = categories.map(category => {
           if (category.id === categoryId) {
-            // Mise à jour des budgets selon l'option de transition
             const updatedBudgets = category.budgets.map(budget => {
               if (budget === budgetTitle) {
-                // Appliquer la transition selon l'option choisie
                 switch (envelope.transitionOption) {
                   case "reset":
                     return budget;
                   case "carry":
-                    // La logique de report sera gérée dans le système de stockage des budgets
                     return budget;
                   case "partial":
-                    // La logique de report partiel sera gérée dans le système de stockage des budgets
                     return budget;
                   case "transfer":
-                    // La logique de transfert sera gérée dans le système de stockage des budgets
                     return budget;
                   default:
                     return budget;
@@ -303,7 +290,6 @@ export const useCategories = () => {
 
         setCategories(updatedCategories);
         
-        // Mettre à jour la catégorie dans SQLite
         const updatedCategory = updatedCategories.find(c => c.id === categoryId);
         if (updatedCategory) {
           await db.updateCategory(updatedCategory);
