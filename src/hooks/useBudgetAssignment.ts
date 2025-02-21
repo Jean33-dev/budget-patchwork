@@ -11,9 +11,13 @@ export const useBudgetAssignment = (categories: any[], setCategories: (categorie
 
   const updateCategoryTotals = async (categoryId: string, availableBudgets: Budget[]) => {
     try {
+      console.log("Mise à jour des totaux pour la catégorie:", categoryId);
+      console.log("Budgets disponibles:", availableBudgets);
+      
       const updatedCategories = categories.map(category => {
         if (category.id === categoryId) {
           const { total, spent } = calculateCategoryTotals(category.budgets, availableBudgets);
+          console.log("Nouveaux totaux calculés:", { total, spent });
           return {
             ...category,
             total,
@@ -27,6 +31,7 @@ export const useBudgetAssignment = (categories: any[], setCategories: (categorie
       
       const updatedCategory = updatedCategories.find(c => c.id === categoryId);
       if (updatedCategory) {
+        console.log("Mise à jour de la catégorie dans la DB:", updatedCategory);
         await db.updateCategory(updatedCategory);
       }
     } catch (error) {
@@ -41,6 +46,9 @@ export const useBudgetAssignment = (categories: any[], setCategories: (categorie
 
   const handleAssignBudget = async (categoryId: string, budgetId: string, availableBudgets: Budget[]) => {
     try {
+      console.log("Assignation du budget:", { categoryId, budgetId });
+      console.log("État actuel des catégories:", categories);
+      
       const selectedBudget = availableBudgets.find(b => b.id === budgetId);
       if (!selectedBudget) {
         console.error("Budget non trouvé:", budgetId);
@@ -50,18 +58,22 @@ export const useBudgetAssignment = (categories: any[], setCategories: (categorie
       const updatedCategories = categories.map(category => {
         if (category.id === categoryId) {
           const currentBudgets = Array.isArray(category.budgets) ? category.budgets : [];
+          const newBudgets = [...currentBudgets, budgetId];
+          console.log("Nouveaux budgets de la catégorie:", newBudgets);
           return {
             ...category,
-            budgets: [...currentBudgets, budgetId]
+            budgets: newBudgets
           };
         }
         return category;
       });
 
+      console.log("Catégories mises à jour:", updatedCategories);
       setCategories(updatedCategories);
       
       const updatedCategory = updatedCategories.find(c => c.id === categoryId);
       if (updatedCategory) {
+        console.log("Sauvegarde de la catégorie dans la DB:", updatedCategory);
         await db.updateCategory(updatedCategory);
         await updateCategoryTotals(categoryId, availableBudgets);
 
@@ -80,30 +92,37 @@ export const useBudgetAssignment = (categories: any[], setCategories: (categorie
     }
   };
 
-  const handleRemoveBudget = async (categoryId: string, budgetId: string) => {
+  const handleRemoveBudget = async (categoryId: string, budgetId: string, availableBudgets: Budget[]) => {
     try {
+      console.log("Retrait du budget:", { categoryId, budgetId });
+      
       const updatedCategories = categories.map(category => {
         if (category.id === categoryId) {
           const currentBudgets = Array.isArray(category.budgets) ? category.budgets : [];
+          const newBudgets = currentBudgets.filter(b => b !== budgetId);
+          console.log("Nouveaux budgets de la catégorie après retrait:", newBudgets);
           return {
             ...category,
-            budgets: currentBudgets.filter(b => b !== budgetId)
+            budgets: newBudgets
           };
         }
         return category;
       });
 
+      console.log("Catégories mises à jour après retrait:", updatedCategories);
       setCategories(updatedCategories);
       
       const updatedCategory = updatedCategories.find(c => c.id === categoryId);
       if (updatedCategory) {
+        console.log("Sauvegarde de la catégorie dans la DB après retrait:", updatedCategory);
         await db.updateCategory(updatedCategory);
-      }
+        await updateCategoryTotals(categoryId, availableBudgets);
 
-      toast({
-        title: "Budget retiré",
-        description: "Le budget a été retiré de la catégorie avec succès."
-      });
+        toast({
+          title: "Budget retiré",
+          description: "Le budget a été retiré de la catégorie avec succès."
+        });
+      }
     } catch (error) {
       console.error("Erreur lors du retrait du budget:", error);
       toast({

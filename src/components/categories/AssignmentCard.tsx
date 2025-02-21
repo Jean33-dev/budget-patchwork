@@ -43,6 +43,12 @@ export const AssignmentCard = ({
     onAssign(category.id, value);
   };
 
+  const handleBudgetRemoval = (budgetId: string) => {
+    console.log('Tentative de retrait du budget:', budgetId);
+    console.log('De la catégorie:', category.id);
+    onRemove(category.id, budgetId);
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -87,7 +93,7 @@ export const AssignmentCard = ({
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => onRemove(category.id, budget.id)}
+                    onClick={() => handleBudgetRemoval(budget.id)}
                     className="h-6 w-6 hover:bg-destructive hover:text-destructive-foreground"
                   >
                     <X className="h-4 w-4" />
