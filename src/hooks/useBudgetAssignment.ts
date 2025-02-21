@@ -25,7 +25,9 @@ export const useBudgetAssignment = (categories: any[], setCategories: (categorie
       const updatedCategory = {
         ...currentCategory,
         total,
-        spent
+        spent,
+        // Garder les budgets existants
+        budgets: currentCategory.budgets
       };
 
       console.log("Sauvegarde de la catégorie avec les nouveaux totaux:", updatedCategory);
