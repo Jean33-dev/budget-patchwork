@@ -1,11 +1,11 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { EnvelopeList } from "@/components/budget/EnvelopeList";
 import { AddEnvelopeDialog } from "@/components/budget/AddEnvelopeDialog";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Menu, Pencil, Trash2 } from "lucide-react";
+import { ArrowLeft, Menu } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -20,6 +20,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { EnvelopeForm } from "@/components/budget/EnvelopeForm";
 
+const INCOMES_STORAGE_KEY = "app_incomes";
+
+const defaultIncomes = [
+  { id: "1", title: "Salaire", budget: 5000, spent: 5000, type: "income" as const },
+  { id: "2", title: "Freelance", budget: 1000, spent: 800, type: "income" as const },
+];
+
 const Income = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -31,10 +38,14 @@ const Income = () => {
     budget: number;
     type: "income";
   } | null>(null);
-  const [envelopes, setEnvelopes] = useState([
-    { id: "1", title: "Salaire", budget: 5000, spent: 5000, type: "income" as const },
-    { id: "2", title: "Freelance", budget: 1000, spent: 800, type: "income" as const },
-  ]);
+  const [envelopes, setEnvelopes] = useState(() => {
+    const stored = localStorage.getItem(INCOMES_STORAGE_KEY);
+    return stored ? JSON.parse(stored) : defaultIncomes;
+  });
+
+  useEffect(() => {
+    localStorage.setItem(INCOMES_STORAGE_KEY, JSON.stringify(envelopes));
+  }, [envelopes]);
 
   const handleAddIncome = (newIncome: { title: string; budget: number; type: "income" }) => {
     const income = {
