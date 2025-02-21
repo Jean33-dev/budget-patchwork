@@ -38,15 +38,28 @@ export const useCategoryManagement = () => {
   useEffect(() => {
     const loadCategories = async () => {
       try {
+        console.log("Chargement des catégories...");
         let dbCategories = await db.getCategories();
+        console.log("Catégories chargées:", dbCategories);
         
-        if (dbCategories.length === 0) {
+        if (!dbCategories || dbCategories.length === 0) {
+          console.log("Création des catégories par défaut...");
           for (const category of defaultCategories) {
-            await db.addCategory(category);
+            await db.addCategory({
+              ...category,
+              budgets: [] // S'assurer que budgets est un tableau vide
+            });
           }
           dbCategories = defaultCategories;
         }
+
+        // S'assurer que toutes les catégories ont un tableau budgets valide
+        dbCategories = dbCategories.map(category => ({
+          ...category,
+          budgets: Array.isArray(category.budgets) ? category.budgets : []
+        }));
         
+        console.log("Catégories finales:", dbCategories);
         setCategories(dbCategories);
       } catch (error) {
         console.error("Erreur lors du chargement des catégories:", error);
@@ -72,18 +85,23 @@ export const useCategoryManagement = () => {
     }
 
     try {
+      const categoryToUpdate = categories.find(cat => cat.id === categoryId);
+      if (!categoryToUpdate) {
+        throw new Error("Catégorie non trouvée");
+      }
+
+      const updatedCategory: Category = {
+        ...categoryToUpdate,
+        name: newName,
+        budgets: Array.isArray(categoryToUpdate.budgets) ? categoryToUpdate.budgets : []
+      };
+
       const updatedCategories = categories.map(cat =>
-        cat.id === categoryId
-          ? { ...cat, name: newName }
-          : cat
+        cat.id === categoryId ? updatedCategory : cat
       );
 
+      await db.updateCategory(updatedCategory);
       setCategories(updatedCategories);
-      
-      const updatedCategory = updatedCategories.find(c => c.id === categoryId);
-      if (updatedCategory) {
-        await db.updateCategory(updatedCategory);
-      }
 
       toast({
         title: "Catégorie modifiée",

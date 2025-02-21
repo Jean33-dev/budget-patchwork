@@ -37,12 +37,11 @@ const Categories = () => {
   useEffect(() => {
     const loadBudgets = async () => {
       try {
-        console.log("Chargement des budgets...");
         let budgets = await db.getBudgets();
-        console.log('Budgets chargés dans Categories:', budgets);
+        console.log('État initial des budgets:', budgets);
         
         if (!budgets || budgets.length === 0) {
-          console.log("Aucun budget disponible, création des budgets par défaut");
+          console.log("Création des budgets par défaut...");
           const defaultBudgets: Budget[] = [
             {
               id: "budget1",
@@ -64,10 +63,10 @@ const Categories = () => {
             await db.addBudget(budget);
           }
           
-          budgets = await db.getBudgets();
+          budgets = defaultBudgets;
         }
         
-        console.log('Budgets finaux:', budgets);
+        console.log('Budgets disponibles après initialisation:', budgets);
         setAvailableBudgets(budgets);
       } catch (error) {
         console.error("Erreur lors du chargement des budgets:", error);
@@ -88,7 +87,8 @@ const Categories = () => {
   };
 
   const handleBudgetAssignment = async (categoryId: string, budgetId: string) => {
-    console.log('Début de l\'assignation:', { categoryId, budgetId, availableBudgets });
+    console.log('Assignation de budget:', { categoryId, budgetId });
+    console.log('Budgets disponibles:', availableBudgets);
     await handleAssignBudget(categoryId, budgetId, availableBudgets);
     updateCategoryTotals(categoryId, availableBudgets);
   };
