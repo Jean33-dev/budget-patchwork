@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Menu } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Category } from "@/types/categories";
+import { Category, Budget } from "@/types/categories";
 import { CategoryCard } from "@/components/categories/CategoryCard";
 import { AssignmentCard } from "@/components/categories/AssignmentCard";
 import { EditCategoryDialog } from "@/components/categories/EditCategoryDialog";
@@ -19,7 +19,7 @@ import { db } from "@/services/database";
 
 const Categories = () => {
   const navigate = useNavigate();
-  const [availableBudgets, setAvailableBudgets] = useState([]);
+  const [availableBudgets, setAvailableBudgets] = useState<Budget[]>([]);
 
   const { 
     categories, 
@@ -37,11 +37,11 @@ const Categories = () => {
     setDialogOpen(true);
   };
 
-  // Charger les budgets depuis SQLite
   useEffect(() => {
     const loadBudgets = async () => {
       try {
         const budgets = await db.getBudgets();
+        console.log('Budgets chargés dans Categories:', budgets);
         setAvailableBudgets(budgets);
       } catch (error) {
         console.error("Erreur lors du chargement des budgets:", error);

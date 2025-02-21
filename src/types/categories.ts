@@ -11,6 +11,7 @@ export interface Category {
 export interface Budget {
   id: string;
   title: string;
-  amount: number;
+  budget: number;
   spent: number;
+  type: "budget";
 }

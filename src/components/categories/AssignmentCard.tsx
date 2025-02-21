@@ -21,9 +21,7 @@ export const AssignmentCard = ({
   onRemove,
   getAvailableBudgets 
 }: AssignmentCardProps) => {
-  // Filtrer les budgets déjà assignés à cette catégorie
-  const unassignedBudgets = getAvailableBudgets(category.id)
-    .filter(budget => !category.budgets.includes(budget.title));
+  const unassignedBudgets = getAvailableBudgets(category.id);
 
   return (
     <Card>
