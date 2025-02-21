@@ -56,7 +56,7 @@ export const useBudgetAssignment = (categories: any[], setCategories: (categorie
 
       // Créer le nouveau tableau de budgets pour la catégorie
       const currentBudgets = Array.isArray(currentCategory.budgets) ? currentCategory.budgets : [];
-      const newBudgets = [...currentBudgets, budgetId];
+      const newBudgets = [...new Set([...currentBudgets, budgetId])]; // Utiliser Set pour éviter les doublons
       console.log("Nouveaux budgets de la catégorie:", newBudgets);
 
       // Créer la catégorie mise à jour
@@ -70,15 +70,12 @@ export const useBudgetAssignment = (categories: any[], setCategories: (categorie
         category.id === categoryId ? updatedCategory : category
       );
 
-      // Mettre à jour l'état global
-      setCategories(updatedCategories);
-      
-      // Sauvegarder dans la base de données
+      // Sauvegarder dans la base de données AVANT de mettre à jour l'état
       console.log("Sauvegarde de la catégorie dans la DB:", updatedCategory);
       await db.updateCategory(updatedCategory);
 
-      // Mettre à jour les totaux
-      await updateCategoryTotals(categoryId, availableBudgets);
+      // Mettre à jour l'état global APRÈS la sauvegarde réussie
+      setCategories(updatedCategories);
 
       toast({
         title: "Budget assigné",
@@ -91,6 +88,7 @@ export const useBudgetAssignment = (categories: any[], setCategories: (categorie
         title: "Erreur",
         description: "Impossible d'assigner le budget"
       });
+      throw error; // Propager l'erreur pour la gestion dans le composant
     }
   };
 
@@ -115,20 +113,15 @@ export const useBudgetAssignment = (categories: any[], setCategories: (categorie
         budgets: newBudgets
       };
 
-      // Mettre à jour l'état local des catégories
-      const updatedCategories = categories.map(category =>
-        category.id === categoryId ? updatedCategory : category
-      );
-
-      // Mettre à jour l'état global
-      setCategories(updatedCategories);
-      
-      // Sauvegarder dans la base de données
+      // Sauvegarder dans la base de données AVANT de mettre à jour l'état
       console.log("Sauvegarde de la catégorie dans la DB:", updatedCategory);
       await db.updateCategory(updatedCategory);
 
-      // Mettre à jour les totaux
-      await updateCategoryTotals(categoryId, availableBudgets);
+      // Mettre à jour l'état local des catégories APRÈS la sauvegarde réussie
+      const updatedCategories = categories.map(category =>
+        category.id === categoryId ? updatedCategory : category
+      );
+      setCategories(updatedCategories);
 
       toast({
         title: "Budget retiré",
@@ -141,6 +134,7 @@ export const useBudgetAssignment = (categories: any[], setCategories: (categorie
         title: "Erreur",
         description: "Impossible de retirer le budget"
       });
+      throw error; // Propager l'erreur pour la gestion dans le composant
     }
   };
 
