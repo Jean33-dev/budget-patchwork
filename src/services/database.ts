@@ -1,4 +1,3 @@
-
 import initSqlJs from 'sql.js';
 import { toast } from "@/components/ui/use-toast";
 
@@ -53,15 +52,14 @@ class Database {
       this.db = new SQL.Database();
       
       // Créer les tables une par une
-      const createIncomes = "CREATE TABLE IF NOT EXISTS incomes (id TEXT PRIMARY KEY, title TEXT, budget REAL, spent REAL, type TEXT)";
-      const createExpenses = "CREATE TABLE IF NOT EXISTS expenses (id TEXT PRIMARY KEY, title TEXT, budget REAL, spent REAL, type TEXT, linkedBudgetId TEXT, date TEXT)";
-      const createBudgets = "CREATE TABLE IF NOT EXISTS budgets (id TEXT PRIMARY KEY, title TEXT, budget REAL, spent REAL, type TEXT)";
-      const createCategories = "CREATE TABLE IF NOT EXISTS categories (id TEXT PRIMARY KEY, name TEXT, budgets TEXT, total REAL, spent REAL, description TEXT)";
+      const tables = [
+        'CREATE TABLE IF NOT EXISTS incomes (id TEXT PRIMARY KEY, title TEXT, budget REAL, spent REAL, type TEXT)',
+        'CREATE TABLE IF NOT EXISTS expenses (id TEXT PRIMARY KEY, title TEXT, budget REAL, spent REAL, type TEXT, linkedBudgetId TEXT, date TEXT)',
+        'CREATE TABLE IF NOT EXISTS budgets (id TEXT PRIMARY KEY, title TEXT, budget REAL, spent REAL, type TEXT)',
+        'CREATE TABLE IF NOT EXISTS categories (id TEXT PRIMARY KEY, name TEXT, budgets TEXT, total REAL, spent REAL, description TEXT)'
+      ];
       
-      this.db.run(createIncomes);
-      this.db.run(createExpenses);
-      this.db.run(createBudgets);
-      this.db.run(createCategories);
+      tables.forEach(query => this.db.run(query));
 
       this.initialized = true;
 
