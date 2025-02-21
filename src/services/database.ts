@@ -327,19 +327,24 @@ class Database {
     if (!this.initialized) await this.init();
     
     try {
-      console.log("Début de la mise à jour de la catégorie:", category);
-      console.log("Budgets avant stringify:", category.budgets);
+      console.log("=== Début de la mise à jour de la catégorie dans la base de données ===");
+      console.log("Catégorie reçue:", category);
       
       // S'assurer que les budgets sont un tableau
       const budgets = Array.isArray(category.budgets) ? category.budgets : [];
+      const total = Number(category.total) || 0;
+      const spent = Number(category.spent) || 0;
       
       // Convertir le tableau en JSON pour le stockage
       const budgetsJson = JSON.stringify(budgets);
-      console.log("Budgets après stringify:", budgetsJson);
+      console.log("Budgets après JSON.stringify:", budgetsJson);
 
-      this.db.run(
-        'UPDATE categories SET name = ?, budgets = ?, total = ?, spent = ?, description = ? WHERE id = ?',
-        [category.name, budgetsJson, category.total, category.spent, category.description, category.id]
+      const stmt = this.db.prepare(
+        'UPDATE categories SET name = ?, budgets = ?, total = ?, spent = ?, description = ? WHERE id = ?'
+      );
+      
+      stmt.run(
+        [category.name, budgetsJson, total, spent, category.description, category.id]
       );
       
       // Vérifier immédiatement la mise à jour
@@ -347,7 +352,15 @@ class Database {
         'SELECT * FROM categories WHERE id = ?',
         [category.id]
       );
-      console.log("Résultat de la vérification après mise à jour:", result);
+      console.log("Vérification après mise à jour:", result);
+      
+      if (!result[0]) {
+        console.error("La catégorie n'existe pas, tentative de création");
+        await this.addCategory(category);
+        return;
+      }
+      
+      console.log("=== Mise à jour terminée avec succès ===");
     } catch (error) {
       console.error("Erreur lors de la mise à jour de la catégorie:", error);
       throw error;

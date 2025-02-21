@@ -11,7 +11,8 @@ export const useBudgetAssignment = (categories: any[], setCategories: (categorie
 
   const updateCategoryTotals = async (categoryId: string, availableBudgets: Budget[]) => {
     try {
-      console.log("Mise à jour des totaux pour la catégorie:", categoryId);
+      console.log("=== Mise à jour des totaux pour la catégorie ===");
+      console.log("CategoryId:", categoryId);
       console.log("Budgets disponibles:", availableBudgets);
       
       const currentCategory = categories.find(c => c.id === categoryId);
@@ -19,6 +20,7 @@ export const useBudgetAssignment = (categories: any[], setCategories: (categorie
         throw new Error("Catégorie non trouvée pour la mise à jour des totaux");
       }
 
+      console.log("Catégorie courante:", currentCategory);
       const { total, spent } = calculateCategoryTotals(currentCategory.budgets, availableBudgets);
       console.log("Nouveaux totaux calculés:", { total, spent });
 
@@ -26,17 +28,20 @@ export const useBudgetAssignment = (categories: any[], setCategories: (categorie
         ...currentCategory,
         total,
         spent,
-        // Garder les budgets existants
         budgets: currentCategory.budgets
       };
 
-      console.log("Sauvegarde de la catégorie avec les nouveaux totaux:", updatedCategory);
+      console.log("=== Sauvegarde de la catégorie avec les nouveaux totaux ===");
+      console.log("Catégorie à sauvegarder:", updatedCategory);
       await db.updateCategory(updatedCategory);
+      console.log("Sauvegarde réussie !");
       
       const updatedCategories = categories.map(category =>
         category.id === categoryId ? updatedCategory : category
       );
       setCategories(updatedCategories);
+      
+      console.log("=== Mise à jour des totaux terminée ===");
     } catch (error) {
       console.error("Erreur lors de la mise à jour des totaux:", error);
       toast({
@@ -102,6 +107,8 @@ export const useBudgetAssignment = (categories: any[], setCategories: (categorie
       });
       
       console.log("=== Assignation terminée avec succès ===");
+      
+      // Ne pas appeler updateCategoryTotals ici car les totaux sont déjà à jour
     } catch (error) {
       console.error("Erreur lors de l'assignation du budget:", error);
       toast({
