@@ -19,8 +19,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { EnvelopeForm } from "@/components/budget/EnvelopeForm";
-
-const INCOMES_STORAGE_KEY = "app_incomes";
+import { db, Income as IncomeType } from "@/services/database";
 
 const defaultIncomes = [
   { id: "1", title: "Salaire", budget: 5000, spent: 5000, type: "income" as const },
@@ -38,22 +37,35 @@ const Income = () => {
     budget: number;
     type: "income";
   } | null>(null);
-  const [envelopes, setEnvelopes] = useState(() => {
-    const stored = localStorage.getItem(INCOMES_STORAGE_KEY);
-    return stored ? JSON.parse(stored) : defaultIncomes;
-  });
+  const [envelopes, setEnvelopes] = useState<IncomeType[]>([]);
 
+  // Initialiser la base de données et charger les revenus
   useEffect(() => {
-    localStorage.setItem(INCOMES_STORAGE_KEY, JSON.stringify(envelopes));
-  }, [envelopes]);
+    const initializeData = async () => {
+      await db.init();
+      const incomes = await db.getIncomes();
+      if (incomes.length === 0) {
+        // Si pas de revenus, ajouter les revenus par défaut
+        for (const income of defaultIncomes) {
+          await db.addIncome(income);
+        }
+        setEnvelopes(defaultIncomes);
+      } else {
+        setEnvelopes(incomes);
+      }
+    };
+    
+    initializeData();
+  }, []);
 
-  const handleAddIncome = (newIncome: { title: string; budget: number; type: "income" }) => {
+  const handleAddIncome = async (newIncome: { title: string; budget: number; type: "income" }) => {
     const income = {
       id: Date.now().toString(),
       ...newIncome,
       spent: newIncome.budget,
     };
     
+    await db.addIncome(income);
     setEnvelopes(prev => [...prev, income]);
     
     toast({
@@ -62,12 +74,20 @@ const Income = () => {
     });
   };
 
-  const handleEditIncome = (editedIncome: { title: string; budget: number; type: "income" }) => {
+  const handleEditIncome = async (editedIncome: { title: string; budget: number; type: "income" }) => {
     if (!selectedIncome) return;
 
+    const updatedIncome = {
+      ...selectedIncome,
+      title: editedIncome.title,
+      budget: editedIncome.budget,
+      spent: editedIncome.budget,
+    };
+
+    await db.updateIncome(updatedIncome);
     setEnvelopes(prev => prev.map(env => 
       env.id === selectedIncome.id 
-        ? { ...env, title: editedIncome.title, budget: editedIncome.budget, spent: editedIncome.budget }
+        ? updatedIncome
         : env
     ));
 
@@ -80,7 +100,8 @@ const Income = () => {
     });
   };
 
-  const handleDeleteIncome = (incomeId: string) => {
+  const handleDeleteIncome = async (incomeId: string) => {
+    await db.deleteIncome(incomeId);
     setEnvelopes(prev => prev.filter(env => env.id !== incomeId));
     
     toast({
@@ -89,13 +110,7 @@ const Income = () => {
     });
   };
 
-  const handleIncomeClick = (envelope: {
-    id: string;
-    title: string;
-    budget: number;
-    spent: number;
-    type: "income";
-  }) => {
+  const handleIncomeClick = (envelope: IncomeType) => {
     setSelectedIncome({
       id: envelope.id,
       title: envelope.title,
