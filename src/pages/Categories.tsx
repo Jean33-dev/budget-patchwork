@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -93,6 +94,11 @@ const Categories = () => {
     updateCategoryTotals(categoryId, availableBudgets);
   };
 
+  const handleBudgetRemoval = async (categoryId: string, budgetId: string) => {
+    await handleRemoveBudget(categoryId, budgetId, availableBudgets);
+    updateCategoryTotals(categoryId, availableBudgets);
+  };
+
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
       <div className="flex items-center gap-4 sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-10 pb-4 border-b">
@@ -155,7 +161,7 @@ const Categories = () => {
               category={category}
               availableBudgets={availableBudgets}
               onAssign={handleBudgetAssignment}
-              onRemove={handleRemoveBudget}
+              onRemove={handleBudgetRemoval}
               getAvailableBudgets={(categoryId) => 
                 getAvailableBudgetsForCategory(categoryId, availableBudgets)
               }
