@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { toast } from "@/components/ui/use-toast";
 import { db } from "@/services/database";
 
@@ -16,14 +16,14 @@ export const useBudgets = () => {
   const [totalRevenues, setTotalRevenues] = useState(0);
   const [totalExpenses, setTotalExpenses] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const isInitialized = useRef(false);
 
   const loadData = useCallback(async () => {
     try {
-      setIsLoading(true);
-      console.log("Début du chargement des données");
-      
-      await db.init();
-      console.log("Base de données initialisée");
+      if (!isInitialized.current) {
+        await db.init();
+        isInitialized.current = true;
+      }
 
       const [expenses, budgetsData, incomesData] = await Promise.all([
         db.getExpenses(),
@@ -68,14 +68,13 @@ export const useBudgets = () => {
     } finally {
       setIsLoading(false);
     }
-  }, []); // Suppression de la dépendance isLoading
+  }, []);
 
   useEffect(() => {
     loadData();
   }, [loadData]);
 
   const addBudget = async (newBudget: Omit<Budget, "id" | "spent">) => {
-    setIsLoading(true);
     try {
       const budgetToAdd: Budget = {
         id: Date.now().toString(),
@@ -86,7 +85,7 @@ export const useBudgets = () => {
       };
 
       await db.addBudget(budgetToAdd);
-      await loadData(); // Recharger toutes les données
+      await loadData();
       
       toast({
         title: "Budget ajouté",
@@ -105,10 +104,9 @@ export const useBudgets = () => {
   };
 
   const updateBudget = async (budgetToUpdate: Budget) => {
-    setIsLoading(true);
     try {
       await db.updateBudget(budgetToUpdate);
-      await loadData(); // Recharger toutes les données
+      await loadData();
       
       toast({
         title: "Budget modifié",
@@ -127,7 +125,6 @@ export const useBudgets = () => {
   };
 
   const deleteBudget = async (budgetId: string) => {
-    setIsLoading(true);
     try {
       const expenses = await db.getExpenses();
       const hasLinkedExpenses = expenses.some(expense => 
@@ -135,7 +132,6 @@ export const useBudgets = () => {
       );
       
       if (hasLinkedExpenses) {
-        setIsLoading(false);
         toast({
           variant: "destructive",
           title: "Suppression impossible",
@@ -145,7 +141,7 @@ export const useBudgets = () => {
       }
 
       await db.deleteBudget(budgetId);
-      await loadData(); // Recharger toutes les données
+      await loadData();
       
       toast({
         title: "Budget supprimé",
