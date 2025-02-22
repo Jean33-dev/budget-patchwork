@@ -14,7 +14,6 @@ import { useToast } from "@/hooks/use-toast";
 const Budgets = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [isReady, setIsReady] = useState(false);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -23,17 +22,13 @@ const Budgets = () => {
   const [editBudget, setEditBudget] = useState(0);
   const [hasLinkedExpenses, setHasLinkedExpenses] = useState(false);
 
-  useEffect(() => {
-    // S'assurer que le composant est monté avant d'initialiser les hooks
-    setIsReady(true);
-  }, []);
-
   const { 
     budgets, 
     remainingAmount, 
     addBudget, 
     updateBudget, 
-    deleteBudget 
+    deleteBudget,
+    isLoading 
   } = useBudgets();
 
   const handleEnvelopeClick = (envelope: Budget) => {
@@ -135,8 +130,8 @@ const Budgets = () => {
     }
   };
 
-  if (!isReady) {
-    return null; // Retourne null pendant que le composant se monte
+  if (isLoading) {
+    return <div className="flex items-center justify-center h-screen">Chargement...</div>;
   }
 
   return (
