@@ -31,15 +31,15 @@ export const MonthSelector = ({ currentDate, onMonthChange, onNewMonthClick }: M
 
   return (
     <TooltipProvider>
-      <div className="flex items-center gap-2 sm:gap-4">
-        <div className="flex items-center gap-2 sm:gap-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 p-2 rounded-lg border">
+      <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 p-1.5 rounded-lg border">
           <Tooltip>
             <TooltipTrigger asChild>
               <Button 
                 variant="outline" 
                 size="icon" 
                 onClick={handlePreviousMonth} 
-                className="h-8 w-8 sm:h-9 sm:w-9"
+                className="h-7 w-7"
                 aria-label="Mois précédent"
               >
                 <ChevronLeft className="h-4 w-4" />
@@ -50,8 +50,8 @@ export const MonthSelector = ({ currentDate, onMonthChange, onNewMonthClick }: M
             </TooltipContent>
           </Tooltip>
 
-          <span className="text-base sm:text-lg font-medium capitalize min-w-[140px] text-center px-2 py-1 bg-accent/50 rounded">
-            {format(currentDate, 'MMMM yyyy', { locale: fr })}
+          <span className="text-sm font-medium capitalize min-w-[110px] text-center px-1.5 py-1 bg-accent/50 rounded">
+            {format(currentDate, 'MMM yyyy', { locale: fr })}
           </span>
 
           <Tooltip>
@@ -60,7 +60,7 @@ export const MonthSelector = ({ currentDate, onMonthChange, onNewMonthClick }: M
                 variant="outline" 
                 size="icon" 
                 onClick={handleNextMonth} 
-                className="h-8 w-8 sm:h-9 sm:w-9"
+                className="h-7 w-7"
                 aria-label="Mois suivant"
               >
                 <ChevronRight className="h-4 w-4" />
@@ -79,7 +79,7 @@ export const MonthSelector = ({ currentDate, onMonthChange, onNewMonthClick }: M
                 variant="outline"
                 size="sm"
                 onClick={onNewMonthClick}
-                className="gap-2"
+                className="gap-1.5 h-7 px-2 text-sm"
               >
                 <CalendarDays className="h-4 w-4" />
                 Nouveau mois
