@@ -59,7 +59,11 @@ export const DashboardHeader = ({ currentDate, onMonthChange, onBackClick }: Das
         <h1 className="text-xl font-semibold">Tableau de Bord Budget</h1>
       </div>
       <div className="flex justify-end">
-        <MonthSelector currentDate={currentDate} onMonthChange={onMonthChange} />
+        <MonthSelector 
+          currentDate={currentDate} 
+          onMonthChange={onMonthChange}
+          onNewMonthClick={() => navigate("/dashboard/budget/transition")}
+        />
       </div>
     </div>
   );
