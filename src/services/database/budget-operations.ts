@@ -4,12 +4,11 @@ import { Budget } from '@/types/database-types';
 export class BudgetOperations {
   constructor(private db: any) {}
 
-  private async executeWithDelay(operation: () => void): Promise<void> {
+  private async executeWithDelay<T>(operation: () => T): Promise<T> {
     return new Promise((resolve) => {
-      // Utilisation de setTimeout pour éviter le blocage du thread principal
       setTimeout(() => {
-        operation();
-        resolve();
+        const result = operation();
+        resolve(result);
       }, 0);
     });
   }
