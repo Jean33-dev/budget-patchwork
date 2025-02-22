@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,7 @@ import {
 } from "@/components/ui/dialog";
 import { MoneyInput } from "@/components/shared/MoneyInput";
 import { useCategories } from "@/hooks/useCategories";
+import { useBudgets } from "@/hooks/useBudgets";
 
 type TransitionOption = "reset" | "carry" | "partial" | "transfer";
 
@@ -39,6 +41,7 @@ const BudgetTransition = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { categories, handleMonthTransition } = useCategories();
+  const { budgets } = useBudgets();
   
   // État pour les enveloppes
   const [envelopes, setEnvelopes] = useState<BudgetEnvelope[]>([]);
@@ -46,30 +49,33 @@ const BudgetTransition = () => {
   const [showPartialDialog, setShowPartialDialog] = useState(false);
   const [showTransferDialog, setShowTransferDialog] = useState(false);
 
-  // Charger les données des enveloppes depuis les catégories
+  // Charger les données des enveloppes depuis les catégories et les budgets
   useEffect(() => {
     const loadedEnvelopes: BudgetEnvelope[] = [];
     categories.forEach(category => {
-      category.budgets.forEach(budgetTitle => {
-        loadedEnvelopes.push({
-          id: `${category.id}-${budgetTitle}`,
-          title: budgetTitle,
-          budget: 0, // À remplacer par le vrai budget
-          spent: 0, // À remplacer par les vraies dépenses
-          remaining: 0, // À calculer
-          transitionOption: "reset"
-        });
+      category.budgets.forEach(budgetId => {
+        const budget = budgets.find(b => b.id === budgetId);
+        if (budget) {
+          loadedEnvelopes.push({
+            id: `${category.id}-${budget.id}`,
+            title: budget.title,
+            budget: budget.budget,
+            spent: budget.spent,
+            remaining: budget.budget - budget.spent,
+            transitionOption: "reset"
+          });
+        }
       });
     });
+    console.log("Enveloppes chargées:", loadedEnvelopes);
     setEnvelopes(loadedEnvelopes);
-  }, [categories]);
+  }, [categories, budgets]);
 
   const handleOptionChange = (envelopeId: string, option: TransitionOption) => {
     setEnvelopes(prev => 
       prev.map(env => {
         if (env.id === envelopeId) {
           const updatedEnv = { ...env, transitionOption: option };
-          // Réinitialiser les valeurs spécifiques si on change d'option
           if (option !== "partial") delete updatedEnv.partialAmount;
           if (option !== "transfer") delete updatedEnv.transferTargetId;
           return updatedEnv;
@@ -78,7 +84,6 @@ const BudgetTransition = () => {
       })
     );
 
-    // Ouvrir le dialogue approprié si nécessaire
     const envelope = envelopes.find(env => env.id === envelopeId);
     if (envelope) {
       setSelectedEnvelope(envelope);
