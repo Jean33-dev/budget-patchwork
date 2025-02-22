@@ -82,7 +82,7 @@ export const MonthSelector = ({ currentDate, onMonthChange, onNewMonthClick }: M
                 className="gap-2"
               >
                 <CalendarDays className="h-4 w-4" />
-                Commencer un nouveau mois
+                Nouveau mois
               </Button>
             </TooltipTrigger>
             <TooltipContent>
