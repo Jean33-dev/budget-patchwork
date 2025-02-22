@@ -10,6 +10,7 @@ interface EnvelopeCardProps {
   budget: number;
   spent: number;
   type: "income" | "expense" | "budget";
+  carriedOver?: number;
   onClick?: () => void;
   onViewExpenses?: () => void;
 }
@@ -19,15 +20,18 @@ export const EnvelopeCard = ({
   budget = 0, 
   spent = 0, 
   type, 
+  carriedOver = 0,
   onClick,
   onViewExpenses 
 }: EnvelopeCardProps) => {
-  // Assurons-nous que budget et spent sont des nombres valides
+  // Assurons-nous que les valeurs sont des nombres valides
   const safeSpent = Number(spent) || 0;
   const safeBudget = Number(budget) || 0;
+  const safeCarriedOver = Number(carriedOver) || 0;
   
-  const progress = safeBudget > 0 ? (safeSpent / safeBudget) * 100 : 0;
-  const remaining = safeBudget - safeSpent;
+  const totalBudget = safeBudget + safeCarriedOver;
+  const progress = totalBudget > 0 ? (safeSpent / totalBudget) * 100 : 0;
+  const remaining = totalBudget - safeSpent;
   const isOverBudget = remaining < 0;
 
   if (type === "income") {
@@ -93,9 +97,17 @@ export const EnvelopeCard = ({
       </CardHeader>
       <CardContent>
         <div className="space-y-2">
-          <div className="flex justify-between text-sm text-gray-500">
-            <span>Budget : {safeBudget.toFixed(2)} €</span>
-            <span>Dépensé : {safeSpent.toFixed(2)} €</span>
+          <div className="space-y-1 text-sm text-gray-500">
+            <div className="flex justify-between">
+              <span>Budget : {safeBudget.toFixed(2)} €</span>
+              <span>Dépensé : {safeSpent.toFixed(2)} €</span>
+            </div>
+            {safeCarriedOver > 0 && (
+              <div className="flex justify-between">
+                <span>Report : {safeCarriedOver.toFixed(2)} €</span>
+                <span>Total : {totalBudget.toFixed(2)} €</span>
+              </div>
+            )}
           </div>
           <Progress 
             value={Math.min(progress, 100)} 
