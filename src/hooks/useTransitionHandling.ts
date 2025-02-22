@@ -11,89 +11,81 @@ export const useTransitionHandling = (categories: any[], setCategories: (categor
     
     try {
       for (const envelope of envelopes) {
-        const [categoryId, budgetTitle] = envelope.id.split("-");
+        const budget = await db.getBudgets().then(budgets => 
+          budgets.find(b => b.id === envelope.id)
+        );
+
+        if (!budget) continue;
+
+        const currentRemaining = budget.budget - budget.spent;
+        let newBudgetAmount = budget.budget;
         
-        const updatedCategories = categories.map(category => {
-          if (category.id === categoryId) {
-            const updatedBudgets = category.budgets.map((budget: any) => {
-              if (budget.id === budgetTitle) {
-                const currentRemaining = budget.budget - budget.spent;
-                
-                switch (envelope.transitionOption) {
-                  case "reset":
-                    // Réinitialise le budget à sa valeur initiale
-                    return {
-                      ...budget,
-                      spent: 0
-                    };
-                  
-                  case "carry":
-                    // Ajoute le solde restant au budget du mois suivant
-                    return {
-                      ...budget,
-                      budget: budget.budget + currentRemaining,
-                      spent: 0
-                    };
-                  
-                  case "partial":
-                    // Ajoute le montant spécifié au budget du mois suivant
-                    if (envelope.partialAmount !== undefined) {
-                      return {
-                        ...budget,
-                        budget: budget.budget + envelope.partialAmount,
-                        spent: 0
-                      };
-                    }
-                    return budget;
-                  
-                  case "transfer":
-                    // Pour le budget source, on réinitialise simplement
-                    return {
-                      ...budget,
-                      spent: 0
-                    };
-                  
-                  default:
-                    return budget;
-                }
-              }
-              
-              // Si c'est le budget cible d'un transfert
-              if (envelope.transitionOption === "transfer" && 
-                  envelope.transferTargetId === `${category.id}-${budget.id}`) {
-                const sourceEnvelope = envelopes.find(e => e.id === envelope.id);
-                if (sourceEnvelope) {
-                  const [sourceCatId, sourceBudgetTitle] = envelope.id.split("-");
-                  const sourceCat = categories.find(c => c.id === sourceCatId);
-                  const sourceBudget = sourceCat?.budgets.find((b: any) => b.id === sourceBudgetTitle);
-                  
-                  if (sourceBudget) {
-                    const transferAmount = sourceBudget.budget - sourceBudget.spent;
-                    return {
-                      ...budget,
-                      budget: budget.budget + transferAmount,
-                      spent: 0
-                    };
-                  }
-                }
-              }
-              
-              return budget;
+        switch (envelope.transitionOption) {
+          case "reset":
+            // Réinitialise le budget à sa valeur initiale
+            await db.updateBudget({
+              ...budget,
+              spent: 0
             });
+            break;
+          
+          case "carry":
+            // Ajoute le solde restant au budget du mois suivant
+            newBudgetAmount = budget.budget + currentRemaining;
+            await db.updateBudget({
+              ...budget,
+              budget: newBudgetAmount,
+              spent: 0
+            });
+            break;
+          
+          case "partial":
+            // Ajoute le montant spécifié au budget du mois suivant
+            if (envelope.partialAmount !== undefined) {
+              newBudgetAmount = budget.budget + envelope.partialAmount;
+              await db.updateBudget({
+                ...budget,
+                budget: newBudgetAmount,
+                spent: 0
+              });
+            }
+            break;
+          
+          case "transfer":
+            if (envelope.transferTargetId) {
+              // Récupérer le budget cible
+              const targetBudget = await db.getBudgets().then(budgets => 
+                budgets.find(b => b.id === envelope.transferTargetId)
+              );
 
-            return {
-              ...category,
-              budgets: updatedBudgets
-            };
-          }
-          return category;
-        });
+              if (targetBudget) {
+                // Mettre à jour le budget source (réinitialisation)
+                await db.updateBudget({
+                  ...budget,
+                  spent: 0
+                });
 
-        setCategories(updatedCategories);
+                // Mettre à jour le budget cible (ajout du montant restant)
+                await db.updateBudget({
+                  ...targetBudget,
+                  budget: targetBudget.budget + currentRemaining,
+                  spent: targetBudget.spent
+                });
+              }
+            }
+            break;
+        }
+
+        // Réinitialiser les dépenses liées à ce budget
+        const expenses = await db.getExpenses();
+        const budgetExpenses = expenses.filter(exp => exp.linkedBudgetId === envelope.id);
         
-        const updatedCategory = updatedCategories.find(c => c.id === categoryId);
-        if (updatedCategory) {
-          await db.updateCategory(updatedCategory);
+        for (const expense of budgetExpenses) {
+          await db.updateExpense({
+            ...expense,
+            budget: 0,
+            spent: 0
+          });
         }
       }
 
