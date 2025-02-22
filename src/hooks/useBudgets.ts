@@ -22,6 +22,7 @@ export const useBudgets = () => {
   // Fonction de chargement des données
   const loadData = useCallback(async () => {
     if (!isMounted.current) return;
+    setIsLoading(true);
 
     try {
       // Initialisation de la base de données si nécessaire
@@ -63,9 +64,9 @@ export const useBudgets = () => {
 
       if (!isMounted.current) return;
 
+      setBudgets(validatedBudgets);
       setTotalRevenues(totalIncome);
       setTotalExpenses(totalSpent);
-      setBudgets(validatedBudgets);
       
     } catch (error) {
       if (!isMounted.current) return;
@@ -92,9 +93,9 @@ export const useBudgets = () => {
   }, [loadData]);
 
   const addBudget = useCallback(async (newBudget: Omit<Budget, "id" | "spent">) => {
-    try {
-      if (!isMounted.current) return false;
+    if (!isMounted.current) return false;
 
+    try {
       const budgetToAdd: Budget = {
         id: Date.now().toString(),
         title: newBudget.title,
@@ -104,6 +105,7 @@ export const useBudgets = () => {
       };
 
       await db.addBudget(budgetToAdd);
+      if (!isMounted.current) return false;
       await loadData();
       
       toast({
@@ -123,10 +125,11 @@ export const useBudgets = () => {
   }, [loadData]);
 
   const updateBudget = useCallback(async (budgetToUpdate: Budget) => {
-    try {
-      if (!isMounted.current) return false;
+    if (!isMounted.current) return false;
 
+    try {
       await db.updateBudget(budgetToUpdate);
+      if (!isMounted.current) return false;
       await loadData();
       
       toast({
@@ -146,10 +149,12 @@ export const useBudgets = () => {
   }, [loadData]);
 
   const deleteBudget = useCallback(async (budgetId: string) => {
+    if (!isMounted.current) return false;
+
     try {
+      const expenses = await db.getExpenses();
       if (!isMounted.current) return false;
 
-      const expenses = await db.getExpenses();
       const hasLinkedExpenses = expenses.some(expense => 
         expense.linkedBudgetId === budgetId
       );
@@ -164,6 +169,7 @@ export const useBudgets = () => {
       }
 
       await db.deleteBudget(budgetId);
+      if (!isMounted.current) return false;
       await loadData();
       
       toast({
