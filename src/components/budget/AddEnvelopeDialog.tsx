@@ -1,5 +1,6 @@
+
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { EnvelopeForm } from "./EnvelopeForm";
 
 interface AddEnvelopeDialogProps {
@@ -71,6 +72,9 @@ export const AddEnvelopeDialog = ({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Ajouter un nouveau {getTypeLabel(type)}</DialogTitle>
+          <DialogDescription>
+            Remplissez les informations ci-dessous pour créer un nouveau {getTypeLabel(type)}.
+          </DialogDescription>
         </DialogHeader>
         <EnvelopeForm
           type={type}

@@ -1,10 +1,9 @@
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { MoneyInput } from "@/components/shared/MoneyInput";
 import { Button } from "@/components/ui/button";
-import { Budget } from "@/hooks/useBudgets";
 
 interface EditBudgetDialogProps {
   open: boolean;
@@ -32,6 +31,9 @@ export const EditBudgetDialog = ({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Modifier le budget</DialogTitle>
+          <DialogDescription>
+            Modifiez les informations du budget ci-dessous.
+          </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-4">
           <div className="space-y-2">
