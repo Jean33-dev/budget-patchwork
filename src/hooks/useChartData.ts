@@ -19,27 +19,45 @@ interface ChartData {
 }
 
 export const useChartData = (envelopes: Envelope[], totalIncome: number) => {
+  // Debug logs pour voir les enveloppes et leurs catégories
+  console.log("Enveloppes reçues:", envelopes);
+  
   const budgetChartData = useMemo(() => 
     envelopes
       .filter(env => env.type === "budget")
       .map((env) => ({
         name: env.title,
-        value: env.budget,
+        value: env.budget, // On utilise bien budget et non spent
         type: env.type,
       })), [envelopes]
   );
 
-  const categoryTotals = useMemo(() => ({
-    necessaire: envelopes
-      .filter(env => env.type === "budget" && env.category === "necessaire")
-      .reduce((sum, env) => sum + env.budget, 0),
-    plaisir: envelopes
-      .filter(env => env.type === "budget" && env.category === "plaisir")
-      .reduce((sum, env) => sum + env.budget, 0),
-    epargne: envelopes
-      .filter(env => env.type === "budget" && env.category === "epargne")
-      .reduce((sum, env) => sum + env.budget, 0)
-  }), [envelopes]);
+  const categoryTotals = useMemo(() => {
+    // Debug log pour voir les calculs
+    const totals = {
+      necessaire: envelopes
+        .filter(env => env.category === "necessaire")
+        .reduce((sum, env) => {
+          console.log("Budget nécessaire:", env.title, env.budget);
+          return sum + env.budget;
+        }, 0),
+      plaisir: envelopes
+        .filter(env => env.category === "plaisir")
+        .reduce((sum, env) => {
+          console.log("Budget plaisir:", env.title, env.budget);
+          return sum + env.budget;
+        }, 0),
+      epargne: envelopes
+        .filter(env => env.category === "epargne")
+        .reduce((sum, env) => {
+          console.log("Budget épargne:", env.title, env.budget);
+          return sum + env.budget;
+        }, 0)
+    };
+    
+    console.log("Totaux par catégorie:", totals);
+    return totals;
+  }, [envelopes]);
 
   const categoryChartData = useMemo(() => [
     {
@@ -60,16 +78,25 @@ export const useChartData = (envelopes: Envelope[], totalIncome: number) => {
   ], [categoryTotals]);
 
   const getChartData = (chartType: ChartType) => {
-    switch (chartType) {
-      case "budget":
-        return { data: budgetChartData, total: totalIncome, addUnallocated: true };
-      case "category":
-        return { data: categoryChartData, total: totalIncome, addUnallocated: true };
-      case "type":
-        return { data: categoryChartData, total: totalIncome, addUnallocated: false };
-      default:
-        return { data: [], total: 0, addUnallocated: false };
-    }
+    const chartData = (() => {
+      switch (chartType) {
+        case "budget":
+          return budgetChartData;
+        case "category":
+        case "type":
+          return categoryChartData.filter(item => item.value > 0);
+        default:
+          return [];
+      }
+    })();
+
+    console.log(`Données du graphique (${chartType}):`, chartData);
+    
+    return {
+      data: chartData,
+      total: totalIncome,
+      addUnallocated: chartType !== "type"
+    };
   };
 
   const getChartTitle = (chartType: ChartType) => {
