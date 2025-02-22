@@ -6,7 +6,9 @@ import { useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { BudgetsHeader } from "@/components/budget/BudgetsHeader";
 import { EditBudgetDialog } from "@/components/budget/EditBudgetDialog";
+import { DeleteBudgetDialog } from "@/components/budget/DeleteBudgetDialog";
 import { useBudgets, Budget } from "@/hooks/useBudgets";
+import { db } from "@/services/database";
 
 const Budgets = () => {
   const navigate = useNavigate();
@@ -14,9 +16,11 @@ const Budgets = () => {
   
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedBudget, setSelectedBudget] = useState<Budget | null>(null);
   const [editTitle, setEditTitle] = useState("");
   const [editBudget, setEditBudget] = useState(0);
+  const [hasLinkedExpenses, setHasLinkedExpenses] = useState(false);
 
   const handleEnvelopeClick = (envelope: Budget) => {
     setSelectedBudget(envelope);
@@ -54,7 +58,7 @@ const Budgets = () => {
     const budgetData = {
       title: envelope.title,
       budget: envelope.budget,
-      type: "budget" as const // Force le type à être strictement "budget"
+      type: "budget" as const
     };
     
     const success = await addBudget(budgetData);
@@ -63,8 +67,22 @@ const Budgets = () => {
     }
   };
 
-  const handleDeleteBudget = (envelope: Budget) => {
-    deleteBudget(envelope.id);
+  const handleDeleteClick = async (envelope: Budget) => {
+    setSelectedBudget(envelope);
+    
+    // Vérifier si le budget a des dépenses associées
+    const expenses = await db.getExpenses();
+    const linkedExpenses = expenses.filter(expense => expense.linkedBudgetId === envelope.id);
+    setHasLinkedExpenses(linkedExpenses.length > 0);
+    
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!selectedBudget) return;
+    await deleteBudget(selectedBudget.id);
+    setDeleteDialogOpen(false);
+    setSelectedBudget(null);
   };
 
   return (
@@ -90,7 +108,7 @@ const Budgets = () => {
         onAddClick={() => setAddDialogOpen(true)}
         onEnvelopeClick={handleEnvelopeClick}
         onViewExpenses={handleViewExpenses}
-        onDeleteClick={handleDeleteBudget}
+        onDeleteClick={handleDeleteClick}
       />
 
       <AddEnvelopeDialog
@@ -108,6 +126,13 @@ const Budgets = () => {
         budget={editBudget}
         onBudgetChange={setEditBudget}
         onSubmit={handleEditSubmit}
+      />
+
+      <DeleteBudgetDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleDeleteConfirm}
+        hasLinkedExpenses={hasLinkedExpenses}
       />
     </div>
   );
