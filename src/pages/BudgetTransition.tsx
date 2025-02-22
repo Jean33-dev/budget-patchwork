@@ -4,38 +4,13 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Save } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { MoneyInput } from "@/components/shared/MoneyInput";
 import { useCategories } from "@/hooks/useCategories";
 import { useBudgets } from "@/hooks/useBudgets";
-
-type TransitionOption = "reset" | "carry" | "partial" | "transfer";
-
-interface BudgetEnvelope {
-  id: string;
-  title: string;
-  budget: number;
-  spent: number;
-  remaining: number;
-  transitionOption: TransitionOption;
-  partialAmount?: number;
-  transferTargetId?: string;
-}
+import { TransitionEnvelopeCard } from "@/components/budget-transition/TransitionEnvelopeCard";
+import { PartialAmountDialog } from "@/components/budget-transition/PartialAmountDialog";
+import { TransferDialog } from "@/components/budget-transition/TransferDialog";
+import { BudgetEnvelope, TransitionOption } from "@/types/transition";
 
 const BudgetTransition = () => {
   const navigate = useNavigate();
@@ -43,13 +18,11 @@ const BudgetTransition = () => {
   const { categories, handleMonthTransition } = useCategories();
   const { budgets } = useBudgets();
   
-  // État pour les enveloppes
   const [envelopes, setEnvelopes] = useState<BudgetEnvelope[]>([]);
   const [selectedEnvelope, setSelectedEnvelope] = useState<BudgetEnvelope | null>(null);
   const [showPartialDialog, setShowPartialDialog] = useState(false);
   const [showTransferDialog, setShowTransferDialog] = useState(false);
 
-  // Charger les données des enveloppes depuis les catégories et les budgets
   useEffect(() => {
     const loadedEnvelopes: BudgetEnvelope[] = [];
     categories.forEach(category => {
@@ -110,32 +83,23 @@ const BudgetTransition = () => {
   const handleTransferTargetChange = (targetId: string) => {
     if (!selectedEnvelope) return;
     
+    const targetEnvelope = envelopes.find(env => env.id === targetId);
+    if (!targetEnvelope) return;
+
     setEnvelopes(prev =>
       prev.map(env =>
         env.id === selectedEnvelope.id
-          ? { ...env, transferTargetId: targetId }
+          ? { 
+              ...env, 
+              transferTargetId: targetId,
+              transferTargetTitle: targetEnvelope.title
+            }
           : env
       )
     );
   };
 
-  const calculateTransitionImpact = (envelope: BudgetEnvelope) => {
-    switch (envelope.transitionOption) {
-      case "reset":
-        return 0;
-      case "carry":
-        return envelope.remaining;
-      case "partial":
-        return envelope.partialAmount || 0;
-      case "transfer":
-        return 0; // Le montant sera ajouté à l'enveloppe cible
-      default:
-        return 0;
-    }
-  };
-
   const handleTransitionConfirm = () => {
-    // Vérifier que toutes les options sont correctement configurées
     const invalidEnvelopes = envelopes.filter(env => {
       if (env.transitionOption === "partial" && !env.partialAmount) return true;
       if (env.transitionOption === "transfer" && !env.transferTargetId) return true;
@@ -151,7 +115,6 @@ const BudgetTransition = () => {
       return;
     }
 
-    // Préparer les données pour la transition
     const transitionData = envelopes.map(envelope => ({
       id: envelope.id,
       title: envelope.title,
@@ -160,7 +123,6 @@ const BudgetTransition = () => {
       transferTargetId: envelope.transferTargetId
     }));
 
-    // Appliquer les transitions
     const success = handleMonthTransition(transitionData);
     
     if (success) {
@@ -189,44 +151,11 @@ const BudgetTransition = () => {
           <CardContent>
             <div className="space-y-4">
               {envelopes.map((envelope) => (
-                <div
+                <TransitionEnvelopeCard
                   key={envelope.id}
-                  className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 border rounded-lg"
-                >
-                  <div className="space-y-1 flex-1">
-                    <h3 className="font-medium">{envelope.title}</h3>
-                    <div className="text-sm text-muted-foreground space-y-1">
-                      <div>Solde restant: {envelope.remaining.toFixed(2)}€</div>
-                      {envelope.transitionOption === "partial" && envelope.partialAmount !== undefined && (
-                        <div>Montant reporté: {envelope.partialAmount.toFixed(2)}€</div>
-                      )}
-                      {envelope.transitionOption === "transfer" && envelope.transferTargetId && (
-                        <div>
-                          Transfert vers: {
-                            envelopes.find(e => e.id === envelope.transferTargetId)?.title
-                          }
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  
-                  <Select
-                    value={envelope.transitionOption}
-                    onValueChange={(value: TransitionOption) => 
-                      handleOptionChange(envelope.id, value)
-                    }
-                  >
-                    <SelectTrigger className="w-full sm:w-[200px]">
-                      <SelectValue placeholder="Choisir une option" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="reset">Réinitialiser</SelectItem>
-                      <SelectItem value="carry">Reporter tout</SelectItem>
-                      <SelectItem value="partial">Report partiel</SelectItem>
-                      <SelectItem value="transfer">Transférer</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                  envelope={envelope}
+                  onOptionChange={handleOptionChange}
+                />
               ))}
             </div>
           </CardContent>
@@ -249,73 +178,20 @@ const BudgetTransition = () => {
         </div>
       </div>
 
-      {/* Dialog pour le report partiel */}
-      <Dialog open={showPartialDialog} onOpenChange={setShowPartialDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Report partiel</DialogTitle>
-            <DialogDescription>
-              Choisissez le montant à reporter sur le mois suivant
-            </DialogDescription>
-          </DialogHeader>
-          <div className="py-4">
-            <MoneyInput
-              value={selectedEnvelope?.partialAmount || 0}
-              onChange={handlePartialAmountChange}
-              placeholder="Montant à reporter"
-              className="w-full"
-            />
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowPartialDialog(false)}>
-              Annuler
-            </Button>
-            <Button onClick={() => setShowPartialDialog(false)}>
-              Confirmer
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <PartialAmountDialog
+        open={showPartialDialog}
+        onOpenChange={setShowPartialDialog}
+        selectedEnvelope={selectedEnvelope}
+        onAmountChange={handlePartialAmountChange}
+      />
 
-      {/* Dialog pour le transfert */}
-      <Dialog open={showTransferDialog} onOpenChange={setShowTransferDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Transfert vers une autre enveloppe</DialogTitle>
-            <DialogDescription>
-              Choisissez l'enveloppe qui recevra les fonds
-            </DialogDescription>
-          </DialogHeader>
-          <div className="py-4">
-            <Select
-              value={selectedEnvelope?.transferTargetId}
-              onValueChange={handleTransferTargetChange}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Choisir une enveloppe" />
-              </SelectTrigger>
-              <SelectContent>
-                {envelopes
-                  .filter(env => env.id !== selectedEnvelope?.id)
-                  .map(env => (
-                    <SelectItem key={env.id} value={env.id}>
-                      {env.title}
-                    </SelectItem>
-                  ))
-                }
-              </SelectContent>
-            </Select>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowTransferDialog(false)}>
-              Annuler
-            </Button>
-            <Button onClick={() => setShowTransferDialog(false)}>
-              Confirmer
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <TransferDialog
+        open={showTransferDialog}
+        onOpenChange={setShowTransferDialog}
+        selectedEnvelope={selectedEnvelope}
+        envelopes={envelopes}
+        onTransferTargetChange={handleTransferTargetChange}
+      />
     </div>
   );
 };
