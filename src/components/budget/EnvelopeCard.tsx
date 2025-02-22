@@ -97,17 +97,9 @@ export const EnvelopeCard = ({
       </CardHeader>
       <CardContent>
         <div className="space-y-2">
-          <div className="space-y-1 text-sm text-gray-500">
-            <div className="flex justify-between">
-              <span>Budget : {safeBudget.toFixed(2)} €</span>
-              <span>Dépensé : {safeSpent.toFixed(2)} €</span>
-            </div>
-            {safeCarriedOver > 0 && (
-              <div className="flex justify-between">
-                <span>Report : {safeCarriedOver.toFixed(2)} €</span>
-                <span>Total : {totalBudget.toFixed(2)} €</span>
-              </div>
-            )}
+          <div className="flex justify-between text-sm text-gray-500">
+            <span>Budget : {safeBudget.toFixed(2)} €</span>
+            <span>Dépensé : {safeSpent.toFixed(2)} €</span>
           </div>
           <Progress 
             value={Math.min(progress, 100)} 
@@ -117,13 +109,21 @@ export const EnvelopeCard = ({
               "text-blue-500"
             )}
           />
-          <div className="flex justify-end">
-            <span className={cn(
-              "text-sm font-medium",
-              isOverBudget ? "text-budget-expense" : "text-budget-income"
-            )}>
-              {Math.abs(remaining).toFixed(2)} € {isOverBudget ? "dépassé" : "restant"}
-            </span>
+          <div className="flex flex-col gap-1">
+            {safeCarriedOver > 0 && (
+              <div className="flex justify-between text-sm text-gray-500">
+                <span>Report : {safeCarriedOver.toFixed(2)} €</span>
+                <span>Total : {totalBudget.toFixed(2)} €</span>
+              </div>
+            )}
+            <div className="flex justify-end">
+              <span className={cn(
+                "text-sm font-medium",
+                isOverBudget ? "text-budget-expense" : "text-budget-income"
+              )}>
+                {Math.abs(remaining).toFixed(2)} € {isOverBudget ? "dépassé" : "restant"}
+              </span>
+            </div>
           </div>
         </div>
       </CardContent>
