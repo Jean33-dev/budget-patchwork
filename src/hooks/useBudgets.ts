@@ -84,7 +84,10 @@ export const useBudgets = () => {
       };
 
       await db.addBudget(budgetToAdd);
-      setBudgets(prevBudgets => [...prevBudgets, budgetToAdd]);
+      console.log("Budget ajouté dans la base de données:", budgetToAdd);
+      
+      // Recharger toutes les données pour maintenir la cohérence
+      await loadData();
       
       toast({
         title: "Budget ajouté",
@@ -105,9 +108,10 @@ export const useBudgets = () => {
   const updateBudget = async (budgetToUpdate: Budget) => {
     try {
       await db.updateBudget(budgetToUpdate);
-      setBudgets(prevBudgets => 
-        prevBudgets.map(b => b.id === budgetToUpdate.id ? budgetToUpdate : b)
-      );
+      console.log("Budget mis à jour dans la base de données:", budgetToUpdate);
+      
+      // Recharger toutes les données pour maintenir la cohérence
+      await loadData();
       
       toast({
         title: "Budget modifié",
@@ -147,13 +151,9 @@ export const useBudgets = () => {
       }
 
       await db.deleteBudget(budgetId);
-      setBudgets(prevBudgets => {
-        const newBudgets = prevBudgets.filter(b => b.id !== budgetId);
-        console.log("Nouveaux budgets après suppression:", newBudgets);
-        return newBudgets;
-      });
+      console.log("Budget supprimé de la base de données:", budgetId);
       
-      // Recharger les données pour mettre à jour les totaux
+      // Recharger toutes les données pour maintenir la cohérence
       await loadData();
       
       toast({
