@@ -36,19 +36,19 @@ export const useChartData = (envelopes: Envelope[], totalIncome: number) => {
     // Debug log pour voir les calculs
     const totals = {
       necessaire: envelopes
-        .filter(env => env.category === "necessaire")
+        .filter(env => env.category === "necessaire" && env.type === "budget")
         .reduce((sum, env) => {
           console.log("Budget nécessaire:", env.title, env.budget);
           return sum + env.budget;
         }, 0),
       plaisir: envelopes
-        .filter(env => env.category === "plaisir")
+        .filter(env => env.category === "plaisir" && env.type === "budget")
         .reduce((sum, env) => {
           console.log("Budget plaisir:", env.title, env.budget);
           return sum + env.budget;
         }, 0),
       epargne: envelopes
-        .filter(env => env.category === "epargne")
+        .filter(env => env.category === "epargne" && env.type === "budget")
         .reduce((sum, env) => {
           console.log("Budget épargne:", env.title, env.budget);
           return sum + env.budget;
