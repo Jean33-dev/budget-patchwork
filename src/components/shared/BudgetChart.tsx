@@ -14,11 +14,15 @@ interface BudgetChartProps {
 }
 
 const COLORS = {
-  income: ["#10B981", "#34D399", "#6EE7B7"],
-  expense: ["#EF4444", "#F87171", "#FCA5A5"],
+  income: ["#1A1F2C", "#221F26", "#2C2436"],
+  expense: ["#ea384c", "#d41d31", "#b31929"],
   budget: [
-    "#8B5CF6", "#D946EF", "#F97316", "#0EA5E9", "#F2FCE2", 
-    "#FEF7CD", "#FEC6A1", "#E5DEFF", "#FFDEE2", "#FDE1D3",
+    "#8B5CF6", // Vivid Purple
+    "#D946EF", // Magenta Pink
+    "#F97316", // Bright Orange
+    "#7E69AB", // Secondary Purple
+    "#6E59A5", // Tertiary Purple
+    "#ea384c", // Red
   ],
 };
 
@@ -26,10 +30,7 @@ export const BudgetChart = ({ data, totalIncome = 0, addUnallocated = false }: B
   let chartData = [...data];
   
   if (addUnallocated) {
-    // Calculer le total des budgets alloués
     const totalAllocated = data.reduce((sum, item) => sum + item.value, 0);
-    
-    // Ajouter le budget non alloué aux données si nécessaire
     const remainingBudget = totalIncome - totalAllocated;
     if (remainingBudget > 0) {
       chartData.push({
@@ -40,7 +41,6 @@ export const BudgetChart = ({ data, totalIncome = 0, addUnallocated = false }: B
     }
   }
 
-  // Calculer les pourcentages
   const getPercentage = (value: number) => {
     return ((value / totalIncome) * 100).toFixed(1);
   };
@@ -54,6 +54,7 @@ export const BudgetChart = ({ data, totalIncome = 0, addUnallocated = false }: B
             cx="50%"
             cy="50%"
             labelLine={false}
+            innerRadius={60}
             outerRadius={80}
             fill="#8884d8"
             dataKey="value"
@@ -70,8 +71,17 @@ export const BudgetChart = ({ data, totalIncome = 0, addUnallocated = false }: B
               `${value.toFixed(2)} € (${getPercentage(value)}%)`,
               name
             ]}
+            contentStyle={{
+              backgroundColor: "#1A1F2C",
+              border: "none",
+              borderRadius: "8px",
+              color: "white"
+            }}
           />
-          <Legend />
+          <Legend
+            formatter={(value) => <span style={{ color: "#4A5568" }}>{value}</span>}
+            iconType="circle"
+          />
         </PieChart>
       </ResponsiveContainer>
     </div>
