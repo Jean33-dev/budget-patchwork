@@ -84,7 +84,7 @@ export const useBudgets = () => {
       };
 
       await db.addBudget(budgetToAdd);
-      await loadData(); // Recharger les données après l'ajout
+      setBudgets(prevBudgets => [...prevBudgets, budgetToAdd]);
       
       toast({
         title: "Budget ajouté",
@@ -105,7 +105,9 @@ export const useBudgets = () => {
   const updateBudget = async (budgetToUpdate: Budget) => {
     try {
       await db.updateBudget(budgetToUpdate);
-      await loadData(); // Recharger les données après la mise à jour
+      setBudgets(prevBudgets => 
+        prevBudgets.map(b => b.id === budgetToUpdate.id ? budgetToUpdate : b)
+      );
       
       toast({
         title: "Budget modifié",
@@ -145,7 +147,14 @@ export const useBudgets = () => {
       }
 
       await db.deleteBudget(budgetId);
-      await loadData(); // Recharger les données après la suppression
+      setBudgets(prevBudgets => {
+        const newBudgets = prevBudgets.filter(b => b.id !== budgetId);
+        console.log("Nouveaux budgets après suppression:", newBudgets);
+        return newBudgets;
+      });
+      
+      // Recharger les données pour mettre à jour les totaux
+      await loadData();
       
       toast({
         title: "Budget supprimé",
