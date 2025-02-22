@@ -1,4 +1,3 @@
-
 import { useNavigate } from "react-router-dom";
 import { EnvelopeList } from "@/components/budget/EnvelopeList";
 import { AddEnvelopeDialog } from "@/components/budget/AddEnvelopeDialog";
@@ -82,6 +81,7 @@ const Budgets = () => {
     if (!selectedBudget) return;
     await deleteBudget(selectedBudget.id);
     setDeleteDialogOpen(false);
+    setEditDialogOpen(false);
     setSelectedBudget(null);
   };
 
@@ -126,6 +126,7 @@ const Budgets = () => {
         budget={editBudget}
         onBudgetChange={setEditBudget}
         onSubmit={handleEditSubmit}
+        onDelete={() => handleDeleteClick(selectedBudget!)}
       />
 
       <DeleteBudgetDialog

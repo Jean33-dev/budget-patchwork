@@ -14,6 +14,7 @@ interface EditBudgetDialogProps {
   budget: number;
   onBudgetChange: (budget: number) => void;
   onSubmit: () => void;
+  onDelete: () => void;
 }
 
 export const EditBudgetDialog = ({
@@ -24,6 +25,7 @@ export const EditBudgetDialog = ({
   budget,
   onBudgetChange,
   onSubmit,
+  onDelete,
 }: EditBudgetDialogProps) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -50,7 +52,10 @@ export const EditBudgetDialog = ({
             />
           </div>
         </div>
-        <DialogFooter>
+        <DialogFooter className="flex justify-between sm:justify-between">
+          <Button variant="destructive" onClick={onDelete}>
+            Supprimer
+          </Button>
           <Button onClick={onSubmit}>Enregistrer les modifications</Button>
         </DialogFooter>
       </DialogContent>
