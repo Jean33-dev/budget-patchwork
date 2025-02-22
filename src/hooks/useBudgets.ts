@@ -21,10 +21,8 @@ export const useBudgets = () => {
     try {
       setIsLoading(true);
       
-      // S'assurer que la base de données est initialisée
-      if (!db.initialized) {
-        await db.init();
-      }
+      // Initialiser la base de données si nécessaire
+      await db.init();
 
       // Chargement des budgets
       const budgetsData = await db.getBudgets();
