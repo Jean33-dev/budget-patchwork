@@ -9,10 +9,11 @@ import { EditBudgetDialog } from "@/components/budget/EditBudgetDialog";
 import { DeleteBudgetDialog } from "@/components/budget/DeleteBudgetDialog";
 import { useBudgets, Budget } from "@/hooks/useBudgets";
 import { db } from "@/services/database";
-import { toast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 const Budgets = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const { budgets, remainingAmount, addBudget, updateBudget, deleteBudget } = useBudgets();
   
   const [addDialogOpen, setAddDialogOpen] = useState(false);
