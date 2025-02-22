@@ -18,9 +18,8 @@ export const useBudgets = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   const loadData = useCallback(async () => {
-    if (!isLoading) setIsLoading(true);
-    
     try {
+      setIsLoading(true);
       console.log("Début du chargement des données");
       
       await db.init();
@@ -69,13 +68,14 @@ export const useBudgets = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [isLoading]);
+  }, []); // Suppression de la dépendance isLoading
 
   useEffect(() => {
     loadData();
   }, [loadData]);
 
   const addBudget = async (newBudget: Omit<Budget, "id" | "spent">) => {
+    setIsLoading(true);
     try {
       const budgetToAdd: Budget = {
         id: Date.now().toString(),
@@ -86,7 +86,7 @@ export const useBudgets = () => {
       };
 
       await db.addBudget(budgetToAdd);
-      setBudgets(prev => [...prev, budgetToAdd]);
+      await loadData(); // Recharger toutes les données
       
       toast({
         title: "Budget ajouté",
@@ -105,13 +105,10 @@ export const useBudgets = () => {
   };
 
   const updateBudget = async (budgetToUpdate: Budget) => {
+    setIsLoading(true);
     try {
       await db.updateBudget(budgetToUpdate);
-      setBudgets(prev => 
-        prev.map(budget => 
-          budget.id === budgetToUpdate.id ? budgetToUpdate : budget
-        )
-      );
+      await loadData(); // Recharger toutes les données
       
       toast({
         title: "Budget modifié",
@@ -130,6 +127,7 @@ export const useBudgets = () => {
   };
 
   const deleteBudget = async (budgetId: string) => {
+    setIsLoading(true);
     try {
       const expenses = await db.getExpenses();
       const hasLinkedExpenses = expenses.some(expense => 
@@ -137,6 +135,7 @@ export const useBudgets = () => {
       );
       
       if (hasLinkedExpenses) {
+        setIsLoading(false);
         toast({
           variant: "destructive",
           title: "Suppression impossible",
@@ -146,7 +145,7 @@ export const useBudgets = () => {
       }
 
       await db.deleteBudget(budgetId);
-      setBudgets(prev => prev.filter(budget => budget.id !== budgetId));
+      await loadData(); // Recharger toutes les données
       
       toast({
         title: "Budget supprimé",
