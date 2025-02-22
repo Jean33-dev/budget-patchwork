@@ -2,7 +2,7 @@
 import { useNavigate } from "react-router-dom";
 import { EnvelopeList } from "@/components/budget/EnvelopeList";
 import { AddEnvelopeDialog } from "@/components/budget/AddEnvelopeDialog";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { BudgetsHeader } from "@/components/budget/BudgetsHeader";
 import { EditBudgetDialog } from "@/components/budget/EditBudgetDialog";
@@ -14,8 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 const Budgets = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { budgets, remainingAmount, addBudget, updateBudget, deleteBudget } = useBudgets();
-  
+  const [isReady, setIsReady] = useState(false);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -23,6 +22,19 @@ const Budgets = () => {
   const [editTitle, setEditTitle] = useState("");
   const [editBudget, setEditBudget] = useState(0);
   const [hasLinkedExpenses, setHasLinkedExpenses] = useState(false);
+
+  useEffect(() => {
+    // S'assurer que le composant est monté avant d'initialiser les hooks
+    setIsReady(true);
+  }, []);
+
+  const { 
+    budgets, 
+    remainingAmount, 
+    addBudget, 
+    updateBudget, 
+    deleteBudget 
+  } = useBudgets();
 
   const handleEnvelopeClick = (envelope: Budget) => {
     setSelectedBudget(envelope);
@@ -122,6 +134,10 @@ const Budgets = () => {
       });
     }
   };
+
+  if (!isReady) {
+    return null; // Retourne null pendant que le composant se monte
+  }
 
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
