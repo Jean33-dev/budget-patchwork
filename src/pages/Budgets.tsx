@@ -67,24 +67,56 @@ const Budgets = () => {
   };
 
   const handleDeleteClick = async (envelope: Budget) => {
-    setSelectedBudget(envelope);
-    
-    // Vérifier si le budget a des dépenses associées
-    const expenses = await db.getExpenses();
-    const linkedExpenses = expenses.filter(expense => expense.linkedBudgetId === envelope.id);
-    setHasLinkedExpenses(linkedExpenses.length > 0);
-    
-    setDeleteDialogOpen(true);
+    try {
+      console.log("Début de handleDeleteClick avec envelope:", envelope);
+      setSelectedBudget(envelope);
+      
+      const expenses = await db.getExpenses();
+      console.log("Dépenses récupérées:", expenses);
+      
+      const linkedExpenses = expenses.filter(expense => expense.linkedBudgetId === envelope.id);
+      console.log("Dépenses liées:", linkedExpenses);
+      
+      setHasLinkedExpenses(linkedExpenses.length > 0);
+      setDeleteDialogOpen(true);
+    } catch (error) {
+      console.error("Erreur dans handleDeleteClick:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la vérification des dépenses"
+      });
+    }
   };
 
   const handleDeleteConfirm = async () => {
-    if (!selectedBudget) return;
+    try {
+      console.log("Début de handleDeleteConfirm, selectedBudget:", selectedBudget);
+      
+      if (!selectedBudget) {
+        console.error("Aucun budget sélectionné");
+        return;
+      }
 
-    const success = await deleteBudget(selectedBudget.id);
-    if (success) {
-      setSelectedBudget(null);
-      setEditDialogOpen(false);
-      setDeleteDialogOpen(false);
+      const success = await deleteBudget(selectedBudget.id);
+      console.log("Résultat de la suppression:", success);
+      
+      if (success) {
+        setDeleteDialogOpen(false);
+        setEditDialogOpen(false);
+        setSelectedBudget(null);
+        toast({
+          title: "Succès",
+          description: "Le budget a été supprimé avec succès"
+        });
+      }
+    } catch (error) {
+      console.error("Erreur dans handleDeleteConfirm:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la suppression"
+      });
     }
   };
 

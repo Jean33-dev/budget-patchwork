@@ -127,10 +127,15 @@ export const useBudgets = () => {
 
   const deleteBudget = async (budgetId: string) => {
     try {
+      console.log("Début de la suppression du budget", budgetId);
       const expenses = await db.getExpenses();
+      console.log("Dépenses récupérées:", expenses);
+      
       const hasLinkedExpenses = expenses.some(expense => 
         expense.linkedBudgetId === budgetId
       );
+      
+      console.log("Le budget a-t-il des dépenses liées ?", hasLinkedExpenses);
       
       if (hasLinkedExpenses) {
         toast({
@@ -142,7 +147,11 @@ export const useBudgets = () => {
       }
 
       await db.deleteBudget(budgetId);
-      setBudgets(prevBudgets => prevBudgets.filter(b => b.id !== budgetId));
+      setBudgets(prevBudgets => {
+        const newBudgets = prevBudgets.filter(b => b.id !== budgetId);
+        console.log("Nouveaux budgets après suppression:", newBudgets);
+        return newBudgets;
+      });
       
       toast({
         title: "Budget supprimé",
