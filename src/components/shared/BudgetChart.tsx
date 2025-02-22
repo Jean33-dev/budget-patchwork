@@ -72,10 +72,15 @@ export const BudgetChart = ({ data, totalIncome = 0, addUnallocated = false }: B
               name
             ]}
             contentStyle={{
-              backgroundColor: "#1A1F2C",
-              border: "none",
+              backgroundColor: "#F8FAFC",
+              border: "1px solid #E2E8F0",
               borderRadius: "8px",
-              color: "white"
+              color: "#1A1F2C",
+              boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)"
+            }}
+            labelStyle={{
+              color: "#1A1F2C",
+              fontWeight: "bold"
             }}
           />
           <Legend
