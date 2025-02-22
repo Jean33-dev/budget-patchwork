@@ -1,13 +1,13 @@
-
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
-
 interface EnvelopeListHeaderProps {
   type: "income" | "expense" | "budget";
   onAddClick: () => void;
 }
-
-export const EnvelopeListHeader = ({ type, onAddClick }: EnvelopeListHeaderProps) => {
+export const EnvelopeListHeader = ({
+  type,
+  onAddClick
+}: EnvelopeListHeaderProps) => {
   const getTypeLabel = (type: "income" | "expense" | "budget") => {
     switch (type) {
       case "income":
@@ -20,7 +20,6 @@ export const EnvelopeListHeader = ({ type, onAddClick }: EnvelopeListHeaderProps
         return "";
     }
   };
-
   const getAddButtonLabel = (type: "income" | "expense" | "budget") => {
     switch (type) {
       case "income":
@@ -33,16 +32,11 @@ export const EnvelopeListHeader = ({ type, onAddClick }: EnvelopeListHeaderProps
         return "";
     }
   };
-
-  return (
-    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-      <h2 className="text-2xl font-bold">
-        {getTypeLabel(type)}
-      </h2>
+  return <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      
       <Button onClick={onAddClick} variant="outline" size="sm" className="w-full sm:w-auto">
         <PlusCircle className="h-4 w-4 mr-2" />
         Ajouter {getAddButtonLabel(type)}
       </Button>
-    </div>
-  );
+    </div>;
 };
