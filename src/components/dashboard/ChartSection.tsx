@@ -48,9 +48,6 @@ export const ChartSection = ({
               <DropdownMenuItem onClick={() => onChartTypeChange("category")}>
                 Voir les catégories
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onChartTypeChange("type")}>
-                Voir par type de catégorie
-              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
