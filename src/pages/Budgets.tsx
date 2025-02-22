@@ -79,10 +79,13 @@ const Budgets = () => {
 
   const handleDeleteConfirm = async () => {
     if (!selectedBudget) return;
-    await deleteBudget(selectedBudget.id);
-    setDeleteDialogOpen(false);
-    setEditDialogOpen(false);
-    setSelectedBudget(null);
+
+    const success = await deleteBudget(selectedBudget.id);
+    if (success) {
+      setSelectedBudget(null);
+      setEditDialogOpen(false);
+      setDeleteDialogOpen(false);
+    }
   };
 
   return (
