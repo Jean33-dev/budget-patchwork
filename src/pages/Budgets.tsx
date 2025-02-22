@@ -1,3 +1,4 @@
+
 import { useNavigate } from "react-router-dom";
 import { EnvelopeList } from "@/components/budget/EnvelopeList";
 import { AddEnvelopeDialog } from "@/components/budget/AddEnvelopeDialog";
@@ -8,6 +9,7 @@ import { EditBudgetDialog } from "@/components/budget/EditBudgetDialog";
 import { DeleteBudgetDialog } from "@/components/budget/DeleteBudgetDialog";
 import { useBudgets, Budget } from "@/hooks/useBudgets";
 import { db } from "@/services/database";
+import { toast } from "@/components/ui/use-toast";
 
 const Budgets = () => {
   const navigate = useNavigate();
