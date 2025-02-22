@@ -27,36 +27,27 @@ export const useChartData = (envelopes: Envelope[], totalIncome: number) => {
       .filter(env => env.type === "budget")
       .map((env) => ({
         name: env.title,
-        value: env.budget, // On utilise bien budget et non spent
+        value: env.budget,
         type: env.type,
       })), [envelopes]
   );
 
   const categoryTotals = useMemo(() => {
-    // Debug log pour voir les calculs
-    const totals = {
-      necessaire: envelopes
-        .filter(env => env.category === "necessaire" && env.type === "budget")
-        .reduce((sum, env) => {
-          console.log("Budget nécessaire:", env.title, env.budget);
-          return sum + env.budget;
-        }, 0),
-      plaisir: envelopes
-        .filter(env => env.category === "plaisir" && env.type === "budget")
-        .reduce((sum, env) => {
-          console.log("Budget plaisir:", env.title, env.budget);
-          return sum + env.budget;
-        }, 0),
-      epargne: envelopes
-        .filter(env => env.category === "epargne" && env.type === "budget")
-        .reduce((sum, env) => {
-          console.log("Budget épargne:", env.title, env.budget);
-          return sum + env.budget;
-        }, 0)
-    };
+    const budgetEnvelopes = envelopes.filter(env => env.type === "budget");
+    const categories = ["necessaire", "plaisir", "epargne"] as const;
     
-    console.log("Totaux par catégorie:", totals);
-    return totals;
+    return categories.reduce((acc, category) => {
+      const categoryTotal = budgetEnvelopes
+        .filter(env => env.category === category)
+        .reduce((sum, env) => sum + env.budget, 0);
+      
+      console.log(`Total ${category}:`, categoryTotal);
+      return { ...acc, [category]: categoryTotal };
+    }, {
+      necessaire: 0,
+      plaisir: 0,
+      epargne: 0
+    });
   }, [envelopes]);
 
   const categoryChartData = useMemo(() => [
