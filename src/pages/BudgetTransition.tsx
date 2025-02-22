@@ -11,6 +11,7 @@ import { TransitionEnvelopeCard } from "@/components/budget-transition/Transitio
 import { PartialAmountDialog } from "@/components/budget-transition/PartialAmountDialog";
 import { TransferDialog } from "@/components/budget-transition/TransferDialog";
 import { BudgetEnvelope, TransitionOption } from "@/types/transition";
+import { db } from "@/services/database";
 
 const BudgetTransition = () => {
   const navigate = useNavigate();
@@ -24,25 +25,35 @@ const BudgetTransition = () => {
   const [showTransferDialog, setShowTransferDialog] = useState(false);
 
   useEffect(() => {
-    const loadedEnvelopes: BudgetEnvelope[] = [];
-    categories.forEach(category => {
-      category.budgets.forEach(budgetId => {
-        const budget = budgets.find(b => b.id === budgetId);
-        if (budget) {
-          loadedEnvelopes.push({
-            id: `${category.id}-${budget.id}`,
-            title: budget.title,
-            budget: budget.budget,
-            spent: budget.spent,
-            remaining: budget.budget - budget.spent,
-            transitionOption: "reset"
-          });
-        }
-      });
-    });
-    console.log("Enveloppes chargées:", loadedEnvelopes);
-    setEnvelopes(loadedEnvelopes);
-  }, [categories, budgets]);
+    const loadEnvelopes = async () => {
+      try {
+        // Charger tous les budgets directement depuis la base de données
+        const budgetsData = await db.getBudgets();
+        console.log("Budgets chargés:", budgetsData);
+        
+        const loadedEnvelopes = budgetsData.map(budget => ({
+          id: budget.id,
+          title: budget.title,
+          budget: budget.budget,
+          spent: budget.spent,
+          remaining: budget.budget - budget.spent,
+          transitionOption: "reset" as TransitionOption
+        }));
+
+        console.log("Enveloppes préparées:", loadedEnvelopes);
+        setEnvelopes(loadedEnvelopes);
+      } catch (error) {
+        console.error("Erreur lors du chargement des enveloppes:", error);
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Impossible de charger les budgets pour la transition"
+        });
+      }
+    };
+
+    loadEnvelopes();
+  }, [toast]);
 
   const handleOptionChange = (envelopeId: string, option: TransitionOption) => {
     setEnvelopes(prev => 
@@ -130,6 +141,8 @@ const BudgetTransition = () => {
     }
   };
 
+  console.log("État actuel des enveloppes:", envelopes);
+
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
       <div className="flex items-center gap-4 sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-10 pb-4 border-b">
@@ -150,13 +163,19 @@ const BudgetTransition = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {envelopes.map((envelope) => (
-                <TransitionEnvelopeCard
-                  key={envelope.id}
-                  envelope={envelope}
-                  onOptionChange={handleOptionChange}
-                />
-              ))}
+              {envelopes.length === 0 ? (
+                <p className="text-muted-foreground text-center py-4">
+                  Aucun budget à transitionner
+                </p>
+              ) : (
+                envelopes.map((envelope) => (
+                  <TransitionEnvelopeCard
+                    key={envelope.id}
+                    envelope={envelope}
+                    onOptionChange={handleOptionChange}
+                  />
+                ))
+              )}
             </div>
           </CardContent>
         </Card>
