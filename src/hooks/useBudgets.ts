@@ -17,16 +17,20 @@ export const useBudgets = () => {
   const [totalExpenses, setTotalExpenses] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [lastUpdate, setLastUpdate] = useState(0);
 
   const loadData = useCallback(async () => {
-    if (isUpdating) {
-      console.log("Une mise à jour est déjà en cours, chargement ignoré");
+    // Si une mise à jour est en cours et moins de 500ms se sont écoulées depuis la dernière tentative
+    if (isUpdating && Date.now() - lastUpdate < 500) {
+      console.log("Mise à jour en cours, chargement différé");
       return;
     }
 
+    setIsUpdating(true);
+    setLastUpdate(Date.now());
+
     try {
       setIsLoading(true);
-      setIsUpdating(true);
       
       // Initialisation de la base de données
       try {
@@ -36,31 +40,23 @@ export const useBudgets = () => {
         throw new Error("Erreur d'initialisation de la base de données");
       }
 
-      // Chargement des dépenses d'abord pour le calcul des totaux
-      let expenses;
-      try {
-        expenses = await db.getExpenses();
-        console.log("Dépenses chargées:", expenses);
-      } catch (error) {
-        console.error("Erreur lors du chargement des dépenses:", error);
-        throw new Error("Impossible de charger les dépenses");
-      }
+      // Récupération de toutes les données en parallèle
+      const [expenses, budgetsData, incomesData] = await Promise.all([
+        db.getExpenses(),
+        db.getBudgets(),
+        db.getIncomes()
+      ]);
 
-      // Calcul du total des dépenses
+      // Calcul des totaux
+      const totalIncome = incomesData.reduce((sum, income) => 
+        sum + (Number(income.budget) || 0), 0
+      );
+      setTotalRevenues(totalIncome);
+
       const totalSpent = expenses.reduce((sum, expense) => 
         sum + (Number(expense.budget) || 0), 0
       );
       setTotalExpenses(totalSpent);
-
-      // Chargement des budgets
-      let budgetsData;
-      try {
-        budgetsData = await db.getBudgets();
-        console.log("Budgets chargés:", budgetsData);
-      } catch (error) {
-        console.error("Erreur lors du chargement des budgets:", error);
-        throw new Error("Impossible de charger les budgets");
-      }
 
       // Calcul des dépenses par budget
       const validatedBudgets = budgetsData.map(budget => {
@@ -79,22 +75,6 @@ export const useBudgets = () => {
       });
       
       setBudgets(validatedBudgets);
-
-      // Chargement des revenus
-      let incomesData;
-      try {
-        incomesData = await db.getIncomes();
-        console.log("Revenus chargés:", incomesData);
-      } catch (error) {
-        console.error("Erreur lors du chargement des revenus:", error);
-        throw new Error("Impossible de charger les revenus");
-      }
-
-      // Calcul du total des revenus
-      const totalIncome = incomesData.reduce((sum, income) => 
-        sum + (Number(income.budget) || 0), 0
-      );
-      setTotalRevenues(totalIncome);
       
     } catch (error) {
       console.error("Erreur lors du chargement des données:", error);
@@ -107,21 +87,14 @@ export const useBudgets = () => {
       setIsLoading(false);
       setIsUpdating(false);
     }
-  }, [isUpdating]);
+  }, [isUpdating, lastUpdate]);
 
   useEffect(() => {
     loadData();
   }, [loadData]);
 
   const addBudget = async (newBudget: Omit<Budget, "id" | "spent">) => {
-    if (isLoading || isUpdating) {
-      console.log("Opération impossible pendant le chargement ou la mise à jour");
-      return false;
-    }
-    
     try {
-      setIsUpdating(true);
-      
       const budgetToAdd: Budget = {
         id: Date.now().toString(),
         title: newBudget.title,
@@ -131,8 +104,6 @@ export const useBudgets = () => {
       };
 
       await db.addBudget(budgetToAdd);
-      console.log("Budget ajouté:", budgetToAdd);
-      
       await loadData();
       
       toast({
@@ -148,23 +119,12 @@ export const useBudgets = () => {
         description: "Impossible d'ajouter le budget"
       });
       return false;
-    } finally {
-      setIsUpdating(false);
     }
   };
 
   const updateBudget = async (budgetToUpdate: Budget) => {
-    if (isLoading || isUpdating) {
-      console.log("Opération impossible pendant le chargement ou la mise à jour");
-      return false;
-    }
-    
     try {
-      setIsUpdating(true);
-      
       await db.updateBudget(budgetToUpdate);
-      console.log("Budget mis à jour:", budgetToUpdate);
-      
       await loadData();
       
       toast({
@@ -180,20 +140,11 @@ export const useBudgets = () => {
         description: "Impossible de modifier le budget"
       });
       return false;
-    } finally {
-      setIsUpdating(false);
     }
   };
 
   const deleteBudget = async (budgetId: string) => {
-    if (isLoading || isUpdating) {
-      console.log("Opération impossible pendant le chargement ou la mise à jour");
-      return false;
-    }
-    
     try {
-      setIsUpdating(true);
-      
       const expenses = await db.getExpenses();
       const hasLinkedExpenses = expenses.some(expense => 
         expense.linkedBudgetId === budgetId
@@ -209,8 +160,6 @@ export const useBudgets = () => {
       }
 
       await db.deleteBudget(budgetId);
-      console.log("Budget supprimé:", budgetId);
-      
       await loadData();
       
       toast({
@@ -226,8 +175,6 @@ export const useBudgets = () => {
         description: "Impossible de supprimer le budget"
       });
       return false;
-    } finally {
-      setIsUpdating(false);
     }
   };
 
