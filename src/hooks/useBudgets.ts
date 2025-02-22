@@ -19,20 +19,16 @@ export const useBudgets = () => {
   const isInitialized = useRef(false);
   const isMounted = useRef(true);
 
-  // Fonction d'initialisation de la base de données
-  const initDatabase = useCallback(async () => {
-    if (!isInitialized.current) {
-      await db.init();
-      isInitialized.current = true;
-    }
-  }, []);
-
   // Fonction de chargement des données
   const loadData = useCallback(async () => {
     if (!isMounted.current) return;
 
     try {
-      await initDatabase();
+      // Initialisation de la base de données si nécessaire
+      if (!isInitialized.current) {
+        await db.init();
+        isInitialized.current = true;
+      }
 
       const [expenses, budgetsData, incomesData] = await Promise.all([
         db.getExpenses(),
@@ -97,6 +93,8 @@ export const useBudgets = () => {
 
   const addBudget = useCallback(async (newBudget: Omit<Budget, "id" | "spent">) => {
     try {
+      if (!isMounted.current) return false;
+
       const budgetToAdd: Budget = {
         id: Date.now().toString(),
         title: newBudget.title,
@@ -126,6 +124,8 @@ export const useBudgets = () => {
 
   const updateBudget = useCallback(async (budgetToUpdate: Budget) => {
     try {
+      if (!isMounted.current) return false;
+
       await db.updateBudget(budgetToUpdate);
       await loadData();
       
@@ -147,6 +147,8 @@ export const useBudgets = () => {
 
   const deleteBudget = useCallback(async (budgetId: string) => {
     try {
+      if (!isMounted.current) return false;
+
       const expenses = await db.getExpenses();
       const hasLinkedExpenses = expenses.some(expense => 
         expense.linkedBudgetId === budgetId
