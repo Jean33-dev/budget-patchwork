@@ -1,5 +1,6 @@
 
 import { useMemo } from "react";
+import { useCategories } from "@/hooks/useCategories";
 
 export type ChartType = "budget" | "category";
 
@@ -19,7 +20,9 @@ interface ChartData {
 }
 
 export const useChartData = (envelopes: Envelope[], totalIncome: number) => {
+  const { categories } = useCategories();
   console.log("Enveloppes reçues:", envelopes);
+  console.log("Catégories disponibles:", categories);
   
   const budgetChartData = useMemo(() => 
     envelopes
@@ -31,41 +34,13 @@ export const useChartData = (envelopes: Envelope[], totalIncome: number) => {
       })), [envelopes]
   );
 
-  const categoryTotals = useMemo(() => {
-    const budgetEnvelopes = envelopes.filter(env => env.type === "budget");
-    const categories = ["necessaire", "plaisir", "epargne"] as const;
-    
-    return categories.reduce((acc, category) => {
-      const categoryTotal = budgetEnvelopes
-        .filter(env => env.category === category)
-        .reduce((sum, env) => sum + env.budget, 0);
-      
-      console.log(`Total ${category}:`, categoryTotal);
-      return { ...acc, [category]: categoryTotal };
-    }, {
-      necessaire: 0,
-      plaisir: 0,
-      epargne: 0
-    });
-  }, [envelopes]);
-
-  const categoryChartData = useMemo(() => [
-    {
-      name: "Nécessaire",
-      value: categoryTotals.necessaire,
+  const categoryChartData = useMemo(() => 
+    categories.map(category => ({
+      name: category.name,
+      value: category.total,
       type: "budget" as const,
-    },
-    {
-      name: "Plaisir",
-      value: categoryTotals.plaisir,
-      type: "budget" as const,
-    },
-    {
-      name: "Épargne",
-      value: categoryTotals.epargne,
-      type: "budget" as const,
-    }
-  ], [categoryTotals]);
+    }))
+  , [categories]);
 
   const getChartData = (chartType: ChartType) => {
     const chartData = chartType === "budget" ? budgetChartData : categoryChartData.filter(item => item.value > 0);
