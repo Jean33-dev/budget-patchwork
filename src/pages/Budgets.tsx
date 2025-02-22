@@ -2,7 +2,7 @@
 import { useNavigate } from "react-router-dom";
 import { EnvelopeList } from "@/components/budget/EnvelopeList";
 import { AddEnvelopeDialog } from "@/components/budget/AddEnvelopeDialog";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { BudgetsHeader } from "@/components/budget/BudgetsHeader";
 import { EditBudgetDialog } from "@/components/budget/EditBudgetDialog";
@@ -78,14 +78,10 @@ const Budgets = () => {
 
   const handleDeleteClick = async (envelope: Budget) => {
     try {
-      console.log("Début de handleDeleteClick avec envelope:", envelope);
       setSelectedBudget(envelope);
       
       const expenses = await db.getExpenses();
-      console.log("Dépenses récupérées:", expenses);
-      
       const linkedExpenses = expenses.filter(expense => expense.linkedBudgetId === envelope.id);
-      console.log("Dépenses liées:", linkedExpenses);
       
       setHasLinkedExpenses(linkedExpenses.length > 0);
       setDeleteDialogOpen(true);
@@ -101,19 +97,12 @@ const Budgets = () => {
 
   const handleDeleteConfirm = async () => {
     try {
-      console.log("Début de handleDeleteConfirm, selectedBudget:", selectedBudget);
-      
-      if (!selectedBudget) {
-        console.error("Aucun budget sélectionné");
-        return;
-      }
+      if (!selectedBudget) return;
 
       const success = await deleteBudget(selectedBudget.id);
-      console.log("Résultat de la suppression:", success);
       
       if (success) {
         setDeleteDialogOpen(false);
-        setEditDialogOpen(false);
         setSelectedBudget(null);
         toast({
           title: "Succès",
