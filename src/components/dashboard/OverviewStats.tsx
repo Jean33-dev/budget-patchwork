@@ -1,9 +1,12 @@
+
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
+
 interface OverviewStatsProps {
   totalIncome: number;
   totalExpenses: number;
   balance: number;
 }
+
 export const OverviewStats = ({
   totalIncome,
   totalExpenses,
@@ -29,7 +32,9 @@ export const OverviewStats = ({
             <span className={`text-lg font-bold ${balance >= 0 ? "text-budget-income" : "text-budget-expense"}`}>
               {Math.abs(balance).toFixed(2)} €
             </span>
-            
+            <span className="text-xs font-normal text-gray-500 ml-2">
+              {balance >= 0 ? "Restant" : "Dépassement"}
+            </span>
           </div>
         </CardContent>
       </Card>

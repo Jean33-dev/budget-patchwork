@@ -32,13 +32,7 @@ const Dashboard = () => {
   } = useBudgets();
 
   const handleMonthChange = (newDate: Date) => {
-    const newMonthKey = newDate.toISOString().slice(0, 7);
-    const currentMonthKey = currentDate.toISOString().slice(0, 7);
-    
-    if (newMonthKey !== currentMonthKey) {
-      setNextDate(newDate);
-      setShowTransitionDialog(true);
-    }
+    setCurrentDate(newDate);
   };
 
   const handleTransitionConfirm = () => {
