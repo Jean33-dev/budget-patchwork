@@ -16,29 +16,15 @@ export const useBudgets = () => {
   const [totalRevenues, setTotalRevenues] = useState(0);
   const [totalExpenses, setTotalExpenses] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  const [isUpdating, setIsUpdating] = useState(false);
-  const [lastUpdate, setLastUpdate] = useState(0);
 
   const loadData = useCallback(async () => {
-    // Si une mise à jour est en cours et moins de 500ms se sont écoulées depuis la dernière tentative
-    if (isUpdating && Date.now() - lastUpdate < 500) {
-      console.log("Mise à jour en cours, chargement différé");
-      return;
-    }
-
-    setIsUpdating(true);
-    setLastUpdate(Date.now());
-
     try {
+      console.log("Début du chargement des données");
       setIsLoading(true);
       
       // Initialisation de la base de données
-      try {
-        await db.init();
-      } catch (error) {
-        console.error("Erreur d'initialisation de la base de données:", error);
-        throw new Error("Erreur d'initialisation de la base de données");
-      }
+      await db.init();
+      console.log("Base de données initialisée");
 
       // Récupération de toutes les données en parallèle
       const [expenses, budgetsData, incomesData] = await Promise.all([
@@ -46,6 +32,7 @@ export const useBudgets = () => {
         db.getBudgets(),
         db.getIncomes()
       ]);
+      console.log("Données récupérées:", { expenses, budgetsData, incomesData });
 
       // Calcul des totaux
       const totalIncome = incomesData.reduce((sum, income) => 
@@ -74,6 +61,7 @@ export const useBudgets = () => {
         };
       });
       
+      console.log("Budgets validés:", validatedBudgets);
       setBudgets(validatedBudgets);
       
     } catch (error) {
@@ -85,9 +73,9 @@ export const useBudgets = () => {
       });
     } finally {
       setIsLoading(false);
-      setIsUpdating(false);
+      console.log("Chargement terminé");
     }
-  }, [isUpdating, lastUpdate]);
+  }, []);
 
   useEffect(() => {
     loadData();
