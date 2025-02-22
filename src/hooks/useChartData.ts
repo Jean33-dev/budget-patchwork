@@ -59,30 +59,6 @@ export const useChartData = (envelopes: Envelope[], totalIncome: number) => {
     }
   ], [categoryTotals]);
 
-  const budgetByCategoryData = useMemo(() => [
-    {
-      name: "Nécessaire",
-      value: envelopes
-        .filter(env => env.type === "budget" && env.category === "necessaire")
-        .reduce((sum, env) => sum + env.budget, 0),
-      type: "budget" as const,
-    },
-    {
-      name: "Plaisir",
-      value: envelopes
-        .filter(env => env.type === "budget" && env.category === "plaisir")
-        .reduce((sum, env) => sum + env.budget, 0),
-      type: "budget" as const,
-    },
-    {
-      name: "Épargne",
-      value: envelopes
-        .filter(env => env.type === "budget" && env.category === "epargne")
-        .reduce((sum, env) => sum + env.budget, 0),
-      type: "budget" as const,
-    }
-  ], [envelopes]);
-
   const getChartData = (chartType: ChartType) => {
     switch (chartType) {
       case "budget":
@@ -90,7 +66,7 @@ export const useChartData = (envelopes: Envelope[], totalIncome: number) => {
       case "category":
         return { data: categoryChartData, total: totalIncome, addUnallocated: true };
       case "type":
-        return { data: budgetByCategoryData, total: totalIncome, addUnallocated: false };
+        return { data: categoryChartData, total: totalIncome, addUnallocated: false };
       default:
         return { data: [], total: 0, addUnallocated: false };
     }
