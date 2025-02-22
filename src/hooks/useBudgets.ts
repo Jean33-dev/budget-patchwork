@@ -18,11 +18,13 @@ export const useBudgets = () => {
   const [isLoading, setIsLoading] = useState(true);
   const isInitialized = useRef(false);
   const isMounted = useRef(true);
+  const isProcessing = useRef(false);
 
   // Fonction de chargement des données
   const loadData = useCallback(async () => {
-    if (!isMounted.current) return;
+    if (!isMounted.current || isProcessing.current) return;
     setIsLoading(true);
+    isProcessing.current = true;
 
     try {
       // Initialisation de la base de données si nécessaire
@@ -80,10 +82,10 @@ export const useBudgets = () => {
       if (isMounted.current) {
         setIsLoading(false);
       }
+      isProcessing.current = false;
     }
   }, []);
 
-  // Effet de nettoyage
   useEffect(() => {
     isMounted.current = true;
     loadData();
@@ -93,7 +95,8 @@ export const useBudgets = () => {
   }, [loadData]);
 
   const addBudget = useCallback(async (newBudget: Omit<Budget, "id" | "spent">) => {
-    if (!isMounted.current) return false;
+    if (!isMounted.current || isProcessing.current) return false;
+    isProcessing.current = true;
 
     try {
       const budgetToAdd: Budget = {
@@ -121,11 +124,14 @@ export const useBudgets = () => {
         description: "Impossible d'ajouter le budget"
       });
       return false;
+    } finally {
+      isProcessing.current = false;
     }
   }, [loadData]);
 
   const updateBudget = useCallback(async (budgetToUpdate: Budget) => {
-    if (!isMounted.current) return false;
+    if (!isMounted.current || isProcessing.current) return false;
+    isProcessing.current = true;
 
     try {
       await db.updateBudget(budgetToUpdate);
@@ -145,11 +151,14 @@ export const useBudgets = () => {
         description: "Impossible de modifier le budget"
       });
       return false;
+    } finally {
+      isProcessing.current = false;
     }
   }, [loadData]);
 
   const deleteBudget = useCallback(async (budgetId: string) => {
-    if (!isMounted.current) return false;
+    if (!isMounted.current || isProcessing.current) return false;
+    isProcessing.current = true;
 
     try {
       const expenses = await db.getExpenses();
@@ -185,6 +194,8 @@ export const useBudgets = () => {
         description: "Impossible de supprimer le budget"
       });
       return false;
+    } finally {
+      isProcessing.current = false;
     }
   }, [loadData]);
 
