@@ -16,10 +16,6 @@ export const useBudgets = () => {
   const [totalRevenues, setTotalRevenues] = useState(0);
   const [totalExpenses, setTotalExpenses] = useState(0);
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
   const loadData = async () => {
     try {
       // Chargement des budgets
@@ -73,6 +69,10 @@ export const useBudgets = () => {
     }
   };
 
+  useEffect(() => {
+    loadData();
+  }, []);
+
   const addBudget = async (newBudget: Omit<Budget, "id" | "spent">) => {
     try {
       const budgetToAdd: Budget = {
@@ -84,7 +84,7 @@ export const useBudgets = () => {
       };
 
       await db.addBudget(budgetToAdd);
-      setBudgets(prevBudgets => [...prevBudgets, budgetToAdd]);
+      await loadData(); // Recharger les données après l'ajout
       
       toast({
         title: "Budget ajouté",
@@ -105,9 +105,7 @@ export const useBudgets = () => {
   const updateBudget = async (budgetToUpdate: Budget) => {
     try {
       await db.updateBudget(budgetToUpdate);
-      setBudgets(prevBudgets => 
-        prevBudgets.map(b => b.id === budgetToUpdate.id ? budgetToUpdate : b)
-      );
+      await loadData(); // Recharger les données après la mise à jour
       
       toast({
         title: "Budget modifié",
@@ -147,11 +145,7 @@ export const useBudgets = () => {
       }
 
       await db.deleteBudget(budgetId);
-      setBudgets(prevBudgets => {
-        const newBudgets = prevBudgets.filter(b => b.id !== budgetId);
-        console.log("Nouveaux budgets après suppression:", newBudgets);
-        return newBudgets;
-      });
+      await loadData(); // Recharger les données après la suppression
       
       toast({
         title: "Budget supprimé",
@@ -170,7 +164,7 @@ export const useBudgets = () => {
   };
 
   const totalBudgets = budgets.reduce((sum, budget) => sum + budget.budget, 0);
-  const remainingAmount = totalRevenues - totalBudgets; // Changé pour utiliser totalBudgets au lieu de totalExpenses
+  const remainingAmount = totalRevenues - totalBudgets;
 
   return {
     budgets,
