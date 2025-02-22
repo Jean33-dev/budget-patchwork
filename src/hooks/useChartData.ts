@@ -1,7 +1,7 @@
 
 import { useMemo } from "react";
 
-export type ChartType = "budget" | "category" | "type";
+export type ChartType = "budget" | "category";
 
 interface Envelope {
   id: string;
@@ -19,7 +19,6 @@ interface ChartData {
 }
 
 export const useChartData = (envelopes: Envelope[], totalIncome: number) => {
-  // Debug logs pour voir les enveloppes et leurs catégories
   console.log("Enveloppes reçues:", envelopes);
   
   const budgetChartData = useMemo(() => 
@@ -69,24 +68,14 @@ export const useChartData = (envelopes: Envelope[], totalIncome: number) => {
   ], [categoryTotals]);
 
   const getChartData = (chartType: ChartType) => {
-    const chartData = (() => {
-      switch (chartType) {
-        case "budget":
-          return budgetChartData;
-        case "category":
-        case "type":
-          return categoryChartData.filter(item => item.value > 0);
-        default:
-          return [];
-      }
-    })();
+    const chartData = chartType === "budget" ? budgetChartData : categoryChartData.filter(item => item.value > 0);
 
     console.log(`Données du graphique (${chartType}):`, chartData);
     
     return {
       data: chartData,
       total: totalIncome,
-      addUnallocated: chartType !== "type"
+      addUnallocated: true
     };
   };
 
@@ -96,8 +85,6 @@ export const useChartData = (envelopes: Envelope[], totalIncome: number) => {
         return "Répartition des Budgets";
       case "category":
         return "Répartition par Catégories";
-      case "type":
-        return "Répartition par Type de Catégorie";
       default:
         return "Répartition";
     }
