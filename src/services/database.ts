@@ -95,16 +95,42 @@ class Database {
         )
       `);
 
+      // Ajout des données de test
+      // Revenus de test
+      this.db.run(`
+        INSERT OR IGNORE INTO incomes (id, title, budget, spent, type)
+        VALUES 
+        ('inc_1', 'Salaire', 2500.00, 0, 'income')
+      `);
+
+      // Budgets de test
+      this.db.run(`
+        INSERT OR IGNORE INTO budgets (id, title, budget, spent, type)
+        VALUES 
+        ('bud_1', 'Courses', 500.00, 600.00, 'budget'),
+        ('bud_2', 'Transport', 200.00, 0.00, 'budget'),
+        ('bud_3', 'Loisirs', 150.00, 0.00, 'budget'),
+        ('bud_4', 'Restaurant', 300.00, 150.00, 'budget'),
+        ('bud_5', 'Shopping', 250.00, 100.00, 'budget')
+      `);
+
+      // Dépenses de test
+      const currentDate = new Date().toISOString().split('T')[0];
+      this.db.run(`
+        INSERT OR IGNORE INTO expenses (id, title, budget, spent, type, linkedBudgetId, date)
+        VALUES 
+        ('exp_1', 'Courses Carrefour', 350.00, 0, 'expense', 'bud_1', ?),
+        ('exp_2', 'Courses Lidl', 250.00, 0, 'expense', 'bud_1', ?),
+        ('exp_3', 'Restaurant italien', 150.00, 0, 'expense', 'bud_4', ?),
+        ('exp_4', 'Vêtements', 100.00, 0, 'expense', 'bud_5', ?)
+      `, [currentDate, currentDate, currentDate, currentDate]);
+
       this.initialized = true;
-      await this.migrateFromLocalStorage();
+      console.log("Base de données initialisée avec les données de test");
 
     } catch (err) {
       console.error('Erreur lors de l\'initialisation de la base de données:', err);
-      toast({
-        variant: "destructive",
-        title: "Erreur de base de données",
-        description: "Impossible d'initialiser la base de données SQLite"
-      });
+      throw err;
     }
   }
 
