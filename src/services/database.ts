@@ -1,3 +1,4 @@
+
 import initSqlJs from 'sql.js';
 import { toast } from "@/components/ui/use-toast";
 
@@ -55,101 +56,53 @@ class Database {
       this.db.run(`
         CREATE TABLE IF NOT EXISTS incomes (
           id TEXT PRIMARY KEY,
-          title TEXT,
-          budget REAL DEFAULT 0,
-          spent REAL DEFAULT 0,
-          type TEXT
+          title TEXT NOT NULL,
+          budget REAL NOT NULL DEFAULT 0,
+          spent REAL NOT NULL DEFAULT 0,
+          type TEXT NOT NULL DEFAULT 'income'
         )
       `);
       
       this.db.run(`
         CREATE TABLE IF NOT EXISTS expenses (
           id TEXT PRIMARY KEY,
-          title TEXT,
-          budget REAL DEFAULT 0,
-          spent REAL DEFAULT 0,
-          type TEXT,
+          title TEXT NOT NULL,
+          budget REAL NOT NULL DEFAULT 0,
+          spent REAL NOT NULL DEFAULT 0,
+          type TEXT NOT NULL DEFAULT 'expense',
           linkedBudgetId TEXT,
-          date TEXT
+          date TEXT NOT NULL
         )
       `);
       
       this.db.run(`
         CREATE TABLE IF NOT EXISTS budgets (
           id TEXT PRIMARY KEY,
-          title TEXT,
-          budget REAL DEFAULT 0,
-          spent REAL DEFAULT 0,
-          type TEXT
+          title TEXT NOT NULL,
+          budget REAL NOT NULL DEFAULT 0,
+          spent REAL NOT NULL DEFAULT 0,
+          type TEXT NOT NULL DEFAULT 'budget'
         )
       `);
       
       this.db.run(`
         CREATE TABLE IF NOT EXISTS categories (
           id TEXT PRIMARY KEY,
-          name TEXT,
-          budgets TEXT,
-          total REAL DEFAULT 0,
-          spent REAL DEFAULT 0,
+          name TEXT NOT NULL,
+          budgets TEXT NOT NULL DEFAULT '[]',
+          total REAL NOT NULL DEFAULT 0,
+          spent REAL NOT NULL DEFAULT 0,
           description TEXT
         )
       `);
 
       this.initialized = true;
-      await this.migrateFromLocalStorage();
-
+      
     } catch (err) {
       console.error('Erreur lors de l\'initialisation de la base de données:', err);
-      toast({
-        variant: "destructive",
-        title: "Erreur de base de données",
-        description: "Impossible d'initialiser la base de données SQLite"
-      });
+      this.initialized = false;
+      throw err;
     }
-  }
-
-  private async migrateFromLocalStorage() {
-    // Migrer les revenus
-    const storedIncomes = localStorage.getItem('app_incomes');
-    if (storedIncomes) {
-      const incomes = JSON.parse(storedIncomes);
-      for (const income of incomes) {
-        await this.addIncome(income);
-      }
-    }
-
-    // Migrer les dépenses
-    const storedExpenses = localStorage.getItem('app_expenses');
-    if (storedExpenses) {
-      const expenses = JSON.parse(storedExpenses);
-      for (const expense of expenses) {
-        await this.addExpense(expense);
-      }
-    }
-
-    // Migrer les budgets
-    const storedBudgets = localStorage.getItem('app_budgets');
-    if (storedBudgets) {
-      const budgets = JSON.parse(storedBudgets);
-      for (const budget of budgets) {
-        await this.addBudget(budget);
-      }
-    }
-
-    // Migrer les catégories
-    const storedCategories = localStorage.getItem('app_categories');
-    if (storedCategories) {
-      const categories = JSON.parse(storedCategories);
-      for (const category of categories) {
-        await this.addCategory(category);
-      }
-    }
-
-    // Supprimer les anciennes données du localStorage
-    localStorage.removeItem('app_incomes');
-    localStorage.removeItem('app_expenses');
-    localStorage.removeItem('app_budgets');
-    localStorage.removeItem('app_categories');
   }
 
   // Méthodes pour les revenus
@@ -158,10 +111,10 @@ class Database {
     
     const result = this.db.exec('SELECT * FROM incomes');
     return result[0]?.values?.map((row: any[]) => ({
-      id: row[0],
-      title: row[1],
-      budget: row[2],
-      spent: row[3],
+      id: String(row[0]),
+      title: String(row[1]),
+      budget: Number(row[2]),
+      spent: Number(row[3]),
       type: row[4] as 'income'
     })) || [];
   }
@@ -171,7 +124,7 @@ class Database {
     
     this.db.run(
       'INSERT INTO incomes (id, title, budget, spent, type) VALUES (?, ?, ?, ?, ?)',
-      [income.id, income.title, income.budget, income.spent, income.type]
+      [income.id, income.title, Number(income.budget), Number(income.spent), income.type]
     );
   }
 
@@ -180,7 +133,7 @@ class Database {
     
     this.db.run(
       'UPDATE incomes SET title = ?, budget = ?, spent = ? WHERE id = ?',
-      [income.title, income.budget, income.spent, income.id]
+      [income.title, Number(income.budget), Number(income.spent), income.id]
     );
   }
 
@@ -195,13 +148,13 @@ class Database {
     
     const result = this.db.exec('SELECT * FROM expenses');
     return result[0]?.values?.map((row: any[]) => ({
-      id: row[0],
-      title: row[1],
-      budget: row[2],
-      spent: row[3],
+      id: String(row[0]),
+      title: String(row[1]),
+      budget: Number(row[2]),
+      spent: Number(row[3]),
       type: row[4] as 'expense',
-      linkedBudgetId: row[5],
-      date: row[6]
+      linkedBudgetId: row[5] ? String(row[5]) : undefined,
+      date: String(row[6])
     })) || [];
   }
 
@@ -210,7 +163,15 @@ class Database {
     
     this.db.run(
       'INSERT INTO expenses (id, title, budget, spent, type, linkedBudgetId, date) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [expense.id, expense.title, expense.budget, expense.spent, expense.type, expense.linkedBudgetId, expense.date]
+      [
+        expense.id,
+        expense.title,
+        Number(expense.budget),
+        Number(expense.spent),
+        expense.type,
+        expense.linkedBudgetId || null,
+        expense.date
+      ]
     );
   }
 
@@ -219,7 +180,14 @@ class Database {
     
     this.db.run(
       'UPDATE expenses SET title = ?, budget = ?, spent = ?, linkedBudgetId = ?, date = ? WHERE id = ?',
-      [expense.title, expense.budget, expense.spent, expense.linkedBudgetId, expense.date, expense.id]
+      [
+        expense.title,
+        Number(expense.budget),
+        Number(expense.spent),
+        expense.linkedBudgetId || null,
+        expense.date,
+        expense.id
+      ]
     );
   }
 
@@ -234,10 +202,10 @@ class Database {
     
     const result = this.db.exec('SELECT * FROM budgets');
     return result[0]?.values?.map((row: any[]) => ({
-      id: row[0],
-      title: row[1],
-      budget: row[2],
-      spent: row[3],
+      id: String(row[0]),
+      title: String(row[1]),
+      budget: Number(row[2]),
+      spent: Number(row[3]),
       type: row[4] as 'budget'
     })) || [];
   }
@@ -246,12 +214,16 @@ class Database {
     if (!this.initialized) await this.init();
     
     try {
-      console.log("Ajout d'un nouveau budget:", budget);
       this.db.run(
         'INSERT INTO budgets (id, title, budget, spent, type) VALUES (?, ?, ?, ?, ?)',
-        [budget.id, budget.title, budget.budget, budget.spent, budget.type]
+        [
+          String(budget.id),
+          String(budget.title),
+          Number(budget.budget),
+          Number(budget.spent),
+          String(budget.type)
+        ]
       );
-      console.log("Budget ajouté avec succès");
     } catch (error) {
       console.error("Erreur lors de l'ajout du budget:", error);
       throw error;
@@ -263,57 +235,42 @@ class Database {
     
     this.db.run(
       'UPDATE budgets SET title = ?, budget = ?, spent = ? WHERE id = ?',
-      [budget.title, budget.budget, budget.spent, budget.id]
+      [
+        String(budget.title),
+        Number(budget.budget),
+        Number(budget.spent),
+        String(budget.id)
+      ]
     );
   }
 
   async deleteBudget(id: string) {
     if (!this.initialized) await this.init();
-    this.db.run('DELETE FROM budgets WHERE id = ?', [id]);
+    this.db.run('DELETE FROM budgets WHERE id = ?', [String(id)]);
   }
 
   // Méthodes pour les catégories
   async getCategories(): Promise<Category[]> {
     if (!this.initialized) await this.init();
     
-    try {
-      console.log("=== Début du chargement des catégories ===");
-      const result = this.db.exec('SELECT * FROM categories');
-      console.log("Résultat brut de la requête:", result);
-      
-      if (!result[0]?.values) {
-        console.log("Aucune catégorie trouvée");
-        return [];
+    const result = this.db.exec('SELECT * FROM categories');
+    return result[0]?.values?.map((row: any[]) => {
+      let budgets;
+      try {
+        budgets = JSON.parse(row[2]);
+      } catch {
+        budgets = [];
       }
-
-      const categories = result[0].values.map((row: any[]) => {
-        const [id, name, budgetsStr, total, spent, description] = row;
-        let budgets;
-        try {
-          // S'assurer que le string JSON est valide avant de le parser
-          budgets = budgetsStr && typeof budgetsStr === 'string' ? JSON.parse(budgetsStr) : [];
-          console.log(`Budgets parsés pour la catégorie ${id}:`, budgets);
-        } catch (e) {
-          console.error(`Erreur de parsing des budgets pour la catégorie ${id}:`, e);
-          budgets = [];
-        }
-
-        return {
-          id,
-          name,
-          budgets: Array.isArray(budgets) ? budgets : [],
-          total: Number(total) || 0,
-          spent: Number(spent) || 0,
-          description: description || ''
-        };
-      });
-
-      console.log("Catégories chargées avec succès:", categories);
-      return categories;
-    } catch (error) {
-      console.error("Erreur lors du chargement des catégories:", error);
-      throw error;
-    }
+      
+      return {
+        id: String(row[0]),
+        name: String(row[1]),
+        budgets,
+        total: Number(row[3]),
+        spent: Number(row[4]),
+        description: row[5] ? String(row[5]) : ''
+      };
+    }) || [];
   }
 
   async addCategory(category: Category) {
@@ -321,76 +278,36 @@ class Database {
     
     this.db.run(
       'INSERT INTO categories (id, name, budgets, total, spent, description) VALUES (?, ?, ?, ?, ?, ?)',
-      [category.id, category.name, JSON.stringify(category.budgets), category.total, category.spent, category.description]
+      [
+        String(category.id),
+        String(category.name),
+        JSON.stringify(category.budgets),
+        Number(category.total),
+        Number(category.spent),
+        category.description
+      ]
     );
   }
 
   async updateCategory(category: Category) {
     if (!this.initialized) await this.init();
     
-    try {
-      console.log("=== Début de la mise à jour de la catégorie dans la base de données ===");
-      console.log("Catégorie reçue:", category);
-      
-      // Validation des données
-      if (!category || !category.id) {
-        throw new Error("Catégorie invalide");
-      }
-      
-      // S'assurer que les budgets sont un tableau
-      const budgets = Array.isArray(category.budgets) ? category.budgets : [];
-      const total = Number(category.total) || 0;
-      const spent = Number(category.spent) || 0;
-      
-      // Convertir le tableau en JSON pour le stockage
-      const budgetsJson = JSON.stringify(budgets);
-      console.log("Budgets avant stringify:", budgets);
-      console.log("Budgets après stringify:", budgetsJson);
-      
-      // Utiliser une transaction pour s'assurer que tout est mis à jour correctement
-      this.db.run('BEGIN TRANSACTION');
-      
-      const stmt = this.db.prepare(
-        'UPDATE categories SET name = ?, budgets = ?, total = ?, spent = ?, description = ? WHERE id = ?'
-      );
-      
-      stmt.run(
-        [category.name, budgetsJson, total, spent, category.description, category.id]
-      );
-      stmt.free();
-      
-      this.db.run('COMMIT');
-      
-      // Vérifier immédiatement la mise à jour
-      const result = this.db.exec(
-        'SELECT * FROM categories WHERE id = ?',
-        [category.id]
-      );
-      console.log("Vérification après mise à jour:", result);
-      
-      // Si la catégorie n'existe pas, on la crée
-      if (!result[0]) {
-        console.error("La catégorie n'existe pas, tentative de création");
-        await this.addCategory(category);
-        return;
-      }
-      
-      console.log("=== Mise à jour terminée avec succès ===");
-    } catch (error) {
-      console.error("Erreur lors de la mise à jour de la catégorie:", error);
-      this.db.run('ROLLBACK');
-      throw error;
-    }
+    this.db.run(
+      'UPDATE categories SET name = ?, budgets = ?, total = ?, spent = ?, description = ? WHERE id = ?',
+      [
+        String(category.name),
+        JSON.stringify(category.budgets),
+        Number(category.total),
+        Number(category.spent),
+        category.description,
+        String(category.id)
+      ]
+    );
   }
 
   async deleteCategory(id: string) {
     if (!this.initialized) await this.init();
-    this.db.run('DELETE FROM categories WHERE id = ?', [id]);
-  }
-
-  // Sauvegarder la base de données
-  exportData() {
-    return this.db.export();
+    this.db.run('DELETE FROM categories WHERE id = ?', [String(id)]);
   }
 }
 
