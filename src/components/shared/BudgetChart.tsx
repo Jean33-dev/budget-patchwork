@@ -10,6 +10,7 @@ interface BudgetData {
 interface BudgetChartProps {
   data: BudgetData[];
   totalIncome?: number;
+  addUnallocated?: boolean;
 }
 
 const COLORS = {
@@ -21,20 +22,23 @@ const COLORS = {
   ],
 };
 
-export const BudgetChart = ({ data, totalIncome = 0 }: BudgetChartProps) => {
-  // Calculer le total des budgets alloués
-  const totalAllocated = data.reduce((sum, item) => sum + item.value, 0);
+export const BudgetChart = ({ data, totalIncome = 0, addUnallocated = false }: BudgetChartProps) => {
+  let chartData = [...data];
   
-  // Ajouter le budget non alloué aux données
-  const remainingBudget = totalIncome - totalAllocated;
-  const chartData = [
-    ...data,
-    {
-      name: "Budget non alloué",
-      value: remainingBudget > 0 ? remainingBudget : 0,
-      type: "budget" as const,
-    },
-  ];
+  if (addUnallocated) {
+    // Calculer le total des budgets alloués
+    const totalAllocated = data.reduce((sum, item) => sum + item.value, 0);
+    
+    // Ajouter le budget non alloué aux données si nécessaire
+    const remainingBudget = totalIncome - totalAllocated;
+    if (remainingBudget > 0) {
+      chartData.push({
+        name: "Budget non alloué",
+        value: remainingBudget,
+        type: "budget" as const,
+      });
+    }
+  }
 
   // Calculer les pourcentages
   const getPercentage = (value: number) => {

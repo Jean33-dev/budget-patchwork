@@ -51,9 +51,6 @@ export const DashboardOverview = ({ totalIncome, totalExpenses, envelopes }: Das
       .reduce((sum, env) => sum + env.budget, 0)
   };
 
-  const totalAllocated = categoryTotals.necessaire + categoryTotals.plaisir + categoryTotals.epargne;
-  const unallocated = totalIncome - totalAllocated;
-
   const categoryChartData = [
     {
       name: "Nécessaire",
@@ -71,14 +68,6 @@ export const DashboardOverview = ({ totalIncome, totalExpenses, envelopes }: Das
       type: "budget" as const,
     }
   ];
-
-  if (unallocated > 0) {
-    categoryChartData.push({
-      name: "Budget non alloué",
-      value: unallocated,
-      type: "budget" as const,
-    });
-  }
 
   const budgetByCategoryData = [
     {
@@ -120,13 +109,13 @@ export const DashboardOverview = ({ totalIncome, totalExpenses, envelopes }: Das
   const getChartData = () => {
     switch (chartType) {
       case "budget":
-        return { data: budgetChartData, total: totalIncome };
+        return { data: budgetChartData, total: totalIncome, addUnallocated: true };
       case "category":
-        return { data: categoryChartData, total: totalIncome };
+        return { data: categoryChartData, total: totalIncome, addUnallocated: true };
       case "type":
-        return { data: budgetByCategoryData, total: totalIncome };
+        return { data: budgetByCategoryData, total: totalIncome, addUnallocated: false };
       default:
-        return { data: [], total: 0 };
+        return { data: [], total: 0, addUnallocated: false };
     }
   };
 
@@ -193,7 +182,8 @@ export const DashboardOverview = ({ totalIncome, totalExpenses, envelopes }: Das
             <div className="min-w-[300px] h-[300px] sm:h-[400px]">
               <BudgetChart 
                 data={getChartData().data} 
-                totalIncome={getChartData().total} 
+                totalIncome={getChartData().total}
+                addUnallocated={getChartData().addUnallocated}
               />
             </div>
           </div>
