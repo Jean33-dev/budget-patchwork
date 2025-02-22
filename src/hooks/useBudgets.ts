@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "@/components/ui/use-toast";
 import { db } from "@/services/database";
 
@@ -15,38 +15,27 @@ export const useBudgets = () => {
   const [budgets, setBudgets] = useState<Budget[]>([]);
   const [totalRevenues, setTotalRevenues] = useState(0);
   const [totalExpenses, setTotalExpenses] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
-  const isInitialized = useRef(false);
-  const isMounted = useRef(true);
 
-  // Fonction de chargement des données
-  const loadData = useCallback(async () => {
-    if (!isMounted.current) return;
-    setIsLoading(true);
+  useEffect(() => {
+    loadData();
+  }, []);
 
+  const loadData = async () => {
     try {
-      // Initialisation de la base de données si nécessaire
-      if (!isInitialized.current) {
-        await db.init();
-        isInitialized.current = true;
-      }
-
-      const [expenses, budgetsData, incomesData] = await Promise.all([
-        db.getExpenses(),
-        db.getBudgets(),
-        db.getIncomes()
-      ]);
+      // Chargement des budgets
+      const budgetsData = await db.getBudgets();
       
-      if (!isMounted.current) return;
-
-      const totalIncome = incomesData.reduce((sum, income) => 
-        sum + (Number(income.budget) || 0), 0
-      );
+      // Chargement des dépenses
+      const expenses = await db.getExpenses();
+      console.log("Dépenses totales chargées:", expenses);
       
+      // Calcul du total des dépenses
       const totalSpent = expenses.reduce((sum, expense) => 
         sum + (Number(expense.budget) || 0), 0
       );
-
+      setTotalExpenses(totalSpent);
+      
+      // Mise à jour des budgets avec leurs dépenses associées
       const validatedBudgets = budgetsData.map(budget => {
         const budgetExpenses = expenses.filter(expense => 
           expense.linkedBudgetId === budget.id
@@ -61,40 +50,30 @@ export const useBudgets = () => {
           spent: budgetSpent
         };
       });
-
-      if (!isMounted.current) return;
-
+      
       setBudgets(validatedBudgets);
+      console.log("Budgets mis à jour avec dépenses:", validatedBudgets);
+
+      // Chargement et calcul des revenus
+      const incomesData = await db.getIncomes();
+      const totalIncome = incomesData.reduce((sum, income) => 
+        sum + (Number(income.budget) || 0), 0
+      );
+      
       setTotalRevenues(totalIncome);
-      setTotalExpenses(totalSpent);
+      console.log("Revenus totaux calculés:", totalIncome);
       
     } catch (error) {
-      if (!isMounted.current) return;
       console.error("Erreur lors du chargement des données:", error);
       toast({
         variant: "destructive",
         title: "Erreur",
-        description: error instanceof Error ? error.message : "Erreur inattendue"
+        description: "Impossible de charger les données"
       });
-    } finally {
-      if (isMounted.current) {
-        setIsLoading(false);
-      }
     }
-  }, []);
+  };
 
-  // Effet de nettoyage
-  useEffect(() => {
-    isMounted.current = true;
-    loadData();
-    return () => {
-      isMounted.current = false;
-    };
-  }, [loadData]);
-
-  const addBudget = useCallback(async (newBudget: Omit<Budget, "id" | "spent">) => {
-    if (!isMounted.current) return false;
-
+  const addBudget = async (newBudget: Omit<Budget, "id" | "spent">) => {
     try {
       const budgetToAdd: Budget = {
         id: Date.now().toString(),
@@ -105,8 +84,7 @@ export const useBudgets = () => {
       };
 
       await db.addBudget(budgetToAdd);
-      if (!isMounted.current) return false;
-      await loadData();
+      setBudgets(prevBudgets => [...prevBudgets, budgetToAdd]);
       
       toast({
         title: "Budget ajouté",
@@ -122,15 +100,14 @@ export const useBudgets = () => {
       });
       return false;
     }
-  }, [loadData]);
+  };
 
-  const updateBudget = useCallback(async (budgetToUpdate: Budget) => {
-    if (!isMounted.current) return false;
-
+  const updateBudget = async (budgetToUpdate: Budget) => {
     try {
       await db.updateBudget(budgetToUpdate);
-      if (!isMounted.current) return false;
-      await loadData();
+      setBudgets(prevBudgets => 
+        prevBudgets.map(b => b.id === budgetToUpdate.id ? budgetToUpdate : b)
+      );
       
       toast({
         title: "Budget modifié",
@@ -146,15 +123,11 @@ export const useBudgets = () => {
       });
       return false;
     }
-  }, [loadData]);
+  };
 
-  const deleteBudget = useCallback(async (budgetId: string) => {
-    if (!isMounted.current) return false;
-
+  const deleteBudget = async (budgetId: string) => {
     try {
       const expenses = await db.getExpenses();
-      if (!isMounted.current) return false;
-
       const hasLinkedExpenses = expenses.some(expense => 
         expense.linkedBudgetId === budgetId
       );
@@ -169,8 +142,7 @@ export const useBudgets = () => {
       }
 
       await db.deleteBudget(budgetId);
-      if (!isMounted.current) return false;
-      await loadData();
+      setBudgets(prevBudgets => prevBudgets.filter(b => b.id !== budgetId));
       
       toast({
         title: "Budget supprimé",
@@ -186,10 +158,10 @@ export const useBudgets = () => {
       });
       return false;
     }
-  }, [loadData]);
+  };
 
   const totalBudgets = budgets.reduce((sum, budget) => sum + budget.budget, 0);
-  const remainingAmount = totalRevenues - totalBudgets;
+  const remainingAmount = totalRevenues - totalBudgets; // Changé pour utiliser totalBudgets au lieu de totalExpenses
 
   return {
     budgets,
@@ -200,7 +172,6 @@ export const useBudgets = () => {
     addBudget,
     updateBudget,
     deleteBudget,
-    refreshData: loadData,
-    isLoading
+    refreshData: loadData
   };
 };

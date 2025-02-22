@@ -9,11 +9,11 @@ import { EditBudgetDialog } from "@/components/budget/EditBudgetDialog";
 import { DeleteBudgetDialog } from "@/components/budget/DeleteBudgetDialog";
 import { useBudgets, Budget } from "@/hooks/useBudgets";
 import { db } from "@/services/database";
-import { useToast } from "@/hooks/use-toast";
 
 const Budgets = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
+  const { budgets, remainingAmount, addBudget, updateBudget, deleteBudget } = useBudgets();
+  
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -21,15 +21,6 @@ const Budgets = () => {
   const [editTitle, setEditTitle] = useState("");
   const [editBudget, setEditBudget] = useState(0);
   const [hasLinkedExpenses, setHasLinkedExpenses] = useState(false);
-
-  const { 
-    budgets, 
-    remainingAmount, 
-    addBudget, 
-    updateBudget, 
-    deleteBudget,
-    isLoading 
-  } = useBudgets();
 
   const handleEnvelopeClick = (envelope: Budget) => {
     setSelectedBudget(envelope);
@@ -77,51 +68,22 @@ const Budgets = () => {
   };
 
   const handleDeleteClick = async (envelope: Budget) => {
-    try {
-      setSelectedBudget(envelope);
-      
-      const expenses = await db.getExpenses();
-      const linkedExpenses = expenses.filter(expense => expense.linkedBudgetId === envelope.id);
-      
-      setHasLinkedExpenses(linkedExpenses.length > 0);
-      setDeleteDialogOpen(true);
-    } catch (error) {
-      console.error("Erreur dans handleDeleteClick:", error);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Une erreur est survenue lors de la vérification des dépenses"
-      });
-    }
+    setSelectedBudget(envelope);
+    
+    // Vérifier si le budget a des dépenses associées
+    const expenses = await db.getExpenses();
+    const linkedExpenses = expenses.filter(expense => expense.linkedBudgetId === envelope.id);
+    setHasLinkedExpenses(linkedExpenses.length > 0);
+    
+    setDeleteDialogOpen(true);
   };
 
   const handleDeleteConfirm = async () => {
-    try {
-      if (!selectedBudget) return;
-
-      const success = await deleteBudget(selectedBudget.id);
-      
-      if (success) {
-        setDeleteDialogOpen(false);
-        setSelectedBudget(null);
-        toast({
-          title: "Succès",
-          description: "Le budget a été supprimé avec succès"
-        });
-      }
-    } catch (error) {
-      console.error("Erreur dans handleDeleteConfirm:", error);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Une erreur est survenue lors de la suppression"
-      });
-    }
+    if (!selectedBudget) return;
+    await deleteBudget(selectedBudget.id);
+    setDeleteDialogOpen(false);
+    setSelectedBudget(null);
   };
-
-  if (isLoading) {
-    return <div className="flex items-center justify-center h-screen">Chargement...</div>;
-  }
 
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
@@ -164,7 +126,6 @@ const Budgets = () => {
         budget={editBudget}
         onBudgetChange={setEditBudget}
         onSubmit={handleEditSubmit}
-        onDelete={() => handleDeleteClick(selectedBudget!)}
       />
 
       <DeleteBudgetDialog

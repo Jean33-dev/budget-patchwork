@@ -1,9 +1,10 @@
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { MoneyInput } from "@/components/shared/MoneyInput";
 import { Button } from "@/components/ui/button";
+import { Budget } from "@/hooks/useBudgets";
 
 interface EditBudgetDialogProps {
   open: boolean;
@@ -13,7 +14,6 @@ interface EditBudgetDialogProps {
   budget: number;
   onBudgetChange: (budget: number) => void;
   onSubmit: () => void;
-  onDelete: () => void;
 }
 
 export const EditBudgetDialog = ({
@@ -24,16 +24,12 @@ export const EditBudgetDialog = ({
   budget,
   onBudgetChange,
   onSubmit,
-  onDelete,
 }: EditBudgetDialogProps) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Modifier le budget</DialogTitle>
-          <DialogDescription>
-            Modifiez les informations du budget ci-dessous.
-          </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-4">
           <div className="space-y-2">
@@ -54,10 +50,7 @@ export const EditBudgetDialog = ({
             />
           </div>
         </div>
-        <DialogFooter className="flex justify-between sm:justify-between">
-          <Button variant="destructive" onClick={onDelete}>
-            Supprimer
-          </Button>
+        <DialogFooter>
           <Button onClick={onSubmit}>Enregistrer les modifications</Button>
         </DialogFooter>
       </DialogContent>
