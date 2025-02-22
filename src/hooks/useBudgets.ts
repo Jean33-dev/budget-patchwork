@@ -20,7 +20,6 @@ export const useBudgets = () => {
   const loadData = useCallback(async () => {
     try {
       console.log("Début du chargement des données");
-      setIsLoading(true);
       
       // Initialisation de la base de données
       await db.init();
@@ -63,17 +62,16 @@ export const useBudgets = () => {
       
       console.log("Budgets validés:", validatedBudgets);
       setBudgets(validatedBudgets);
+      setIsLoading(false);
       
     } catch (error) {
       console.error("Erreur lors du chargement des données:", error);
+      setIsLoading(false);
       toast({
         variant: "destructive",
         title: "Erreur",
         description: error instanceof Error ? error.message : "Erreur inattendue"
       });
-    } finally {
-      setIsLoading(false);
-      console.log("Chargement terminé");
     }
   }, []);
 
@@ -92,7 +90,9 @@ export const useBudgets = () => {
       };
 
       await db.addBudget(budgetToAdd);
-      await loadData();
+      // Mettre à jour l'état local immédiatement
+      setBudgets(currentBudgets => [...currentBudgets, budgetToAdd]);
+      await loadData(); // Recharger pour avoir les données à jour
       
       toast({
         title: "Budget ajouté",
@@ -113,7 +113,13 @@ export const useBudgets = () => {
   const updateBudget = async (budgetToUpdate: Budget) => {
     try {
       await db.updateBudget(budgetToUpdate);
-      await loadData();
+      // Mettre à jour l'état local immédiatement
+      setBudgets(currentBudgets => 
+        currentBudgets.map(budget => 
+          budget.id === budgetToUpdate.id ? budgetToUpdate : budget
+        )
+      );
+      await loadData(); // Recharger pour avoir les données à jour
       
       toast({
         title: "Budget modifié",
@@ -147,8 +153,16 @@ export const useBudgets = () => {
         return false;
       }
 
+      // Supprimer d'abord de la base de données
       await db.deleteBudget(budgetId);
-      await loadData();
+      
+      // Mettre à jour l'état local immédiatement
+      setBudgets(currentBudgets => 
+        currentBudgets.filter(budget => budget.id !== budgetId)
+      );
+      
+      // Recharger les données en arrière-plan
+      loadData();
       
       toast({
         title: "Budget supprimé",
