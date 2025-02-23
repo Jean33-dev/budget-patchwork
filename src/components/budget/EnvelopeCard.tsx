@@ -101,9 +101,6 @@ export const EnvelopeCard = ({
             <span>Budget : {safeBudget.toFixed(2)} €</span>
             <span>Dépensé : {safeSpent.toFixed(2)} €</span>
           </div>
-          <div className="text-sm text-gray-500">
-            <span>Report : {safeCarriedOver.toFixed(2)} €</span>
-          </div>
           <Progress 
             value={Math.min(progress, 100)} 
             className={cn(
@@ -112,9 +109,12 @@ export const EnvelopeCard = ({
               "text-blue-500"
             )}
           />
-          <div className="flex justify-end">
+          <div className="flex justify-between text-sm">
+            <span className="text-gray-500">
+              Report : {safeCarriedOver.toFixed(2)} €
+            </span>
             <span className={cn(
-              "text-sm font-medium",
+              "font-medium",
               isOverBudget ? "text-budget-expense" : "text-budget-income"
             )}>
               {Math.abs(remaining).toFixed(2)} € {isOverBudget ? "dépassé" : "restant"}
@@ -125,4 +125,3 @@ export const EnvelopeCard = ({
     </Card>
   );
 };
-
