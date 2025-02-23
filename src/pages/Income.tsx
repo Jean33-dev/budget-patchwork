@@ -22,8 +22,22 @@ import { EnvelopeForm } from "@/components/budget/EnvelopeForm";
 import { db, Income as IncomeType } from "@/services/database";
 
 const defaultIncomes = [
-  { id: "1", title: "Salaire", budget: 5000, spent: 5000, type: "income" as const },
-  { id: "2", title: "Freelance", budget: 1000, spent: 800, type: "income" as const },
+  { 
+    id: "1", 
+    title: "Salaire", 
+    budget: 5000, 
+    spent: 5000, 
+    type: "income" as const, 
+    date: new Date().toISOString().split('T')[0]
+  },
+  { 
+    id: "2", 
+    title: "Freelance", 
+    budget: 1000, 
+    spent: 800, 
+    type: "income" as const,
+    date: new Date().toISOString().split('T')[0]
+  },
 ];
 
 const Income = () => {
@@ -36,6 +50,7 @@ const Income = () => {
     title: string;
     budget: number;
     type: "income";
+    date: string;
   } | null>(null);
   const [envelopes, setEnvelopes] = useState<IncomeType[]>([]);
 
@@ -58,7 +73,7 @@ const Income = () => {
     initializeData();
   }, []);
 
-  const handleAddIncome = async (newIncome: { title: string; budget: number; type: "income" }) => {
+  const handleAddIncome = async (newIncome: { title: string; budget: number; type: "income"; date: string }) => {
     const income = {
       id: Date.now().toString(),
       ...newIncome,
@@ -74,7 +89,7 @@ const Income = () => {
     });
   };
 
-  const handleEditIncome = async (editedIncome: { title: string; budget: number; type: "income" }) => {
+  const handleEditIncome = async (editedIncome: { title: string; budget: number; type: "income"; date: string }) => {
     if (!selectedIncome) return;
 
     const updatedIncome = {
@@ -82,6 +97,7 @@ const Income = () => {
       title: editedIncome.title,
       budget: editedIncome.budget,
       spent: editedIncome.budget,
+      date: editedIncome.date,
     };
 
     await db.updateIncome(updatedIncome);
@@ -116,6 +132,7 @@ const Income = () => {
       title: envelope.title,
       budget: envelope.budget,
       type: envelope.type,
+      date: envelope.date,
     });
     setEditDialogOpen(true);
   };
@@ -188,8 +205,8 @@ const Income = () => {
               setBudget={(budget) => setSelectedIncome(prev => prev ? { ...prev, budget } : null)}
               linkedBudgetId=""
               setLinkedBudgetId={() => {}}
-              date=""
-              setDate={() => {}}
+              date={selectedIncome.date}
+              setDate={(date) => setSelectedIncome(prev => prev ? { ...prev, date } : null)}
               onSubmit={(e) => {
                 e.preventDefault();
                 if (selectedIncome) {
