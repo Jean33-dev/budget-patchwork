@@ -26,6 +26,7 @@ export interface Budget {
   budget: number;
   spent: number;
   type: 'budget';
+  carriedOver?: number;
 }
 
 export interface Category {
@@ -80,7 +81,8 @@ class Database {
           title TEXT,
           budget REAL DEFAULT 0,
           spent REAL DEFAULT 0,
-          type TEXT
+          type TEXT,
+          carriedOver REAL DEFAULT 0
         )
       `);
       
@@ -105,13 +107,13 @@ class Database {
 
       // Budgets de test
       this.db.run(`
-        INSERT OR IGNORE INTO budgets (id, title, budget, spent, type)
+        INSERT OR IGNORE INTO budgets (id, title, budget, spent, type, carriedOver)
         VALUES 
-        ('bud_1', 'Courses', 500.00, 600.00, 'budget'),
-        ('bud_2', 'Transport', 200.00, 0.00, 'budget'),
-        ('bud_3', 'Loisirs', 150.00, 0.00, 'budget'),
-        ('bud_4', 'Restaurant', 300.00, 150.00, 'budget'),
-        ('bud_5', 'Shopping', 250.00, 100.00, 'budget')
+        ('bud_1', 'Courses', 500.00, 600.00, 'budget', 0),
+        ('bud_2', 'Transport', 200.00, 0.00, 'budget', 0),
+        ('bud_3', 'Loisirs', 150.00, 0.00, 'budget', 0),
+        ('bud_4', 'Restaurant', 300.00, 150.00, 'budget', 0),
+        ('bud_5', 'Shopping', 250.00, 100.00, 'budget', 0)
       `);
 
       // Dépenses de test
@@ -264,7 +266,8 @@ class Database {
       title: row[1],
       budget: row[2],
       spent: row[3],
-      type: row[4] as 'budget'
+      type: row[4] as 'budget',
+      carriedOver: row[5] || 0
     })) || [];
   }
 
@@ -274,8 +277,8 @@ class Database {
     try {
       console.log("Ajout d'un nouveau budget:", budget);
       this.db.run(
-        'INSERT INTO budgets (id, title, budget, spent, type) VALUES (?, ?, ?, ?, ?)',
-        [budget.id, budget.title, budget.budget, budget.spent, budget.type]
+        'INSERT INTO budgets (id, title, budget, spent, type, carriedOver) VALUES (?, ?, ?, ?, ?, ?)',
+        [budget.id, budget.title, budget.budget, budget.spent, budget.type, budget.carriedOver || 0]
       );
       console.log("Budget ajouté avec succès");
     } catch (error) {
@@ -288,8 +291,8 @@ class Database {
     if (!this.initialized) await this.init();
     
     this.db.run(
-      'UPDATE budgets SET title = ?, budget = ?, spent = ? WHERE id = ?',
-      [budget.title, budget.budget, budget.spent, budget.id]
+      'UPDATE budgets SET title = ?, budget = ?, spent = ?, carriedOver = ? WHERE id = ?',
+      [budget.title, budget.budget, budget.spent, budget.carriedOver || 0, budget.id]
     );
   }
 
