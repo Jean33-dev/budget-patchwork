@@ -17,36 +17,34 @@ export const useTransitionHandling = (categories: any[], setCategories: (categor
 
         if (!budget) continue;
 
-        const currentRemaining = budget.budget - budget.spent;
-        let newBudgetAmount = budget.budget;
+        const currentRemaining = budget.budget + (budget.carriedOver || 0) - budget.spent;
         
         switch (envelope.transitionOption) {
           case "reset":
-            // Réinitialise le budget à sa valeur initiale
+            // Réinitialise les dépenses et le report, garde le budget initial
             await db.updateBudget({
               ...budget,
-              spent: 0
+              spent: 0,
+              carriedOver: 0
             });
             break;
           
           case "carry":
-            // Ajoute le solde restant au budget du mois suivant
-            newBudgetAmount = budget.budget + currentRemaining;
+            // Garde le même budget mais ajoute le solde restant au report
             await db.updateBudget({
               ...budget,
-              budget: newBudgetAmount,
-              spent: 0
+              spent: 0,
+              carriedOver: currentRemaining
             });
             break;
           
           case "partial":
-            // Ajoute le montant spécifié au budget du mois suivant
+            // Garde le même budget mais ajoute le montant spécifié au report
             if (envelope.partialAmount !== undefined) {
-              newBudgetAmount = budget.budget + envelope.partialAmount;
               await db.updateBudget({
                 ...budget,
-                budget: newBudgetAmount,
-                spent: 0
+                spent: 0,
+                carriedOver: envelope.partialAmount
               });
             }
             break;
@@ -59,33 +57,21 @@ export const useTransitionHandling = (categories: any[], setCategories: (categor
               );
 
               if (targetBudget) {
-                // Mettre à jour le budget source (réinitialisation)
+                // Réinitialise le budget source
                 await db.updateBudget({
                   ...budget,
-                  spent: 0
+                  spent: 0,
+                  carriedOver: 0
                 });
 
-                // Mettre à jour le budget cible (ajout du montant restant)
+                // Ajoute le montant restant au report du budget cible
                 await db.updateBudget({
                   ...targetBudget,
-                  budget: targetBudget.budget + currentRemaining,
-                  spent: targetBudget.spent
+                  carriedOver: (targetBudget.carriedOver || 0) + currentRemaining
                 });
               }
             }
             break;
-        }
-
-        // Réinitialiser les dépenses liées à ce budget
-        const expenses = await db.getExpenses();
-        const budgetExpenses = expenses.filter(exp => exp.linkedBudgetId === envelope.id);
-        
-        for (const expense of budgetExpenses) {
-          await db.updateExpense({
-            ...expense,
-            budget: 0,
-            spent: 0
-          });
         }
       }
 
