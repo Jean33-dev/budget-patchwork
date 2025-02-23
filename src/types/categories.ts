@@ -14,4 +14,5 @@ export interface Budget {
   budget: number;
   spent: number;
   type: "budget";
+  carriedOver?: number;
 }

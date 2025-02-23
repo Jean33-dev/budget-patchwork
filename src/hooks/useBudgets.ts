@@ -9,6 +9,7 @@ export type Budget = {
   budget: number;
   spent: number;
   type: "budget";
+  carriedOver?: number;
 };
 
 export const useBudgets = () => {
@@ -47,7 +48,8 @@ export const useBudgets = () => {
         return {
           ...budget,
           budget: Number(budget.budget) || 0,
-          spent: budgetSpent
+          spent: budgetSpent,
+          carriedOver: budget.carriedOver || 0
         };
       });
       
@@ -161,7 +163,7 @@ export const useBudgets = () => {
   };
 
   const totalBudgets = budgets.reduce((sum, budget) => sum + budget.budget, 0);
-  const remainingAmount = totalRevenues - totalBudgets; // Changé pour utiliser totalBudgets au lieu de totalExpenses
+  const remainingAmount = totalRevenues - totalBudgets;
 
   return {
     budgets,
