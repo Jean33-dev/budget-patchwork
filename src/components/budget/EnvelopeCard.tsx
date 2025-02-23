@@ -111,9 +111,8 @@ export const EnvelopeCard = ({
           />
           <div className="flex flex-col gap-1">
             {safeCarriedOver > 0 && (
-              <div className="flex justify-between text-sm text-gray-500">
+              <div className="text-sm text-gray-500">
                 <span>Report : {safeCarriedOver.toFixed(2)} €</span>
-                <span>Total : {totalBudget.toFixed(2)} €</span>
               </div>
             )}
             <div className="flex justify-end">
