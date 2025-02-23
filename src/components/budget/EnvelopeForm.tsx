@@ -1,3 +1,4 @@
+
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MoneyInput } from "../shared/MoneyInput";
@@ -58,40 +59,40 @@ export const EnvelopeForm = ({
         />
       </div>
 
-      {type === "expense" && (
-        <>
-          <div className="space-y-2">
-            <Label>Budget associé</Label>
-            <Select value={linkedBudgetId} onValueChange={setLinkedBudgetId} required>
-              <SelectTrigger>
-                <SelectValue placeholder="Sélectionnez un budget" />
-              </SelectTrigger>
-              <SelectContent>
-                {availableBudgets.map((budget) => (
-                  <SelectItem key={budget.id} value={budget.id}>
-                    {budget.title}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {availableBudgets.length === 0 && (
-              <p className="text-sm text-red-500">
-                Aucun budget disponible. Veuillez d'abord créer un budget.
-              </p>
-            )}
-          </div>
+      {(type === "expense" || type === "income") && (
+        <div className="space-y-2">
+          <Label htmlFor="date">Date</Label>
+          <Input
+            id="date"
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            required
+          />
+        </div>
+      )}
 
-          <div className="space-y-2">
-            <Label htmlFor="date">Date</Label>
-            <Input
-              id="date"
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              required
-            />
-          </div>
-        </>
+      {type === "expense" && (
+        <div className="space-y-2">
+          <Label>Budget associé</Label>
+          <Select value={linkedBudgetId} onValueChange={setLinkedBudgetId} required>
+            <SelectTrigger>
+              <SelectValue placeholder="Sélectionnez un budget" />
+            </SelectTrigger>
+            <SelectContent>
+              {availableBudgets.map((budget) => (
+                <SelectItem key={budget.id} value={budget.id}>
+                  {budget.title}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {availableBudgets.length === 0 && (
+            <p className="text-sm text-red-500">
+              Aucun budget disponible. Veuillez d'abord créer un budget.
+            </p>
+          )}
+        </div>
       )}
 
       <div className="space-y-2">

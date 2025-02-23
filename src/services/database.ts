@@ -8,6 +8,7 @@ export interface Income {
   budget: number;
   spent: number;
   type: 'income';
+  date: string;
 }
 
 export interface Expense {
@@ -52,14 +53,14 @@ class Database {
       
       this.db = new SQL.Database();
       
-      // Tables SQL avec des valeurs par défaut pour les colonnes numériques
       this.db.run(`
         CREATE TABLE IF NOT EXISTS incomes (
           id TEXT PRIMARY KEY,
           title TEXT,
           budget REAL DEFAULT 0,
           spent REAL DEFAULT 0,
-          type TEXT
+          type TEXT,
+          date TEXT
         )
       `);
       
@@ -97,12 +98,11 @@ class Database {
         )
       `);
 
-      // Ajout des données de test
-      // Revenus de test
+      // Ajout des données de test avec la date
       this.db.run(`
-        INSERT OR IGNORE INTO incomes (id, title, budget, spent, type)
+        INSERT OR IGNORE INTO incomes (id, title, budget, spent, type, date)
         VALUES 
-        ('inc_1', 'Salaire', 2500.00, 0, 'income')
+        ('inc_1', 'Salaire', 2500.00, 0, 'income', '${new Date().toISOString().split('T')[0]}')
       `);
 
       // Budgets de test
@@ -190,7 +190,8 @@ class Database {
       title: row[1],
       budget: row[2],
       spent: row[3],
-      type: row[4] as 'income'
+      type: row[4] as 'income',
+      date: row[5]
     })) || [];
   }
 
@@ -198,8 +199,8 @@ class Database {
     if (!this.initialized) await this.init();
     
     this.db.run(
-      'INSERT INTO incomes (id, title, budget, spent, type) VALUES (?, ?, ?, ?, ?)',
-      [income.id, income.title, income.budget, income.spent, income.type]
+      'INSERT INTO incomes (id, title, budget, spent, type, date) VALUES (?, ?, ?, ?, ?, ?)',
+      [income.id, income.title, income.budget, income.spent, income.type, income.date]
     );
   }
 
