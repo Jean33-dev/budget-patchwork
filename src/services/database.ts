@@ -7,8 +7,9 @@ export interface Income {
   title: string;
   budget: number;
   spent: number;
-  type: 'income';
+  type: "income";
   date: string;
+  periodId: string; // ID de la période budgétaire
 }
 
 export interface Expense {
@@ -16,9 +17,10 @@ export interface Expense {
   title: string;
   budget: number;
   spent: number;
-  type: 'expense';
+  type: "expense";
   linkedBudgetId?: string;
   date: string;
+  periodId: string; // ID de la période budgétaire
 }
 
 export interface Budget {
@@ -26,8 +28,15 @@ export interface Budget {
   title: string;
   budget: number;
   spent: number;
-  type: 'budget';
+  type: "budget";
   carriedOver?: number;
+}
+
+export interface BudgetPeriod {
+  id: string;
+  startDate: string;
+  endDate: string;
+  name: string;
 }
 
 export interface Category {
@@ -54,78 +63,78 @@ class Database {
       this.db = new SQL.Database();
       
       this.db.run(`
-        CREATE TABLE IF NOT EXISTS incomes (
+        CREATE TABLE IF NOT EXISTS budget_periods (
           id TEXT PRIMARY KEY,
-          title TEXT,
-          budget REAL DEFAULT 0,
-          spent REAL DEFAULT 0,
-          type TEXT,
-          date TEXT
+          startDate TEXT NOT NULL,
+          endDate TEXT,
+          name TEXT NOT NULL
         )
       `);
-      
-      this.db.run(`
-        CREATE TABLE IF NOT EXISTS expenses (
-          id TEXT PRIMARY KEY,
-          title TEXT,
-          budget REAL DEFAULT 0,
-          spent REAL DEFAULT 0,
-          type TEXT,
-          linkedBudgetId TEXT,
-          date TEXT
-        )
-      `);
-      
-      this.db.run(`
-        CREATE TABLE IF NOT EXISTS budgets (
-          id TEXT PRIMARY KEY,
-          title TEXT,
-          budget REAL DEFAULT 0,
-          spent REAL DEFAULT 0,
-          type TEXT,
-          carriedOver REAL DEFAULT 0
-        )
-      `);
-      
+
       this.db.run(`
         CREATE TABLE IF NOT EXISTS categories (
           id TEXT PRIMARY KEY,
-          name TEXT,
-          budgets TEXT,
-          total REAL DEFAULT 0,
-          spent REAL DEFAULT 0,
-          description TEXT
+          title TEXT NOT NULL,
+          type TEXT CHECK(type IN ('income', 'expense')) NOT NULL
         )
       `);
 
-      // Ajout des données de test avec la date
       this.db.run(`
-        INSERT OR IGNORE INTO incomes (id, title, budget, spent, type, date)
-        VALUES 
-        ('inc_1', 'Salaire', 2500.00, 0, 'income', '${new Date().toISOString().split('T')[0]}')
+        CREATE TABLE IF NOT EXISTS budgets (
+          id TEXT PRIMARY KEY,
+          title TEXT NOT NULL,
+          budget REAL NOT NULL,
+          spent REAL DEFAULT 0,
+          type TEXT CHECK(type IN ('budget')) NOT NULL,
+          carriedOver REAL DEFAULT 0
+        )
       `);
 
-      // Budgets de test
       this.db.run(`
-        INSERT OR IGNORE INTO budgets (id, title, budget, spent, type, carriedOver)
-        VALUES 
-        ('bud_1', 'Courses', 500.00, 600.00, 'budget', 0),
-        ('bud_2', 'Transport', 200.00, 0.00, 'budget', 0),
-        ('bud_3', 'Loisirs', 150.00, 0.00, 'budget', 0),
-        ('bud_4', 'Restaurant', 300.00, 150.00, 'budget', 0),
-        ('bud_5', 'Shopping', 250.00, 100.00, 'budget', 0)
+        CREATE TABLE IF NOT EXISTS incomes (
+          id TEXT PRIMARY KEY,
+          title TEXT NOT NULL,
+          budget REAL NOT NULL,
+          spent REAL NOT NULL,
+          type TEXT CHECK(type IN ('income')) NOT NULL,
+          date TEXT NOT NULL,
+          periodId TEXT NOT NULL,
+          FOREIGN KEY(periodId) REFERENCES budget_periods(id)
+        )
       `);
 
-      // Dépenses de test
-      const currentDate = new Date().toISOString().split('T')[0];
       this.db.run(`
-        INSERT OR IGNORE INTO expenses (id, title, budget, spent, type, linkedBudgetId, date)
-        VALUES 
-        ('exp_1', 'Courses Carrefour', 350.00, 0, 'expense', 'bud_1', ?),
-        ('exp_2', 'Courses Lidl', 250.00, 0, 'expense', 'bud_1', ?),
-        ('exp_3', 'Restaurant italien', 150.00, 0, 'expense', 'bud_4', ?),
-        ('exp_4', 'Vêtements', 100.00, 0, 'expense', 'bud_5', ?)
-      `, [currentDate, currentDate, currentDate, currentDate]);
+        CREATE TABLE IF NOT EXISTS expenses (
+          id TEXT PRIMARY KEY,
+          title TEXT NOT NULL,
+          budget REAL NOT NULL,
+          spent REAL NOT NULL,
+          type TEXT CHECK(type IN ('expense')) NOT NULL,
+          linkedBudgetId TEXT,
+          date TEXT NOT NULL,
+          periodId TEXT NOT NULL,
+          FOREIGN KEY(linkedBudgetId) REFERENCES budgets(id),
+          FOREIGN KEY(periodId) REFERENCES budget_periods(id)
+        )
+      `);
+
+      // Vérifie s'il existe déjà une période budgétaire en cours
+      const currentPeriod = this.db.prepare(
+        "SELECT * FROM budget_periods WHERE endDate IS NULL"
+      );
+      const hasPeriod = currentPeriod.step();
+      currentPeriod.free();
+
+      if (!hasPeriod) {
+        // Crée une première période budgétaire si aucune n'existe
+        const firstPeriod = {
+          id: Date.now().toString(),
+          startDate: new Date().toISOString().split('T')[0],
+          endDate: null,
+          name: new Date().toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
+        };
+        await this.addBudgetPeriod(firstPeriod);
+      }
 
       this.initialized = true;
       console.log("Base de données initialisée avec les données de test");
@@ -180,27 +189,64 @@ class Database {
     localStorage.removeItem('app_categories');
   }
 
+  // Méthodes pour gérer les périodes budgétaires
+  async getCurrentPeriod() {
+    const stmt = this.db.prepare(
+      "SELECT * FROM budget_periods WHERE endDate IS NULL"
+    );
+    const result = stmt.getAsObject();
+    stmt.free();
+    return result as any as BudgetPeriod;
+  }
+
+  async addBudgetPeriod(period: BudgetPeriod) {
+    this.db.run(
+      "INSERT INTO budget_periods (id, startDate, endDate, name) VALUES (?, ?, ?, ?)",
+      [period.id, period.startDate, period.endDate, period.name]
+    );
+  }
+
+  async closePeriod(periodId: string, endDate: string) {
+    this.db.run(
+      "UPDATE budget_periods SET endDate = ? WHERE id = ?",
+      [endDate, periodId]
+    );
+  }
+
   // Méthodes pour les revenus
-  async getIncomes(): Promise<Income[]> {
-    if (!this.initialized) await this.init();
+  async getIncomes(periodId?: string): Promise<Income[]> {
+    let query = "SELECT * FROM incomes";
+    let params: any[] = [];
+
+    if (periodId) {
+      query += " WHERE periodId = ?";
+      params = [periodId];
+    }
+
+    const incomes: Income[] = [];
+    const stmt = this.db.prepare(query);
     
-    const result = this.db.exec('SELECT * FROM incomes');
-    return result[0]?.values?.map((row: any[]) => ({
-      id: row[0],
-      title: row[1],
-      budget: row[2],
-      spent: row[3],
-      type: row[4] as 'income',
-      date: row[5]
-    })) || [];
+    if (params.length > 0) {
+      stmt.bind(params);
+    }
+
+    while (stmt.step()) {
+      const row = stmt.getAsObject();
+      incomes.push(row as any as Income);
+    }
+    stmt.free();
+    return incomes;
   }
 
   async addIncome(income: Income) {
-    if (!this.initialized) await this.init();
+    if (!income.periodId) {
+      const currentPeriod = await this.getCurrentPeriod();
+      income.periodId = currentPeriod.id;
+    }
     
     this.db.run(
-      'INSERT INTO incomes (id, title, budget, spent, type, date) VALUES (?, ?, ?, ?, ?, ?)',
-      [income.id, income.title, income.budget, income.spent, income.type, income.date]
+      "INSERT INTO incomes (id, title, budget, spent, type, date, periodId) VALUES (?, ?, ?, ?, ?, ?, ?)",
+      [income.id, income.title, income.budget, income.spent, income.type, income.date, income.periodId]
     );
   }
 
@@ -219,27 +265,39 @@ class Database {
   }
 
   // Méthodes pour les dépenses
-  async getExpenses(): Promise<Expense[]> {
-    if (!this.initialized) await this.init();
+  async getExpenses(periodId?: string): Promise<Expense[]> {
+    let query = "SELECT * FROM expenses";
+    let params: any[] = [];
+
+    if (periodId) {
+      query += " WHERE periodId = ?";
+      params = [periodId];
+    }
+
+    const expenses: Expense[] = [];
+    const stmt = this.db.prepare(query);
     
-    const result = this.db.exec('SELECT * FROM expenses');
-    return result[0]?.values?.map((row: any[]) => ({
-      id: row[0],
-      title: row[1],
-      budget: row[2],
-      spent: row[3],
-      type: row[4] as 'expense',
-      linkedBudgetId: row[5],
-      date: row[6]
-    })) || [];
+    if (params.length > 0) {
+      stmt.bind(params);
+    }
+
+    while (stmt.step()) {
+      const row = stmt.getAsObject();
+      expenses.push(row as any as Expense);
+    }
+    stmt.free();
+    return expenses;
   }
 
   async addExpense(expense: Expense) {
-    if (!this.initialized) await this.init();
-    
+    if (!expense.periodId) {
+      const currentPeriod = await this.getCurrentPeriod();
+      expense.periodId = currentPeriod.id;
+    }
+
     this.db.run(
-      'INSERT INTO expenses (id, title, budget, spent, type, linkedBudgetId, date) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [expense.id, expense.title, expense.budget, expense.spent, expense.type, expense.linkedBudgetId, expense.date]
+      "INSERT INTO expenses (id, title, budget, spent, type, linkedBudgetId, date, periodId) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+      [expense.id, expense.title, expense.budget, expense.spent, expense.type, expense.linkedBudgetId, expense.date, expense.periodId]
     );
   }
 
