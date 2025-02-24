@@ -476,6 +476,19 @@ class Database {
     this.db.run('DELETE FROM categories WHERE id = ?', [id]);
   }
 
+  // Méthodes pour les périodes budgétaires
+  async getAllPeriods(): Promise<BudgetPeriod[]> {
+    const result = this.db.exec('SELECT * FROM budget_periods ORDER BY startDate DESC');
+    if (!result[0]?.values) return [];
+
+    return result[0].values.map((row: any[]) => ({
+      id: row[0],
+      startDate: row[1],
+      endDate: row[2],
+      name: row[3]
+    }));
+  }
+
   // Sauvegarder la base de données
   exportData() {
     return this.db.export();

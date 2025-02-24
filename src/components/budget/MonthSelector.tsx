@@ -38,7 +38,7 @@ export const MonthSelector = ({ currentDate, onMonthChange, onNewMonthClick }: M
         setCurrentPeriod(current);
 
         // Créer une requête pour obtenir toutes les périodes
-        const allPeriods = await getAllPeriods();
+        const allPeriods = await db.getAllPeriods();
         setPeriods(allPeriods);
       } catch (error) {
         console.error("Erreur lors du chargement des périodes:", error);
@@ -47,18 +47,6 @@ export const MonthSelector = ({ currentDate, onMonthChange, onNewMonthClick }: M
 
     loadPeriods();
   }, []);
-
-  const getAllPeriods = async (): Promise<BudgetPeriod[]> => {
-    return new Promise((resolve) => {
-      const stmt = db.prepare("SELECT * FROM budget_periods ORDER BY startDate DESC");
-      const results: BudgetPeriod[] = [];
-      while (stmt.step()) {
-        results.push(stmt.getAsObject() as any);
-      }
-      stmt.free();
-      resolve(results);
-    });
-  };
 
   const handlePeriodChange = (periodId: string) => {
     const period = periods.find(p => p.id === periodId);
