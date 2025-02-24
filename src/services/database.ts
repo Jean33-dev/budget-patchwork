@@ -56,12 +56,14 @@ class Database {
     if (this.initialized) return;
 
     try {
+      console.log("Initialisation de la base de données...");
       const SQL = await initSqlJs({
         locateFile: file => `https://sql.js.org/dist/${file}`
       });
       
       this.db = new SQL.Database();
       
+      // Création des tables
       this.db.run(`
         CREATE TABLE IF NOT EXISTS budget_periods (
           id TEXT PRIMARY KEY,
@@ -75,7 +77,11 @@ class Database {
         CREATE TABLE IF NOT EXISTS categories (
           id TEXT PRIMARY KEY,
           title TEXT NOT NULL,
-          type TEXT CHECK(type IN ('income', 'expense')) NOT NULL
+          type TEXT CHECK(type IN ('income', 'expense')) NOT NULL,
+          budgets TEXT,
+          total REAL DEFAULT 0,
+          spent REAL DEFAULT 0,
+          description TEXT
         )
       `);
 
@@ -119,13 +125,12 @@ class Database {
       `);
 
       // Vérifie s'il existe déjà une période budgétaire en cours
-      const currentPeriod = this.db.prepare(
-        "SELECT * FROM budget_periods WHERE endDate IS NULL"
-      );
-      const hasPeriod = currentPeriod.step();
-      currentPeriod.free();
+      const stmt = this.db.prepare("SELECT * FROM budget_periods WHERE endDate IS NULL");
+      const hasPeriod = stmt.step();
+      stmt.free();
 
       if (!hasPeriod) {
+        console.log("Création de la première période budgétaire...");
         // Crée une première période budgétaire si aucune n'existe
         const firstPeriod = {
           id: Date.now().toString(),
@@ -134,10 +139,14 @@ class Database {
           name: new Date().toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
         };
         await this.addBudgetPeriod(firstPeriod);
+
+        // Ajoute des données de test
+        console.log("Ajout des données de test...");
+        await this.addTestData(firstPeriod.id);
       }
 
       this.initialized = true;
-      console.log("Base de données initialisée avec les données de test");
+      console.log("Base de données initialisée avec succès!");
 
     } catch (err) {
       console.error('Erreur lors de l\'initialisation de la base de données:', err);
@@ -145,48 +154,94 @@ class Database {
     }
   }
 
-  private async migrateFromLocalStorage() {
-    // Migrer les revenus
-    const storedIncomes = localStorage.getItem('app_incomes');
-    if (storedIncomes) {
-      const incomes = JSON.parse(storedIncomes);
-      for (const income of incomes) {
-        await this.addIncome(income);
+  private async addTestData(periodId: string) {
+    // Ajout de revenus de test
+    const testIncomes = [
+      {
+        id: "1",
+        title: "Salaire",
+        budget: 2500,
+        spent: 2500,
+        type: "income" as const,
+        date: new Date().toISOString().split('T')[0],
+        periodId
+      },
+      {
+        id: "2",
+        title: "Freelance",
+        budget: 500,
+        spent: 500,
+        type: "income" as const,
+        date: new Date().toISOString().split('T')[0],
+        periodId
       }
+    ];
+
+    // Ajout de budgets de test
+    const testBudgets = [
+      {
+        id: "1",
+        title: "Loyer",
+        budget: 800,
+        spent: 0,
+        type: "budget" as const,
+        carriedOver: 0
+      },
+      {
+        id: "2",
+        title: "Courses",
+        budget: 400,
+        spent: 0,
+        type: "budget" as const,
+        carriedOver: 0
+      },
+      {
+        id: "3",
+        title: "Transport",
+        budget: 150,
+        spent: 0,
+        type: "budget" as const,
+        carriedOver: 0
+      }
+    ];
+
+    // Ajout de catégories de test
+    const testCategories = [
+      {
+        id: "1",
+        title: "Nécessaire",
+        type: "expense" as const,
+        budgets: JSON.stringify(["1", "2"]),
+        total: 1200,
+        spent: 0,
+        description: "Dépenses essentielles"
+      },
+      {
+        id: "2",
+        title: "Transport",
+        type: "expense" as const,
+        budgets: JSON.stringify(["3"]),
+        total: 150,
+        spent: 0,
+        description: "Dépenses de transport"
+      }
+    ];
+
+    // Insertion des données de test
+    for (const income of testIncomes) {
+      await this.addIncome(income);
     }
 
-    // Migrer les dépenses
-    const storedExpenses = localStorage.getItem('app_expenses');
-    if (storedExpenses) {
-      const expenses = JSON.parse(storedExpenses);
-      for (const expense of expenses) {
-        await this.addExpense(expense);
-      }
+    for (const budget of testBudgets) {
+      await this.addBudget(budget);
     }
 
-    // Migrer les budgets
-    const storedBudgets = localStorage.getItem('app_budgets');
-    if (storedBudgets) {
-      const budgets = JSON.parse(storedBudgets);
-      for (const budget of budgets) {
-        await this.addBudget(budget);
-      }
+    for (const category of testCategories) {
+      this.db.run(
+        'INSERT INTO categories (id, title, type, budgets, total, spent, description) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [category.id, category.title, category.type, category.budgets, category.total, category.spent, category.description]
+      );
     }
-
-    // Migrer les catégories
-    const storedCategories = localStorage.getItem('app_categories');
-    if (storedCategories) {
-      const categories = JSON.parse(storedCategories);
-      for (const category of categories) {
-        await this.addCategory(category);
-      }
-    }
-
-    // Supprimer les anciennes données du localStorage
-    localStorage.removeItem('app_incomes');
-    localStorage.removeItem('app_expenses');
-    localStorage.removeItem('app_budgets');
-    localStorage.removeItem('app_categories');
   }
 
   // Méthodes pour gérer les périodes budgétaires
