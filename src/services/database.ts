@@ -51,107 +51,120 @@ export interface Category {
 class Database {
   private db: any = null;
   private initialized = false;
+  private initPromise: Promise<void> | null = null;
 
   async init() {
     if (this.initialized) return;
-
-    try {
-      console.log("Initialisation de la base de données...");
-      const SQL = await initSqlJs({
-        locateFile: file => `https://sql.js.org/dist/${file}`
-      });
-      
-      this.db = new SQL.Database();
-      
-      // Création des tables
-      this.db.run(`
-        CREATE TABLE IF NOT EXISTS budget_periods (
-          id TEXT PRIMARY KEY,
-          startDate TEXT NOT NULL,
-          endDate TEXT,
-          name TEXT NOT NULL
-        )
-      `);
-
-      this.db.run(`
-        CREATE TABLE IF NOT EXISTS categories (
-          id TEXT PRIMARY KEY,
-          title TEXT NOT NULL,
-          type TEXT CHECK(type IN ('income', 'expense')) NOT NULL,
-          budgets TEXT,
-          total REAL DEFAULT 0,
-          spent REAL DEFAULT 0,
-          description TEXT
-        )
-      `);
-
-      this.db.run(`
-        CREATE TABLE IF NOT EXISTS budgets (
-          id TEXT PRIMARY KEY,
-          title TEXT NOT NULL,
-          budget REAL NOT NULL,
-          spent REAL DEFAULT 0,
-          type TEXT CHECK(type IN ('budget')) NOT NULL,
-          carriedOver REAL DEFAULT 0
-        )
-      `);
-
-      this.db.run(`
-        CREATE TABLE IF NOT EXISTS incomes (
-          id TEXT PRIMARY KEY,
-          title TEXT NOT NULL,
-          budget REAL NOT NULL,
-          spent REAL NOT NULL,
-          type TEXT CHECK(type IN ('income')) NOT NULL,
-          date TEXT NOT NULL,
-          periodId TEXT NOT NULL,
-          FOREIGN KEY(periodId) REFERENCES budget_periods(id)
-        )
-      `);
-
-      this.db.run(`
-        CREATE TABLE IF NOT EXISTS expenses (
-          id TEXT PRIMARY KEY,
-          title TEXT NOT NULL,
-          budget REAL NOT NULL,
-          spent REAL NOT NULL,
-          type TEXT CHECK(type IN ('expense')) NOT NULL,
-          linkedBudgetId TEXT,
-          date TEXT NOT NULL,
-          periodId TEXT NOT NULL,
-          FOREIGN KEY(linkedBudgetId) REFERENCES budgets(id),
-          FOREIGN KEY(periodId) REFERENCES budget_periods(id)
-        )
-      `);
-
-      // Vérifie s'il existe déjà une période budgétaire en cours
-      const stmt = this.db.prepare("SELECT * FROM budget_periods WHERE endDate IS NULL");
-      const hasPeriod = stmt.step();
-      stmt.free();
-
-      if (!hasPeriod) {
-        console.log("Création de la première période budgétaire...");
-        // Crée une première période budgétaire si aucune n'existe
-        const firstPeriod = {
-          id: Date.now().toString(),
-          startDate: new Date().toISOString().split('T')[0],
-          endDate: null,
-          name: new Date().toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
-        };
-        await this.addBudgetPeriod(firstPeriod);
-
-        // Ajoute des données de test
-        console.log("Ajout des données de test...");
-        await this.addTestData(firstPeriod.id);
-      }
-
-      this.initialized = true;
-      console.log("Base de données initialisée avec succès!");
-
-    } catch (err) {
-      console.error('Erreur lors de l\'initialisation de la base de données:', err);
-      throw err;
+    
+    // Si une initialisation est déjà en cours, attendez-la
+    if (this.initPromise) {
+      return this.initPromise;
     }
+
+    this.initPromise = (async () => {
+      try {
+        console.log("Initialisation de SQL.js...");
+        const SQL = await initSqlJs({
+          locateFile: file => `https://sql.js.org/dist/${file}`
+        });
+        
+        console.log("Création de la base de données...");
+        this.db = new SQL.Database();
+        
+        // Création des tables
+        console.log("Création des tables...");
+        this.db.run(`
+          CREATE TABLE IF NOT EXISTS budget_periods (
+            id TEXT PRIMARY KEY,
+            startDate TEXT NOT NULL,
+            endDate TEXT,
+            name TEXT NOT NULL
+          )
+        `);
+
+        this.db.run(`
+          CREATE TABLE IF NOT EXISTS categories (
+            id TEXT PRIMARY KEY,
+            title TEXT NOT NULL,
+            type TEXT CHECK(type IN ('income', 'expense')) NOT NULL,
+            budgets TEXT,
+            total REAL DEFAULT 0,
+            spent REAL DEFAULT 0,
+            description TEXT
+          )
+        `);
+
+        this.db.run(`
+          CREATE TABLE IF NOT EXISTS budgets (
+            id TEXT PRIMARY KEY,
+            title TEXT NOT NULL,
+            budget REAL NOT NULL,
+            spent REAL DEFAULT 0,
+            type TEXT CHECK(type IN ('budget')) NOT NULL,
+            carriedOver REAL DEFAULT 0
+          )
+        `);
+
+        this.db.run(`
+          CREATE TABLE IF NOT EXISTS incomes (
+            id TEXT PRIMARY KEY,
+            title TEXT NOT NULL,
+            budget REAL NOT NULL,
+            spent REAL NOT NULL,
+            type TEXT CHECK(type IN ('income')) NOT NULL,
+            date TEXT NOT NULL,
+            periodId TEXT NOT NULL,
+            FOREIGN KEY(periodId) REFERENCES budget_periods(id)
+          )
+        `);
+
+        this.db.run(`
+          CREATE TABLE IF NOT EXISTS expenses (
+            id TEXT PRIMARY KEY,
+            title TEXT NOT NULL,
+            budget REAL NOT NULL,
+            spent REAL NOT NULL,
+            type TEXT CHECK(type IN ('expense')) NOT NULL,
+            linkedBudgetId TEXT,
+            date TEXT NOT NULL,
+            periodId TEXT NOT NULL,
+            FOREIGN KEY(linkedBudgetId) REFERENCES budgets(id),
+            FOREIGN KEY(periodId) REFERENCES budget_periods(id)
+          )
+        `);
+
+        console.log("Vérification de l'existence d'une période budgétaire...");
+        const result = this.db.exec("SELECT COUNT(*) as count FROM budget_periods WHERE endDate IS NULL");
+        const hasPeriod = result[0]?.values[0][0] > 0;
+
+        if (!hasPeriod) {
+          console.log("Création de la première période budgétaire...");
+          const firstPeriod = {
+            id: Date.now().toString(),
+            startDate: new Date().toISOString().split('T')[0],
+            endDate: null,
+            name: new Date().toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
+          };
+          await this.addBudgetPeriod(firstPeriod);
+
+          console.log("Ajout des données de test...");
+          await this.addTestData(firstPeriod.id);
+        }
+
+        this.initialized = true;
+        console.log("Base de données initialisée avec succès!");
+
+      } catch (err) {
+        console.error('Erreur lors de l\'initialisation de la base de données:', err);
+        this.initialized = false;
+        this.db = null;
+        throw err;
+      } finally {
+        this.initPromise = null;
+      }
+    })();
+
+    return this.initPromise;
   }
 
   private async addTestData(periodId: string) {
@@ -245,13 +258,19 @@ class Database {
   }
 
   // Méthodes pour gérer les périodes budgétaires
-  async getCurrentPeriod() {
-    const stmt = this.db.prepare(
-      "SELECT * FROM budget_periods WHERE endDate IS NULL"
-    );
-    const result = stmt.getAsObject();
-    stmt.free();
-    return result as any as BudgetPeriod;
+  async getCurrentPeriod(): Promise<BudgetPeriod> {
+    await this.init(); // S'assure que la base est initialisée
+    const result = this.db.exec("SELECT * FROM budget_periods WHERE endDate IS NULL");
+    if (!result[0]?.values) {
+      throw new Error("Aucune période budgétaire active trouvée");
+    }
+    const row = result[0].values[0];
+    return {
+      id: row[0],
+      startDate: row[1],
+      endDate: row[2],
+      name: row[3]
+    };
   }
 
   async addBudgetPeriod(period: BudgetPeriod) {
@@ -533,6 +552,7 @@ class Database {
 
   // Méthodes pour les périodes budgétaires
   async getAllPeriods(): Promise<BudgetPeriod[]> {
+    await this.init(); // S'assure que la base est initialisée
     const result = this.db.exec('SELECT * FROM budget_periods ORDER BY startDate DESC');
     if (!result[0]?.values) return [];
 
