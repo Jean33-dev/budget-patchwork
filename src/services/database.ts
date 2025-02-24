@@ -1,3 +1,4 @@
+
 import initSqlJs from 'sql.js';
 import { toast } from "@/components/ui/use-toast";
 
@@ -73,6 +74,8 @@ class Database {
         
         // Création des tables
         console.log("Création des tables...");
+        
+        // D'abord, créer la table des périodes budgétaires
         this.db.run(`
           CREATE TABLE IF NOT EXISTS budget_periods (
             id TEXT PRIMARY KEY,
@@ -82,6 +85,7 @@ class Database {
           )
         `);
 
+        // Créer la table des catégories
         this.db.run(`
           CREATE TABLE IF NOT EXISTS categories (
             id TEXT PRIMARY KEY,
@@ -94,6 +98,7 @@ class Database {
           )
         `);
 
+        // Créer la table des budgets
         this.db.run(`
           CREATE TABLE IF NOT EXISTS budgets (
             id TEXT PRIMARY KEY,
@@ -105,33 +110,72 @@ class Database {
           )
         `);
 
-        this.db.run(`
-          CREATE TABLE IF NOT EXISTS incomes (
-            id TEXT PRIMARY KEY,
-            title TEXT NOT NULL,
-            budget REAL NOT NULL,
-            spent REAL NOT NULL,
-            type TEXT CHECK(type IN ('income')) NOT NULL,
-            date TEXT NOT NULL,
-            periodId TEXT NOT NULL,
-            FOREIGN KEY(periodId) REFERENCES budget_periods(id)
-          )
-        `);
+        // Vérifier si la table incomes existe déjà pour savoir si c'est une nouvelle base ou une migration
+        const tableCheck = this.db.exec("SELECT name FROM sqlite_master WHERE type='table' AND name='incomes'");
+        const isNewDatabase = !tableCheck[0]?.values?.length;
 
-        this.db.run(`
-          CREATE TABLE IF NOT EXISTS expenses (
-            id TEXT PRIMARY KEY,
-            title TEXT NOT NULL,
-            budget REAL NOT NULL,
-            spent REAL NOT NULL,
-            type TEXT CHECK(type IN ('expense')) NOT NULL,
-            linkedBudgetId TEXT,
-            date TEXT NOT NULL,
-            periodId TEXT NOT NULL,
-            FOREIGN KEY(linkedBudgetId) REFERENCES budgets(id),
-            FOREIGN KEY(periodId) REFERENCES budget_periods(id)
-          )
-        `);
+        // Si c'est une nouvelle base, créer les tables avec les contraintes de clé étrangère
+        if (isNewDatabase) {
+          this.db.run(`
+            CREATE TABLE incomes (
+              id TEXT PRIMARY KEY,
+              title TEXT NOT NULL,
+              budget REAL NOT NULL,
+              spent REAL NOT NULL,
+              type TEXT CHECK(type IN ('income')) NOT NULL,
+              date TEXT NOT NULL,
+              periodId TEXT NOT NULL,
+              FOREIGN KEY(periodId) REFERENCES budget_periods(id)
+            )
+          `);
+
+          this.db.run(`
+            CREATE TABLE expenses (
+              id TEXT PRIMARY KEY,
+              title TEXT NOT NULL,
+              budget REAL NOT NULL,
+              spent REAL NOT NULL,
+              type TEXT CHECK(type IN ('expense')) NOT NULL,
+              linkedBudgetId TEXT,
+              date TEXT NOT NULL,
+              periodId TEXT NOT NULL,
+              FOREIGN KEY(linkedBudgetId) REFERENCES budgets(id),
+              FOREIGN KEY(periodId) REFERENCES budget_periods(id)
+            )
+          `);
+        } else {
+          // C'est une base existante, on doit migrer les données
+          // 1. Créer une période budgétaire pour les données existantes
+          const defaultPeriod = {
+            id: 'default-period',
+            startDate: new Date(2024, 0, 1).toISOString().split('T')[0], // 1er janvier 2024
+            endDate: null,
+            name: 'Période initiale'
+          };
+          
+          try {
+            await this.addBudgetPeriod(defaultPeriod);
+            
+            // 2. Ajouter la colonne periodId aux tables existantes
+            this.db.run(`
+              ALTER TABLE incomes ADD COLUMN periodId TEXT REFERENCES budget_periods(id)
+            `);
+            this.db.run(`
+              ALTER TABLE expenses ADD COLUMN periodId TEXT REFERENCES budget_periods(id)
+            `);
+            
+            // 3. Mettre à jour les enregistrements existants avec la période par défaut
+            this.db.run(`
+              UPDATE incomes SET periodId = ? WHERE periodId IS NULL
+            `, [defaultPeriod.id]);
+            
+            this.db.run(`
+              UPDATE expenses SET periodId = ? WHERE periodId IS NULL
+            `, [defaultPeriod.id]);
+          } catch (err) {
+            console.log("La migration a déjà été effectuée ou n'est pas nécessaire");
+          }
+        }
 
         console.log("Vérification de l'existence d'une période budgétaire...");
         const result = this.db.exec("SELECT COUNT(*) as count FROM budget_periods WHERE endDate IS NULL");
