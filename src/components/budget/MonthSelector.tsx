@@ -33,17 +33,13 @@ export const MonthSelector = ({ currentDate, onMonthChange, onNewMonthClick }: M
   useEffect(() => {
     const loadPeriods = async () => {
       try {
-        const stmt = db.db.prepare("SELECT * FROM budget_periods ORDER BY startDate DESC");
-        const results: BudgetPeriod[] = [];
-        while (stmt.step()) {
-          results.push(stmt.getAsObject() as any);
-        }
-        stmt.free();
-        setPeriods(results);
-
-        // Charger la période courante
+        // Utiliser la méthode publique getCurrentPeriod au lieu d'accéder directement à db
         const current = await db.getCurrentPeriod();
         setCurrentPeriod(current);
+
+        // Créer une requête pour obtenir toutes les périodes
+        const allPeriods = await getAllPeriods();
+        setPeriods(allPeriods);
       } catch (error) {
         console.error("Erreur lors du chargement des périodes:", error);
       }
@@ -51,6 +47,18 @@ export const MonthSelector = ({ currentDate, onMonthChange, onNewMonthClick }: M
 
     loadPeriods();
   }, []);
+
+  const getAllPeriods = async (): Promise<BudgetPeriod[]> => {
+    return new Promise((resolve) => {
+      const stmt = db.prepare("SELECT * FROM budget_periods ORDER BY startDate DESC");
+      const results: BudgetPeriod[] = [];
+      while (stmt.step()) {
+        results.push(stmt.getAsObject() as any);
+      }
+      stmt.free();
+      resolve(results);
+    });
+  };
 
   const handlePeriodChange = (periodId: string) => {
     const period = periods.find(p => p.id === periodId);

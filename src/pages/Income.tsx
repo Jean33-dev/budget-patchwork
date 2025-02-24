@@ -21,25 +21,6 @@ import {
 import { EnvelopeForm } from "@/components/budget/EnvelopeForm";
 import { db, Income as IncomeType } from "@/services/database";
 
-const defaultIncomes = [
-  { 
-    id: "1", 
-    title: "Salaire", 
-    budget: 5000, 
-    spent: 5000, 
-    type: "income" as const, 
-    date: new Date().toISOString().split('T')[0]
-  },
-  { 
-    id: "2", 
-    title: "Freelance", 
-    budget: 1000, 
-    spent: 800, 
-    type: "income" as const,
-    date: new Date().toISOString().split('T')[0]
-  },
-];
-
 const Income = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -58,9 +39,34 @@ const Income = () => {
   useEffect(() => {
     const initializeData = async () => {
       await db.init();
-      const incomes = await db.getIncomes();
+      const currentPeriod = await db.getCurrentPeriod();
+      
+      // Obtenir les revenus de la période courante
+      const incomes = await db.getIncomes(currentPeriod.id);
+      
       if (incomes.length === 0) {
         // Si pas de revenus, ajouter les revenus par défaut
+        const defaultIncomes = [
+          { 
+            id: "1", 
+            title: "Salaire", 
+            budget: 5000, 
+            spent: 5000, 
+            type: "income" as const,
+            date: new Date().toISOString().split('T')[0],
+            periodId: currentPeriod.id
+          },
+          { 
+            id: "2", 
+            title: "Freelance", 
+            budget: 1000, 
+            spent: 800, 
+            type: "income" as const,
+            date: new Date().toISOString().split('T')[0],
+            periodId: currentPeriod.id
+          }
+        ];
+
         for (const income of defaultIncomes) {
           await db.addIncome(income);
         }
@@ -74,10 +80,12 @@ const Income = () => {
   }, []);
 
   const handleAddIncome = async (newIncome: { title: string; budget: number; type: "income"; date: string }) => {
+    const currentPeriod = await db.getCurrentPeriod();
     const income = {
       id: Date.now().toString(),
       ...newIncome,
       spent: newIncome.budget,
+      periodId: currentPeriod.id
     };
     
     await db.addIncome(income);
@@ -92,12 +100,14 @@ const Income = () => {
   const handleEditIncome = async (editedIncome: { title: string; budget: number; type: "income"; date: string }) => {
     if (!selectedIncome) return;
 
+    const currentPeriod = await db.getCurrentPeriod();
     const updatedIncome = {
       ...selectedIncome,
       title: editedIncome.title,
       budget: editedIncome.budget,
       spent: editedIncome.budget,
       date: editedIncome.date,
+      periodId: currentPeriod.id
     };
 
     await db.updateIncome(updatedIncome);
