@@ -17,13 +17,26 @@ export const useTransitionHandling = (categories: any[], setCategories: (categor
 
         if (!budget) continue;
 
+        // Calcul du montant restant : budget initial + report précédent - dépenses
         const currentRemaining = budget.budget + (budget.carriedOver || 0) - budget.spent;
+        console.log(`Transition du budget ${budget.title}:`, {
+          budgetInitial: budget.budget,
+          carriedOver: budget.carriedOver || 0,
+          spent: budget.spent,
+          remaining: currentRemaining,
+          transitionOption: envelope.transitionOption
+        });
         
         switch (envelope.transitionOption) {
           case "reset":
             // Réinitialise les dépenses et le report, garde le budget initial
             await db.updateBudget({
               ...budget,
+              spent: 0,
+              carriedOver: 0
+            });
+            console.log(`Reset - Nouveau budget état:`, {
+              title: budget.title,
               spent: 0,
               carriedOver: 0
             });
@@ -36,6 +49,11 @@ export const useTransitionHandling = (categories: any[], setCategories: (categor
               spent: 0,
               carriedOver: currentRemaining
             });
+            console.log(`Report total - Nouveau budget état:`, {
+              title: budget.title,
+              spent: 0,
+              carriedOver: currentRemaining
+            });
             break;
           
           case "partial":
@@ -43,6 +61,11 @@ export const useTransitionHandling = (categories: any[], setCategories: (categor
             if (envelope.partialAmount !== undefined) {
               await db.updateBudget({
                 ...budget,
+                spent: 0,
+                carriedOver: envelope.partialAmount
+              });
+              console.log(`Report partiel - Nouveau budget état:`, {
+                title: budget.title,
                 spent: 0,
                 carriedOver: envelope.partialAmount
               });
@@ -68,6 +91,18 @@ export const useTransitionHandling = (categories: any[], setCategories: (categor
                 await db.updateBudget({
                   ...targetBudget,
                   carriedOver: (targetBudget.carriedOver || 0) + currentRemaining
+                });
+
+                console.log(`Transfert - Nouveau état:`, {
+                  sourceBudget: {
+                    title: budget.title,
+                    spent: 0,
+                    carriedOver: 0
+                  },
+                  targetBudget: {
+                    title: targetBudget.title,
+                    carriedOver: (targetBudget.carriedOver || 0) + currentRemaining
+                  }
                 });
               }
             }
