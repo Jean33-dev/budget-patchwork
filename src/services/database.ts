@@ -39,6 +39,13 @@ export interface Category {
   description: string;
 }
 
+export interface BudgetPeriod {
+  id: string;
+  startDate: string;
+  endDate: string | null;
+  name: string;
+}
+
 class Database {
   private db: any = null;
   private initialized = false;
@@ -98,14 +105,21 @@ class Database {
         )
       `);
 
-      // Ajout des données de test avec la date
+      this.db.run(`
+        CREATE TABLE IF NOT EXISTS budget_periods (
+          id TEXT PRIMARY KEY,
+          startDate TEXT NOT NULL,
+          endDate TEXT,
+          name TEXT NOT NULL
+        )
+      `);
+
       this.db.run(`
         INSERT OR IGNORE INTO incomes (id, title, budget, spent, type, date)
         VALUES 
         ('inc_1', 'Salaire', 2500.00, 0, 'income', '${new Date().toISOString().split('T')[0]}')
       `);
 
-      // Budgets de test
       this.db.run(`
         INSERT OR IGNORE INTO budgets (id, title, budget, spent, type, carriedOver)
         VALUES 
@@ -116,7 +130,6 @@ class Database {
         ('bud_5', 'Shopping', 250.00, 100.00, 'budget', 0)
       `);
 
-      // Dépenses de test
       const currentDate = new Date().toISOString().split('T')[0];
       this.db.run(`
         INSERT OR IGNORE INTO expenses (id, title, budget, spent, type, linkedBudgetId, date)
@@ -137,7 +150,6 @@ class Database {
   }
 
   private async migrateFromLocalStorage() {
-    // Migrer les revenus
     const storedIncomes = localStorage.getItem('app_incomes');
     if (storedIncomes) {
       const incomes = JSON.parse(storedIncomes);
@@ -146,7 +158,6 @@ class Database {
       }
     }
 
-    // Migrer les dépenses
     const storedExpenses = localStorage.getItem('app_expenses');
     if (storedExpenses) {
       const expenses = JSON.parse(storedExpenses);
@@ -155,7 +166,6 @@ class Database {
       }
     }
 
-    // Migrer les budgets
     const storedBudgets = localStorage.getItem('app_budgets');
     if (storedBudgets) {
       const budgets = JSON.parse(storedBudgets);
@@ -164,7 +174,6 @@ class Database {
       }
     }
 
-    // Migrer les catégories
     const storedCategories = localStorage.getItem('app_categories');
     if (storedCategories) {
       const categories = JSON.parse(storedCategories);
@@ -173,14 +182,12 @@ class Database {
       }
     }
 
-    // Supprimer les anciennes données du localStorage
     localStorage.removeItem('app_incomes');
     localStorage.removeItem('app_expenses');
     localStorage.removeItem('app_budgets');
     localStorage.removeItem('app_categories');
   }
 
-  // Méthodes pour les revenus
   async getIncomes(): Promise<Income[]> {
     if (!this.initialized) await this.init();
     
@@ -218,7 +225,6 @@ class Database {
     this.db.run('DELETE FROM incomes WHERE id = ?', [id]);
   }
 
-  // Méthodes pour les dépenses
   async getExpenses(): Promise<Expense[]> {
     if (!this.initialized) await this.init();
     
@@ -257,7 +263,6 @@ class Database {
     this.db.run('DELETE FROM expenses WHERE id = ?', [id]);
   }
 
-  // Méthodes pour les budgets
   async getBudgets(): Promise<Budget[]> {
     if (!this.initialized) await this.init();
     
@@ -302,7 +307,6 @@ class Database {
     this.db.run('DELETE FROM budgets WHERE id = ?', [id]);
   }
 
-  // Méthodes pour les catégories
   async getCategories(): Promise<Category[]> {
     if (!this.initialized) await this.init();
     
@@ -320,7 +324,6 @@ class Database {
         const [id, name, budgetsStr, total, spent, description] = row;
         let budgets;
         try {
-          // S'assurer que le string JSON est valide avant de le parser
           budgets = budgetsStr && typeof budgetsStr === 'string' ? JSON.parse(budgetsStr) : [];
           console.log(`Budgets parsés pour la catégorie ${id}:`, budgets);
         } catch (e) {
@@ -362,22 +365,18 @@ class Database {
       console.log("=== Début de la mise à jour de la catégorie dans la base de données ===");
       console.log("Catégorie reçue:", category);
       
-      // Validation des données
       if (!category || !category.id) {
         throw new Error("Catégorie invalide");
       }
       
-      // S'assurer que les budgets sont un tableau
       const budgets = Array.isArray(category.budgets) ? category.budgets : [];
       const total = Number(category.total) || 0;
       const spent = Number(category.spent) || 0;
       
-      // Convertir le tableau en JSON pour le stockage
       const budgetsJson = JSON.stringify(budgets);
       console.log("Budgets avant stringify:", budgets);
       console.log("Budgets après stringify:", budgetsJson);
       
-      // Utiliser une transaction pour s'assurer que tout est mis à jour correctement
       this.db.run('BEGIN TRANSACTION');
       
       const stmt = this.db.prepare(
@@ -391,14 +390,12 @@ class Database {
       
       this.db.run('COMMIT');
       
-      // Vérifier immédiatement la mise à jour
       const result = this.db.exec(
         'SELECT * FROM categories WHERE id = ?',
         [category.id]
       );
       console.log("Vérification après mise à jour:", result);
       
-      // Si la catégorie n'existe pas, on la crée
       if (!result[0]) {
         console.error("La catégorie n'existe pas, tentative de création");
         await this.addCategory(category);
@@ -418,7 +415,51 @@ class Database {
     this.db.run('DELETE FROM categories WHERE id = ?', [id]);
   }
 
-  // Sauvegarder la base de données
+  async getBudgetPeriods(): Promise<BudgetPeriod[]> {
+    if (!this.initialized) await this.init();
+    
+    const result = this.db.exec('SELECT * FROM budget_periods ORDER BY startDate DESC');
+    return result[0]?.values?.map((row: any[]) => ({
+      id: row[0],
+      startDate: row[1],
+      endDate: row[2],
+      name: row[3]
+    })) || [];
+  }
+
+  async getCurrentBudgetPeriod(): Promise<BudgetPeriod | null> {
+    if (!this.initialized) await this.init();
+    
+    const result = this.db.exec('SELECT * FROM budget_periods WHERE endDate IS NULL LIMIT 1');
+    if (!result[0]?.values?.length) return null;
+    
+    const row = result[0].values[0];
+    return {
+      id: row[0],
+      startDate: row[1],
+      endDate: row[2],
+      name: row[3]
+    };
+  }
+
+  async addBudgetPeriod(period: BudgetPeriod): Promise<void> {
+    if (!this.initialized) await this.init();
+    
+    this.db.run(
+      'INSERT INTO budget_periods (id, startDate, endDate, name) VALUES (?, ?, ?, ?)',
+      [period.id, period.startDate, period.endDate, period.name]
+    );
+  }
+
+  async updateBudgetPeriod(period: BudgetPeriod): Promise<void> {
+    if (!this.initialized) await this.init();
+    
+    this.db.run(
+      'UPDATE budget_periods SET startDate = ?, endDate = ?, name = ? WHERE id = ?',
+      [period.startDate, period.endDate, period.name, period.id]
+    );
+  }
+
   exportData() {
     return this.db.export();
   }
