@@ -1,4 +1,3 @@
-
 import initSqlJs from 'sql.js';
 import { toast } from "@/components/ui/use-toast";
 
@@ -100,26 +99,25 @@ class Database {
       `);
 
       // Ajout des données de test avec la date
-      const currentDate = new Date().toISOString().split('T')[0];
-      
       this.db.run(`
         INSERT OR IGNORE INTO incomes (id, title, budget, spent, type, date)
         VALUES 
-        ('inc_1', 'Salaire', 2500.00, 0, 'income', '${currentDate}')
+        ('inc_1', 'Salaire', 2500.00, 0, 'income', '${new Date().toISOString().split('T')[0]}')
       `);
 
       // Budgets de test
       this.db.run(`
         INSERT OR IGNORE INTO budgets (id, title, budget, spent, type, carriedOver)
         VALUES 
-        ('bud_1', 'Courses', 500.00, 0, 'budget', 0),
-        ('bud_2', 'Transport', 200.00, 0, 'budget', 0),
-        ('bud_3', 'Loisirs', 150.00, 0, 'budget', 0),
-        ('bud_4', 'Restaurant', 300.00, 0, 'budget', 0),
-        ('bud_5', 'Shopping', 250.00, 0, 'budget', 0)
+        ('bud_1', 'Courses', 500.00, 600.00, 'budget', 0),
+        ('bud_2', 'Transport', 200.00, 0.00, 'budget', 0),
+        ('bud_3', 'Loisirs', 150.00, 0.00, 'budget', 0),
+        ('bud_4', 'Restaurant', 300.00, 150.00, 'budget', 0),
+        ('bud_5', 'Shopping', 250.00, 100.00, 'budget', 0)
       `);
 
       // Dépenses de test
+      const currentDate = new Date().toISOString().split('T')[0];
       this.db.run(`
         INSERT OR IGNORE INTO expenses (id, title, budget, spent, type, linkedBudgetId, date)
         VALUES 
@@ -136,6 +134,50 @@ class Database {
       console.error('Erreur lors de l\'initialisation de la base de données:', err);
       throw err;
     }
+  }
+
+  private async migrateFromLocalStorage() {
+    // Migrer les revenus
+    const storedIncomes = localStorage.getItem('app_incomes');
+    if (storedIncomes) {
+      const incomes = JSON.parse(storedIncomes);
+      for (const income of incomes) {
+        await this.addIncome(income);
+      }
+    }
+
+    // Migrer les dépenses
+    const storedExpenses = localStorage.getItem('app_expenses');
+    if (storedExpenses) {
+      const expenses = JSON.parse(storedExpenses);
+      for (const expense of expenses) {
+        await this.addExpense(expense);
+      }
+    }
+
+    // Migrer les budgets
+    const storedBudgets = localStorage.getItem('app_budgets');
+    if (storedBudgets) {
+      const budgets = JSON.parse(storedBudgets);
+      for (const budget of budgets) {
+        await this.addBudget(budget);
+      }
+    }
+
+    // Migrer les catégories
+    const storedCategories = localStorage.getItem('app_categories');
+    if (storedCategories) {
+      const categories = JSON.parse(storedCategories);
+      for (const category of categories) {
+        await this.addCategory(category);
+      }
+    }
+
+    // Supprimer les anciennes données du localStorage
+    localStorage.removeItem('app_incomes');
+    localStorage.removeItem('app_expenses');
+    localStorage.removeItem('app_budgets');
+    localStorage.removeItem('app_categories');
   }
 
   // Méthodes pour les revenus
@@ -223,10 +265,10 @@ class Database {
     return result[0]?.values?.map((row: any[]) => ({
       id: row[0],
       title: row[1],
-      budget: Number(row[2]),
-      spent: Number(row[3]),
+      budget: row[2],
+      spent: row[3],
       type: row[4] as 'budget',
-      carriedOver: Number(row[5]) || 0
+      carriedOver: row[5] || 0
     })) || [];
   }
 
@@ -249,17 +291,10 @@ class Database {
   async updateBudget(budget: Budget) {
     if (!this.initialized) await this.init();
     
-    try {
-      console.log("Mise à jour du budget:", budget);
-      this.db.run(
-        'UPDATE budgets SET title = ?, budget = ?, spent = ?, carriedOver = ? WHERE id = ?',
-        [budget.title, budget.budget, budget.spent, budget.carriedOver || 0, budget.id]
-      );
-      console.log("Budget mis à jour avec succès");
-    } catch (error) {
-      console.error("Erreur lors de la mise à jour du budget:", error);
-      throw error;
-    }
+    this.db.run(
+      'UPDATE budgets SET title = ?, budget = ?, spent = ?, carriedOver = ? WHERE id = ?',
+      [budget.title, budget.budget, budget.spent, budget.carriedOver || 0, budget.id]
+    );
   }
 
   async deleteBudget(id: string) {
@@ -285,6 +320,7 @@ class Database {
         const [id, name, budgetsStr, total, spent, description] = row;
         let budgets;
         try {
+          // S'assurer que le string JSON est valide avant de le parser
           budgets = budgetsStr && typeof budgetsStr === 'string' ? JSON.parse(budgetsStr) : [];
           console.log(`Budgets parsés pour la catégorie ${id}:`, budgets);
         } catch (e) {
@@ -323,14 +359,56 @@ class Database {
     if (!this.initialized) await this.init();
     
     try {
-      console.log("Mise à jour de la catégorie:", category);
-      this.db.run(
-        'UPDATE categories SET name = ?, budgets = ?, total = ?, spent = ?, description = ? WHERE id = ?',
-        [category.name, JSON.stringify(category.budgets), category.total, category.spent, category.description, category.id]
+      console.log("=== Début de la mise à jour de la catégorie dans la base de données ===");
+      console.log("Catégorie reçue:", category);
+      
+      // Validation des données
+      if (!category || !category.id) {
+        throw new Error("Catégorie invalide");
+      }
+      
+      // S'assurer que les budgets sont un tableau
+      const budgets = Array.isArray(category.budgets) ? category.budgets : [];
+      const total = Number(category.total) || 0;
+      const spent = Number(category.spent) || 0;
+      
+      // Convertir le tableau en JSON pour le stockage
+      const budgetsJson = JSON.stringify(budgets);
+      console.log("Budgets avant stringify:", budgets);
+      console.log("Budgets après stringify:", budgetsJson);
+      
+      // Utiliser une transaction pour s'assurer que tout est mis à jour correctement
+      this.db.run('BEGIN TRANSACTION');
+      
+      const stmt = this.db.prepare(
+        'UPDATE categories SET name = ?, budgets = ?, total = ?, spent = ?, description = ? WHERE id = ?'
       );
-      console.log("Catégorie mise à jour avec succès");
+      
+      stmt.run(
+        [category.name, budgetsJson, total, spent, category.description, category.id]
+      );
+      stmt.free();
+      
+      this.db.run('COMMIT');
+      
+      // Vérifier immédiatement la mise à jour
+      const result = this.db.exec(
+        'SELECT * FROM categories WHERE id = ?',
+        [category.id]
+      );
+      console.log("Vérification après mise à jour:", result);
+      
+      // Si la catégorie n'existe pas, on la crée
+      if (!result[0]) {
+        console.error("La catégorie n'existe pas, tentative de création");
+        await this.addCategory(category);
+        return;
+      }
+      
+      console.log("=== Mise à jour terminée avec succès ===");
     } catch (error) {
       console.error("Erreur lors de la mise à jour de la catégorie:", error);
+      this.db.run('ROLLBACK');
       throw error;
     }
   }

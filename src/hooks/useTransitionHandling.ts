@@ -17,14 +17,7 @@ export const useTransitionHandling = (categories: any[], setCategories: (categor
 
         if (!budget) continue;
 
-        // Calcul du montant restant : budget initial + report - dépenses
-        const currentRemaining = envelope.remaining;
-        console.log(`Traitement du budget ${budget.title}:`, {
-          budgetInitial: budget.budget,
-          carriedOver: budget.carriedOver,
-          spent: budget.spent,
-          remaining: currentRemaining
-        });
+        const currentRemaining = budget.budget + (budget.carriedOver || 0) - budget.spent;
         
         switch (envelope.transitionOption) {
           case "reset":
