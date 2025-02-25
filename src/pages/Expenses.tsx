@@ -1,3 +1,4 @@
+
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -6,7 +7,25 @@ import { AddEnvelopeDialog } from "@/components/budget/AddEnvelopeDialog";
 import { ExpensesHeader } from "@/components/budget/ExpensesHeader";
 import { EditExpenseDialog } from "@/components/budget/EditExpenseDialog";
 import { DeleteExpenseDialog } from "@/components/budget/DeleteExpenseDialog";
-import { db, Expense as ExpenseType } from "@/services/database";
+import { db } from "@/services/database";
+
+type Expense = {
+  id: string;
+  title: string;
+  budget: number;
+  spent: number;
+  type: "expense";
+  linkedBudgetId?: string;
+  date: string;
+};
+
+type Budget = {
+  id: string;
+  title: string;
+  budget: number;
+  spent: number;
+  type: "budget";
+};
 
 const Expenses = () => {
   const navigate = useNavigate();
@@ -14,13 +33,13 @@ const Expenses = () => {
   const budgetId = searchParams.get('budgetId');
   const { toast } = useToast();
 
-  const [expenses, setExpenses] = useState<ExpenseType[]>([]);
-  const [availableBudgets, setAvailableBudgets] = useState<{ id: string; title: string; budget: number; spent: number; type: "budget" }[]>([]);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [availableBudgets, setAvailableBudgets] = useState<Budget[]>([]);
 
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [selectedExpense, setSelectedExpense] = useState<ExpenseType | null>(null);
+  const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
   const [editTitle, setEditTitle] = useState("");
   const [editBudget, setEditBudget] = useState(0);
   const [editDate, setEditDate] = useState("");
@@ -28,12 +47,40 @@ const Expenses = () => {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const currentPeriod = await db.getCurrentPeriod();
-        const loadedExpenses = await db.getExpenses(currentPeriod.id);
         const loadedBudgets = await db.getBudgets();
+        console.log('Budgets chargés:', loadedBudgets);
 
+        if (!loadedBudgets || loadedBudgets.length === 0) {
+          // Créer des budgets par défaut si aucun n'existe
+          const defaultBudgets: Budget[] = [
+            {
+              id: "budget1",
+              title: "Budget Test 1",
+              budget: 1000,
+              spent: 0,
+              type: "budget"
+            },
+            {
+              id: "budget2",
+              title: "Budget Test 2",
+              budget: 2000,
+              spent: 0,
+              type: "budget"
+            }
+          ];
+
+          for (const budget of defaultBudgets) {
+            await db.addBudget(budget);
+          }
+
+          setAvailableBudgets(defaultBudgets);
+        } else {
+          setAvailableBudgets(loadedBudgets);
+        }
+        
+        const loadedExpenses = await db.getExpenses();
+        console.log('Dépenses chargées:', loadedExpenses);
         setExpenses(loadedExpenses);
-        setAvailableBudgets(loadedBudgets);
       } catch (error) {
         console.error("Erreur lors du chargement des données:", error);
         toast({
@@ -51,7 +98,7 @@ const Expenses = () => {
     ? expenses.filter(expense => expense.linkedBudgetId === budgetId)
     : expenses;
 
-  const handleEnvelopeClick = (expense: ExpenseType) => {
+  const handleEnvelopeClick = (expense: Expense) => {
     setSelectedExpense(expense);
     setEditTitle(expense.title);
     setEditBudget(expense.budget);
@@ -59,7 +106,7 @@ const Expenses = () => {
     setEditDialogOpen(true);
   };
 
-  const handleDeleteClick = (expense: ExpenseType) => {
+  const handleDeleteClick = (expense: Expense) => {
     setSelectedExpense(expense);
     setDeleteDialogOpen(true);
   };
@@ -68,14 +115,12 @@ const Expenses = () => {
     if (!selectedExpense) return;
 
     try {
-      const currentPeriod = await db.getCurrentPeriod();
-      const updatedExpense: ExpenseType = {
+      const updatedExpense: Expense = {
         ...selectedExpense,
         title: editTitle,
         budget: editBudget,
         spent: editBudget,
-        date: editDate,
-        periodId: currentPeriod.id
+        date: editDate
       };
 
       await db.updateExpense(updatedExpense);
@@ -133,7 +178,7 @@ const Expenses = () => {
     budget: number;
     type: "income" | "expense" | "budget";
     linkedBudgetId?: string;
-    date: string;
+    date?: string;
   }) => {
     if (envelope.type !== "expense") {
       toast({
@@ -145,16 +190,14 @@ const Expenses = () => {
     }
 
     try {
-      const currentPeriod = await db.getCurrentPeriod();
-      const newExpense: ExpenseType = {
-        id: Date.now().toString(),
+      const newExpense: Expense = {
+        id: (expenses.length + 1).toString(),
         title: envelope.title,
         budget: envelope.budget,
         spent: envelope.budget,
         type: "expense",
         linkedBudgetId: budgetId || envelope.linkedBudgetId,
-        date: envelope.date,
-        periodId: currentPeriod.id
+        date: envelope.date || new Date().toISOString().split('T')[0]
       };
 
       await db.addExpense(newExpense);

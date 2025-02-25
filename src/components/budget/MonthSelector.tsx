@@ -9,16 +9,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useEffect, useState } from "react";
-import { db } from "@/services/database";
-import type { BudgetPeriod } from "@/types/budget-period";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 interface MonthSelectorProps {
   currentDate: Date;
@@ -27,53 +17,59 @@ interface MonthSelectorProps {
 }
 
 export const MonthSelector = ({ currentDate, onMonthChange, onNewMonthClick }: MonthSelectorProps) => {
-  const [periods, setPeriods] = useState<BudgetPeriod[]>([]);
-  const [currentPeriod, setCurrentPeriod] = useState<BudgetPeriod | null>(null);
+  const handlePreviousMonth = () => {
+    const newDate = new Date(currentDate);
+    newDate.setMonth(newDate.getMonth() - 1);
+    onMonthChange(newDate);
+  };
 
-  useEffect(() => {
-    const loadPeriods = async () => {
-      try {
-        // Utiliser la méthode publique getCurrentPeriod au lieu d'accéder directement à db
-        const current = await db.getCurrentPeriod();
-        setCurrentPeriod(current);
-
-        // Créer une requête pour obtenir toutes les périodes
-        const allPeriods = await db.getAllPeriods();
-        setPeriods(allPeriods);
-      } catch (error) {
-        console.error("Erreur lors du chargement des périodes:", error);
-      }
-    };
-
-    loadPeriods();
-  }, []);
-
-  const handlePeriodChange = (periodId: string) => {
-    const period = periods.find(p => p.id === periodId);
-    if (period) {
-      onMonthChange(new Date(period.startDate));
-    }
+  const handleNextMonth = () => {
+    const newDate = new Date(currentDate);
+    newDate.setMonth(newDate.getMonth() + 1);
+    onMonthChange(newDate);
   };
 
   return (
     <TooltipProvider>
       <div className="flex items-center gap-1.5">
         <div className="flex items-center gap-1.5 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 p-1.5 rounded-lg border">
-          <Select
-            value={currentPeriod?.id}
-            onValueChange={handlePeriodChange}
-          >
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Sélectionner une période" />
-            </SelectTrigger>
-            <SelectContent>
-              {periods.map((period) => (
-                <SelectItem key={period.id} value={period.id}>
-                  {period.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                variant="outline" 
+                size="icon" 
+                onClick={handlePreviousMonth} 
+                className="h-7 w-7"
+                aria-label="Mois précédent"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Mois précédent</p>
+            </TooltipContent>
+          </Tooltip>
+
+          <span className="text-sm font-medium capitalize min-w-[110px] text-center px-1.5 py-1 bg-accent/50 rounded">
+            {format(currentDate, 'MMM yyyy', { locale: fr })}
+          </span>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                variant="outline" 
+                size="icon" 
+                onClick={handleNextMonth} 
+                className="h-7 w-7"
+                aria-label="Mois suivant"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Mois suivant</p>
+            </TooltipContent>
+          </Tooltip>
         </div>
 
         {onNewMonthClick && (

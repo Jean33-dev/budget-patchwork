@@ -7,9 +7,8 @@ export interface Income {
   title: string;
   budget: number;
   spent: number;
-  type: "income";
+  type: 'income';
   date: string;
-  periodId: string; // ID de la période budgétaire
 }
 
 export interface Expense {
@@ -17,10 +16,9 @@ export interface Expense {
   title: string;
   budget: number;
   spent: number;
-  type: "expense";
+  type: 'expense';
   linkedBudgetId?: string;
   date: string;
-  periodId: string; // ID de la période budgétaire
 }
 
 export interface Budget {
@@ -28,15 +26,8 @@ export interface Budget {
   title: string;
   budget: number;
   spent: number;
-  type: "budget";
+  type: 'budget';
   carriedOver?: number;
-}
-
-export interface BudgetPeriod {
-  id: string;
-  startDate: string;
-  endDate: string;
-  name: string;
 }
 
 export interface Category {
@@ -51,285 +42,165 @@ export interface Category {
 class Database {
   private db: any = null;
   private initialized = false;
-  private initPromise: Promise<void> | null = null;
 
   async init() {
     if (this.initialized) return;
-    
-    if (this.initPromise) {
-      return this.initPromise;
-    }
 
-    this.initPromise = (async () => {
-      try {
-        console.log("Initialisation de SQL.js...");
-        const SQL = await initSqlJs({
-          locateFile: file => `https://sql.js.org/dist/${file}`
-        });
-        
-        console.log("Création de la base de données...");
-        this.db = new SQL.Database();
-        
-        // Création des tables de base d'abord
-        console.log("Création des tables de base...");
-        this.db.run(`
-          CREATE TABLE IF NOT EXISTS incomes (
-            id TEXT PRIMARY KEY,
-            title TEXT NOT NULL,
-            budget REAL NOT NULL,
-            spent REAL NOT NULL,
-            type TEXT CHECK(type IN ('income')) NOT NULL,
-            date TEXT NOT NULL,
-            periodId TEXT DEFAULT NULL
-          )
-        `);
+    try {
+      const SQL = await initSqlJs({
+        locateFile: file => `https://sql.js.org/dist/${file}`
+      });
+      
+      this.db = new SQL.Database();
+      
+      this.db.run(`
+        CREATE TABLE IF NOT EXISTS incomes (
+          id TEXT PRIMARY KEY,
+          title TEXT,
+          budget REAL DEFAULT 0,
+          spent REAL DEFAULT 0,
+          type TEXT,
+          date TEXT
+        )
+      `);
+      
+      this.db.run(`
+        CREATE TABLE IF NOT EXISTS expenses (
+          id TEXT PRIMARY KEY,
+          title TEXT,
+          budget REAL DEFAULT 0,
+          spent REAL DEFAULT 0,
+          type TEXT,
+          linkedBudgetId TEXT,
+          date TEXT
+        )
+      `);
+      
+      this.db.run(`
+        CREATE TABLE IF NOT EXISTS budgets (
+          id TEXT PRIMARY KEY,
+          title TEXT,
+          budget REAL DEFAULT 0,
+          spent REAL DEFAULT 0,
+          type TEXT,
+          carriedOver REAL DEFAULT 0
+        )
+      `);
+      
+      this.db.run(`
+        CREATE TABLE IF NOT EXISTS categories (
+          id TEXT PRIMARY KEY,
+          name TEXT,
+          budgets TEXT,
+          total REAL DEFAULT 0,
+          spent REAL DEFAULT 0,
+          description TEXT
+        )
+      `);
 
-        this.db.run(`
-          CREATE TABLE IF NOT EXISTS expenses (
-            id TEXT PRIMARY KEY,
-            title TEXT NOT NULL,
-            budget REAL NOT NULL,
-            spent REAL NOT NULL,
-            type TEXT CHECK(type IN ('expense')) NOT NULL,
-            linkedBudgetId TEXT,
-            date TEXT NOT NULL,
-            periodId TEXT DEFAULT NULL
-          )
-        `);
+      // Ajout des données de test avec la date
+      this.db.run(`
+        INSERT OR IGNORE INTO incomes (id, title, budget, spent, type, date)
+        VALUES 
+        ('inc_1', 'Salaire', 2500.00, 0, 'income', '${new Date().toISOString().split('T')[0]}')
+      `);
 
-        this.db.run(`
-          CREATE TABLE IF NOT EXISTS budgets (
-            id TEXT PRIMARY KEY,
-            title TEXT NOT NULL,
-            budget REAL NOT NULL,
-            spent REAL DEFAULT 0,
-            type TEXT CHECK(type IN ('budget')) NOT NULL,
-            carriedOver REAL DEFAULT 0
-          )
-        `);
+      // Budgets de test
+      this.db.run(`
+        INSERT OR IGNORE INTO budgets (id, title, budget, spent, type, carriedOver)
+        VALUES 
+        ('bud_1', 'Courses', 500.00, 600.00, 'budget', 0),
+        ('bud_2', 'Transport', 200.00, 0.00, 'budget', 0),
+        ('bud_3', 'Loisirs', 150.00, 0.00, 'budget', 0),
+        ('bud_4', 'Restaurant', 300.00, 150.00, 'budget', 0),
+        ('bud_5', 'Shopping', 250.00, 100.00, 'budget', 0)
+      `);
 
-        this.db.run(`
-          CREATE TABLE IF NOT EXISTS categories (
-            id TEXT PRIMARY KEY,
-            title TEXT NOT NULL,
-            type TEXT CHECK(type IN ('income', 'expense')) NOT NULL,
-            budgets TEXT,
-            total REAL DEFAULT 0,
-            spent REAL DEFAULT 0,
-            description TEXT
-          )
-        `);
+      // Dépenses de test
+      const currentDate = new Date().toISOString().split('T')[0];
+      this.db.run(`
+        INSERT OR IGNORE INTO expenses (id, title, budget, spent, type, linkedBudgetId, date)
+        VALUES 
+        ('exp_1', 'Courses Carrefour', 350.00, 0, 'expense', 'bud_1', ?),
+        ('exp_2', 'Courses Lidl', 250.00, 0, 'expense', 'bud_1', ?),
+        ('exp_3', 'Restaurant italien', 150.00, 0, 'expense', 'bud_4', ?),
+        ('exp_4', 'Vêtements', 100.00, 0, 'expense', 'bud_5', ?)
+      `, [currentDate, currentDate, currentDate, currentDate]);
 
-        // Ensuite, créer la table des périodes budgétaires
-        this.db.run(`
-          CREATE TABLE IF NOT EXISTS budget_periods (
-            id TEXT PRIMARY KEY,
-            startDate TEXT NOT NULL,
-            endDate TEXT,
-            name TEXT NOT NULL
-          )
-        `);
+      this.initialized = true;
+      console.log("Base de données initialisée avec les données de test");
 
-        // Vérifier si on a besoin d'une migration
-        const periodCheck = this.db.exec("SELECT COUNT(*) as count FROM budget_periods");
-        const needsMigration = periodCheck[0]?.values[0][0] === 0;
-
-        if (needsMigration) {
-          console.log("Migration nécessaire : création de la période par défaut...");
-          const defaultPeriod = {
-            id: 'default-period',
-            startDate: new Date(2024, 0, 1).toISOString().split('T')[0],
-            endDate: null,
-            name: 'Période initiale'
-          };
-
-          // Ajouter la période par défaut
-          this.db.run(
-            "INSERT INTO budget_periods (id, startDate, endDate, name) VALUES (?, ?, ?, ?)",
-            [defaultPeriod.id, defaultPeriod.startDate, defaultPeriod.endDate, defaultPeriod.name]
-          );
-
-          // Mettre à jour les enregistrements existants
-          console.log("Mise à jour des enregistrements existants...");
-          this.db.run("UPDATE incomes SET periodId = ? WHERE periodId IS NULL", [defaultPeriod.id]);
-          this.db.run("UPDATE expenses SET periodId = ? WHERE periodId IS NULL", [defaultPeriod.id]);
-
-          console.log("Migration terminée avec succès");
-        }
-
-        // Ajouter les contraintes de clé étrangère après la migration
-        this.db.run("PRAGMA foreign_keys = ON");
-
-        this.initialized = true;
-        console.log("Base de données initialisée avec succès!");
-
-      } catch (err) {
-        console.error('Erreur lors de l\'initialisation de la base de données:', err);
-        this.initialized = false;
-        this.db = null;
-        throw err;
-      } finally {
-        this.initPromise = null;
-      }
-    })();
-
-    return this.initPromise;
-  }
-
-  private async addTestData(periodId: string) {
-    // Ajout de revenus de test
-    const testIncomes = [
-      {
-        id: "1",
-        title: "Salaire",
-        budget: 2500,
-        spent: 2500,
-        type: "income" as const,
-        date: new Date().toISOString().split('T')[0],
-        periodId
-      },
-      {
-        id: "2",
-        title: "Freelance",
-        budget: 500,
-        spent: 500,
-        type: "income" as const,
-        date: new Date().toISOString().split('T')[0],
-        periodId
-      }
-    ];
-
-    // Ajout de budgets de test
-    const testBudgets = [
-      {
-        id: "1",
-        title: "Loyer",
-        budget: 800,
-        spent: 0,
-        type: "budget" as const,
-        carriedOver: 0
-      },
-      {
-        id: "2",
-        title: "Courses",
-        budget: 400,
-        spent: 0,
-        type: "budget" as const,
-        carriedOver: 0
-      },
-      {
-        id: "3",
-        title: "Transport",
-        budget: 150,
-        spent: 0,
-        type: "budget" as const,
-        carriedOver: 0
-      }
-    ];
-
-    // Ajout de catégories de test
-    const testCategories = [
-      {
-        id: "1",
-        title: "Nécessaire",
-        type: "expense" as const,
-        budgets: JSON.stringify(["1", "2"]),
-        total: 1200,
-        spent: 0,
-        description: "Dépenses essentielles"
-      },
-      {
-        id: "2",
-        title: "Transport",
-        type: "expense" as const,
-        budgets: JSON.stringify(["3"]),
-        total: 150,
-        spent: 0,
-        description: "Dépenses de transport"
-      }
-    ];
-
-    // Insertion des données de test
-    for (const income of testIncomes) {
-      await this.addIncome(income);
-    }
-
-    for (const budget of testBudgets) {
-      await this.addBudget(budget);
-    }
-
-    for (const category of testCategories) {
-      this.db.run(
-        'INSERT INTO categories (id, title, type, budgets, total, spent, description) VALUES (?, ?, ?, ?, ?, ?, ?)',
-        [category.id, category.title, category.type, category.budgets, category.total, category.spent, category.description]
-      );
+    } catch (err) {
+      console.error('Erreur lors de l\'initialisation de la base de données:', err);
+      throw err;
     }
   }
 
-  // Méthodes pour gérer les périodes budgétaires
-  async getCurrentPeriod(): Promise<BudgetPeriod> {
-    await this.init(); // S'assure que la base est initialisée
-    const result = this.db.exec("SELECT * FROM budget_periods WHERE endDate IS NULL");
-    if (!result[0]?.values) {
-      throw new Error("Aucune période budgétaire active trouvée");
+  private async migrateFromLocalStorage() {
+    // Migrer les revenus
+    const storedIncomes = localStorage.getItem('app_incomes');
+    if (storedIncomes) {
+      const incomes = JSON.parse(storedIncomes);
+      for (const income of incomes) {
+        await this.addIncome(income);
+      }
     }
-    const row = result[0].values[0];
-    return {
-      id: row[0],
-      startDate: row[1],
-      endDate: row[2],
-      name: row[3]
-    };
-  }
 
-  async addBudgetPeriod(period: BudgetPeriod) {
-    this.db.run(
-      "INSERT INTO budget_periods (id, startDate, endDate, name) VALUES (?, ?, ?, ?)",
-      [period.id, period.startDate, period.endDate, period.name]
-    );
-  }
+    // Migrer les dépenses
+    const storedExpenses = localStorage.getItem('app_expenses');
+    if (storedExpenses) {
+      const expenses = JSON.parse(storedExpenses);
+      for (const expense of expenses) {
+        await this.addExpense(expense);
+      }
+    }
 
-  async closePeriod(periodId: string, endDate: string) {
-    this.db.run(
-      "UPDATE budget_periods SET endDate = ? WHERE id = ?",
-      [endDate, periodId]
-    );
+    // Migrer les budgets
+    const storedBudgets = localStorage.getItem('app_budgets');
+    if (storedBudgets) {
+      const budgets = JSON.parse(storedBudgets);
+      for (const budget of budgets) {
+        await this.addBudget(budget);
+      }
+    }
+
+    // Migrer les catégories
+    const storedCategories = localStorage.getItem('app_categories');
+    if (storedCategories) {
+      const categories = JSON.parse(storedCategories);
+      for (const category of categories) {
+        await this.addCategory(category);
+      }
+    }
+
+    // Supprimer les anciennes données du localStorage
+    localStorage.removeItem('app_incomes');
+    localStorage.removeItem('app_expenses');
+    localStorage.removeItem('app_budgets');
+    localStorage.removeItem('app_categories');
   }
 
   // Méthodes pour les revenus
-  async getIncomes(periodId?: string): Promise<Income[]> {
-    let query = "SELECT * FROM incomes";
-    let params: any[] = [];
-
-    if (periodId) {
-      query += " WHERE periodId = ?";
-      params = [periodId];
-    }
-
-    const incomes: Income[] = [];
-    const stmt = this.db.prepare(query);
+  async getIncomes(): Promise<Income[]> {
+    if (!this.initialized) await this.init();
     
-    if (params.length > 0) {
-      stmt.bind(params);
-    }
-
-    while (stmt.step()) {
-      const row = stmt.getAsObject();
-      incomes.push(row as any as Income);
-    }
-    stmt.free();
-    return incomes;
+    const result = this.db.exec('SELECT * FROM incomes');
+    return result[0]?.values?.map((row: any[]) => ({
+      id: row[0],
+      title: row[1],
+      budget: row[2],
+      spent: row[3],
+      type: row[4] as 'income',
+      date: row[5]
+    })) || [];
   }
 
   async addIncome(income: Income) {
-    if (!income.periodId) {
-      const currentPeriod = await this.getCurrentPeriod();
-      income.periodId = currentPeriod.id;
-    }
+    if (!this.initialized) await this.init();
     
     this.db.run(
-      "INSERT INTO incomes (id, title, budget, spent, type, date, periodId) VALUES (?, ?, ?, ?, ?, ?, ?)",
-      [income.id, income.title, income.budget, income.spent, income.type, income.date, income.periodId]
+      'INSERT INTO incomes (id, title, budget, spent, type, date) VALUES (?, ?, ?, ?, ?, ?)',
+      [income.id, income.title, income.budget, income.spent, income.type, income.date]
     );
   }
 
@@ -348,39 +219,27 @@ class Database {
   }
 
   // Méthodes pour les dépenses
-  async getExpenses(periodId?: string): Promise<Expense[]> {
-    let query = "SELECT * FROM expenses";
-    let params: any[] = [];
-
-    if (periodId) {
-      query += " WHERE periodId = ?";
-      params = [periodId];
-    }
-
-    const expenses: Expense[] = [];
-    const stmt = this.db.prepare(query);
+  async getExpenses(): Promise<Expense[]> {
+    if (!this.initialized) await this.init();
     
-    if (params.length > 0) {
-      stmt.bind(params);
-    }
-
-    while (stmt.step()) {
-      const row = stmt.getAsObject();
-      expenses.push(row as any as Expense);
-    }
-    stmt.free();
-    return expenses;
+    const result = this.db.exec('SELECT * FROM expenses');
+    return result[0]?.values?.map((row: any[]) => ({
+      id: row[0],
+      title: row[1],
+      budget: row[2],
+      spent: row[3],
+      type: row[4] as 'expense',
+      linkedBudgetId: row[5],
+      date: row[6]
+    })) || [];
   }
 
   async addExpense(expense: Expense) {
-    if (!expense.periodId) {
-      const currentPeriod = await this.getCurrentPeriod();
-      expense.periodId = currentPeriod.id;
-    }
-
+    if (!this.initialized) await this.init();
+    
     this.db.run(
-      "INSERT INTO expenses (id, title, budget, spent, type, linkedBudgetId, date, periodId) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-      [expense.id, expense.title, expense.budget, expense.spent, expense.type, expense.linkedBudgetId, expense.date, expense.periodId]
+      'INSERT INTO expenses (id, title, budget, spent, type, linkedBudgetId, date) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [expense.id, expense.title, expense.budget, expense.spent, expense.type, expense.linkedBudgetId, expense.date]
     );
   }
 
@@ -557,20 +416,6 @@ class Database {
   async deleteCategory(id: string) {
     if (!this.initialized) await this.init();
     this.db.run('DELETE FROM categories WHERE id = ?', [id]);
-  }
-
-  // Méthodes pour les périodes budgétaires
-  async getAllPeriods(): Promise<BudgetPeriod[]> {
-    await this.init(); // S'assure que la base est initialisée
-    const result = this.db.exec('SELECT * FROM budget_periods ORDER BY startDate DESC');
-    if (!result[0]?.values) return [];
-
-    return result[0].values.map((row: any[]) => ({
-      id: row[0],
-      startDate: row[1],
-      endDate: row[2],
-      name: row[3]
-    }));
   }
 
   // Sauvegarder la base de données
