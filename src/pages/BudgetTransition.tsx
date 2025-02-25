@@ -36,7 +36,7 @@ const BudgetTransition = () => {
           title: budget.title,
           budget: budget.budget,
           spent: budget.spent,
-          remaining: budget.budget - budget.spent,
+          remaining: budget.budget + (budget.carriedOver || 0) - budget.spent,
           transitionOption: "reset" as TransitionOption
         }));
 
@@ -131,8 +131,11 @@ const BudgetTransition = () => {
       title: envelope.title,
       transitionOption: envelope.transitionOption,
       partialAmount: envelope.partialAmount,
-      transferTargetId: envelope.transferTargetId
+      transferTargetId: envelope.transferTargetId,
+      remaining: envelope.remaining // Ajout du montant restant
     }));
+
+    console.log("Données de transition:", transitionData);
 
     const success = handleMonthTransition(transitionData);
     
