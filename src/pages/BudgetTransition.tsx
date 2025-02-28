@@ -17,12 +17,13 @@ const BudgetTransition = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { categories, handleMonthTransition } = useCategories();
-  const { budgets } = useBudgets();
+  const { budgets, refreshData } = useBudgets();
   
   const [envelopes, setEnvelopes] = useState<BudgetEnvelope[]>([]);
   const [selectedEnvelope, setSelectedEnvelope] = useState<BudgetEnvelope | null>(null);
   const [showPartialDialog, setShowPartialDialog] = useState(false);
   const [showTransferDialog, setShowTransferDialog] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   useEffect(() => {
     const loadEnvelopes = async () => {
@@ -110,7 +111,7 @@ const BudgetTransition = () => {
     );
   };
 
-  const handleTransitionConfirm = () => {
+  const handleTransitionConfirm = async () => {
     const invalidEnvelopes = envelopes.filter(env => {
       if (env.transitionOption === "partial" && !env.partialAmount) return true;
       if (env.transitionOption === "transfer" && !env.transferTargetId) return true;
@@ -126,25 +127,38 @@ const BudgetTransition = () => {
       return;
     }
 
-    const transitionData = envelopes.map(envelope => ({
-      id: envelope.id,
-      title: envelope.title,
-      transitionOption: envelope.transitionOption,
-      partialAmount: envelope.partialAmount,
-      transferTargetId: envelope.transferTargetId,
-      remaining: envelope.remaining // Ajout du montant restant
-    }));
+    setIsTransitioning(true);
 
-    console.log("Données de transition:", transitionData);
+    try {
+      const transitionData = envelopes.map(envelope => ({
+        id: envelope.id,
+        title: envelope.title,
+        transitionOption: envelope.transitionOption,
+        partialAmount: envelope.partialAmount,
+        transferTargetId: envelope.transferTargetId,
+        remaining: envelope.remaining
+      }));
 
-    const success = handleMonthTransition(transitionData);
-    
-    if (success) {
-      navigate("/dashboard/budget");
+      console.log("Données de transition:", transitionData);
+
+      const success = await handleMonthTransition(transitionData);
+      
+      if (success) {
+        // Rafraîchir les données avant de naviguer
+        await refreshData();
+        navigate("/dashboard/budget");
+      }
+    } catch (error) {
+      console.error("Erreur pendant la transition:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la transition."
+      });
+    } finally {
+      setIsTransitioning(false);
     }
   };
-
-  console.log("État actuel des enveloppes:", envelopes);
 
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
@@ -187,15 +201,17 @@ const BudgetTransition = () => {
           <Button
             variant="outline"
             onClick={() => navigate("/dashboard/budget/budgets")}
+            disabled={isTransitioning}
           >
             Annuler
           </Button>
           <Button
             onClick={handleTransitionConfirm}
             className="gap-2"
+            disabled={isTransitioning}
           >
             <Save className="h-4 w-4" />
-            Confirmer la transition
+            {isTransitioning ? "Traitement en cours..." : "Confirmer la transition"}
           </Button>
         </div>
       </div>
