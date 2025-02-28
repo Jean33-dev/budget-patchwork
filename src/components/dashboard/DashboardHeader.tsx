@@ -56,17 +56,17 @@ export const DashboardHeader = ({ currentDate, onMonthChange, onBackClick }: Das
         </DropdownMenu>
 
         <h1 className="text-xl font-semibold">Tableau de Bord Budget</h1>
-        
-        <div className="ml-auto">
-          <Button 
-            variant="outline"
-            onClick={() => navigate("/dashboard/budget/transition")}
-            className="flex items-center gap-2"
-          >
-            <CalendarPlus className="h-4 w-4" />
-            Nouveau mois
-          </Button>
-        </div>
+      </div>
+      
+      <div className="flex justify-end mb-4">
+        <Button 
+          variant="outline"
+          onClick={() => navigate("/dashboard/budget/transition")}
+          className="flex items-center gap-2"
+        >
+          <CalendarPlus className="h-4 w-4" />
+          Nouveau mois
+        </Button>
       </div>
     </div>
   );
