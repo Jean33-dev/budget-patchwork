@@ -10,6 +10,21 @@ export const useTransitionHandling = (categories: any[], setCategories: (categor
     let success = true;
     
     try {
+      // Suppression de toutes les dépenses
+      const expenses = await db.getExpenses();
+      console.log(`Suppression de ${expenses.length} dépenses`);
+      for (const expense of expenses) {
+        await db.deleteExpense(expense.id);
+      }
+      
+      // Suppression de tous les revenus
+      const incomes = await db.getIncomes();
+      console.log(`Suppression de ${incomes.length} revenus`);
+      for (const income of incomes) {
+        await db.deleteIncome(income.id);
+      }
+      
+      // Traitement des budgets pour la transition
       for (const envelope of envelopes) {
         const budget = await db.getBudgets().then(budgets => 
           budgets.find(b => b.id === envelope.id)
