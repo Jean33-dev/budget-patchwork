@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Menu } from "lucide-react";
+import { ArrowLeft, Menu, CalendarPlus } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -56,8 +56,18 @@ export const DashboardHeader = ({ currentDate, onMonthChange, onBackClick }: Das
         </DropdownMenu>
 
         <h1 className="text-xl font-semibold">Tableau de Bord Budget</h1>
+        
+        <div className="ml-auto">
+          <Button 
+            variant="outline"
+            onClick={() => navigate("/dashboard/budget/transition")}
+            className="flex items-center gap-2"
+          >
+            <CalendarPlus className="h-4 w-4" />
+            Nouveau mois
+          </Button>
+        </div>
       </div>
-      {/* Le sélecteur de mois a été retiré ici */}
     </div>
   );
 };
