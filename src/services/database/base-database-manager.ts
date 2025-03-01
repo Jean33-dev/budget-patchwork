@@ -31,6 +31,28 @@ export class BaseDatabaseManager {
     if (!this.initialized) await this.init();
   }
 
+  // Public getter for the db property
+  getDb() {
+    return this.db;
+  }
+
+  // Public setter for the db property
+  setDb(db: any) {
+    this.db = db;
+    return this;
+  }
+
+  // Public getter for the initialized property
+  isInitialized() {
+    return this.initialized;
+  }
+
+  // Public setter for the initialized property
+  setInitialized(value: boolean) {
+    this.initialized = value;
+    return this;
+  }
+
   // Save database
   exportData() {
     return this.db?.export();

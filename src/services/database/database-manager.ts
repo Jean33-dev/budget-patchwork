@@ -33,17 +33,18 @@ export class DatabaseManager {
       // Initialize the database
       await this.initManager.init();
       
-      // Share the database instance with all managers
-      this.incomeManager.db = this.initManager.db;
-      this.expenseManager.db = this.initManager.db;
-      this.budgetManager.db = this.initManager.db;
-      this.categoryManager.db = this.initManager.db;
+      // Share the database instance with all managers using the new accessor methods
+      const dbInstance = this.initManager.getDb();
+      this.incomeManager.setDb(dbInstance);
+      this.expenseManager.setDb(dbInstance);
+      this.budgetManager.setDb(dbInstance);
+      this.categoryManager.setDb(dbInstance);
       
       // Mark all managers as initialized
-      this.incomeManager.initialized = true;
-      this.expenseManager.initialized = true;
-      this.budgetManager.initialized = true;
-      this.categoryManager.initialized = true;
+      this.incomeManager.setInitialized(true);
+      this.expenseManager.setInitialized(true);
+      this.budgetManager.setInitialized(true);
+      this.categoryManager.setInitialized(true);
       
       this.initialized = true;
     } catch (err) {
