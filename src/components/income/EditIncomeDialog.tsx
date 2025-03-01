@@ -35,6 +35,34 @@ export const EditIncomeDialog = ({
   setSelectedIncome,
   onEditIncome
 }: EditIncomeDialogProps) => {
+  // These functions update individual properties of selectedIncome
+  const updateIncomeTitle = (title: string) => {
+    if (selectedIncome) {
+      setSelectedIncome({
+        ...selectedIncome,
+        title
+      });
+    }
+  };
+
+  const updateIncomeBudget = (budget: number) => {
+    if (selectedIncome) {
+      setSelectedIncome({
+        ...selectedIncome,
+        budget
+      });
+    }
+  };
+
+  const updateIncomeDate = (date: string) => {
+    if (selectedIncome) {
+      setSelectedIncome({
+        ...selectedIncome,
+        date
+      });
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
@@ -45,13 +73,13 @@ export const EditIncomeDialog = ({
           <EnvelopeForm
             type="income"
             title={selectedIncome.title}
-            setTitle={(title) => setSelectedIncome(prev => prev ? { ...prev, title } : null)}
+            setTitle={updateIncomeTitle}
             budget={selectedIncome.budget}
-            setBudget={(budget) => setSelectedIncome(prev => prev ? { ...prev, budget } : null)}
+            setBudget={updateIncomeBudget}
             linkedBudgetId=""
             setLinkedBudgetId={() => {}}
             date={selectedIncome.date}
-            setDate={(date) => setSelectedIncome(prev => prev ? { ...prev, date } : null)}
+            setDate={updateIncomeDate}
             onSubmit={(e) => {
               e.preventDefault();
               if (selectedIncome) {
