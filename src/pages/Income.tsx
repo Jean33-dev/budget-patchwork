@@ -21,25 +21,6 @@ import {
 import { EnvelopeForm } from "@/components/budget/EnvelopeForm";
 import { db, Income as IncomeType } from "@/services/database";
 
-const defaultIncomes = [
-  { 
-    id: "1", 
-    title: "Salaire", 
-    budget: 5000, 
-    spent: 5000, 
-    type: "income" as const, 
-    date: new Date().toISOString().split('T')[0]
-  },
-  { 
-    id: "2", 
-    title: "Freelance", 
-    budget: 1000, 
-    spent: 800, 
-    type: "income" as const,
-    date: new Date().toISOString().split('T')[0]
-  },
-];
-
 const Income = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -59,15 +40,7 @@ const Income = () => {
     const initializeData = async () => {
       await db.init();
       const incomes = await db.getIncomes();
-      if (incomes.length === 0) {
-        // Si pas de revenus, ajouter les revenus par défaut
-        for (const income of defaultIncomes) {
-          await db.addIncome(income);
-        }
-        setEnvelopes(defaultIncomes);
-      } else {
-        setEnvelopes(incomes);
-      }
+      setEnvelopes(incomes);
     };
     
     initializeData();

@@ -98,13 +98,6 @@ class Database {
         )
       `);
 
-      // Ajout des données de test avec la date
-      this.db.run(`
-        INSERT OR IGNORE INTO incomes (id, title, budget, spent, type, date)
-        VALUES 
-        ('inc_1', 'Salaire', 2500.00, 0, 'income', '${new Date().toISOString().split('T')[0]}')
-      `);
-
       // Budgets de test
       this.db.run(`
         INSERT OR IGNORE INTO budgets (id, title, budget, spent, type, carriedOver)
