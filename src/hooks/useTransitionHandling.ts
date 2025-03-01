@@ -135,6 +135,21 @@ export const useTransitionHandling = (categories: any[], setCategories: (categor
         }
       }
 
+      // Maintenant, mettons à jour les spent des catégories
+      console.log("Mise à jour des catégories après transition");
+      const updatedCategories = [...categories];
+      const budgets = await db.getBudgets();
+      
+      for (let category of updatedCategories) {
+        // Réinitialiser le montant dépensé à 0 puisque toutes les dépenses ont été supprimées
+        category.spent = 0;
+        await db.updateCategory(category);
+        console.log(`Catégorie ${category.name} mise à jour, dépenses réinitialisées à 0`);
+      }
+      
+      // Mettre à jour l'état local des catégories
+      setCategories(updatedCategories);
+
       toast({
         title: "Transition effectuée",
         description: "Les budgets ont été mis à jour pour le nouveau mois."

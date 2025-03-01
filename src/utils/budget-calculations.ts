@@ -15,12 +15,13 @@ export const calculateCategoryTotals = async (budgets: string[], availableBudget
       const budgetSpent = budgetExpenses.reduce((sum, expense) => sum + Number(expense.budget), 0);
 
       return {
-        total: acc.total + (budget.budget || 0),
+        total: acc.total + (budget.budget || 0) + (budget.carriedOver || 0), // Ajout du montant reporté au total
         spent: acc.spent + budgetSpent
       };
     }
     return acc;
   }, { total: 0, spent: 0 });
 
+  console.log(`Calcul des totaux pour les budgets [${budgets.join(', ')}]:`, totals);
   return totals;
 };

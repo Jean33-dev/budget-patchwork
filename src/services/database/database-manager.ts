@@ -145,6 +145,15 @@ export class DatabaseManager {
     await this.initManager.migrateFromLocalStorage();
   }
 
+  // Add a method to reset all expenses for a specific category
+  async resetCategoryExpenses(categoryId: string) {
+    const category = (await this.getCategories()).find(c => c.id === categoryId);
+    if (category) {
+      category.spent = 0;
+      await this.updateCategory(category);
+    }
+  }
+
   // Utility methods
   exportData() {
     return this.initManager.exportData();
