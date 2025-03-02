@@ -12,11 +12,12 @@ import { PartialAmountDialog } from "@/components/budget-transition/PartialAmoun
 import { TransferDialog } from "@/components/budget-transition/TransferDialog";
 import { BudgetEnvelope, TransitionOption } from "@/types/transition";
 import { db } from "@/services/database";
+import { useTransitionHandling } from "@/hooks/useTransitionHandling";
 
 const BudgetTransition = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { categories, handleMonthTransition } = useCategories();
+  const { categories } = useCategories();
   const { budgets, refreshData } = useBudgets();
   
   const [envelopes, setEnvelopes] = useState<BudgetEnvelope[]>([]);
@@ -24,6 +25,9 @@ const BudgetTransition = () => {
   const [showPartialDialog, setShowPartialDialog] = useState(false);
   const [showTransferDialog, setShowTransferDialog] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  
+  // Retrieve the transition handling hook with the new preferences functionality
+  const { handleMonthTransition, getTransitionPreferences } = useTransitionHandling(categories, () => {});
 
   useEffect(() => {
     const loadEnvelopes = async () => {
@@ -32,14 +36,40 @@ const BudgetTransition = () => {
         const budgetsData = await db.getBudgets();
         console.log("Budgets chargés:", budgetsData);
         
-        const loadedEnvelopes = budgetsData.map(budget => ({
-          id: budget.id,
-          title: budget.title,
-          budget: budget.budget,
-          spent: budget.spent,
-          remaining: budget.budget + (budget.carriedOver || 0) - budget.spent,
-          transitionOption: "reset" as TransitionOption
-        }));
+        // Récupérer les préférences sauvegardées
+        const savedPreferences = getTransitionPreferences();
+        console.log("Préférences de transition récupérées:", savedPreferences);
+        
+        // Préparer les enveloppes avec les options par défaut ou préférences sauvegardées
+        const loadedEnvelopes = budgetsData.map(budget => {
+          // Rechercher une préférence pour ce budget
+          const savedPref = savedPreferences?.find(pref => pref.id === budget.id);
+          
+          // Déterminer l'option de transition: utiliser la préférence sauvegardée ou "carry" par défaut
+          const transitionOption = savedPref?.transitionOption || "carry";
+          
+          const envelope: BudgetEnvelope = {
+            id: budget.id,
+            title: budget.title,
+            budget: budget.budget,
+            spent: budget.spent,
+            remaining: budget.budget + (budget.carriedOver || 0) - budget.spent,
+            transitionOption: transitionOption
+          };
+          
+          // Si l'option est "transfer", ajouter l'ID de la cible si disponible
+          if (transitionOption === "transfer" && savedPref?.transferTargetId) {
+            envelope.transferTargetId = savedPref.transferTargetId;
+            
+            // Trouver le titre du budget cible
+            const targetBudget = budgetsData.find(b => b.id === savedPref.transferTargetId);
+            if (targetBudget) {
+              envelope.transferTargetTitle = targetBudget.title;
+            }
+          }
+          
+          return envelope;
+        });
 
         console.log("Enveloppes préparées:", loadedEnvelopes);
         setEnvelopes(loadedEnvelopes);
@@ -54,7 +84,7 @@ const BudgetTransition = () => {
     };
 
     loadEnvelopes();
-  }, [toast]);
+  }, [toast, getTransitionPreferences]);
 
   const handleOptionChange = (envelopeId: string, option: TransitionOption) => {
     setEnvelopes(prev => 
