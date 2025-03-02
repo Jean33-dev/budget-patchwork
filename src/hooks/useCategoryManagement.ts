@@ -135,7 +135,7 @@ export const useCategoryManagement = () => {
   return {
     categories,
     updateCategoryName,
-    setCategories,
+    setCategories, // Make sure we're exporting setCategories
     refreshCategories
   };
 };
