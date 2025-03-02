@@ -17,7 +17,7 @@ import { useTransitionHandling } from "@/hooks/useTransitionHandling";
 const BudgetTransition = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { categories } = useCategories();
+  const { categories, setCategories } = useCategories();
   const { budgets, refreshData } = useBudgets();
   
   const [envelopes, setEnvelopes] = useState<BudgetEnvelope[]>([]);
@@ -26,8 +26,8 @@ const BudgetTransition = () => {
   const [showTransferDialog, setShowTransferDialog] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
   
-  // Retrieve the transition handling hook with the new preferences functionality
-  const { handleMonthTransition, getTransitionPreferences } = useTransitionHandling(categories, () => {});
+  // Correction ici: passer setCategories à l'hook
+  const { handleMonthTransition, getTransitionPreferences } = useTransitionHandling(categories, setCategories);
 
   useEffect(() => {
     const loadEnvelopes = async () => {

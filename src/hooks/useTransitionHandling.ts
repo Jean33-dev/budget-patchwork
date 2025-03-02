@@ -174,7 +174,6 @@ export const useTransitionHandling = (categories: any[], setCategories: (categor
       // Maintenant, mettons à jour les spent des catégories
       console.log("Mise à jour des catégories après transition");
       const updatedCategories = [...categories];
-      const budgets = await db.getBudgets();
       
       for (let category of updatedCategories) {
         // Réinitialiser le montant dépensé à 0 puisque toutes les dépenses ont été supprimées
