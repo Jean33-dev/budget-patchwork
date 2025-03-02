@@ -45,10 +45,10 @@ export const TransitionEnvelopeCard = ({
           <SelectValue placeholder="Choisir une option" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="reset">Réinitialiser</SelectItem>
           <SelectItem value="carry">Reporter tout</SelectItem>
-          <SelectItem value="partial">Report partiel</SelectItem>
+          <SelectItem value="reset">Réinitialiser</SelectItem>
           <SelectItem value="transfer">Transférer</SelectItem>
+          <SelectItem value="partial">Report partiel</SelectItem>
         </SelectContent>
       </Select>
     </div>
