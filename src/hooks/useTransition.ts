@@ -30,13 +30,19 @@ export const useTransition = (onComplete: () => void) => {
       };
     });
 
+    console.log('Budgets chargés:', budgets.length);
+    console.log('Enveloppes initiales:', initialEnvelopes);
+
     // Load saved preferences if available
     const savedPreferences = getTransitionPreferences();
+    console.log('Préférences chargées:', savedPreferences);
+    
     if (savedPreferences && savedPreferences.length > 0) {
       // Apply saved preferences to the envelopes
       const updatedEnvelopes = initialEnvelopes.map(env => {
         const savedPref = savedPreferences.find(pref => pref.id === env.id);
         if (savedPref) {
+          console.log(`Préférences appliquées pour ${env.id}:`, savedPref.transitionOption);
           return {
             ...env,
             transitionOption: savedPref.transitionOption as TransitionOption,
@@ -46,13 +52,18 @@ export const useTransition = (onComplete: () => void) => {
         }
         return env;
       });
+      
+      console.log('Enveloppes après préférences:', updatedEnvelopes);
       setEnvelopes(updatedEnvelopes);
     } else {
+      console.log('Aucune préférence trouvée, utilisation des valeurs par défaut');
       setEnvelopes(initialEnvelopes);
     }
   }, [budgets, getTransitionPreferences]);
 
   const handleOptionChange = (envelopeId: string, option: TransitionOption) => {
+    console.log(`Changement d'option pour ${envelopeId}:`, option);
+    
     setEnvelopes(prev => 
       prev.map(env => {
         if (env.id === envelopeId) {
@@ -62,6 +73,7 @@ export const useTransition = (onComplete: () => void) => {
             delete updatedEnv.transferTargetId;
             delete updatedEnv.transferTargetTitle;
           }
+          console.log('Enveloppe mise à jour:', updatedEnv);
           return updatedEnv;
         }
         return env;

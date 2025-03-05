@@ -35,22 +35,27 @@ export const TransitionEnvelopeCard = ({
   const [showTransferOptions, setShowTransferOptions] = useState(false);
   const [showPartialInput, setShowPartialInput] = useState(false);
   const [partialAmount, setPartialAmount] = useState(envelope.partialAmount || 0);
-  const [selectedOption, setSelectedOption] = useState<TransitionOption>(envelope.transitionOption || "reset");
   
-  // Sync local state with props when envelope changes
+  // Debug logs pour identifier le problème
+  console.log('Envelope reçue:', envelope);
+  console.log('Option de transition actuelle:', envelope.transitionOption);
+  
   useEffect(() => {
-    setSelectedOption(envelope.transitionOption);
-    setPartialAmount(envelope.partialAmount || 0);
-    
-    // Show relevant UI based on option
+    // Mettre à jour les états UI en fonction de l'option de transition
     setShowTransferOptions(envelope.transitionOption === "transfer");
     setShowPartialInput(envelope.transitionOption === "partial");
+    setPartialAmount(envelope.partialAmount || 0);
+    
+    console.log('useEffect appelé avec option:', envelope.transitionOption);
   }, [envelope]);
 
   const handleOptionChange = (value: TransitionOption) => {
-    setSelectedOption(value);
+    console.log('Option changée à:', value);
+    
+    // Envoi de la nouvelle valeur au parent
     onOptionChange(envelope.id, value);
     
+    // Mise à jour des états locaux selon l'option
     if (value === "transfer") {
       setShowTransferOptions(true);
       setShowPartialInput(false);
@@ -111,7 +116,7 @@ export const TransitionEnvelopeCard = ({
       
       <div className="flex flex-col gap-2 w-full sm:w-auto">
         <Select
-          value={selectedOption}
+          defaultValue={envelope.transitionOption}
           onValueChange={(value: TransitionOption) => handleOptionChange(value)}
         >
           <SelectTrigger className="w-full sm:w-[200px]">
