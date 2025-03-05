@@ -41,7 +41,8 @@ export const useTransition = (onComplete: () => void) => {
             return {
               ...env,
               transitionOption: savedPref.transitionOption as TransitionOption,
-              transferTargetId: savedPref.transferTargetId
+              transferTargetId: savedPref.transferTargetId,
+              partialAmount: savedPref.partialAmount
             };
           }
           return env;
@@ -58,45 +59,34 @@ export const useTransition = (onComplete: () => void) => {
         if (env.id === envelopeId) {
           const updatedEnv = { ...env, transitionOption: option };
           if (option !== "partial") delete updatedEnv.partialAmount;
-          if (option !== "transfer") delete updatedEnv.transferTargetId;
+          if (option !== "transfer") {
+            delete updatedEnv.transferTargetId;
+            delete updatedEnv.transferTargetTitle;
+          }
           return updatedEnv;
         }
         return env;
       })
     );
-
-    const envelope = envelopes.find(env => env.id === envelopeId);
-    if (envelope) {
-      setSelectedEnvelope(envelope);
-      if (option === "partial") {
-        setShowPartialDialog(true);
-      } else if (option === "transfer") {
-        setShowTransferDialog(true);
-      }
-    }
   };
 
-  const handlePartialAmountChange = (amount: number) => {
-    if (!selectedEnvelope) return;
-    
+  const handlePartialAmountChange = (envelopeId: string, amount: number) => {
     setEnvelopes(prev =>
       prev.map(env =>
-        env.id === selectedEnvelope.id
+        env.id === envelopeId
           ? { ...env, partialAmount: amount }
           : env
       )
     );
   };
 
-  const handleTransferTargetChange = (targetId: string) => {
-    if (!selectedEnvelope) return;
-    
+  const handleTransferTargetChange = (envelopeId: string, targetId: string) => {
     const targetEnvelope = envelopes.find(env => env.id === targetId);
     if (!targetEnvelope) return;
 
     setEnvelopes(prev =>
       prev.map(env =>
-        env.id === selectedEnvelope.id
+        env.id === envelopeId
           ? { 
               ...env, 
               transferTargetId: targetId,

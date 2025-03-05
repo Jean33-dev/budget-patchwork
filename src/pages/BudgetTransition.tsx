@@ -5,8 +5,6 @@ import { TransitionPageHeader } from "@/components/budget-transition/TransitionP
 import { TransitionInfoBox } from "@/components/budget-transition/TransitionInfoBox";
 import { TransitionEnvelopeGrid } from "@/components/budget-transition/TransitionEnvelopeGrid";
 import { TransitionActionButtons } from "@/components/budget-transition/TransitionActionButtons";
-import { PartialAmountDialog } from "@/components/budget-transition/PartialAmountDialog";
-import { TransferDialog } from "@/components/budget-transition/TransferDialog";
 import { useTransition } from "@/hooks/useTransition";
 
 export const BudgetTransition = () => {
@@ -14,12 +12,7 @@ export const BudgetTransition = () => {
   
   const {
     envelopes,
-    selectedEnvelope,
-    showPartialDialog,
-    showTransferDialog,
     isProcessing,
-    setShowPartialDialog,
-    setShowTransferDialog,
     handleOptionChange,
     handlePartialAmountChange,
     handleTransferTargetChange,
@@ -37,7 +30,9 @@ export const BudgetTransition = () => {
 
         <TransitionEnvelopeGrid 
           envelopes={envelopes} 
-          onOptionChange={handleOptionChange} 
+          onOptionChange={handleOptionChange}
+          onTransferTargetChange={handleTransferTargetChange}
+          onPartialAmountChange={handlePartialAmountChange}
         />
 
         <TransitionActionButtons 
@@ -46,25 +41,6 @@ export const BudgetTransition = () => {
           isProcessing={isProcessing}
         />
       </div>
-
-      {selectedEnvelope && (
-        <>
-          <PartialAmountDialog
-            open={showPartialDialog}
-            onOpenChange={setShowPartialDialog}
-            envelope={selectedEnvelope}
-            onAmountChange={handlePartialAmountChange}
-          />
-
-          <TransferDialog
-            open={showTransferDialog}
-            onOpenChange={setShowTransferDialog}
-            envelope={selectedEnvelope}
-            targetEnvelopes={envelopes.filter(e => e.id !== selectedEnvelope.id)}
-            onTargetChange={handleTransferTargetChange}
-          />
-        </>
-      )}
     </div>
   );
 };
