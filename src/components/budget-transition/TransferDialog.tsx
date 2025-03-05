@@ -20,17 +20,17 @@ import { BudgetEnvelope } from "@/types/transition";
 interface TransferDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  selectedEnvelope: BudgetEnvelope | null;
-  envelopes: BudgetEnvelope[];
-  onTransferTargetChange: (targetId: string) => void;
+  envelope: BudgetEnvelope; // Changed from selectedEnvelope
+  targetEnvelopes: BudgetEnvelope[]; // Changed from envelopes
+  onTargetChange: (targetId: string) => void;
 }
 
 export const TransferDialog = ({
   open,
   onOpenChange,
-  selectedEnvelope,
-  envelopes,
-  onTransferTargetChange,
+  envelope, // Updated parameter name
+  targetEnvelopes, // Updated parameter name
+  onTargetChange,
 }: TransferDialogProps) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -43,15 +43,15 @@ export const TransferDialog = ({
         </DialogHeader>
         <div className="py-4">
           <Select
-            value={selectedEnvelope?.transferTargetId}
-            onValueChange={onTransferTargetChange}
+            value={envelope?.transferTargetId}
+            onValueChange={onTargetChange}
           >
             <SelectTrigger>
               <SelectValue placeholder="Choisir une enveloppe" />
             </SelectTrigger>
             <SelectContent>
-              {envelopes
-                .filter(env => env.id !== selectedEnvelope?.id)
+              {targetEnvelopes
+                .filter(env => env.id !== envelope?.id)
                 .map(env => (
                   <SelectItem key={env.id} value={env.id}>
                     {env.title}

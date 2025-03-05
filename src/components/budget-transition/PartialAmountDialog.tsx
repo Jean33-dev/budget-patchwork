@@ -14,14 +14,14 @@ import { BudgetEnvelope } from "@/types/transition";
 interface PartialAmountDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  selectedEnvelope: BudgetEnvelope | null;
+  envelope: BudgetEnvelope; // Changed from selectedEnvelope to envelope
   onAmountChange: (amount: number) => void;
 }
 
 export const PartialAmountDialog = ({
   open,
   onOpenChange,
-  selectedEnvelope,
+  envelope, // Updated parameter name
   onAmountChange,
 }: PartialAmountDialogProps) => {
   return (
@@ -35,7 +35,7 @@ export const PartialAmountDialog = ({
         </DialogHeader>
         <div className="py-4">
           <MoneyInput
-            value={selectedEnvelope?.partialAmount || 0}
+            value={envelope?.partialAmount || 0}
             onChange={onAmountChange}
             placeholder="Montant à reporter"
             className="w-full"

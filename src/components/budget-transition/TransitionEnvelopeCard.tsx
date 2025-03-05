@@ -11,11 +11,13 @@ import { BudgetEnvelope, TransitionOption } from "@/types/transition";
 
 interface TransitionEnvelopeCardProps {
   envelope: BudgetEnvelope;
+  otherEnvelopes: BudgetEnvelope[]; // Added this prop
   onOptionChange: (envelopeId: string, option: TransitionOption) => void;
 }
 
 export const TransitionEnvelopeCard = ({
   envelope,
+  otherEnvelopes, // Include in component props
   onOptionChange,
 }: TransitionEnvelopeCardProps) => {
   return (
