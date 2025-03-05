@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { BudgetEnvelope, TransitionOption } from "@/types/transition";
 import { ChevronDown } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface TransitionEnvelopeCardProps {
   envelope: BudgetEnvelope;
@@ -35,8 +35,20 @@ export const TransitionEnvelopeCard = ({
   const [showTransferOptions, setShowTransferOptions] = useState(false);
   const [showPartialInput, setShowPartialInput] = useState(false);
   const [partialAmount, setPartialAmount] = useState(envelope.partialAmount || 0);
+  const [selectedOption, setSelectedOption] = useState<TransitionOption>(envelope.transitionOption || "reset");
+  
+  // Sync local state with props when envelope changes
+  useEffect(() => {
+    setSelectedOption(envelope.transitionOption);
+    setPartialAmount(envelope.partialAmount || 0);
+    
+    // Show relevant UI based on option
+    setShowTransferOptions(envelope.transitionOption === "transfer");
+    setShowPartialInput(envelope.transitionOption === "partial");
+  }, [envelope]);
 
   const handleOptionChange = (value: TransitionOption) => {
+    setSelectedOption(value);
     onOptionChange(envelope.id, value);
     
     if (value === "transfer") {
@@ -99,7 +111,7 @@ export const TransitionEnvelopeCard = ({
       
       <div className="flex flex-col gap-2 w-full sm:w-auto">
         <Select
-          value={envelope.transitionOption}
+          value={selectedOption}
           onValueChange={(value: TransitionOption) => handleOptionChange(value)}
         >
           <SelectTrigger className="w-full sm:w-[200px]">

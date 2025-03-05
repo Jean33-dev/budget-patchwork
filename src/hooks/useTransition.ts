@@ -32,22 +32,21 @@ export const useTransition = (onComplete: () => void) => {
 
     // Load saved preferences if available
     const savedPreferences = getTransitionPreferences();
-    if (savedPreferences) {
+    if (savedPreferences && savedPreferences.length > 0) {
       // Apply saved preferences to the envelopes
-      setEnvelopes(
-        initialEnvelopes.map(env => {
-          const savedPref = savedPreferences.find(pref => pref.id === env.id);
-          if (savedPref) {
-            return {
-              ...env,
-              transitionOption: savedPref.transitionOption as TransitionOption,
-              transferTargetId: savedPref.transferTargetId,
-              partialAmount: savedPref.partialAmount
-            };
-          }
-          return env;
-        })
-      );
+      const updatedEnvelopes = initialEnvelopes.map(env => {
+        const savedPref = savedPreferences.find(pref => pref.id === env.id);
+        if (savedPref) {
+          return {
+            ...env,
+            transitionOption: savedPref.transitionOption as TransitionOption,
+            transferTargetId: savedPref.transferTargetId,
+            partialAmount: savedPref.partialAmount
+          };
+        }
+        return env;
+      });
+      setEnvelopes(updatedEnvelopes);
     } else {
       setEnvelopes(initialEnvelopes);
     }
