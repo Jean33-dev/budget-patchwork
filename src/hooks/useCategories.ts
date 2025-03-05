@@ -15,7 +15,7 @@ export const useCategories = () => {
 
   return {
     categories,
-    setCategories, // Expose setCategories function
+    setCategories, // Explicitly expose setCategories function
     handleAssignBudget,
     handleRemoveBudget,
     updateCategoryName,

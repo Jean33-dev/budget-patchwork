@@ -33,6 +33,9 @@ const Dashboard = () => {
 
   const handleMonthChange = (newDate: Date) => {
     setCurrentDate(newDate);
+    // Show transition dialog when month is changed
+    setNextDate(newDate);
+    setShowTransitionDialog(true);
   };
 
   const handleTransitionConfirm = () => {
