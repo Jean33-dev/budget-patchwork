@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -34,6 +34,7 @@ export const TransitionEnvelopeCard = ({
 }: TransitionEnvelopeCardProps) => {
   // Local state to display selected option
   const [partialAmount, setPartialAmount] = useState(envelope.partialAmount || 0);
+  const [selectedOption, setSelectedOption] = useState<TransitionOption>(envelope.transitionOption);
   
   console.log('Rendering envelope card:', {
     id: envelope.id,
@@ -43,14 +44,21 @@ export const TransitionEnvelopeCard = ({
     targetTitle: envelope.transferTargetTitle
   });
 
+  // Update local state when props change
+  useEffect(() => {
+    setSelectedOption(envelope.transitionOption);
+  }, [envelope.transitionOption]);
+
   const handleOptionChange = (value: string) => {
-    console.log(`Option changée pour ${envelope.id}:`, value);
-    onOptionChange(envelope.id, value as TransitionOption);
+    const option = value as TransitionOption;
+    console.log(`Option changed for ${envelope.id}:`, option);
+    setSelectedOption(option);
+    onOptionChange(envelope.id, option);
   };
 
   const handleTransferTargetSelect = (targetId: string) => {
     if (onTransferTargetChange) {
-      console.log(`Cible de transfert sélectionnée pour ${envelope.id}:`, targetId);
+      console.log(`Transfer target selected for ${envelope.id}:`, targetId);
       onTransferTargetChange(envelope.id, targetId);
     }
   };
@@ -71,8 +79,9 @@ export const TransitionEnvelopeCard = ({
     }
   };
 
-  const showPartialInput = envelope.transitionOption === "partial";
-  const showTransferOptions = envelope.transitionOption === "transfer";
+  // Determine whether to show the additional inputs
+  const showPartialInput = selectedOption === "partial";
+  const showTransferOptions = selectedOption === "transfer";
 
   return (
     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 border rounded-lg">
@@ -93,7 +102,7 @@ export const TransitionEnvelopeCard = ({
       
       <div className="flex flex-col gap-2 w-full sm:w-auto">
         <Select
-          value={envelope.transitionOption}
+          value={selectedOption}
           onValueChange={handleOptionChange}
         >
           <SelectTrigger className="w-full sm:w-[200px]">

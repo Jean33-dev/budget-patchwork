@@ -27,6 +27,9 @@ export const BudgetTransition = () => {
 
   const handleBack = () => navigate("/dashboard/budget");
 
+  // Add debug logs
+  console.log("BudgetTransition rendering with envelopes:", envelopes);
+
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
       <TransitionPageHeader onBackClick={handleBack} />

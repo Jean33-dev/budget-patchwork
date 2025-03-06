@@ -30,71 +30,73 @@ export const useTransition = (onComplete: () => void) => {
       };
     });
 
-    console.log('Budgets chargés:', budgets.length);
-    console.log('Enveloppes initiales:', initialEnvelopes);
+    console.log('Budgets loaded:', budgets.length);
+    console.log('Initial envelopes:', initialEnvelopes);
 
     // Load saved preferences if available
     const savedPreferences = getTransitionPreferences();
-    console.log('Préférences chargées:', savedPreferences);
+    console.log('Preferences loaded:', savedPreferences);
     
     if (savedPreferences && savedPreferences.length > 0) {
       // Apply saved preferences to the envelopes
       const updatedEnvelopes = initialEnvelopes.map(env => {
         const savedPref = savedPreferences.find(pref => pref.id === env.id);
         if (savedPref) {
-          console.log(`Préférences appliquées pour ${env.id}:`, savedPref.transitionOption);
+          console.log(`Preferences applied for ${env.id}:`, savedPref.transitionOption);
+          
+          // For transfer options, we need to find the target envelope name
+          let transferTargetTitle;
+          if (savedPref.transitionOption === "transfer" && savedPref.transferTargetId) {
+            const targetEnvelope = initialEnvelopes.find(e => e.id === savedPref.transferTargetId);
+            transferTargetTitle = targetEnvelope?.title;
+          }
+          
           return {
             ...env,
             transitionOption: savedPref.transitionOption as TransitionOption,
             transferTargetId: savedPref.transferTargetId,
+            transferTargetTitle,
             partialAmount: savedPref.partialAmount
           };
         }
         return env;
       });
       
-      console.log('Enveloppes après préférences:', updatedEnvelopes);
+      console.log('Envelopes after preferences:', updatedEnvelopes);
       setEnvelopes(updatedEnvelopes);
     } else {
-      console.log('Aucune préférence trouvée, utilisation des valeurs par défaut');
+      console.log('No preferences found, using default values');
       setEnvelopes(initialEnvelopes);
     }
   }, [budgets, getTransitionPreferences]);
 
   const handleOptionChange = (envelopeId: string, option: TransitionOption) => {
-    console.log(`Changement d'option pour ${envelopeId}:`, option);
+    console.log(`Option change for ${envelopeId}:`, option);
     
-    // Find the current envelope
-    const currentEnvelope = envelopes.find(env => env.id === envelopeId);
-    if (!currentEnvelope) return;
-
     setEnvelopes(prev => 
       prev.map(env => {
         if (env.id === envelopeId) {
+          // Create a new envelope object with the updated option
           const updatedEnv = { ...env, transitionOption: option };
+          
+          // Clear related fields if changing away from that option
           if (option !== "partial") delete updatedEnv.partialAmount;
           if (option !== "transfer") {
             delete updatedEnv.transferTargetId;
             delete updatedEnv.transferTargetTitle;
           }
-          console.log('Enveloppe mise à jour:', updatedEnv);
+          
+          console.log('Updated envelope:', updatedEnv);
           return updatedEnv;
         }
         return env;
       })
     );
-    
-    // Show the appropriate dialog based on the selected option
-    if (option === "transfer") {
-      setSelectedEnvelope(currentEnvelope);
-      setShowTransferDialog(true);
-    } else if (option === "partial") {
-      setSelectedEnvelope(currentEnvelope);
-      setShowPartialDialog(true);
-    }
   };
 
   const handlePartialAmountChange = (envelopeId: string, amount: number) => {
+    console.log(`Partial amount changed for ${envelopeId}:`, amount);
+    
     setEnvelopes(prev =>
       prev.map(env =>
         env.id === envelopeId
@@ -105,8 +107,13 @@ export const useTransition = (onComplete: () => void) => {
   };
 
   const handleTransferTargetChange = (envelopeId: string, targetId: string) => {
+    console.log(`Transfer target changed for ${envelopeId}:`, targetId);
+    
     const targetEnvelope = envelopes.find(env => env.id === targetId);
-    if (!targetEnvelope) return;
+    if (!targetEnvelope) {
+      console.error('Target envelope not found:', targetId);
+      return;
+    }
 
     setEnvelopes(prev =>
       prev.map(env =>
@@ -120,7 +127,7 @@ export const useTransition = (onComplete: () => void) => {
       )
     );
     
-    console.log(`Cible de transfert définie pour ${envelopeId}: ${targetId} (${targetEnvelope.title})`);
+    console.log(`Transfer target set for ${envelopeId}: ${targetId} (${targetEnvelope.title})`);
   };
 
   const handleTransitionConfirm = async () => {
