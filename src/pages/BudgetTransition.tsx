@@ -12,7 +12,13 @@ export const BudgetTransition = () => {
   
   const {
     envelopes,
+    selectedEnvelope,
+    showPartialDialog,
+    showTransferDialog,
     isProcessing,
+    setSelectedEnvelope,
+    setShowPartialDialog,
+    setShowTransferDialog,
     handleOptionChange,
     handlePartialAmountChange,
     handleTransferTargetChange,

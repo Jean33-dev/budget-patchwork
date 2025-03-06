@@ -64,6 +64,10 @@ export const useTransition = (onComplete: () => void) => {
   const handleOptionChange = (envelopeId: string, option: TransitionOption) => {
     console.log(`Changement d'option pour ${envelopeId}:`, option);
     
+    // Find the current envelope
+    const currentEnvelope = envelopes.find(env => env.id === envelopeId);
+    if (!currentEnvelope) return;
+
     setEnvelopes(prev => 
       prev.map(env => {
         if (env.id === envelopeId) {
@@ -79,6 +83,15 @@ export const useTransition = (onComplete: () => void) => {
         return env;
       })
     );
+    
+    // Show the appropriate dialog based on the selected option
+    if (option === "transfer") {
+      setSelectedEnvelope(currentEnvelope);
+      setShowTransferDialog(true);
+    } else if (option === "partial") {
+      setSelectedEnvelope(currentEnvelope);
+      setShowPartialDialog(true);
+    }
   };
 
   const handlePartialAmountChange = (envelopeId: string, amount: number) => {
@@ -106,12 +119,25 @@ export const useTransition = (onComplete: () => void) => {
           : env
       )
     );
+    
+    console.log(`Cible de transfert définie pour ${envelopeId}: ${targetId} (${targetEnvelope.title})`);
   };
 
   const handleTransitionConfirm = async () => {
     setIsProcessing(true);
     
     try {
+      // Verify all transfer options have a target
+      const missingTargets = envelopes.filter(
+        env => env.transitionOption === "transfer" && !env.transferTargetId
+      );
+      
+      if (missingTargets.length > 0) {
+        toast.error("Certains transferts n'ont pas de budget cible");
+        setIsProcessing(false);
+        return;
+      }
+      
       // Convert budget envelopes to transition envelopes format expected by the hook
       const transitionData = envelopes.map(env => ({
         id: env.id,
@@ -143,6 +169,7 @@ export const useTransition = (onComplete: () => void) => {
     showPartialDialog,
     showTransferDialog,
     isProcessing,
+    setSelectedEnvelope,
     setShowPartialDialog,
     setShowTransferDialog,
     handleOptionChange,

@@ -1,4 +1,5 @@
 
+import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -15,7 +16,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { BudgetEnvelope, TransitionOption } from "@/types/transition";
 import { ChevronDown } from "lucide-react";
-import { useState, useEffect } from "react";
 
 interface TransitionEnvelopeCardProps {
   envelope: BudgetEnvelope;
@@ -32,55 +32,27 @@ export const TransitionEnvelopeCard = ({
   onTransferTargetChange,
   onPartialAmountChange
 }: TransitionEnvelopeCardProps) => {
-  const [showTransferOptions, setShowTransferOptions] = useState(false);
-  const [showPartialInput, setShowPartialInput] = useState(false);
+  // Local state to display selected option
   const [partialAmount, setPartialAmount] = useState(envelope.partialAmount || 0);
   
-  // Debug logs pour identifier le problème
-  console.log('Envelope reçue:', envelope);
-  console.log('Option de transition actuelle:', envelope.transitionOption);
-  
-  useEffect(() => {
-    // Mettre à jour les états UI en fonction de l'option de transition
-    setShowTransferOptions(envelope.transitionOption === "transfer");
-    setShowPartialInput(envelope.transitionOption === "partial");
-    setPartialAmount(envelope.partialAmount || 0);
-    
-    console.log('useEffect appelé avec option:', envelope.transitionOption);
-  }, [envelope]);
+  console.log('Rendering envelope card:', {
+    id: envelope.id,
+    title: envelope.title,
+    option: envelope.transitionOption,
+    targetId: envelope.transferTargetId,
+    targetTitle: envelope.transferTargetTitle
+  });
 
-  const handleOptionChange = (value: TransitionOption) => {
-    console.log('Option changée à:', value);
-    
-    // Envoi de la nouvelle valeur au parent
-    onOptionChange(envelope.id, value);
-    
-    // Mise à jour des états locaux selon l'option
-    if (value === "transfer") {
-      setShowTransferOptions(true);
-      setShowPartialInput(false);
-    } else if (value === "partial") {
-      setShowPartialInput(true);
-      setShowTransferOptions(false);
-      
-      // Initialize with the full amount if not set
-      if (!envelope.partialAmount) {
-        setPartialAmount(envelope.remaining);
-        if (onPartialAmountChange) {
-          onPartialAmountChange(envelope.id, envelope.remaining);
-        }
-      }
-    } else {
-      setShowTransferOptions(false);
-      setShowPartialInput(false);
-    }
+  const handleOptionChange = (value: string) => {
+    console.log(`Option changée pour ${envelope.id}:`, value);
+    onOptionChange(envelope.id, value as TransitionOption);
   };
 
   const handleTransferTargetSelect = (targetId: string) => {
     if (onTransferTargetChange) {
+      console.log(`Cible de transfert sélectionnée pour ${envelope.id}:`, targetId);
       onTransferTargetChange(envelope.id, targetId);
     }
-    setShowTransferOptions(false);
   };
 
   const handlePartialAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -94,8 +66,13 @@ export const TransitionEnvelopeCard = ({
   };
 
   const confirmPartialAmount = () => {
-    setShowPartialInput(false);
+    if (onPartialAmountChange) {
+      onPartialAmountChange(envelope.id, partialAmount);
+    }
   };
+
+  const showPartialInput = envelope.transitionOption === "partial";
+  const showTransferOptions = envelope.transitionOption === "transfer";
 
   return (
     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 border rounded-lg">
@@ -106,9 +83,9 @@ export const TransitionEnvelopeCard = ({
           {envelope.transitionOption === "partial" && envelope.partialAmount !== undefined && (
             <div>Montant reporté: {envelope.partialAmount.toFixed(2)}€</div>
           )}
-          {envelope.transitionOption === "transfer" && envelope.transferTargetId && (
+          {envelope.transitionOption === "transfer" && envelope.transferTargetTitle && (
             <div>
-              Transfert vers: {envelope.transferTargetTitle || otherEnvelopes.find(e => e.id === envelope.transferTargetId)?.title || ""}
+              Transfert vers: {envelope.transferTargetTitle}
             </div>
           )}
         </div>
@@ -116,8 +93,8 @@ export const TransitionEnvelopeCard = ({
       
       <div className="flex flex-col gap-2 w-full sm:w-auto">
         <Select
-          defaultValue={envelope.transitionOption}
-          onValueChange={(value: TransitionOption) => handleOptionChange(value)}
+          value={envelope.transitionOption}
+          onValueChange={handleOptionChange}
         >
           <SelectTrigger className="w-full sm:w-[200px]">
             <SelectValue placeholder="Choisir une option" />
@@ -134,7 +111,7 @@ export const TransitionEnvelopeCard = ({
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="w-full sm:w-[200px]">
-                Choisir une enveloppe
+                {envelope.transferTargetTitle || "Choisir une enveloppe"}
                 <ChevronDown className="ml-2 h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
