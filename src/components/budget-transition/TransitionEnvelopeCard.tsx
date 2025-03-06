@@ -35,6 +35,7 @@ export const TransitionEnvelopeCard = ({
   // Local state to display selected option
   const [partialAmount, setPartialAmount] = useState(envelope.partialAmount || 0);
   
+  // Debug logs
   console.log('Rendering envelope card:', {
     id: envelope.id,
     title: envelope.title,
@@ -95,6 +96,7 @@ export const TransitionEnvelopeCard = ({
       
       <div className="flex flex-col gap-2 w-full sm:w-auto">
         <Select
+          defaultValue={envelope.transitionOption}
           value={envelope.transitionOption}
           onValueChange={handleOptionChange}
         >

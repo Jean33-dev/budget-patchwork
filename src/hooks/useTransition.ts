@@ -17,6 +17,8 @@ export const useTransition = (onComplete: () => void) => {
 
   useEffect(() => {
     // Map budgets to envelopes format
+    if (budgets.length === 0) return;
+    
     const initialEnvelopes: BudgetEnvelope[] = budgets.map(budget => {
       const remaining = budget.budget + (budget.carriedOver || 0) - budget.spent;
       
