@@ -34,7 +34,6 @@ export const TransitionEnvelopeCard = ({
 }: TransitionEnvelopeCardProps) => {
   // Local state to display selected option
   const [partialAmount, setPartialAmount] = useState(envelope.partialAmount || 0);
-  const [selectedOption, setSelectedOption] = useState<TransitionOption>(envelope.transitionOption);
   
   console.log('Rendering envelope card:', {
     id: envelope.id,
@@ -44,15 +43,13 @@ export const TransitionEnvelopeCard = ({
     targetTitle: envelope.transferTargetTitle
   });
 
-  // Update local state when props change
-  useEffect(() => {
-    setSelectedOption(envelope.transitionOption);
-  }, [envelope.transitionOption]);
+  // Determine whether to show the additional inputs based on envelope prop
+  const showPartialInput = envelope.transitionOption === "partial";
+  const showTransferOptions = envelope.transitionOption === "transfer";
 
   const handleOptionChange = (value: string) => {
     const option = value as TransitionOption;
     console.log(`Option changed for ${envelope.id}:`, option);
-    setSelectedOption(option);
     onOptionChange(envelope.id, option);
   };
 
@@ -79,10 +76,6 @@ export const TransitionEnvelopeCard = ({
     }
   };
 
-  // Determine whether to show the additional inputs
-  const showPartialInput = selectedOption === "partial";
-  const showTransferOptions = selectedOption === "transfer";
-
   return (
     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 border rounded-lg">
       <div className="space-y-1 flex-1">
@@ -102,7 +95,7 @@ export const TransitionEnvelopeCard = ({
       
       <div className="flex flex-col gap-2 w-full sm:w-auto">
         <Select
-          value={selectedOption}
+          value={envelope.transitionOption}
           onValueChange={handleOptionChange}
         >
           <SelectTrigger className="w-full sm:w-[200px]">
