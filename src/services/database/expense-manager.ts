@@ -20,7 +20,17 @@ export class ExpenseManager extends BaseDatabaseManager {
   }
 
   async deleteExpense(id: string) {
-    await this.ensureInitialized();
-    expenseQueries.delete(this.db, id);
+    try {
+      await this.ensureInitialized();
+      // Vérifier que l'ID n'est pas vide ou undefined
+      if (!id) {
+        console.error("Tentative de suppression avec un ID invalide");
+        return;
+      }
+      expenseQueries.delete(this.db, id);
+    } catch (error) {
+      console.error(`Erreur dans ExpenseManager.deleteExpense pour l'ID ${id}:`, error);
+      throw error;
+    }
   }
 }

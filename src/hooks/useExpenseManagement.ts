@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { db } from "@/services/database";
 
@@ -33,12 +33,10 @@ export const useExpenseManagement = (budgetId: string | null) => {
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
-  useEffect(() => {
-    loadData();
-  }, [budgetId]);
-
-  const loadData = async () => {
+  // Utiliser useCallback pour éviter des re-rendus inutiles
+  const loadData = useCallback(async () => {
     try {
       const loadedBudgets = await db.getBudgets();
       console.log('Budgets chargés:', loadedBudgets);
@@ -82,7 +80,11 @@ export const useExpenseManagement = (budgetId: string | null) => {
         description: "Impossible de charger les données"
       });
     }
-  };
+  }, [toast]);
+
+  useEffect(() => {
+    loadData();
+  }, [budgetId, loadData]);
 
   const filteredExpenses = budgetId 
     ? expenses.filter(expense => expense.linkedBudgetId === budgetId)
@@ -115,17 +117,20 @@ export const useExpenseManagement = (budgetId: string | null) => {
 
       await db.updateExpense(updatedExpense);
 
-      const updatedExpenses = expenses.map(expense => 
+      // Mettre à jour l'état local
+      setExpenses(prev => prev.map(expense => 
         expense.id === selectedExpense.id ? updatedExpense : expense
-      );
-
-      setExpenses(updatedExpenses);
+      ));
+      
       setEditDialogOpen(false);
       
       toast({
         title: "Dépense modifiée",
         description: `La dépense "${editTitle}" a été mise à jour.`
       });
+
+      // Recharger les données pour s'assurer que tout est synchronisé
+      await loadData();
     } catch (error) {
       console.error("Erreur lors de la modification de la dépense:", error);
       toast({
@@ -137,29 +142,32 @@ export const useExpenseManagement = (budgetId: string | null) => {
   };
 
   const handleDeleteConfirm = async () => {
-    if (!selectedExpense) return;
+    if (!selectedExpense || isDeleting) return;
 
     try {
+      setIsDeleting(true);
+      
+      console.log("Suppression de la dépense avec ID:", selectedExpense.id);
       await db.deleteExpense(selectedExpense.id);
 
       // Mettre à jour l'état local immédiatement
-      const updatedExpenses = expenses.filter(
-        expense => expense.id !== selectedExpense.id
-      );
-
-      setExpenses(updatedExpenses);
-      setDeleteDialogOpen(false);
-      setSelectedExpense(null); // Réinitialiser la dépense sélectionnée
+      setExpenses(prev => prev.filter(expense => expense.id !== selectedExpense.id));
       
       toast({
         title: "Dépense supprimée",
         description: `La dépense "${selectedExpense.title}" a été supprimée.`
       });
 
+      // Réinitialiser tous les états
+      setSelectedExpense(null);
+      setDeleteDialogOpen(false);
+      setIsDeleting(false);
+      
       // Recharger les données pour s'assurer que tout est synchronisé
       await loadData();
     } catch (error) {
       console.error("Erreur lors de la suppression de la dépense:", error);
+      setIsDeleting(false);
       toast({
         variant: "destructive",
         title: "Erreur",
@@ -196,13 +204,18 @@ export const useExpenseManagement = (budgetId: string | null) => {
       };
 
       await db.addExpense(newExpense);
-      setExpenses([...expenses, newExpense]);
+      
+      // Mettre à jour l'état local
+      setExpenses(prev => [...prev, newExpense]);
       setAddDialogOpen(false);
       
       toast({
         title: "Dépense ajoutée",
         description: `La dépense "${envelope.title}" a été créée avec succès.`
       });
+      
+      // Recharger les données
+      await loadData();
     } catch (error) {
       console.error("Erreur lors de l'ajout de la dépense:", error);
       toast({
@@ -234,6 +247,6 @@ export const useExpenseManagement = (budgetId: string | null) => {
     handleEditSubmit,
     handleDeleteConfirm,
     handleAddEnvelope,
-    loadData, // Exposer cette fonction pour permettre le rechargement
+    loadData,
   };
 };
