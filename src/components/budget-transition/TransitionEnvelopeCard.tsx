@@ -50,7 +50,7 @@ export const TransitionEnvelopeCard = ({
 
   const handleOptionChange = (value: string) => {
     const option = value as TransitionOption;
-    console.log(`Option changed for ${envelope.id}:`, option);
+    console.log(`Option changed for ${envelope.id} from ${envelope.transitionOption} to:`, option);
     onOptionChange(envelope.id, option);
   };
 

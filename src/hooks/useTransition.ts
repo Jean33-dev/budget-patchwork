@@ -79,10 +79,16 @@ export const useTransition = (onComplete: () => void) => {
       const updatedEnvelopes = prevEnvelopes.map(env => {
         if (env.id === envelopeId) {
           // Create a new envelope object with the updated option
-          const updatedEnv = { ...env, transitionOption: option };
+          const updatedEnv = { 
+            ...env, 
+            transitionOption: option 
+          };
           
           // Clear related fields if changing away from that option
-          if (option !== "partial") delete updatedEnv.partialAmount;
+          if (option !== "partial") {
+            delete updatedEnv.partialAmount;
+          }
+          
           if (option !== "transfer") {
             delete updatedEnv.transferTargetId;
             delete updatedEnv.transferTargetTitle;
