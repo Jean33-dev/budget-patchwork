@@ -75,8 +75,8 @@ export const useTransition = (onComplete: () => void) => {
   const handleOptionChange = (envelopeId: string, option: TransitionOption) => {
     console.log(`Option change for ${envelopeId}:`, option);
     
-    setEnvelopes(prev => 
-      prev.map(env => {
+    setEnvelopes(prevEnvelopes => {
+      const updatedEnvelopes = prevEnvelopes.map(env => {
         if (env.id === envelopeId) {
           // Create a new envelope object with the updated option
           const updatedEnv = { ...env, transitionOption: option };
@@ -92,8 +92,11 @@ export const useTransition = (onComplete: () => void) => {
           return updatedEnv;
         }
         return env;
-      })
-    );
+      });
+      
+      console.log('All envelopes after update:', updatedEnvelopes);
+      return updatedEnvelopes;
+    });
   };
 
   const handlePartialAmountChange = (envelopeId: string, amount: number) => {
