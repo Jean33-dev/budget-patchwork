@@ -34,23 +34,36 @@ export const TransitionEnvelopeCard = ({
 }: TransitionEnvelopeCardProps) => {
   // Local state to display selected option
   const [partialAmount, setPartialAmount] = useState(envelope.partialAmount || 0);
+  const [selectedOption, setSelectedOption] = useState<TransitionOption>(envelope.transitionOption);
+  
+  // Update the local state when the envelope changes
+  useEffect(() => {
+    setSelectedOption(envelope.transitionOption);
+    setPartialAmount(envelope.partialAmount || 0);
+  }, [envelope.transitionOption, envelope.partialAmount]);
   
   // Debug logs
   console.log('Rendering envelope card:', {
     id: envelope.id,
     title: envelope.title,
     option: envelope.transitionOption,
+    selectedOption: selectedOption,
     targetId: envelope.transferTargetId,
     targetTitle: envelope.transferTargetTitle
   });
 
   // Determine whether to show the additional inputs based on envelope prop
-  const showPartialInput = envelope.transitionOption === "partial";
-  const showTransferOptions = envelope.transitionOption === "transfer";
+  const showPartialInput = selectedOption === "partial";
+  const showTransferOptions = selectedOption === "transfer";
 
   const handleOptionChange = (value: string) => {
     const option = value as TransitionOption;
-    console.log(`Option changed for ${envelope.id} from ${envelope.transitionOption} to:`, option);
+    console.log(`Option changed for ${envelope.id} from ${selectedOption} to:`, option);
+    
+    // Update local state first
+    setSelectedOption(option);
+    
+    // Then update parent state
     onOptionChange(envelope.id, option);
   };
 
@@ -83,10 +96,10 @@ export const TransitionEnvelopeCard = ({
         <h3 className="font-medium">{envelope.title}</h3>
         <div className="text-sm text-muted-foreground space-y-1">
           <div>Solde restant: {envelope.remaining.toFixed(2)}€</div>
-          {envelope.transitionOption === "partial" && envelope.partialAmount !== undefined && (
+          {selectedOption === "partial" && envelope.partialAmount !== undefined && (
             <div>Montant reporté: {envelope.partialAmount.toFixed(2)}€</div>
           )}
-          {envelope.transitionOption === "transfer" && envelope.transferTargetTitle && (
+          {selectedOption === "transfer" && envelope.transferTargetTitle && (
             <div>
               Transfert vers: {envelope.transferTargetTitle}
             </div>
@@ -96,7 +109,7 @@ export const TransitionEnvelopeCard = ({
       
       <div className="flex flex-col gap-2 w-full sm:w-auto">
         <Select
-          value={envelope.transitionOption}
+          value={selectedOption}
           onValueChange={handleOptionChange}
         >
           <SelectTrigger className="w-full sm:w-[200px]">

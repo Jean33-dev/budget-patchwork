@@ -14,11 +14,18 @@ export const useTransition = (onComplete: () => void) => {
   const [showPartialDialog, setShowPartialDialog] = useState(false);
   const [showTransferDialog, setShowTransferDialog] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [preferencesLoaded, setPreferencesLoaded] = useState(false);
 
   useEffect(() => {
     // Map budgets to envelopes format
     if (budgets.length === 0) return;
     
+    // Only initialize once
+    if (preferencesLoaded) return;
+    
+    console.log('Initializing envelopes from budgets:', budgets.length);
+    
+    // Create base envelopes from budgets
     const initialEnvelopes: BudgetEnvelope[] = budgets.map(budget => {
       const remaining = budget.budget + (budget.carriedOver || 0) - budget.spent;
       
@@ -32,9 +39,6 @@ export const useTransition = (onComplete: () => void) => {
       };
     });
 
-    console.log('Budgets loaded:', budgets.length);
-    console.log('Initial envelopes:', initialEnvelopes);
-
     // Load saved preferences if available
     const savedPreferences = getTransitionPreferences();
     console.log('Preferences loaded:', savedPreferences);
@@ -44,7 +48,7 @@ export const useTransition = (onComplete: () => void) => {
       const updatedEnvelopes = initialEnvelopes.map(env => {
         const savedPref = savedPreferences.find(pref => pref.id === env.id);
         if (savedPref) {
-          console.log(`Preferences applied for ${env.id}:`, savedPref.transitionOption);
+          console.log(`Applying preferences for ${env.id}:`, savedPref.transitionOption);
           
           // For transfer options, we need to find the target envelope name
           let transferTargetTitle;
@@ -64,20 +68,24 @@ export const useTransition = (onComplete: () => void) => {
         return env;
       });
       
-      console.log('Envelopes after preferences:', updatedEnvelopes);
+      console.log('Envelopes after applying preferences:', updatedEnvelopes);
       setEnvelopes(updatedEnvelopes);
     } else {
       console.log('No preferences found, using default values');
       setEnvelopes(initialEnvelopes);
     }
-  }, [budgets, getTransitionPreferences]);
+    
+    setPreferencesLoaded(true);
+  }, [budgets, getTransitionPreferences, preferencesLoaded]);
 
   const handleOptionChange = (envelopeId: string, option: TransitionOption) => {
-    console.log(`Option change for ${envelopeId}:`, option);
+    console.log(`handleOptionChange for ${envelopeId} to:`, option);
     
     setEnvelopes(prevEnvelopes => {
       const updatedEnvelopes = prevEnvelopes.map(env => {
         if (env.id === envelopeId) {
+          console.log(`Updating envelope ${env.id} from ${env.transitionOption} to ${option}`);
+          
           // Create a new envelope object with the updated option
           const updatedEnv = { 
             ...env, 
@@ -164,6 +172,8 @@ export const useTransition = (onComplete: () => void) => {
         partialAmount: env.partialAmount,
         transferTargetId: env.transferTargetId
       }));
+      
+      console.log('Sending transition data:', transitionData);
       
       const success = await handleMonthTransition(transitionData);
       
