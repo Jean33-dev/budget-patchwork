@@ -142,17 +142,22 @@ export const useExpenseManagement = (budgetId: string | null) => {
     try {
       await db.deleteExpense(selectedExpense.id);
 
+      // Mettre à jour l'état local immédiatement
       const updatedExpenses = expenses.filter(
         expense => expense.id !== selectedExpense.id
       );
 
       setExpenses(updatedExpenses);
       setDeleteDialogOpen(false);
+      setSelectedExpense(null); // Réinitialiser la dépense sélectionnée
       
       toast({
         title: "Dépense supprimée",
         description: `La dépense "${selectedExpense.title}" a été supprimée.`
       });
+
+      // Recharger les données pour s'assurer que tout est synchronisé
+      await loadData();
     } catch (error) {
       console.error("Erreur lors de la suppression de la dépense:", error);
       toast({
@@ -181,7 +186,7 @@ export const useExpenseManagement = (budgetId: string | null) => {
 
     try {
       const newExpense: Expense = {
-        id: (expenses.length + 1).toString(),
+        id: Date.now().toString(), // Utiliser timestamp pour garantir unicité
         title: envelope.title,
         budget: envelope.budget,
         spent: envelope.budget,
@@ -229,5 +234,6 @@ export const useExpenseManagement = (budgetId: string | null) => {
     handleEditSubmit,
     handleDeleteConfirm,
     handleAddEnvelope,
+    loadData, // Exposer cette fonction pour permettre le rechargement
   };
 };

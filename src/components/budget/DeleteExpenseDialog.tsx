@@ -21,6 +21,11 @@ export const DeleteExpenseDialog = ({
   onOpenChange,
   onConfirm,
 }: DeleteExpenseDialogProps) => {
+  // Gérer la confirmation en s'assurant que la boîte de dialogue se ferme correctement
+  const handleConfirm = () => {
+    onConfirm();
+  };
+
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
@@ -32,7 +37,7 @@ export const DeleteExpenseDialog = ({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Annuler</AlertDialogCancel>
-          <AlertDialogAction onClick={onConfirm}>
+          <AlertDialogAction onClick={handleConfirm}>
             Supprimer
           </AlertDialogAction>
         </AlertDialogFooter>

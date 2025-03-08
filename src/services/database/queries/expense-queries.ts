@@ -42,6 +42,13 @@ export const expenseQueries = {
   },
   
   delete: (db: any, id: string): void => {
-    db.run('DELETE FROM expenses WHERE id = ?', [id]);
+    try {
+      console.log(`Tentative de suppression de la dépense avec l'ID: ${id}`);
+      db.run('DELETE FROM expenses WHERE id = ?', [id]);
+      console.log(`Dépense avec l'ID ${id} supprimée avec succès`);
+    } catch (error) {
+      console.error(`Erreur lors de la suppression de la dépense avec l'ID ${id}:`, error);
+      throw error; // Propager l'erreur pour une meilleure gestion
+    }
   }
 };
