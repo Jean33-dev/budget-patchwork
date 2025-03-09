@@ -29,7 +29,7 @@ export class ExpenseManager extends BaseDatabaseManager {
         return false;
       }
       
-      // Utiliser la nouvelle fonction de suppression qui retourne un statut
+      // Utiliser la fonction de suppression qui retourne un statut
       const deleteStatus = expenseQueries.delete(this.db, id);
       
       // Retourner le statut de la suppression
