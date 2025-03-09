@@ -21,14 +21,15 @@ export const DeleteExpenseDialog = ({
   onOpenChange,
   onConfirm,
 }: DeleteExpenseDialogProps) => {
-  // Gérer la confirmation en s'assurant que la boîte de dialogue se ferme correctement
+  // Gérer la confirmation en fermant d'abord la boîte de dialogue
   const handleConfirm = () => {
     // Fermer d'abord la boîte de dialogue avant d'exécuter la suppression
     onOpenChange(false);
-    // Puis exécuter la suppression après un court délai
+    // Puis exécuter la suppression après un court délai pour permettre
+    // à la boîte de dialogue de se fermer complètement
     setTimeout(() => {
       onConfirm();
-    }, 10);
+    }, 100);
   };
 
   return (
