@@ -1,0 +1,65 @@
+
+import { useToast } from "@/hooks/use-toast";
+import { db } from "@/services/database";
+import { Expense } from "@/types/expense";
+
+export const useExpenseAddition = (
+  setExpenses: React.Dispatch<React.SetStateAction<Expense[]>>,
+  loadData: () => Promise<void>,
+  budgetId: string | null
+) => {
+  const { toast } = useToast();
+
+  const handleAddEnvelope = async (envelope: {
+    title: string;
+    budget: number;
+    type: "income" | "expense" | "budget";
+    linkedBudgetId?: string;
+    date?: string;
+  }) => {
+    if (envelope.type !== "expense") {
+      toast({
+        variant: "destructive",
+        title: "Type invalide",
+        description: "Seules les dépenses peuvent être ajoutées ici."
+      });
+      return false;
+    }
+
+    try {
+      const newExpense: Expense = {
+        id: Date.now().toString(),
+        title: envelope.title,
+        budget: envelope.budget,
+        spent: envelope.budget,
+        type: "expense",
+        linkedBudgetId: budgetId || envelope.linkedBudgetId,
+        date: envelope.date || new Date().toISOString().split('T')[0]
+      };
+
+      await db.addExpense(newExpense);
+      
+      setExpenses(prev => [...prev, newExpense]);
+      
+      toast({
+        title: "Dépense ajoutée",
+        description: `La dépense "${envelope.title}" a été créée avec succès.`
+      });
+      
+      await loadData();
+      return true;
+    } catch (error) {
+      console.error("Erreur lors de l'ajout de la dépense:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible d'ajouter la dépense"
+      });
+      return false;
+    }
+  };
+
+  return {
+    handleAddEnvelope
+  };
+};
