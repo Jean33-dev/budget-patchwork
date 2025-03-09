@@ -144,9 +144,13 @@ export const useExpenseManagement = (budgetId: string | null) => {
       setIsDeleting(true);
       
       console.log("Suppression de la dépense avec ID:", selectedExpense.id);
+      
+      // Important: Attendre explicitement la résolution de la promesse
       const deleteSuccess = await db.deleteExpense(selectedExpense.id);
+      console.log("Résultat de la suppression:", deleteSuccess);
 
       if (deleteSuccess) {
+        // Si la suppression a réussi, mettre à jour l'état local
         setExpenses(prev => prev.filter(expense => expense.id !== selectedExpense.id));
         
         toast({
@@ -161,13 +165,15 @@ export const useExpenseManagement = (budgetId: string | null) => {
         });
       }
 
+      // Nettoyer l'état de l'UI dans tous les cas
       setSelectedExpense(null);
       setDeleteDialogOpen(false);
-      setIsDeleting(false);
       
+      // Utiliser un délai plus long pour éviter les problèmes de rendu
       setTimeout(() => {
-        loadData();
-      }, 300);
+        setIsDeleting(false);
+        loadData(); // Recharger les données fraîches
+      }, 500);
     } catch (error) {
       console.error("Erreur lors de la suppression de la dépense:", error);
       setIsDeleting(false);
@@ -176,6 +182,7 @@ export const useExpenseManagement = (budgetId: string | null) => {
         title: "Erreur",
         description: "Impossible de supprimer la dépense"
       });
+      setDeleteDialogOpen(false);
     }
   };
 

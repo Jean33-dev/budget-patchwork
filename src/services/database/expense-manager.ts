@@ -29,8 +29,18 @@ export class ExpenseManager extends BaseDatabaseManager {
         return false;
       }
       
+      // Vérifier si l'expense existe avant de tenter de la supprimer
+      const expenses = await this.getExpenses();
+      const expenseExists = expenses.some(expense => expense.id === id);
+      
+      if (!expenseExists) {
+        console.warn(`Aucune dépense trouvée avec l'ID: ${id}`);
+        return false;
+      }
+      
       // Utiliser la fonction de suppression qui retourne un statut
       const deleteStatus = expenseQueries.delete(this.db, id);
+      console.log(`Résultat de la suppression pour ID ${id}:`, deleteStatus);
       
       // Retourner le statut de la suppression
       return deleteStatus;
