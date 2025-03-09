@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { db } from "@/services/database";
@@ -35,14 +34,12 @@ export const useExpenseManagement = (budgetId: string | null) => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // Utiliser useCallback pour éviter des re-rendus inutiles
   const loadData = useCallback(async () => {
     try {
       const loadedBudgets = await db.getBudgets();
       console.log('Budgets chargés:', loadedBudgets);
 
       if (!loadedBudgets || loadedBudgets.length === 0) {
-        // Créer des budgets par défaut si aucun n'existe
         const defaultBudgets: Budget[] = [
           {
             id: "budget1",
@@ -117,7 +114,6 @@ export const useExpenseManagement = (budgetId: string | null) => {
 
       await db.updateExpense(updatedExpense);
 
-      // Mettre à jour l'état local
       setExpenses(prev => prev.map(expense => 
         expense.id === selectedExpense.id ? updatedExpense : expense
       ));
@@ -129,7 +125,6 @@ export const useExpenseManagement = (budgetId: string | null) => {
         description: `La dépense "${editTitle}" a été mise à jour.`
       });
 
-      // Recharger les données pour s'assurer que tout est synchronisé
       await loadData();
     } catch (error) {
       console.error("Erreur lors de la modification de la dépense:", error);
@@ -151,7 +146,6 @@ export const useExpenseManagement = (budgetId: string | null) => {
       const deleteSuccess = await db.deleteExpense(selectedExpense.id);
 
       if (deleteSuccess) {
-        // Mettre à jour l'état local immédiatement
         setExpenses(prev => prev.filter(expense => expense.id !== selectedExpense.id));
         
         toast({
@@ -166,13 +160,10 @@ export const useExpenseManagement = (budgetId: string | null) => {
         });
       }
 
-      // Réinitialiser tous les états
       setSelectedExpense(null);
       setDeleteDialogOpen(false);
       setIsDeleting(false);
       
-      // Attendre un court délai avant de recharger les données
-      // pour éviter les problèmes de timing
       setTimeout(() => {
         loadData();
       }, 300);
@@ -205,7 +196,7 @@ export const useExpenseManagement = (budgetId: string | null) => {
 
     try {
       const newExpense: Expense = {
-        id: Date.now().toString(), // Utiliser timestamp pour garantir unicité
+        id: Date.now().toString(),
         title: envelope.title,
         budget: envelope.budget,
         spent: envelope.budget,
@@ -216,7 +207,6 @@ export const useExpenseManagement = (budgetId: string | null) => {
 
       await db.addExpense(newExpense);
       
-      // Mettre à jour l'état local
       setExpenses(prev => [...prev, newExpense]);
       setAddDialogOpen(false);
       
@@ -225,7 +215,6 @@ export const useExpenseManagement = (budgetId: string | null) => {
         description: `La dépense "${envelope.title}" a été créée avec succès.`
       });
       
-      // Recharger les données
       await loadData();
     } catch (error) {
       console.error("Erreur lors de l'ajout de la dépense:", error);
