@@ -26,6 +26,18 @@ export const useExpenseAddition = (
       return false;
     }
 
+    // Ensure we have a linked budget ID, using the provided budgetId from props or from envelope
+    const selectedBudgetId = budgetId || envelope.linkedBudgetId;
+    
+    if (!selectedBudgetId) {
+      toast({
+        variant: "destructive",
+        title: "Budget manquant",
+        description: "Veuillez sélectionner un budget pour cette dépense."
+      });
+      return false;
+    }
+
     try {
       const newExpense: Expense = {
         id: Date.now().toString(),
@@ -33,10 +45,11 @@ export const useExpenseAddition = (
         budget: envelope.budget,
         spent: envelope.budget,
         type: "expense",
-        linkedBudgetId: budgetId || envelope.linkedBudgetId,
+        linkedBudgetId: selectedBudgetId,
         date: envelope.date || new Date().toISOString().split('T')[0]
       };
 
+      console.log("Ajout d'une nouvelle dépense:", newExpense);
       await db.addExpense(newExpense);
       
       setExpenses(prev => [...prev, newExpense]);
