@@ -17,25 +17,18 @@ export const useExpenseAddition = (
     linkedBudgetId?: string;
     date?: string;
   }) => {
-    if (envelope.type !== "expense") {
-      toast({
-        variant: "destructive",
-        title: "Type invalide",
-        description: "Seules les dépenses peuvent être ajoutées ici."
-      });
-      return false;
-    }
-
     // Ensure we have a linked budget ID, using the provided budgetId from props or from envelope
     const selectedBudgetId = budgetId || envelope.linkedBudgetId;
     
-    if (!selectedBudgetId) {
-      toast({
-        variant: "destructive",
-        title: "Budget manquant",
-        description: "Veuillez sélectionner un budget pour cette dépense."
-      });
-      return false;
+    if (envelope.type === "expense") {
+      if (!selectedBudgetId) {
+        toast({
+          variant: "destructive",
+          title: "Budget manquant",
+          description: "Veuillez sélectionner un budget pour cette dépense."
+        });
+        return false;
+      }
     }
 
     try {

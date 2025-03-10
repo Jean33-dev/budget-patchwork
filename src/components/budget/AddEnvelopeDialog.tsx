@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { EnvelopeForm } from "./EnvelopeForm";
@@ -31,7 +30,7 @@ export const AddEnvelopeDialog = ({
   const [linkedBudgetId, setLinkedBudgetId] = useState(defaultBudgetId || "");
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
 
-  // Reset form when dialog opens with defaultBudgetId
+  // Reset form when dialog opens or defaultBudgetId changes
   useEffect(() => {
     if (open) {
       setTitle("");
@@ -41,21 +40,20 @@ export const AddEnvelopeDialog = ({
     }
   }, [open, defaultBudgetId]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (type === "expense" && !linkedBudgetId) {
-      alert("Veuillez sélectionner un budget pour cette dépense");
-      return;
-    }
-
-    onAdd({ 
+    const result = await onAdd({ 
       title, 
       budget, 
       type,
       linkedBudgetId: type === "expense" ? linkedBudgetId : undefined,
       date
     });
+
+    if (result) {
+      onOpenChange(false);
+    }
   };
 
   const getTypeLabel = (type: "income" | "expense" | "budget") => {
