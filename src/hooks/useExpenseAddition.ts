@@ -16,12 +16,12 @@ export const useExpenseAddition = (
     type: "income" | "expense" | "budget";
     linkedBudgetId?: string;
     date?: string;
-  }) => {
-    // Ensure we have a linked budget ID, using the provided budgetId from props or from envelope
-    const selectedBudgetId = budgetId || envelope.linkedBudgetId;
-    
-    if (envelope.type === "expense") {
-      if (!selectedBudgetId) {
+  }): Promise<boolean> => {
+    try {
+      // Ensure we have a linked budget ID, using the provided budgetId from props or from envelope
+      const selectedBudgetId = envelope.linkedBudgetId || budgetId;
+      
+      if (envelope.type === "expense" && !selectedBudgetId) {
         toast({
           variant: "destructive",
           title: "Budget manquant",
@@ -29,9 +29,7 @@ export const useExpenseAddition = (
         });
         return false;
       }
-    }
 
-    try {
       const newExpense: Expense = {
         id: Date.now().toString(),
         title: envelope.title,

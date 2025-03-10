@@ -23,15 +23,15 @@ interface ExpenseListProps {
   setDeleteDialogOpen: (open: boolean) => void;
   handleEnvelopeClick: (expense: Expense) => void;
   handleDeleteClick: (expense: Expense) => void;
-  handleEditSubmit: () => void;
-  handleDeleteConfirm: () => void;
+  handleEditSubmit: () => Promise<boolean>;
+  handleDeleteConfirm: () => Promise<boolean>;
   handleAddEnvelope: (envelope: {
     title: string;
     budget: number;
     type: "income" | "expense" | "budget";
     linkedBudgetId?: string;
     date?: string;
-  }) => void;
+  }) => Promise<boolean>;
   defaultBudgetId?: string;
 }
 

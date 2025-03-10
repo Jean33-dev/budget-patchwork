@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { EnvelopeForm } from "./EnvelopeForm";
 
 interface AddEnvelopeDialogProps {
@@ -30,6 +30,10 @@ export const AddEnvelopeDialog = ({
   const [budget, setBudget] = useState(0);
   const [linkedBudgetId, setLinkedBudgetId] = useState(defaultBudgetId || "");
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  
+  console.log("AddEnvelopeDialog - availableBudgets:", availableBudgets);
+  console.log("AddEnvelopeDialog - defaultBudgetId:", defaultBudgetId);
+  console.log("AddEnvelopeDialog - linkedBudgetId:", linkedBudgetId);
 
   // Reset form when dialog opens or defaultBudgetId changes
   useEffect(() => {
@@ -38,8 +42,10 @@ export const AddEnvelopeDialog = ({
       setBudget(0);
       setLinkedBudgetId(defaultBudgetId || "");
       setDate(new Date().toISOString().split('T')[0]);
+      console.log("Form reset with defaultBudgetId:", defaultBudgetId);
+      console.log("Available budgets on form reset:", availableBudgets);
     }
-  }, [open, defaultBudgetId]);
+  }, [open, defaultBudgetId, availableBudgets]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,6 +81,12 @@ export const AddEnvelopeDialog = ({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Ajouter un nouveau {getTypeLabel(type)}</DialogTitle>
+          <DialogDescription>
+            {type === "expense" && availableBudgets.length === 0 
+              ? "Aucun budget disponible. Veuillez créer un budget d'abord."
+              : `Remplissez les détails pour ajouter un nouveau ${getTypeLabel(type)}.`
+            }
+          </DialogDescription>
         </DialogHeader>
         <EnvelopeForm
           type={type}

@@ -30,7 +30,7 @@ const Budgets = () => {
   };
 
   const handleEditSubmit = async () => {
-    if (!selectedBudget) return;
+    if (!selectedBudget) return false;
 
     const success = await updateBudget({
       ...selectedBudget,
@@ -42,6 +42,7 @@ const Budgets = () => {
       setEditDialogOpen(false);
       setSelectedBudget(null);
     }
+    return success;
   };
 
   const handleViewExpenses = (envelope: Budget) => {
@@ -52,8 +53,10 @@ const Budgets = () => {
     title: string; 
     budget: number; 
     type: "income" | "expense" | "budget";
+    linkedBudgetId?: string;
+    date?: string;
   }) => {
-    if (envelope.type !== "budget") return;
+    if (envelope.type !== "budget") return false;
     
     const budgetData = {
       title: envelope.title,
@@ -65,6 +68,7 @@ const Budgets = () => {
     if (success) {
       setAddDialogOpen(false);
     }
+    return success;
   };
 
   const handleDeleteClick = async (envelope: Budget) => {
@@ -79,10 +83,13 @@ const Budgets = () => {
   };
 
   const handleDeleteConfirm = async () => {
-    if (!selectedBudget) return;
-    await deleteBudget(selectedBudget.id);
-    setDeleteDialogOpen(false);
-    setSelectedBudget(null);
+    if (!selectedBudget) return false;
+    const success = await deleteBudget(selectedBudget.id);
+    if (success) {
+      setDeleteDialogOpen(false);
+      setSelectedBudget(null);
+    }
+    return success;
   };
 
   return (
@@ -116,6 +123,7 @@ const Budgets = () => {
         open={addDialogOpen}
         onOpenChange={setAddDialogOpen}
         onAdd={handleAddEnvelope}
+        availableBudgets={[]}
       />
 
       <EditBudgetDialog

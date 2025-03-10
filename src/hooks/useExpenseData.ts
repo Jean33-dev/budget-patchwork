@@ -1,5 +1,5 @@
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { db } from "@/services/database";
 import { Expense, Budget } from "@/types/expense";
@@ -53,6 +53,11 @@ export const useExpenseData = (budgetId: string | null) => {
       });
     }
   }, [toast]);
+
+  // Load data when component mounts
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const filteredExpenses = budgetId 
     ? expenses.filter(expense => expense.linkedBudgetId === budgetId)
