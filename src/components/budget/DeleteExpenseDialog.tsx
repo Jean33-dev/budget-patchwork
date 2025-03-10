@@ -13,7 +13,7 @@ import {
 interface DeleteExpenseDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onConfirm: () => void;
+  onConfirm: () => Promise<boolean>;
 }
 
 export const DeleteExpenseDialog = ({
