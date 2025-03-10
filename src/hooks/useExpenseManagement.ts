@@ -66,6 +66,7 @@ export const useExpenseManagement = (budgetId: string | null) => {
       setEditDialogOpen(false);
       resetEditState();
     }
+    return result;
   };
 
   // Handle delete completion
@@ -74,6 +75,7 @@ export const useExpenseManagement = (budgetId: string | null) => {
     if (result) {
       setDeleteDialogOpen(false);
     }
+    return result;
   };
 
   // Handle adding an envelope
@@ -83,11 +85,8 @@ export const useExpenseManagement = (budgetId: string | null) => {
     type: "income" | "expense" | "budget";
     linkedBudgetId?: string;
     date?: string;
-  }) => {
-    const result = await handleAddEnvelope(envelope);
-    if (result) {
-      setAddDialogOpen(false);
-    }
+  }): Promise<boolean> => {
+    return await handleAddEnvelope(envelope);
   };
 
   return {

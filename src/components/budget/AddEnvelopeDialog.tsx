@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { EnvelopeForm } from "./EnvelopeForm";
@@ -12,7 +13,7 @@ interface AddEnvelopeDialogProps {
     type: "income" | "expense" | "budget";
     linkedBudgetId?: string;
     date: string;
-  }) => void;
+  }) => Promise<boolean> | boolean;
   availableBudgets?: Array<{ id: string; title: string }>;
   defaultBudgetId?: string;
 }
@@ -51,7 +52,7 @@ export const AddEnvelopeDialog = ({
       date
     });
 
-    if (result) {
+    if (result === true) {
       onOpenChange(false);
     }
   };
