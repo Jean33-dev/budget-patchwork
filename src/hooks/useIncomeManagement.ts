@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { db, Income } from "@/services/database";
 import { useToast } from "@/hooks/use-toast";
@@ -16,7 +15,6 @@ export const useIncomeManagement = () => {
   } | null>(null);
   const [envelopes, setEnvelopes] = useState<Income[]>([]);
 
-  // Initialiser la base de données et charger les revenus
   useEffect(() => {
     const initializeData = async () => {
       await db.init();
@@ -27,57 +25,92 @@ export const useIncomeManagement = () => {
     initializeData();
   }, []);
 
-  const handleAddIncome = async (newIncome: { title: string; budget: number; type: "income"; date: string }) => {
-    const income = {
-      id: Date.now().toString(),
-      ...newIncome,
-      spent: newIncome.budget,
-    };
-    
-    await db.addIncome(income);
-    setEnvelopes(prev => [...prev, income]);
-    
-    toast({
-      title: "Succès",
-      description: "Nouveau revenu ajouté",
-    });
+  const handleAddIncome = async (newIncome: { title: string; budget: number; type: "income"; date: string }): Promise<boolean> => {
+    try {
+      const income = {
+        id: Date.now().toString(),
+        ...newIncome,
+        spent: newIncome.budget,
+      };
+      
+      await db.addIncome(income);
+      setEnvelopes(prev => [...prev, income]);
+      
+      toast({
+        title: "Succès",
+        description: "Nouveau revenu ajouté",
+      });
+      
+      return true;
+    } catch (error) {
+      console.error("Erreur lors de l'ajout du revenu:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible d'ajouter le revenu"
+      });
+      return false;
+    }
   };
 
-  const handleEditIncome = async (editedIncome: { title: string; budget: number; type: "income"; date: string }) => {
-    if (!selectedIncome) return;
+  const handleEditIncome = async (editedIncome: { title: string; budget: number; type: "income"; date: string }): Promise<boolean> => {
+    if (!selectedIncome) return false;
 
-    const updatedIncome = {
-      ...selectedIncome,
-      title: editedIncome.title,
-      budget: editedIncome.budget,
-      spent: editedIncome.budget,
-      date: editedIncome.date,
-    };
+    try {
+      const updatedIncome = {
+        ...selectedIncome,
+        title: editedIncome.title,
+        budget: editedIncome.budget,
+        spent: editedIncome.budget,
+        date: editedIncome.date,
+      };
 
-    await db.updateIncome(updatedIncome);
-    setEnvelopes(prev => prev.map(env => 
-      env.id === selectedIncome.id 
-        ? updatedIncome
-        : env
-    ));
+      await db.updateIncome(updatedIncome);
+      setEnvelopes(prev => prev.map(env => 
+        env.id === selectedIncome.id 
+          ? updatedIncome
+          : env
+      ));
 
-    setEditDialogOpen(false);
-    setSelectedIncome(null);
-    
-    toast({
-      title: "Succès",
-      description: "Revenu modifié",
-    });
+      setEditDialogOpen(false);
+      setSelectedIncome(null);
+      
+      toast({
+        title: "Succès",
+        description: "Revenu modifié",
+      });
+      
+      return true;
+    } catch (error) {
+      console.error("Erreur lors de la modification du revenu:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible de modifier le revenu"
+      });
+      return false;
+    }
   };
 
-  const handleDeleteIncome = async (incomeId: string) => {
-    await db.deleteIncome(incomeId);
-    setEnvelopes(prev => prev.filter(env => env.id !== incomeId));
-    
-    toast({
-      title: "Succès",
-      description: "Revenu supprimé",
-    });
+  const handleDeleteIncome = async (incomeId: string): Promise<boolean> => {
+    try {
+      await db.deleteIncome(incomeId);
+      setEnvelopes(prev => prev.filter(env => env.id !== incomeId));
+      
+      toast({
+        title: "Succès",
+        description: "Revenu supprimé",
+      });
+      return true;
+    } catch (error) {
+      console.error("Erreur lors de la suppression du revenu:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible de supprimer le revenu"
+      });
+      return false;
+    }
   };
 
   const handleIncomeClick = (envelope: Income) => {
