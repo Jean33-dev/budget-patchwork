@@ -1,4 +1,3 @@
-
 import { Expense } from '../models/expense';
 
 export const expenseQueries = {

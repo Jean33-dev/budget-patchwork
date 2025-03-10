@@ -13,55 +13,54 @@ export const useExpenseDeletion = (
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDeleteClick = (expense: Expense) => {
+    console.log("Sélection de la dépense pour suppression:", expense);
     setSelectedExpense(expense);
-    return true; // Return true to indicate dialog should open
+    return true;
   };
 
   const resetDeleteState = () => {
+    console.log("Réinitialisation de l'état de suppression");
     setSelectedExpense(null);
+    setIsDeleting(false);
   };
 
   const handleDeleteConfirm = async () => {
-    if (!selectedExpense || isDeleting) return false;
+    if (!selectedExpense || isDeleting) {
+      console.log("Suppression impossible:", { selectedExpense, isDeleting });
+      return false;
+    }
 
     try {
       setIsDeleting(true);
-      
       console.log("Suppression de la dépense avec ID:", selectedExpense.id);
       
-      // Important: Attendre explicitement la résolution de la promesse
+      // Attendre explicitement la résolution de la promesse
       const deleteSuccess = await db.deleteExpense(selectedExpense.id);
       console.log("Résultat de la suppression:", deleteSuccess);
 
       if (deleteSuccess) {
-        // Si la suppression a réussi, mettre à jour l'état local
+        // Mise à jour de l'état local seulement si la suppression a réussi
         setExpenses(prev => prev.filter(expense => expense.id !== selectedExpense.id));
         
         toast({
           title: "Dépense supprimée",
           description: `La dépense "${selectedExpense.title}" a été supprimée.`
         });
-      } else {
-        toast({
-          variant: "destructive",
-          title: "Erreur",
-          description: "La dépense n'a pas pu être supprimée. Elle n'existe peut-être plus."
-        });
-      }
 
-      // Nettoyer l'état de l'UI dans tous les cas
-      resetDeleteState();
-      
-      // Utiliser un délai plus long pour éviter les problèmes de rendu
-      setTimeout(() => {
-        setIsDeleting(false);
-        loadData(); // Recharger les données fraîches
-      }, 500);
-      
-      return true;
+        // Réinitialiser l'état
+        resetDeleteState();
+        
+        // Recharger les données après un court délai
+        setTimeout(() => {
+          loadData();
+        }, 500);
+        
+        return true;
+      } else {
+        throw new Error("La suppression a échoué");
+      }
     } catch (error) {
       console.error("Erreur lors de la suppression de la dépense:", error);
-      setIsDeleting(false);
       toast({
         variant: "destructive",
         title: "Erreur",
@@ -69,6 +68,8 @@ export const useExpenseDeletion = (
       });
       resetDeleteState();
       return false;
+    } finally {
+      setIsDeleting(false);
     }
   };
 
