@@ -13,59 +13,70 @@ export const useExpenseDeletion = (
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDeleteClick = (expense: Expense) => {
-    console.log("Sélection de la dépense pour suppression:", expense);
+    console.log("[DEBUG] Début handleDeleteClick avec expense:", expense);
     setSelectedExpense(expense);
+    console.log("[DEBUG] Fin handleDeleteClick - selectedExpense mis à jour");
     return true;
   };
 
   const resetDeleteState = () => {
-    console.log("Réinitialisation de l'état de suppression");
+    console.log("[DEBUG] Début resetDeleteState");
     setSelectedExpense(null);
     setIsDeleting(false);
+    console.log("[DEBUG] Fin resetDeleteState - états réinitialisés");
   };
 
   const handleDeleteConfirm = async () => {
+    console.log("[DEBUG] Début handleDeleteConfirm");
+    
     if (!selectedExpense || isDeleting) {
-      console.log("Suppression impossible:", { selectedExpense, isDeleting });
+      console.log("[DEBUG] Abandon handleDeleteConfirm - conditions non remplies:", {
+        selectedExpense,
+        isDeleting
+      });
       return false;
     }
 
     try {
-      // Marquer comme en cours de suppression
       setIsDeleting(true);
+      console.log("[DEBUG] État isDeleting mis à true");
       
-      // Sauvegarder les informations de la dépense avant toute opération
       const expenseToDelete = { ...selectedExpense };
-      console.log("Suppression de la dépense avec ID:", expenseToDelete.id);
+      console.log("[DEBUG] Préparation suppression pour ID:", expenseToDelete.id);
       
-      // Supprimer de l'état local pour une meilleure réactivité
-      setExpenses(prev => prev.filter(exp => exp.id !== expenseToDelete.id));
+      // Mise à jour optimiste de l'UI
+      setExpenses(prev => {
+        console.log("[DEBUG] Mise à jour optimiste - Nombre d'expenses avant:", prev.length);
+        const newExpenses = prev.filter(exp => exp.id !== expenseToDelete.id);
+        console.log("[DEBUG] Mise à jour optimiste - Nombre d'expenses après:", newExpenses.length);
+        return newExpenses;
+      });
       
-      // Effectuer la suppression dans la base de données
+      // Suppression dans la BD
+      console.log("[DEBUG] Début suppression BD");
       const deleteSuccess = await db.deleteExpense(expenseToDelete.id);
-      console.log("Résultat de la suppression:", deleteSuccess);
+      console.log("[DEBUG] Résultat suppression BD:", deleteSuccess);
 
       if (deleteSuccess) {
-        // Afficher une notification de succès
         toast({
           title: "Dépense supprimée",
           description: `La dépense "${expenseToDelete.title}" a été supprimée.`
         });
         
-        // Attendre puis recharger les données
-        setTimeout(() => {
-          // Recharger les données de manière asynchrone
-          loadData().catch(err => {
-            console.error("Erreur lors du rechargement des données:", err);
-          });
-        }, 500);
+        // Attendre avant de recharger
+        console.log("[DEBUG] Début délai avant rechargement");
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        console.log("[DEBUG] Début rechargement données");
+        await loadData();
+        console.log("[DEBUG] Fin rechargement données");
         
         return true;
       } else {
         throw new Error("La suppression a échoué");
       }
     } catch (error) {
-      console.error("Erreur lors de la suppression de la dépense:", error);
+      console.error("[DEBUG] Erreur dans handleDeleteConfirm:", error);
       
       toast({
         variant: "destructive",
@@ -73,21 +84,16 @@ export const useExpenseDeletion = (
         description: "Impossible de supprimer la dépense"
       });
       
-      // Recharger les données pour rétablir l'état correct
-      setTimeout(async () => {
-        try {
-          await loadData();
-        } catch (err) {
-          console.error("Erreur lors du rechargement des données après échec:", err);
-        }
-      }, 500);
+      // Recharger en cas d'erreur
+      console.log("[DEBUG] Tentative de rechargement après erreur");
+      await loadData();
       
       return false;
     } finally {
-      // Attendre avant de réinitialiser l'état
-      setTimeout(() => {
-        resetDeleteState();
-      }, 1000);
+      console.log("[DEBUG] Début finally block");
+      await new Promise(resolve => setTimeout(resolve, 500));
+      resetDeleteState();
+      console.log("[DEBUG] Fin finally block - État réinitialisé");
     }
   };
 
@@ -99,3 +105,4 @@ export const useExpenseDeletion = (
     resetDeleteState
   };
 };
+

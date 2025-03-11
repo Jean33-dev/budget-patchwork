@@ -9,7 +9,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Loader2 } from "lucide-react";
 
 interface DeleteExpenseDialogProps {
@@ -25,35 +25,44 @@ export const DeleteExpenseDialog = ({
 }: DeleteExpenseDialogProps) => {
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const handleConfirm = async () => {
-    if (isProcessing) return;
+  const handleConfirm = useCallback(async () => {
+    if (isProcessing) {
+      console.log("[DEBUG] DeleteDialog - Tentative de confirmation pendant le traitement, ignorée");
+      return;
+    }
     
-    // Marquer comme en cours de traitement
+    console.log("[DEBUG] DeleteDialog - Début de la confirmation");
     setIsProcessing(true);
     
-    // Fermer la boîte de dialogue immédiatement
-    onOpenChange(false);
-    
-    // Utiliser un timeout pour s'assurer que la boîte de dialogue est fermée avant de continuer
-    setTimeout(async () => {
-      try {
-        // Exécuter l'action de confirmation (la suppression)
-        await onConfirm();
-      } catch (error) {
-        console.error("Erreur lors de la confirmation de suppression:", error);
-      } finally {
-        // Réinitialiser l'état de traitement
-        setIsProcessing(false);
+    try {
+      console.log("[DEBUG] DeleteDialog - Exécution de onConfirm");
+      const result = await onConfirm();
+      console.log("[DEBUG] DeleteDialog - Résultat onConfirm:", result);
+      
+      if (result) {
+        console.log("[DEBUG] DeleteDialog - Fermeture de la boîte de dialogue");
+        onOpenChange(false);
       }
-    }, 300);
-  };
+    } catch (error) {
+      console.error("[DEBUG] DeleteDialog - Erreur pendant la confirmation:", error);
+    } finally {
+      console.log("[DEBUG] DeleteDialog - Réinitialisation de l'état de traitement");
+      // Petit délai avant de réinitialiser l'état
+      setTimeout(() => {
+        setIsProcessing(false);
+      }, 500);
+    }
+  }, [isProcessing, onConfirm, onOpenChange]);
 
   return (
     <AlertDialog 
       open={open} 
       onOpenChange={(newOpen) => {
-        // Ne pas permettre la fermeture manuelle pendant le traitement
-        if (isProcessing && !newOpen) return;
+        console.log("[DEBUG] DeleteDialog - Changement d'état ouvert:", newOpen, "isProcessing:", isProcessing);
+        if (isProcessing) {
+          console.log("[DEBUG] DeleteDialog - Tentative de fermeture pendant le traitement, ignorée");
+          return;
+        }
         onOpenChange(newOpen);
       }}
     >
@@ -67,7 +76,7 @@ export const DeleteExpenseDialog = ({
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isProcessing}>Annuler</AlertDialogCancel>
           <AlertDialogAction 
-            onClick={handleConfirm} 
+            onClick={handleConfirm}
             disabled={isProcessing}
           >
             {isProcessing ? (
