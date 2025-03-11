@@ -41,11 +41,11 @@ export const useExpenseDeletion = (
       setIsDeleting(true);
       console.log("[DEBUG] État isDeleting mis à true");
       
-      // Créer une copie locale de l'expense à supprimer
+      // Create a local copy of the expense to delete
       const expenseToDelete = { ...selectedExpense };
       console.log("[DEBUG] Préparation suppression pour ID:", expenseToDelete.id);
       
-      // Mise à jour optimiste de l'UI - faire une copie pour éviter les problèmes de référence
+      // Optimistic UI update - make a copy to avoid reference issues
       setExpenses(prev => {
         console.log("[DEBUG] Mise à jour optimiste - Nombre d'expenses avant:", prev.length);
         const newExpenses = prev.filter(exp => exp.id !== expenseToDelete.id);
@@ -53,10 +53,10 @@ export const useExpenseDeletion = (
         return newExpenses;
       });
       
-      // Courte pause pour permettre à l'UI de se mettre à jour
-      await new Promise(resolve => setTimeout(resolve, 100));
+      // Short pause to allow UI to update
+      await new Promise(resolve => setTimeout(resolve, 50));
       
-      // Suppression dans la BD
+      // Database deletion
       console.log("[DEBUG] Début suppression BD");
       const deleteSuccess = await db.deleteExpense(expenseToDelete.id);
       console.log("[DEBUG] Résultat suppression BD:", deleteSuccess);
@@ -67,9 +67,9 @@ export const useExpenseDeletion = (
           description: `La dépense "${expenseToDelete.title}" a été supprimée.`
         });
         
-        // Délai avant le rechargement des données
+        // Delay before reloading data
         console.log("[DEBUG] Début délai avant rechargement");
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise(resolve => setTimeout(resolve, 300));
         
         try {
           console.log("[DEBUG] Début rechargement données");
@@ -92,7 +92,7 @@ export const useExpenseDeletion = (
         description: "Impossible de supprimer la dépense"
       });
       
-      // Recharger en cas d'erreur
+      // Try to reload in case of error
       try {
         console.log("[DEBUG] Tentative de rechargement après erreur");
         await loadData();
@@ -104,8 +104,8 @@ export const useExpenseDeletion = (
     } finally {
       console.log("[DEBUG] Début finally block");
       
-      // Attendre un moment avant de réinitialiser l'état
-      await new Promise(resolve => setTimeout(resolve, 300));
+      // Wait a moment before resetting state
+      await new Promise(resolve => setTimeout(resolve, 200));
       
       try {
         resetDeleteState();

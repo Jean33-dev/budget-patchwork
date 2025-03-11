@@ -26,7 +26,7 @@ export const DeleteExpenseDialog = ({
   const [isProcessing, setIsProcessing] = useState(false);
   const [forceClose, setForceClose] = useState(false);
 
-  // Réinitialiser l'état quand le dialogue s'ouvre
+  // Reset state when dialog opens
   useEffect(() => {
     if (open) {
       setIsProcessing(false);
@@ -34,7 +34,7 @@ export const DeleteExpenseDialog = ({
     }
   }, [open]);
 
-  // Forcer la fermeture du dialogue après un délai si forceClose est true
+  // Force close the dialog after a delay if forceClose is true
   useEffect(() => {
     if (forceClose) {
       const timer = setTimeout(() => {
@@ -47,7 +47,7 @@ export const DeleteExpenseDialog = ({
 
   const handleConfirm = async () => {
     if (isProcessing) {
-      console.log("[DEBUG] DeleteDialog - Déjà en cours de traitement, demande ignorée");
+      console.log("[DEBUG] DeleteDialog - Already processing, ignoring request");
       return;
     }
     
@@ -55,8 +55,8 @@ export const DeleteExpenseDialog = ({
       console.log("[DEBUG] DeleteDialog - Début de la confirmation");
       setIsProcessing(true);
       
-      // Utiliser un délai pour éviter que l'interface ne bloque
-      await new Promise(resolve => setTimeout(resolve, 100));
+      // Short delay to prevent UI from blocking
+      await new Promise(resolve => setTimeout(resolve, 50));
       
       console.log("[DEBUG] DeleteDialog - Exécution de onConfirm");
       const result = await onConfirm();
@@ -64,8 +64,10 @@ export const DeleteExpenseDialog = ({
       
       if (result) {
         console.log("[DEBUG] DeleteDialog - Fermeture de la boîte de dialogue");
-        // Plutôt que de fermer directement, on indique qu'il faut fermer
+        // Instead of closing directly, indicate that we need to close
         setForceClose(true);
+        console.log("[DEBUG] DeleteDialog - Réinitialisation de l'état de traitement");
+        // Don't reset isProcessing here, wait for the useEffect to handle it
       }
     } catch (error) {
       console.error("[DEBUG] DeleteDialog - Erreur pendant la confirmation:", error);
@@ -78,7 +80,7 @@ export const DeleteExpenseDialog = ({
       open={open && !forceClose} 
       onOpenChange={(newOpen) => {
         console.log("[DEBUG] DeleteDialog - Changement d'état demandé:", newOpen, "isProcessing:", isProcessing);
-        if (isProcessing && !newOpen) {
+        if (isProcessing && newOpen === false) {
           console.log("[DEBUG] DeleteDialog - Tentative de fermeture pendant le traitement, ignorée");
           return;
         }
