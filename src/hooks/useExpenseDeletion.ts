@@ -31,32 +31,32 @@ export const useExpenseDeletion = (
     }
 
     try {
-      // Marquer comme en cours de suppression pour éviter les doubles clics
+      // Marquer comme en cours de suppression
       setIsDeleting(true);
-      console.log("Suppression de la dépense avec ID:", selectedExpense.id);
       
-      // Copier l'ID localement pour éviter des problèmes si selectedExpense change
-      const expenseIdToDelete = selectedExpense.id;
+      // Sauvegarder les informations de la dépense avant de changer les états
+      const expenseToDelete = { ...selectedExpense };
+      console.log("Suppression de la dépense avec ID:", expenseToDelete.id);
       
-      // Supprimer de l'état local d'abord pour une meilleure réactivité UI
-      setExpenses(prev => prev.filter(expense => expense.id !== expenseIdToDelete));
+      // Mettre à jour l'état local immédiatement pour améliorer la réactivité
+      setExpenses(prev => prev.filter(exp => exp.id !== expenseToDelete.id));
       
       // Effectuer la suppression dans la base de données
-      const deleteSuccess = await db.deleteExpense(expenseIdToDelete);
+      const deleteSuccess = await db.deleteExpense(expenseToDelete.id);
       console.log("Résultat de la suppression:", deleteSuccess);
 
       if (deleteSuccess) {
         toast({
           title: "Dépense supprimée",
-          description: `La dépense "${selectedExpense.title}" a été supprimée.`
+          description: `La dépense "${expenseToDelete.title}" a été supprimée.`
         });
         
-        // Recharger les données après un délai pour permettre à l'UI de se mettre à jour
+        // Attendre que la notification soit affichée avant de recharger
         setTimeout(() => {
           loadData().catch(err => {
             console.error("Erreur lors du rechargement des données:", err);
           });
-        }, 500);
+        }, 1000);
         
         return true;
       } else {
@@ -71,14 +71,16 @@ export const useExpenseDeletion = (
       });
       
       // Recharger les données pour restaurer l'état correct
-      loadData().catch(err => {
+      await loadData().catch(err => {
         console.error("Erreur lors du rechargement des données après échec:", err);
       });
       
       return false;
     } finally {
-      // Réinitialiser l'état dans tous les cas
-      resetDeleteState();
+      // Attendre un peu avant de réinitialiser l'état
+      setTimeout(() => {
+        resetDeleteState();
+      }, 500);
     }
   };
 

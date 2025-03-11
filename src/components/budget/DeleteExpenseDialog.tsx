@@ -24,37 +24,36 @@ export const DeleteExpenseDialog = ({
 }: DeleteExpenseDialogProps) => {
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Gérer la confirmation en fermant d'abord la boîte de dialogue
   const handleConfirm = async () => {
     if (isProcessing) return;
     
     try {
-      // Indiquer que le traitement est en cours
+      // Marquer comme en cours de traitement
       setIsProcessing(true);
       
-      // Fermer la boîte de dialogue immédiatement
+      // Fermer la boîte de dialogue
       onOpenChange(false);
       
-      // Délai plus long pour s'assurer que la boîte de dialogue est complètement fermée
-      setTimeout(async () => {
-        try {
-          // Exécuter la suppression après la fermeture de la boîte de dialogue
-          await onConfirm();
-        } catch (error) {
-          console.error("Erreur lors de la confirmation de suppression:", error);
-        } finally {
-          // Réinitialiser l'état de traitement
-          setIsProcessing(false);
-        }
-      }, 300);
+      // On laisse la boîte de dialogue se fermer complètement avant de continuer
+      // en utilisant un délai plus long
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Exécuter l'action de confirmation (la suppression)
+      await onConfirm();
     } catch (error) {
-      console.error("Erreur lors de la gestion de la confirmation:", error);
+      console.error("Erreur lors de la confirmation de suppression:", error);
+    } finally {
+      // Réinitialiser l'état de traitement
       setIsProcessing(false);
     }
   };
 
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
+    <AlertDialog open={open} onOpenChange={(newOpen) => {
+      // Si on est en train de traiter, ne pas permettre la fermeture manuelle
+      if (isProcessing && !newOpen) return;
+      onOpenChange(newOpen);
+    }}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Supprimer la dépense</AlertDialogTitle>
