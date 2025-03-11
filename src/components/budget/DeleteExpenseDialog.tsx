@@ -25,25 +25,28 @@ export const DeleteExpenseDialog = ({
 }: DeleteExpenseDialogProps) => {
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const handleConfirm = async () => {
-    if (isProcessing) return;
+  const handleConfirm = async (e: React.MouseEvent) => {
+    // Empêcher le comportement par défaut du bouton
+    e.preventDefault();
     
+    if (isProcessing) return;
     setIsProcessing(true);
-    console.log("[DEBUG] DeleteDialog - Début de la confirmation");
-    console.log("[DEBUG] DeleteDialog - Exécution de onConfirm");
     
     try {
-      const result = await onConfirm();
-      console.log("[DEBUG] DeleteDialog - Résultat onConfirm:", result);
+      // Exécuter la fonction de confirmation et attendre le résultat
+      const success = await onConfirm();
       
-      if (result) {
-        console.log("[DEBUG] DeleteDialog - Fermeture de la boîte de dialogue");
-        onOpenChange(false);
+      // Si la suppression a réussi, fermer la boîte de dialogue après un court délai
+      if (success) {
+        setTimeout(() => {
+          onOpenChange(false);
+        }, 100);
       }
     } catch (error) {
-      console.error("[ERREUR] Erreur lors de la suppression:", error);
+      console.error("Erreur lors de la suppression:", error);
     } finally {
-      // Désactiver l'état de traitement après un court délai
+      // Désactiver l'état de traitement après un délai,
+      // même si nous avons déjà fermé la boîte de dialogue
       setTimeout(() => {
         setIsProcessing(false);
       }, 300);
@@ -54,8 +57,9 @@ export const DeleteExpenseDialog = ({
     <AlertDialog 
       open={open} 
       onOpenChange={(newOpen) => {
+        // Empêcher la fermeture pendant le traitement
         if (isProcessing && !newOpen) {
-          return; // Empêcher la fermeture pendant le traitement
+          return;
         }
         onOpenChange(newOpen);
       }}
@@ -70,10 +74,7 @@ export const DeleteExpenseDialog = ({
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isProcessing}>Annuler</AlertDialogCancel>
           <AlertDialogAction 
-            onClick={(e) => {
-              e.preventDefault(); // Empêcher le comportement par défaut du bouton
-              handleConfirm();
-            }}
+            onClick={handleConfirm}
             disabled={isProcessing}
           >
             {isProcessing ? (
