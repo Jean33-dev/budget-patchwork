@@ -12,46 +12,35 @@ export const useExpenseDeletion = (
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // Fonction pour initialiser la suppression
   const handleDeleteClick = useCallback((expense: Expense) => {
     setSelectedExpense(expense);
     return true;
   }, []);
 
-  // Fonction pour réinitialiser l'état
   const resetDeleteState = useCallback(() => {
     setSelectedExpense(null);
     setIsDeleting(false);
   }, []);
 
-  // Fonction pour confirmer et exécuter la suppression
   const handleDeleteConfirm = useCallback(async () => {
-    if (!selectedExpense || isDeleting) {
-      return false;
-    }
+    if (!selectedExpense || isDeleting) return false;
 
     setIsDeleting(true);
     
     try {
-      // Stocker l'ID de la dépense sélectionnée car nous allons réinitialiser l'état selectedExpense
       const expenseId = selectedExpense.id;
       
-      // 1. Mise à jour optimiste de l'UI
-      setExpenses(prev => prev.filter(exp => exp.id !== expenseId));
-      
-      // 2. Suppression dans la base de données
+      // 1. Suppression dans la base de données d'abord
       const result = await db.deleteExpense(expenseId);
       
       if (result) {
+        // 2. Si la suppression a réussi, mise à jour de l'état local
+        setExpenses(prev => prev.filter(exp => exp.id !== expenseId));
+        
         toast({
           title: "Dépense supprimée",
           description: "La dépense a été supprimée avec succès."
         });
-        
-        // 3. Recharger les données après un court délai
-        // On utilise setTimeout pour éviter les mises à jour d'état simultanées
-        await new Promise(resolve => setTimeout(resolve, 300));
-        await loadData();
         
         return true;
       } else {
@@ -66,15 +55,12 @@ export const useExpenseDeletion = (
         description: "Impossible de supprimer la dépense"
       });
       
-      // En cas d'erreur, recharger les données pour rétablir l'état correct
+      // En cas d'erreur, on recharge les données pour s'assurer de la cohérence
       await loadData();
-      
       return false;
     } finally {
-      // Important: réinitialiser l'état APRÈS toutes les opérations asynchrones
-      setTimeout(() => {
-        resetDeleteState();
-      }, 300);
+      // Réinitialisation de l'état après un court délai
+      setTimeout(resetDeleteState, 300);
     }
   }, [selectedExpense, isDeleting, setExpenses, loadData, toast, resetDeleteState]);
 
