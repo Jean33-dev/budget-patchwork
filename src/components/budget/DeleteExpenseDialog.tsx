@@ -10,6 +10,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useState } from "react";
+import { Loader2 } from "lucide-react";
 
 interface DeleteExpenseDialogProps {
   open: boolean;
@@ -27,33 +28,35 @@ export const DeleteExpenseDialog = ({
   const handleConfirm = async () => {
     if (isProcessing) return;
     
-    try {
-      // Marquer comme en cours de traitement
-      setIsProcessing(true);
-      
-      // Fermer la boîte de dialogue
-      onOpenChange(false);
-      
-      // On laisse la boîte de dialogue se fermer complètement avant de continuer
-      // en utilisant un délai plus long
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // Exécuter l'action de confirmation (la suppression)
-      await onConfirm();
-    } catch (error) {
-      console.error("Erreur lors de la confirmation de suppression:", error);
-    } finally {
-      // Réinitialiser l'état de traitement
-      setIsProcessing(false);
-    }
+    // Marquer comme en cours de traitement
+    setIsProcessing(true);
+    
+    // Fermer la boîte de dialogue immédiatement
+    onOpenChange(false);
+    
+    // Utiliser un timeout pour s'assurer que la boîte de dialogue est fermée avant de continuer
+    setTimeout(async () => {
+      try {
+        // Exécuter l'action de confirmation (la suppression)
+        await onConfirm();
+      } catch (error) {
+        console.error("Erreur lors de la confirmation de suppression:", error);
+      } finally {
+        // Réinitialiser l'état de traitement
+        setIsProcessing(false);
+      }
+    }, 300);
   };
 
   return (
-    <AlertDialog open={open} onOpenChange={(newOpen) => {
-      // Si on est en train de traiter, ne pas permettre la fermeture manuelle
-      if (isProcessing && !newOpen) return;
-      onOpenChange(newOpen);
-    }}>
+    <AlertDialog 
+      open={open} 
+      onOpenChange={(newOpen) => {
+        // Ne pas permettre la fermeture manuelle pendant le traitement
+        if (isProcessing && !newOpen) return;
+        onOpenChange(newOpen);
+      }}
+    >
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Supprimer la dépense</AlertDialogTitle>
@@ -67,7 +70,14 @@ export const DeleteExpenseDialog = ({
             onClick={handleConfirm} 
             disabled={isProcessing}
           >
-            Supprimer
+            {isProcessing ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Suppression...
+              </>
+            ) : (
+              "Supprimer"
+            )}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
