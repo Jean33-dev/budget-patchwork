@@ -37,47 +37,45 @@ export const useExpenseDeletion = (
       return false;
     }
 
-    let deleteSuccess = false;
+    setIsDeleting(true);
+    console.log("[DEBUG] État isDeleting mis à true");
     
     try {
-      console.log("[DEBUG] État isDeleting mis à true");
-      setIsDeleting(true);
-      
       console.log("[DEBUG] Préparation suppression pour ID:", selectedExpense.id);
-      const expenseToDelete = { ...selectedExpense };
+      const expenseId = selectedExpense.id; // Stocker l'ID pour y faire référence même après réinitialisation
       
-      // Mise à jour optimiste de l'UI avant la suppression réelle
+      // Mise à jour optimiste de l'UI
       console.log("[DEBUG] Mise à jour optimiste - Nombre d'expenses avant:", (prev: Expense[]) => prev.length);
       setExpenses(prev => {
-        const filtered = prev.filter(exp => exp.id !== expenseToDelete.id);
+        const filtered = prev.filter(exp => exp.id !== expenseId);
         console.log("[DEBUG] Mise à jour optimiste - Nombre d'expenses après:", filtered.length);
         return filtered;
       });
       
-      // Petite pause pour permettre à l'UI de se mettre à jour
-      await new Promise(resolve => setTimeout(resolve, 50));
+      // Délai pour permettre à React de mettre à jour l'UI
+      await new Promise(resolve => setTimeout(resolve, 150));
       
       // Suppression dans la base de données
       console.log("[DEBUG] Début suppression BD");
-      const result = await db.deleteExpense(expenseToDelete.id);
+      const result = await db.deleteExpense(expenseId);
       console.log("[DEBUG] Résultat suppression BD:", result);
       
       if (result) {
-        deleteSuccess = true;
-        
         toast({
           title: "Dépense supprimée",
-          description: `La dépense "${expenseToDelete.title}" a été supprimée.`
+          description: `La dépense a été supprimée avec succès.`
         });
         
-        // Pause avant rechargement pour éviter les mises à jour simultanées
+        // Attendre avant de recharger les données pour éviter les conflits d'état
         console.log("[DEBUG] Début délai avant rechargement");
-        await new Promise(resolve => setTimeout(resolve, 300));
+        await new Promise(resolve => setTimeout(resolve, 400));
         
-        // Rechargement des données
+        // Recharger les données
         console.log("[DEBUG] Début rechargement données");
         await loadData();
         console.log("[DEBUG] Fin rechargement données");
+        
+        return true;
       } else {
         throw new Error("La suppression a échoué");
       }
@@ -90,22 +88,20 @@ export const useExpenseDeletion = (
         description: "Impossible de supprimer la dépense"
       });
       
-      // Rechargement en cas d'erreur
-      await new Promise(resolve => setTimeout(resolve, 300));
+      // Recharger en cas d'erreur pour rétablir l'état correct
+      await new Promise(resolve => setTimeout(resolve, 400));
       await loadData();
       
-      deleteSuccess = false;
+      return false;
     } finally {
       console.log("[DEBUG] Début finally block");
       
-      // Attendre un peu avant de réinitialiser l'état pour éviter les conflits de rendu
+      // Important: attendre avant de réinitialiser l'état
       setTimeout(() => {
         resetDeleteState();
         console.log("[DEBUG] Fin finally block - État réinitialisé");
-      }, 300);
+      }, 500);
     }
-    
-    return deleteSuccess;
   }, [selectedExpense, isDeleting, setExpenses, loadData, toast, resetDeleteState]);
 
   return {
