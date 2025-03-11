@@ -31,28 +31,31 @@ export const useExpenseDeletion = (
     }
 
     try {
+      // Marquer comme en cours de suppression pour éviter les doubles clics
       setIsDeleting(true);
       console.log("Suppression de la dépense avec ID:", selectedExpense.id);
       
-      // Attendre explicitement la résolution de la promesse
-      const deleteSuccess = await db.deleteExpense(selectedExpense.id);
+      // Copier l'ID localement pour éviter des problèmes si selectedExpense change
+      const expenseIdToDelete = selectedExpense.id;
+      
+      // Supprimer de l'état local d'abord pour une meilleure réactivité UI
+      setExpenses(prev => prev.filter(expense => expense.id !== expenseIdToDelete));
+      
+      // Effectuer la suppression dans la base de données
+      const deleteSuccess = await db.deleteExpense(expenseIdToDelete);
       console.log("Résultat de la suppression:", deleteSuccess);
 
       if (deleteSuccess) {
-        // Mise à jour de l'état local seulement si la suppression a réussi
-        setExpenses(prev => prev.filter(expense => expense.id !== selectedExpense.id));
-        
         toast({
           title: "Dépense supprimée",
           description: `La dépense "${selectedExpense.title}" a été supprimée.`
         });
-
-        // Réinitialiser l'état
-        resetDeleteState();
         
-        // Recharger les données après un court délai
+        // Recharger les données après un délai pour permettre à l'UI de se mettre à jour
         setTimeout(() => {
-          loadData();
+          loadData().catch(err => {
+            console.error("Erreur lors du rechargement des données:", err);
+          });
         }, 500);
         
         return true;
@@ -66,10 +69,16 @@ export const useExpenseDeletion = (
         title: "Erreur",
         description: "Impossible de supprimer la dépense"
       });
-      resetDeleteState();
+      
+      // Recharger les données pour restaurer l'état correct
+      loadData().catch(err => {
+        console.error("Erreur lors du rechargement des données après échec:", err);
+      });
+      
       return false;
     } finally {
-      setIsDeleting(false);
+      // Réinitialiser l'état dans tous les cas
+      resetDeleteState();
     }
   };
 
