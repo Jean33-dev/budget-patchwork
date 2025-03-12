@@ -57,8 +57,7 @@ export const ExpenseList = ({
   handleEditSubmit,
   handleDeleteConfirm,
   handleAddEnvelope,
-  defaultBudgetId,
-  onDeleteSuccess
+  defaultBudgetId
 }: ExpenseListProps) => {
   return (
     <div className="mt-6">

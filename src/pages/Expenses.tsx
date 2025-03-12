@@ -13,13 +13,6 @@ const Expenses = () => {
   const mountedRef = useRef(true);
   const dataLoadedOnceRef = useRef(false);
   
-  // Callback de navigation pour rediriger vers le tableau de bord
-  const navigateToDashboard = useCallback(() => {
-    console.log("Redirection vers le tableau de bord...");
-    // Utilisation d'un setTimeout pour éviter le blocage du thread principal
-    setTimeout(() => navigate("/dashboard/budget"), 0);
-  }, [navigate]);
-  
   const {
     expenses,
     availableBudgets,
@@ -42,51 +35,33 @@ const Expenses = () => {
     handleDeleteConfirm,
     handleAddEnvelope,
     loadData,
-  } = useExpenseManagement(budgetId); // Ne pas passer de callback ici
+  } = useExpenseManagement(budgetId);
 
-  // Nettoyer le composant à sa destruction
   useEffect(() => {
     mountedRef.current = true;
-    
     return () => {
-      console.log("Nettoyage du composant Expenses");
       mountedRef.current = false;
     };
   }, []);
 
-  // Optimiser la fonction de chargement des données avec useCallback et une protection contre les chargements multiples
   const optimizedLoadData = useCallback(async () => {
-    // Éviter les chargements simultanés et vérifier que le composant est toujours monté
     if (isLoadingRef.current || !mountedRef.current) {
-      console.log("Chargement déjà en cours ou composant démonté, ignoré");
       return;
     }
 
-    console.log("Démarrage du chargement optimisé des données, budgetId:", budgetId);
     isLoadingRef.current = true;
 
     try {
       await loadData();
       dataLoadedOnceRef.current = true;
-      
-      // Vérifier à nouveau que le composant est monté avant de mettre à jour l'état
-      if (mountedRef.current) {
-        console.log("Chargement optimisé des données terminé avec succès");
-      }
-    } catch (error) {
-      console.error("Erreur lors du chargement optimisé des données:", error);
     } finally {
-      // S'assurer que le flag est réinitialisé même en cas d'erreur
       if (mountedRef.current) {
         isLoadingRef.current = false;
       }
     }
   }, [budgetId, loadData]);
 
-  // Recharger les données quand le budgetId change
   useEffect(() => {
-    console.log("Effet de chargement des données déclenché, budgetId:", budgetId);
-    // Ne charger qu'une seule fois au démarrage ou si budgetId change
     if (!dataLoadedOnceRef.current || budgetId !== undefined) {
       optimizedLoadData();
     }
@@ -118,7 +93,6 @@ const Expenses = () => {
         handleDeleteConfirm={handleDeleteConfirm}
         handleAddEnvelope={handleAddEnvelope}
         defaultBudgetId={budgetId || undefined}
-        // Ne plus rediriger après suppression
       />
     </div>
   );

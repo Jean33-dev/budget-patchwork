@@ -10,8 +10,7 @@ import { Expense, Budget } from "@/types/expense";
 export type { Expense, Budget };
 
 export const useExpenseManagement = (
-  budgetId: string | null,
-  navigateCallback?: () => void // Paramètre optionnel, mais ne l'utiliserons plus pour la redirection après suppression
+  budgetId: string | null
 ) => {
   // Get expense data
   const { expenses, availableBudgets, setExpenses, loadData } = useExpenseData(budgetId);
@@ -36,7 +35,7 @@ export const useExpenseManagement = (
     resetEditState
   } = useExpenseEditing(setExpenses, loadData);
   
-  // Expense deletion functionality - on ne passe plus le callback de navigation
+  // Expense deletion functionality
   const { 
     selectedExpense: deletingExpense,
     isDeleting,
@@ -72,7 +71,7 @@ export const useExpenseManagement = (
     return result;
   };
 
-  // Handle delete completion
+  // Handle delete completion - simplified
   const completeDelete = async () => {
     const result = await handleDeleteConfirm();
     if (result) {
@@ -88,7 +87,7 @@ export const useExpenseManagement = (
     type: "income" | "expense" | "budget";
     linkedBudgetId?: string;
     date?: string;
-  }): Promise<boolean> => {
+  }) => {
     return await handleAddEnvelope(envelope);
   };
 

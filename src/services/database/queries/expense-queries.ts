@@ -17,7 +17,7 @@ export const expenseQueries = {
   
   getAll: (db: any): Expense[] => {
     try {
-      // Modifier la requête pour ne récupérer que les dépenses visibles
+      // Use a simpler query for better performance
       const result = db.exec('SELECT * FROM expenses WHERE visible = 1 OR visible IS NULL');
       return result[0]?.values?.map((row: any[]) => ({
         id: row[0],
@@ -59,43 +59,27 @@ export const expenseQueries = {
     }
   },
   
-  // Optimisation de la fonction de masquage pour une meilleure performance
+  // Simplified hide function with minimal overhead
   hideExpense: (db: any, id: string): boolean => {
     try {
-      console.log(`Tentative de masquer la dépense avec l'ID: ${id}`);
+      if (!id) return false;
       
-      if (!id) {
-        console.error("ID de dépense invalide pour le masquage");
-        return false;
-      }
-      
-      // Utiliser une requête plus directe et simplifiée
+      // Direct and simple query
       db.run('UPDATE expenses SET visible = 0 WHERE id = ?', [id]);
-      
-      console.log(`Dépense avec l'ID ${id} masquée avec succès`);
       return true;
     } catch (error) {
-      console.error(`Erreur lors du masquage de la dépense avec l'ID ${id}:`, error);
+      console.error(`Erreur lors du masquage de la dépense:`, error);
       return false;
     }
   },
   
-  // Conserver l'ancienne méthode de suppression pour la transition entre mois ou si besoin
   delete: (db: any, id: string): boolean => {
     try {
-      console.log(`Tentative de suppression de la dépense avec l'ID: ${id}`);
-      
-      if (!id) {
-        console.error("ID de dépense invalide pour la suppression");
-        return false;
-      }
-      
+      if (!id) return false;
       db.run('DELETE FROM expenses WHERE id = ?', [id]);
-      
-      console.log(`Dépense avec l'ID ${id} supprimée avec succès`);
       return true;
     } catch (error) {
-      console.error(`Erreur lors de la suppression de la dépense avec l'ID ${id}:`, error);
+      console.error(`Erreur lors de la suppression:`, error);
       return false;
     }
   }

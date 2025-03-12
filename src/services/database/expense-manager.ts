@@ -1,4 +1,3 @@
-
 import { BaseDatabaseManager } from './base-database-manager';
 import { Expense } from './models/expense';
 import { expenseQueries } from './queries/expense-queries';
@@ -21,7 +20,6 @@ export class ExpenseManager extends BaseDatabaseManager {
 
   async deleteExpense(id: string): Promise<boolean> {
     try {
-      console.time('deleteExpense');
       await this.ensureInitialized();
       
       if (!id) {
@@ -29,19 +27,15 @@ export class ExpenseManager extends BaseDatabaseManager {
         return false;
       }
       
-      // Utiliser la méthode de masquage au lieu de la suppression
-      const hideStatus = expenseQueries.hideExpense(this.db, id);
-      console.log(`Résultat du masquage pour ID ${id}:`, hideStatus);
-      console.timeEnd('deleteExpense');
-      return hideStatus;
+      // Simply call hideExpense - fewer layers of abstraction
+      return expenseQueries.hideExpense(this.db, id);
     } catch (error) {
       console.error(`Erreur dans ExpenseManager.deleteExpense pour l'ID ${id}:`, error);
-      console.timeEnd('deleteExpense');
       return false;
     }
   }
   
-  // Ajouter une méthode pour la suppression réelle si nécessaire
+  // Keep the permanent delete method for maintenance
   async permanentlyDeleteExpense(id: string): Promise<boolean> {
     try {
       await this.ensureInitialized();
