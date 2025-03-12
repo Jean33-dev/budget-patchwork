@@ -47,8 +47,8 @@ export const DeleteExpenseDialog = ({
       if (success) {
         // Notify parent component about successful deletion
         if (onSuccess) onSuccess();
-        // Close dialog with a small delay to avoid state conflict
-        setTimeout(() => onOpenChange(false), 100);
+        // Close dialog
+        onOpenChange(false);
       }
     } finally {
       // Always reset processing state, even if there was an error

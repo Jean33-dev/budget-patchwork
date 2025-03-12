@@ -30,7 +30,7 @@ export const useExpenseDeletion = (
     operationInProgressRef.current = false;
   }, []);
 
-  // Handle delete confirmation - optimized with background processing
+  // Handle delete confirmation
   const handleDeleteConfirm = useCallback(async () => {
     if (!selectedExpense || isDeleting || operationInProgressRef.current) {
       return false;
@@ -46,34 +46,24 @@ export const useExpenseDeletion = (
       // Update local state immediately for better UI responsiveness
       setExpenses(prevExpenses => prevExpenses.filter(exp => exp.id !== expenseId));
       
-      // Show success toast immediately for better UX
+      // Show success toast
       toast({
         title: "Dépense supprimée",
         description: "La dépense a été supprimée avec succès."
       });
       
-      // Perform database deletion asynchronously
-      setTimeout(async () => {
-        try {
-          const success = await db.deleteExpense(expenseId);
-          
-          if (!success) {
-            console.error("Échec de la suppression en base de données");
-            // Rechargement silencieux des données en cas d'échec
-            loadData().catch(err => console.error("Échec du rechargement des données:", err));
-          }
-        } catch (error) {
-          console.error("Erreur lors de la suppression en base de données:", error);
-          // Rechargement silencieux des données en cas d'erreur
-          loadData().catch(err => console.error("Échec du rechargement des données:", err));
-        } finally {
-          resetDeleteState();
-        }
-      }, 100);
+      // Perform database deletion
+      const success = await db.deleteExpense(expenseId);
       
+      if (!success) {
+        console.error("Échec de la suppression en base de données");
+        await loadData();
+      }
+      
+      resetDeleteState();
       return true;
     } catch (error) {
-      console.error("Erreur lors du masquage:", error);
+      console.error("Erreur lors de la suppression:", error);
       
       toast({
         variant: "destructive",
@@ -85,7 +75,7 @@ export const useExpenseDeletion = (
       resetDeleteState();
       return false;
     }
-  }, [selectedExpense, isDeleting, toast, resetDeleteState, setExpenses, loadData]);
+  }, [selectedExpense, isDeleting, toast, setExpenses, loadData, resetDeleteState]);
 
   return {
     selectedExpense,

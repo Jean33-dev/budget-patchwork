@@ -27,8 +27,6 @@ export class ExpenseManager extends BaseDatabaseManager {
       }
       
       await this.ensureInitialized();
-      
-      // Optimisation de la requête de suppression logique
       return expenseQueries.hideExpense(this.db, id);
     } catch (error) {
       console.error(`Erreur dans ExpenseManager.deleteExpense pour l'ID ${id}:`, error);
@@ -36,7 +34,7 @@ export class ExpenseManager extends BaseDatabaseManager {
     }
   }
   
-  // Keep the permanent delete method for maintenance
+  // Méthode de suppression permanente (conservation pour maintenance)
   async permanentlyDeleteExpense(id: string): Promise<boolean> {
     try {
       if (!id) {

@@ -17,7 +17,7 @@ export const expenseQueries = {
   
   getAll: (db: any): Expense[] => {
     try {
-      // Requête optimisée avec préparation de la requête
+      // Requête pour récupérer uniquement les dépenses visibles
       const stmt = db.prepare('SELECT * FROM expenses WHERE visible = 1 OR visible IS NULL');
       const result = stmt.getAsObject();
       stmt.free();
@@ -44,7 +44,6 @@ export const expenseQueries = {
   
   add: (db: any, expense: Expense): void => {
     try {
-      // Utilisation d'une requête préparée
       const stmt = db.prepare(
         'INSERT INTO expenses (id, title, budget, spent, type, linkedBudgetId, date, visible) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
       );
@@ -67,7 +66,6 @@ export const expenseQueries = {
   
   update: (db: any, expense: Expense): void => {
     try {
-      // Utilisation d'une requête préparée optimisée
       const stmt = db.prepare(
         'UPDATE expenses SET title = ?, budget = ?, spent = ?, linkedBudgetId = ?, date = ?, visible = ? WHERE id = ?'
       );
@@ -87,12 +85,10 @@ export const expenseQueries = {
     }
   },
   
-  // Fonction de masquage optimisée
   hideExpense: (db: any, id: string): boolean => {
     try {
       if (!id) return false;
       
-      // Préparation de la requête pour un traitement optimisé
       const stmt = db.prepare('UPDATE expenses SET visible = 0 WHERE id = ?');
       stmt.run([id]);
       stmt.free();
