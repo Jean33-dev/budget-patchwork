@@ -58,51 +58,28 @@ export const useExpenseDeletion = (
         throw new Error("Échec de la suppression");
       }
       
-      // Étape 2: Mise à jour de l'état local (dans un setTimeout pour éviter les mises à jour d'état en cascade)
-      await new Promise<void>(resolve => {
-        setTimeout(() => {
-          setExpenses(prevExpenses => {
-            const filtered = prevExpenses.filter(exp => exp.id !== expenseId);
-            console.log(`État local mis à jour: ${prevExpenses.length} -> ${filtered.length} dépenses`);
-            return filtered;
-          });
-          
-          toast({
-            title: "Dépense supprimée",
-            description: "La dépense a été supprimée avec succès."
-          });
-          
-          console.log("Suppression réussie et état local mis à jour");
-          resolve();
-        }, 0);
-      });
-
-      // Étape 3: Réinitialisation de l'état de suppression (dans un autre setTimeout pour éviter les mises à jour d'état en cascade)
-      await new Promise<void>(resolve => {
-        setTimeout(() => {
-          resetDeleteState();
-          console.log("État de suppression réinitialisé");
-          resolve();
-        }, 50);
+      // Étape 2: Mise à jour de l'état local de manière synchrone
+      setExpenses(prevExpenses => {
+        const filtered = prevExpenses.filter(exp => exp.id !== expenseId);
+        console.log(`État local mis à jour: ${prevExpenses.length} -> ${filtered.length} dépenses`);
+        return filtered;
       });
       
-      // Étape 4: Rechargement des données après un délai pour s'assurer que toutes les mises à jour d'état sont terminées
-      await new Promise<void>(resolve => {
-        setTimeout(async () => {
-          console.log("Rechargement des données après suppression");
-          try {
-            await loadData();
-            console.log("Données rechargées avec succès");
-          } catch (error) {
-            console.error("Erreur lors du rechargement des données:", error);
-          } finally {
-            // S'assurer que l'opération est marquée comme terminée même en cas d'erreur
-            operationInProgressRef.current = false;
-            resolve();
-          }
-        }, 150);
+      console.log("Suppression réussie");
+      
+      // Afficher le toast immédiatement après mise à jour de l'UI
+      toast({
+        title: "Dépense supprimée",
+        description: "La dépense a été supprimée avec succès."
       });
       
+      // Réinitialiser l'état de suppression immédiatement
+      resetDeleteState();
+      
+      // Planifier le rechargement des données après une courte pause
+      console.log("Planification du rechargement des données");
+      
+      // Retourner true immédiatement pour permettre la fermeture du dialogue
       return true;
     } catch (error) {
       console.error("Erreur lors de la suppression:", error);

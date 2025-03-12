@@ -11,6 +11,7 @@ const Expenses = () => {
   const budgetId = searchParams.get('budgetId');
   const isLoadingRef = useRef(false);
   const mountedRef = useRef(true);
+  const dataLoadedOnceRef = useRef(false);
   
   const {
     expenses,
@@ -39,7 +40,9 @@ const Expenses = () => {
   // Nettoyer le composant à sa destruction
   useEffect(() => {
     mountedRef.current = true;
+    
     return () => {
+      console.log("Nettoyage du composant Expenses");
       mountedRef.current = false;
     };
   }, []);
@@ -57,6 +60,7 @@ const Expenses = () => {
 
     try {
       await loadData();
+      dataLoadedOnceRef.current = true;
       
       // Vérifier à nouveau que le composant est monté avant de mettre à jour l'état
       if (mountedRef.current) {
@@ -75,7 +79,10 @@ const Expenses = () => {
   // Recharger les données quand le budgetId change
   useEffect(() => {
     console.log("Effet de chargement des données déclenché, budgetId:", budgetId);
-    optimizedLoadData();
+    // Ne charger qu'une seule fois au démarrage ou si budgetId change
+    if (!dataLoadedOnceRef.current || budgetId !== undefined) {
+      optimizedLoadData();
+    }
   }, [budgetId, optimizedLoadData]);
 
   return (
