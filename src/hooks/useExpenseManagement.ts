@@ -11,7 +11,7 @@ export type { Expense, Budget };
 
 export const useExpenseManagement = (
   budgetId: string | null,
-  navigateCallback?: () => void // Nouveau paramètre pour la navigation
+  navigateCallback?: () => void // Paramètre optionnel, mais ne l'utiliserons plus pour la redirection après suppression
 ) => {
   // Get expense data
   const { expenses, availableBudgets, setExpenses, loadData } = useExpenseData(budgetId);
@@ -36,15 +36,14 @@ export const useExpenseManagement = (
     resetEditState
   } = useExpenseEditing(setExpenses, loadData);
   
-  // Expense deletion functionality avec callback de navigation
+  // Expense deletion functionality - on ne passe plus le callback de navigation
   const { 
     selectedExpense: deletingExpense,
     isDeleting,
     handleDeleteClick,
     handleDeleteConfirm,
-    resetDeleteState,
-    onDeleteSuccess: navigationCallback
-  } = useExpenseDeletion(setExpenses, loadData, navigateCallback);
+    resetDeleteState
+  } = useExpenseDeletion(setExpenses, loadData);
   
   // Expense addition functionality
   const { handleAddEnvelope } = useExpenseAddition(setExpenses, loadData, budgetId);
@@ -114,7 +113,6 @@ export const useExpenseManagement = (
     handleEditSubmit: completeEdit,
     handleDeleteConfirm: completeDelete,
     handleAddEnvelope: completeAddEnvelope,
-    loadData,
-    navigationCallback // Exposer le callback de navigation
+    loadData
   };
 };

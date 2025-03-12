@@ -42,7 +42,7 @@ const Expenses = () => {
     handleDeleteConfirm,
     handleAddEnvelope,
     loadData,
-  } = useExpenseManagement(budgetId, navigateToDashboard);
+  } = useExpenseManagement(budgetId); // Ne pas passer de callback ici
 
   // Nettoyer le composant à sa destruction
   useEffect(() => {
@@ -118,7 +118,7 @@ const Expenses = () => {
         handleDeleteConfirm={handleDeleteConfirm}
         handleAddEnvelope={handleAddEnvelope}
         defaultBudgetId={budgetId || undefined}
-        onDeleteSuccess={navigateToDashboard}
+        // Ne plus rediriger après suppression
       />
     </div>
   );

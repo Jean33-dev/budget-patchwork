@@ -96,7 +96,6 @@ export const ExpenseList = ({
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={handleDeleteConfirm}
-        onSuccess={onDeleteSuccess}
       />
     </div>
   );

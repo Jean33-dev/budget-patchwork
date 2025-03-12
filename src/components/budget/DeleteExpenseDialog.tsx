@@ -16,7 +16,7 @@ interface DeleteExpenseDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onConfirm: () => Promise<boolean>;
-  onSuccess?: () => void; // Nouvelle prop pour action après succès
+  onSuccess?: () => void; // Optional callback after success
 }
 
 export const DeleteExpenseDialog = ({
@@ -28,7 +28,6 @@ export const DeleteExpenseDialog = ({
   const [isProcessing, setIsProcessing] = useState(false);
   const confirmedRef = useRef(false);
   const safeToCloseRef = useRef(true);
-  const confirmTimeoutRef = useRef<number | null>(null);
   
   // Reset state when dialog changes state
   useEffect(() => {
@@ -37,27 +36,12 @@ export const DeleteExpenseDialog = ({
       setIsProcessing(false);
       confirmedRef.current = false;
       
-      // Clean up timeouts
-      if (confirmTimeoutRef.current !== null) {
-        window.clearTimeout(confirmTimeoutRef.current);
-        confirmTimeoutRef.current = null;
-      }
-      
       // Reset safety state after closure
       setTimeout(() => {
         safeToCloseRef.current = true;
       }, 100);
     }
   }, [open]);
-
-  // Clean up on component unmount
-  useEffect(() => {
-    return () => {
-      if (confirmTimeoutRef.current !== null) {
-        window.clearTimeout(confirmTimeoutRef.current);
-      }
-    };
-  }, []);
 
   const handleConfirm = async (e: React.MouseEvent) => {
     console.log("Confirmation cliquée");
@@ -81,19 +65,18 @@ export const DeleteExpenseDialog = ({
       if (success) {
         console.log("Suppression réussie, fermeture de la boîte de dialogue");
         
-        // Appeler onSuccess immédiatement si fourni
-        if (onSuccess) {
-          console.log("Exécution de l'action onSuccess");
-          onSuccess();
-        }
-        
-        // Defer dialog closure to allow UI to update
-        confirmTimeoutRef.current = window.setTimeout(() => {
+        // Instead of navigating away, just close the dialog after a brief delay
+        setTimeout(() => {
           if (open) { // Check that the box is still open
             console.log("Fermeture effective de la boîte de dialogue");
             onOpenChange(false);
           }
-          confirmTimeoutRef.current = null;
+          
+          // Call onSuccess only if it's provided and after dialog is closed
+          if (onSuccess) {
+            console.log("Exécution de l'action onSuccess");
+            onSuccess();
+          }
         }, 300);
       } else {
         console.log("Échec de l'opération");

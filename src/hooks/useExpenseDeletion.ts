@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { db } from "@/services/database";
@@ -13,8 +12,6 @@ export const useExpenseDeletion = (
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const operationInProgressRef = useRef(false);
-  const dataLoadTimeoutRef = useRef<number | null>(null);
-  const navigationTimeoutRef = useRef<number | null>(null);
 
   // Function to select an expense to delete
   const handleDeleteClick = useCallback((expense: Expense) => {
@@ -31,17 +28,6 @@ export const useExpenseDeletion = (
   // Function to reset deletion state
   const resetDeleteState = useCallback(() => {
     console.log("resetDeleteState appelé");
-    
-    if (dataLoadTimeoutRef.current !== null) {
-      window.clearTimeout(dataLoadTimeoutRef.current);
-      dataLoadTimeoutRef.current = null;
-    }
-    
-    if (navigationTimeoutRef.current !== null) {
-      window.clearTimeout(navigationTimeoutRef.current);
-      navigationTimeoutRef.current = null;
-    }
-    
     setSelectedExpense(null);
     setIsDeleting(false);
     operationInProgressRef.current = false;
@@ -100,17 +86,7 @@ export const useExpenseDeletion = (
         description: "La dépense a été supprimée avec succès."
       });
       
-      // Schedule onSuccess callback with a slight delay
-      if (onSuccessCallback) {
-        console.log("Planification du callback de navigation");
-        navigationTimeoutRef.current = window.setTimeout(() => {
-          if (onSuccessCallback) {
-            console.log("Exécution du callback de navigation");
-            onSuccessCallback();
-          }
-          navigationTimeoutRef.current = null;
-        }, 100);
-      }
+      // Note: We've removed the navigation callback to keep user on the expense page
       
       // Reset state immediately to allow UI to update
       resetDeleteState();
@@ -129,7 +105,7 @@ export const useExpenseDeletion = (
       resetDeleteState();
       return false;
     }
-  }, [selectedExpense, isDeleting, toast, resetDeleteState, performDatabaseHide, updateLocalState, onSuccessCallback]);
+  }, [selectedExpense, isDeleting, toast, resetDeleteState, performDatabaseHide, updateLocalState]);
 
   return {
     selectedExpense,
