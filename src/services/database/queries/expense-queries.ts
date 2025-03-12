@@ -65,12 +65,8 @@ export const expenseQueries = {
         return false;
       }
       
-      // Utilisation d'une approche plus directe pour améliorer les performances
-      const deleteSQL = 'DELETE FROM expenses WHERE id = ?';
-      const deleteStmt = db.prepare(deleteSQL);
-      deleteStmt.bind([id]);
-      deleteStmt.step();
-      deleteStmt.free();
+      // Simplified deletion approach - using direct run command
+      db.run('DELETE FROM expenses WHERE id = ?', [id]);
       
       console.log(`Dépense avec l'ID ${id} supprimée avec succès`);
       return true;

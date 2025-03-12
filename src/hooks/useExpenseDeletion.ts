@@ -14,7 +14,7 @@ export const useExpenseDeletion = (
   const operationInProgressRef = useRef(false);
   const dataLoadTimeoutRef = useRef<number | null>(null);
 
-  // Fonction pour sélectionner une dépense à supprimer
+  // Function to select an expense to delete
   const handleDeleteClick = useCallback((expense: Expense) => {
     if (operationInProgressRef.current) {
       console.log("Une opération est déjà en cours, ignoré");
@@ -26,11 +26,10 @@ export const useExpenseDeletion = (
     return true;
   }, []);
 
-  // Fonction pour réinitialiser l'état de suppression
+  // Function to reset deletion state
   const resetDeleteState = useCallback(() => {
     console.log("resetDeleteState appelé");
     
-    // Nettoyage du timeout existant si présent
     if (dataLoadTimeoutRef.current !== null) {
       window.clearTimeout(dataLoadTimeoutRef.current);
       dataLoadTimeoutRef.current = null;
@@ -41,7 +40,7 @@ export const useExpenseDeletion = (
     operationInProgressRef.current = false;
   }, []);
 
-  // Fonction pour effectuer l'opération de suppression en base de données
+  // Database deletion operation
   const performDatabaseDeletion = useCallback(async (expenseId: string): Promise<boolean> => {
     try {
       console.log("Exécution de la suppression en base de données pour:", expenseId);
@@ -52,7 +51,7 @@ export const useExpenseDeletion = (
     }
   }, []);
 
-  // Fonction pour mettre à jour l'état local après suppression
+  // Update local state after deletion
   const updateLocalState = useCallback((expenseId: string): void => {
     setExpenses(prevExpenses => {
       const filtered = prevExpenses.filter(exp => exp.id !== expenseId);
@@ -61,65 +60,61 @@ export const useExpenseDeletion = (
     });
   }, [setExpenses]);
 
-  // Fonction qui gère la confirmation de suppression
+  // Handle delete confirmation
   const handleDeleteConfirm = useCallback(async () => {
-    // Vérification des conditions préalables
-    if (!selectedExpense) {
-      console.log("Pas de dépense sélectionnée");
-      return false;
-    }
-    
-    if (isDeleting || operationInProgressRef.current) {
-      console.log("Opération déjà en cours, abandon");
+    if (!selectedExpense || isDeleting || operationInProgressRef.current) {
+      console.log("Pas de dépense sélectionnée ou opération déjà en cours");
       return false;
     }
 
-    // Marquer le début de l'opération
-    console.log("Début suppression pour:", selectedExpense.id);
+    // Mark operation as in progress
     setIsDeleting(true);
     operationInProgressRef.current = true;
     
     try {
       const expenseId = selectedExpense.id;
+      console.log("Début suppression pour:", expenseId);
       console.log("Tentative de suppression:", expenseId);
       
-      // Étape 1: Suppression en base de données
+      // Step 1: Delete from database
       const result = await performDatabaseDeletion(expenseId);
       
       if (!result) {
         throw new Error("Échec de la suppression");
       }
       
-      // Étape 2: Mise à jour de l'état local
+      // Step 2: Update local state
       updateLocalState(expenseId);
       
       console.log("Suppression réussie");
       
-      // Afficher le toast
+      // Show toast
       toast({
         title: "Dépense supprimée",
         description: "La dépense a été supprimée avec succès."
       });
       
-      // Planification du rechargement des données
+      // Schedule data reload in the background
       console.log("Planification du rechargement des données");
       
-      // Nettoyage du timeout existant si présent
+      // Clear existing timeout if present
       if (dataLoadTimeoutRef.current !== null) {
         window.clearTimeout(dataLoadTimeoutRef.current);
       }
       
-      // Nous renvoyons true immédiatement pour permettre à l'UI de se mettre à jour
-      // Le rechargement des données se fera en arrière-plan
+      // Reset state immediately to allow UI to update
       resetDeleteState();
       
-      // Programmation d'un rechargement différé des données
+      // Schedule deferred data reload
       dataLoadTimeoutRef.current = window.setTimeout(() => {
         loadData().then(() => {
           console.log("Données rechargées avec succès après suppression");
           dataLoadTimeoutRef.current = null;
+        }).catch(error => {
+          console.error("Erreur lors du rechargement des données:", error);
+          dataLoadTimeoutRef.current = null;
         });
-      }, 500);
+      }, 300);
       
       return true;
     } catch (error) {
@@ -131,7 +126,7 @@ export const useExpenseDeletion = (
         description: "Impossible de supprimer la dépense"
       });
       
-      // Réinitialiser l'état en cas d'erreur
+      // Reset state on error
       resetDeleteState();
       return false;
     }

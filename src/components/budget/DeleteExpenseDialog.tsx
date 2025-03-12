@@ -28,27 +28,27 @@ export const DeleteExpenseDialog = ({
   const safeToCloseRef = useRef(true);
   const confirmTimeoutRef = useRef<number | null>(null);
   
-  // Réinitialiser l'état quand la boîte de dialogue change d'état
+  // Reset state when dialog changes state
   useEffect(() => {
     if (!open) {
       console.log("Dialog fermé, réinitialisation de l'état de traitement");
       setIsProcessing(false);
       confirmedRef.current = false;
       
-      // Nettoyage des timeouts
+      // Clean up timeouts
       if (confirmTimeoutRef.current !== null) {
         window.clearTimeout(confirmTimeoutRef.current);
         confirmTimeoutRef.current = null;
       }
       
-      // Réinitialiser l'état de sécurité après la fermeture
+      // Reset safety state after closure
       setTimeout(() => {
         safeToCloseRef.current = true;
       }, 100);
     }
   }, [open]);
 
-  // Nettoyage lors du démontage du composant
+  // Clean up on component unmount
   useEffect(() => {
     return () => {
       if (confirmTimeoutRef.current !== null) {
@@ -61,7 +61,7 @@ export const DeleteExpenseDialog = ({
     console.log("Confirmation cliquée");
     e.preventDefault();
     
-    // Vérifier si le traitement est déjà en cours
+    // Check if processing is already in progress
     if (isProcessing || confirmedRef.current) {
       console.log("Déjà en cours de traitement ou déjà confirmé, ignoré");
       return;
@@ -79,9 +79,9 @@ export const DeleteExpenseDialog = ({
       if (success) {
         console.log("Suppression réussie, fermeture de la boîte de dialogue");
         
-        // Différer la fermeture de la boîte de dialogue pour laisser le temps à l'UI de se mettre à jour
+        // Defer dialog closure to allow UI to update
         confirmTimeoutRef.current = window.setTimeout(() => {
-          if (open) { // Vérifier que la boîte est encore ouverte
+          if (open) { // Check that the box is still open
             console.log("Fermeture effective de la boîte de dialogue");
             onOpenChange(false);
           }
@@ -105,8 +105,7 @@ export const DeleteExpenseDialog = ({
     <AlertDialog 
       open={open} 
       onOpenChange={(newOpen) => {
-        console.log("Changement d'état de la boîte de dialogue:", newOpen);
-        // Empêcher la fermeture pendant le traitement ou lorsque ce n'est pas sécuritaire
+        // Prevent closure during processing or when unsafe
         if (!safeToCloseRef.current && !newOpen) {
           console.log("Fermeture empêchée - pas sécuritaire");
           return;
