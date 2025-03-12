@@ -65,19 +65,7 @@ export const expenseQueries = {
         return false;
       }
       
-      // Vérifier d'abord que la dépense existe 
-      const checkSQL = `SELECT id FROM expenses WHERE id = ?`;
-      const checkStmt = db.prepare(checkSQL);
-      checkStmt.bind([id]);
-      const expenseExists = checkStmt.step();
-      checkStmt.free();
-      
-      if (!expenseExists) {
-        console.warn(`Aucune dépense trouvée avec l'ID ${id}`);
-        return false;
-      }
-      
-      // Exécuter la suppression
+      // Utilisation d'une approche plus directe pour améliorer les performances
       const deleteSQL = 'DELETE FROM expenses WHERE id = ?';
       const deleteStmt = db.prepare(deleteSQL);
       deleteStmt.bind([id]);

@@ -26,6 +26,7 @@ export const DeleteExpenseDialog = ({
   const [isProcessing, setIsProcessing] = useState(false);
   const confirmedRef = useRef(false);
   const safeToCloseRef = useRef(true);
+  const confirmTimeoutRef = useRef<number | null>(null);
   
   // Réinitialiser l'état quand la boîte de dialogue change d'état
   useEffect(() => {
@@ -33,12 +34,28 @@ export const DeleteExpenseDialog = ({
       console.log("Dialog fermé, réinitialisation de l'état de traitement");
       setIsProcessing(false);
       confirmedRef.current = false;
+      
+      // Nettoyage des timeouts
+      if (confirmTimeoutRef.current !== null) {
+        window.clearTimeout(confirmTimeoutRef.current);
+        confirmTimeoutRef.current = null;
+      }
+      
       // Réinitialiser l'état de sécurité après la fermeture
       setTimeout(() => {
         safeToCloseRef.current = true;
       }, 100);
     }
   }, [open]);
+
+  // Nettoyage lors du démontage du composant
+  useEffect(() => {
+    return () => {
+      if (confirmTimeoutRef.current !== null) {
+        window.clearTimeout(confirmTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleConfirm = async (e: React.MouseEvent) => {
     console.log("Confirmation cliquée");
@@ -62,12 +79,13 @@ export const DeleteExpenseDialog = ({
       if (success) {
         console.log("Suppression réussie, fermeture de la boîte de dialogue");
         
-        // Différer la fermeture de la boîte de dialogue
-        setTimeout(() => {
+        // Différer la fermeture de la boîte de dialogue pour laisser le temps à l'UI de se mettre à jour
+        confirmTimeoutRef.current = window.setTimeout(() => {
           if (open) { // Vérifier que la boîte est encore ouverte
             console.log("Fermeture effective de la boîte de dialogue");
             onOpenChange(false);
           }
+          confirmTimeoutRef.current = null;
         }, 300);
       } else {
         console.log("Échec de l'opération");
