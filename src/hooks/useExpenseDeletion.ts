@@ -60,12 +60,15 @@ export const useExpenseDeletion = (
         console.log("Suppression réussie");
         resetDeleteState();
         
-        // Ajouter un rechargement de données après une courte période
-        setTimeout(async () => {
-          console.log("Rechargement des données après suppression");
-          await loadData();
-          console.log("Données rechargées avec succès");
-        }, 100);
+        // Utiliser un délai plus court pour le rechargement des données
+        // et utiliser requestAnimationFrame pour s'assurer que le rendu est terminé
+        requestAnimationFrame(() => {
+          setTimeout(async () => {
+            console.log("Rechargement des données après suppression");
+            await loadData();
+            console.log("Données rechargées avec succès");
+          }, 50);
+        });
         
         return true;
       } else {

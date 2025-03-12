@@ -51,11 +51,13 @@ export const DeleteExpenseDialog = ({
       
       if (success) {
         console.log("Suppression réussie, fermeture de la boîte de dialogue");
-        // Utiliser un délai plus long pour assurer que tous les états sont mis à jour
-        setTimeout(() => {
-          console.log("Fermeture effective de la boîte de dialogue");
-          onOpenChange(false);
-        }, 150);
+        // Utiliser requestAnimationFrame pour s'assurer que le prochain cycle de rendu est prêt
+        requestAnimationFrame(() => {
+          setTimeout(() => {
+            console.log("Fermeture effective de la boîte de dialogue");
+            onOpenChange(false);
+          }, 200);
+        });
       } else {
         console.log("Échec de l'opération");
         setIsProcessing(false);
