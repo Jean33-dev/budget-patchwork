@@ -16,7 +16,8 @@ const Expenses = () => {
   // Callback de navigation pour rediriger vers le tableau de bord
   const navigateToDashboard = useCallback(() => {
     console.log("Redirection vers le tableau de bord...");
-    navigate("/dashboard/budget");
+    // Utilisation d'un setTimeout pour éviter le blocage du thread principal
+    setTimeout(() => navigate("/dashboard/budget"), 0);
   }, [navigate]);
   
   const {

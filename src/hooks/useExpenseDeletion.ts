@@ -7,13 +7,14 @@ import { Expense } from "@/types/expense";
 export const useExpenseDeletion = (
   setExpenses: React.Dispatch<React.SetStateAction<Expense[]>>,
   loadData: () => Promise<void>,
-  onSuccessCallback?: () => void // Nouveau paramètre pour le callback de succès
+  onSuccessCallback?: () => void
 ) => {
   const { toast } = useToast();
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const operationInProgressRef = useRef(false);
   const dataLoadTimeoutRef = useRef<number | null>(null);
+  const navigationTimeoutRef = useRef<number | null>(null);
 
   // Function to select an expense to delete
   const handleDeleteClick = useCallback((expense: Expense) => {
@@ -36,12 +37,17 @@ export const useExpenseDeletion = (
       dataLoadTimeoutRef.current = null;
     }
     
+    if (navigationTimeoutRef.current !== null) {
+      window.clearTimeout(navigationTimeoutRef.current);
+      navigationTimeoutRef.current = null;
+    }
+    
     setSelectedExpense(null);
     setIsDeleting(false);
     operationInProgressRef.current = false;
   }, []);
 
-  // Database deletion operation
+  // Database deletion operation - optimisé avec Promise
   const performDatabaseDeletion = useCallback(async (expenseId: string): Promise<boolean> => {
     try {
       console.log("Exécution de la suppression en base de données pour:", expenseId);
@@ -77,7 +83,7 @@ export const useExpenseDeletion = (
       console.log("Début suppression pour:", expenseId);
       console.log("Tentative de suppression:", expenseId);
       
-      // Step 1: Delete from database
+      // Step 1: Delete from database - wrapped in a microtask to prevent UI blocking
       const result = await performDatabaseDeletion(expenseId);
       
       if (!result) {
@@ -94,6 +100,18 @@ export const useExpenseDeletion = (
         title: "Dépense supprimée",
         description: "La dépense a été supprimée avec succès."
       });
+      
+      // Schedule onSuccess callback with a slight delay
+      if (onSuccessCallback) {
+        console.log("Planification du callback de navigation");
+        navigationTimeoutRef.current = window.setTimeout(() => {
+          if (onSuccessCallback) {
+            console.log("Exécution du callback de navigation");
+            onSuccessCallback();
+          }
+          navigationTimeoutRef.current = null;
+        }, 100);
+      }
       
       // Schedule data reload in the background
       console.log("Planification du rechargement des données");
@@ -115,7 +133,7 @@ export const useExpenseDeletion = (
           console.error("Erreur lors du rechargement des données:", error);
           dataLoadTimeoutRef.current = null;
         });
-      }, 300);
+      }, 50); // Réduit le délai pour minimiser le temps d'attente
       
       return true;
     } catch (error) {
@@ -131,7 +149,7 @@ export const useExpenseDeletion = (
       resetDeleteState();
       return false;
     }
-  }, [selectedExpense, isDeleting, loadData, toast, resetDeleteState, performDatabaseDeletion, updateLocalState]);
+  }, [selectedExpense, isDeleting, loadData, toast, resetDeleteState, performDatabaseDeletion, updateLocalState, onSuccessCallback]);
 
   return {
     selectedExpense,
@@ -139,7 +157,6 @@ export const useExpenseDeletion = (
     handleDeleteClick,
     handleDeleteConfirm,
     resetDeleteState,
-    // Ajout de la fonction de callback pour être accessible dans les composants
     onDeleteSuccess: onSuccessCallback 
   };
 };

@@ -29,12 +29,16 @@ export class ExpenseManager extends BaseDatabaseManager {
         return false;
       }
       
-      // Suppression directe
-      const deleteStatus = expenseQueries.delete(this.db, id);
-      console.log(`Résultat de la suppression pour ID ${id}:`, deleteStatus);
-      console.timeEnd('deleteExpense');
-      
-      return deleteStatus;
+      // Exécuter la suppression de manière optimisée
+      return new Promise<boolean>((resolve) => {
+        // Utiliser setTimeout pour éviter le blocage du thread principal
+        setTimeout(() => {
+          const deleteStatus = expenseQueries.delete(this.db, id);
+          console.log(`Résultat de la suppression pour ID ${id}:`, deleteStatus);
+          console.timeEnd('deleteExpense');
+          resolve(deleteStatus);
+        }, 0);
+      });
     } catch (error) {
       console.error(`Erreur dans ExpenseManager.deleteExpense pour l'ID ${id}:`, error);
       console.timeEnd('deleteExpense');

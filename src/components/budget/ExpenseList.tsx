@@ -33,7 +33,7 @@ interface ExpenseListProps {
     date?: string;
   }) => Promise<boolean>;
   defaultBudgetId?: string;
-  onDeleteSuccess?: () => void; // Nouvelle prop pour le callback de navigation
+  onDeleteSuccess?: () => void;
 }
 
 export const ExpenseList = ({
