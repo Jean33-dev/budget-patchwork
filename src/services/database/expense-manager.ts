@@ -30,15 +30,10 @@ export class ExpenseManager extends BaseDatabaseManager {
       }
       
       // Utiliser la méthode de masquage au lieu de la suppression
-      return new Promise<boolean>((resolve) => {
-        // Utiliser setTimeout pour éviter le blocage du thread principal
-        setTimeout(() => {
-          const hideStatus = expenseQueries.hideExpense(this.db, id);
-          console.log(`Résultat du masquage pour ID ${id}:`, hideStatus);
-          console.timeEnd('deleteExpense');
-          resolve(hideStatus);
-        }, 0);
-      });
+      const hideStatus = expenseQueries.hideExpense(this.db, id);
+      console.log(`Résultat du masquage pour ID ${id}:`, hideStatus);
+      console.timeEnd('deleteExpense');
+      return hideStatus;
     } catch (error) {
       console.error(`Erreur dans ExpenseManager.deleteExpense pour l'ID ${id}:`, error);
       console.timeEnd('deleteExpense');

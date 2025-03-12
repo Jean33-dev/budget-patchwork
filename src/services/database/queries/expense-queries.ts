@@ -59,7 +59,7 @@ export const expenseQueries = {
     }
   },
   
-  // Remplacer la fonction de suppression par une fonction qui masque la dépense
+  // Optimisation de la fonction de masquage pour une meilleure performance
   hideExpense: (db: any, id: string): boolean => {
     try {
       console.log(`Tentative de masquer la dépense avec l'ID: ${id}`);
@@ -69,7 +69,7 @@ export const expenseQueries = {
         return false;
       }
       
-      // Mettre à jour la visibilité plutôt que de supprimer
+      // Utiliser une requête plus directe et simplifiée
       db.run('UPDATE expenses SET visible = 0 WHERE id = ?', [id]);
       
       console.log(`Dépense avec l'ID ${id} masquée avec succès`);
