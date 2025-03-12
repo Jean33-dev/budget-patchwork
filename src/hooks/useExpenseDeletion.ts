@@ -18,36 +18,50 @@ export const useExpenseDeletion = (
   }, []);
 
   const resetDeleteState = useCallback(() => {
+    console.log("resetDeleteState appelé");
     setSelectedExpense(null);
     setIsDeleting(false);
   }, []);
 
   const handleDeleteConfirm = useCallback(async () => {
-    if (!selectedExpense || isDeleting) return false;
+    if (!selectedExpense || isDeleting) {
+      console.log("Abandon confirmation: selectedExpense ou isDeleting", { selectedExpense, isDeleting });
+      return false;
+    }
 
+    console.log("Début de suppression pour:", selectedExpense.id);
     setIsDeleting(true);
+    console.log("isDeleting défini à:", true);
     
     try {
       const expenseId = selectedExpense.id;
+      console.log("Tentative de suppression dans la DB:", expenseId);
       
-      // 1. Suppression dans la base de données d'abord
+      // Suppression dans la base de données d'abord
       const result = await db.deleteExpense(expenseId);
+      console.log("Résultat de la suppression DB:", result);
       
       if (result) {
-        // 2. Si la suppression a réussi, mise à jour de l'état local
-        setExpenses(prev => prev.filter(exp => exp.id !== expenseId));
+        console.log("Mise à jour du state local après suppression");
+        // Mise à jour de l'état local avec nouvelle fonction pour éviter les problèmes
+        setExpenses((prevExpenses) => {
+          const updatedExpenses = prevExpenses.filter(exp => exp.id !== expenseId);
+          console.log("Nouvelles dépenses:", updatedExpenses.length);
+          return updatedExpenses;
+        });
         
         toast({
           title: "Dépense supprimée",
           description: "La dépense a été supprimée avec succès."
         });
         
+        console.log("Suppression terminée avec succès");
         return true;
       } else {
         throw new Error("La suppression a échoué");
       }
     } catch (error) {
-      console.error("Erreur lors de la suppression:", error);
+      console.error("Erreur détaillée lors de la suppression:", error);
       
       toast({
         variant: "destructive",
@@ -55,12 +69,13 @@ export const useExpenseDeletion = (
         description: "Impossible de supprimer la dépense"
       });
       
-      // En cas d'erreur, on recharge les données pour s'assurer de la cohérence
+      console.log("Tentative de rechargement des données après erreur");
       await loadData();
       return false;
     } finally {
-      // Réinitialisation de l'état après un court délai
-      setTimeout(resetDeleteState, 300);
+      console.log("Finally block: nettoyage des états");
+      // Suppression du setTimeout pour tester s'il est en cause
+      resetDeleteState();
     }
   }, [selectedExpense, isDeleting, setExpenses, loadData, toast, resetDeleteState]);
 

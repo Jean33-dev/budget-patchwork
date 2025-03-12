@@ -21,6 +21,7 @@ export class ExpenseManager extends BaseDatabaseManager {
 
   async deleteExpense(id: string): Promise<boolean> {
     try {
+      console.time('deleteExpense');
       await this.ensureInitialized();
       
       // Vérifier que l'ID n'est pas vide ou undefined
@@ -29,23 +30,20 @@ export class ExpenseManager extends BaseDatabaseManager {
         return false;
       }
       
-      // Vérifier si l'expense existe avant de tenter de la supprimer
-      const expenses = await this.getExpenses();
-      const expenseExists = expenses.some(expense => expense.id === id);
-      
-      if (!expenseExists) {
-        console.warn(`Aucune dépense trouvée avec l'ID: ${id}`);
-        return false;
-      }
+      // On vérifie d'abord si l'expense existe - cela peut causer une double requête
+      // mais juste pour les tests, remplaçons cette vérification par un log
+      console.log(`Tentative de suppression directe pour ID: ${id}`);
       
       // Utiliser la fonction de suppression qui retourne un statut
       const deleteStatus = expenseQueries.delete(this.db, id);
       console.log(`Résultat de la suppression pour ID ${id}:`, deleteStatus);
+      console.timeEnd('deleteExpense');
       
       // Retourner le statut de la suppression
       return deleteStatus;
     } catch (error) {
       console.error(`Erreur dans ExpenseManager.deleteExpense pour l'ID ${id}:`, error);
+      console.timeEnd('deleteExpense');
       return false;
     }
   }

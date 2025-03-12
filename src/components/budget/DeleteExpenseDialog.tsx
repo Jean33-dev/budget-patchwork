@@ -9,7 +9,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
 
 interface DeleteExpenseDialogProps {
@@ -24,32 +24,42 @@ export const DeleteExpenseDialog = ({
   onConfirm,
 }: DeleteExpenseDialogProps) => {
   const [isProcessing, setIsProcessing] = useState(false);
+  
+  // Réinitialiser isProcessing quand la boîte de dialogue se ferme
+  useEffect(() => {
+    if (!open) {
+      console.log("Dialog closed, resetting processing state");
+      setIsProcessing(false);
+    }
+  }, [open]);
 
   const handleConfirm = async (e: React.MouseEvent) => {
-    // Empêcher le comportement par défaut du bouton
+    console.log("Confirmation clicked");
     e.preventDefault();
     
-    if (isProcessing) return;
+    if (isProcessing) {
+      console.log("Déjà en cours de traitement");
+      return;
+    }
+    
+    console.log("Setting processing state");
     setIsProcessing(true);
     
     try {
-      // Exécuter la fonction de confirmation et attendre le résultat
+      console.log("Executing onConfirm function");
       const success = await onConfirm();
+      console.log("Confirm result:", success);
       
-      // Si la suppression a réussi, fermer la boîte de dialogue après un court délai
       if (success) {
-        setTimeout(() => {
-          onOpenChange(false);
-        }, 100);
+        console.log("Success, closing dialog");
+        onOpenChange(false);
+      } else {
+        console.log("Operation failed but without error");
+        setIsProcessing(false);
       }
     } catch (error) {
-      console.error("Erreur lors de la suppression:", error);
-    } finally {
-      // Désactiver l'état de traitement après un délai,
-      // même si nous avons déjà fermé la boîte de dialogue
-      setTimeout(() => {
-        setIsProcessing(false);
-      }, 300);
+      console.error("Dialog confirm error:", error);
+      setIsProcessing(false);
     }
   };
 
@@ -57,8 +67,9 @@ export const DeleteExpenseDialog = ({
     <AlertDialog 
       open={open} 
       onOpenChange={(newOpen) => {
-        // Empêcher la fermeture pendant le traitement
+        console.log("Dialog state changing to:", newOpen);
         if (isProcessing && !newOpen) {
+          console.log("Prevented dialog close during processing");
           return;
         }
         onOpenChange(newOpen);
