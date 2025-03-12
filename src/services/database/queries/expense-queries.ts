@@ -50,10 +50,24 @@ export const expenseQueries = {
         return false;
       }
       
-      // Exécution directe de la suppression sans vérifications supplémentaires
-      db.run('DELETE FROM expenses WHERE id = ?', [id]);
-      console.log(`Dépense avec l'ID ${id} supprimée avec succès`);
-      return true;
+      // Vérifier d'abord que la dépense existe avant de la supprimer
+      const checkResult = db.exec(`SELECT id FROM expenses WHERE id = '${id}'`);
+      const expenseExists = checkResult[0]?.values?.length > 0;
+      
+      if (!expenseExists) {
+        console.warn(`Aucune dépense trouvée avec l'ID ${id}`);
+        return false;
+      }
+      
+      // Exécuter la suppression dans un bloc try/catch dédié
+      try {
+        db.run('DELETE FROM expenses WHERE id = ?', [id]);
+        console.log(`Dépense avec l'ID ${id} supprimée avec succès`);
+        return true;
+      } catch (sqlError) {
+        console.error(`Erreur SQL lors de la suppression de la dépense avec l'ID ${id}:`, sqlError);
+        return false;
+      }
     } catch (error) {
       console.error(`Erreur lors de la suppression de la dépense avec l'ID ${id}:`, error);
       return false;

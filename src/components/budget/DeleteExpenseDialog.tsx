@@ -9,7 +9,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Loader2 } from "lucide-react";
 
 interface DeleteExpenseDialogProps {
@@ -24,12 +24,14 @@ export const DeleteExpenseDialog = ({
   onConfirm,
 }: DeleteExpenseDialogProps) => {
   const [isProcessing, setIsProcessing] = useState(false);
+  const confirmedRef = useRef(false);
   
-  // Réinitialiser isProcessing quand la boîte de dialogue change d'état
+  // Réinitialiser l'état quand la boîte de dialogue change d'état
   useEffect(() => {
     if (!open) {
       console.log("Dialog fermé, réinitialisation de l'état de traitement");
       setIsProcessing(false);
+      confirmedRef.current = false;
     }
   }, [open]);
 
@@ -37,12 +39,14 @@ export const DeleteExpenseDialog = ({
     console.log("Confirmation cliquée");
     e.preventDefault();
     
-    if (isProcessing) {
-      console.log("Déjà en cours de traitement, ignoré");
+    // Vérifier si le traitement est déjà en cours
+    if (isProcessing || confirmedRef.current) {
+      console.log("Déjà en cours de traitement ou déjà confirmé, ignoré");
       return;
     }
     
     setIsProcessing(true);
+    confirmedRef.current = true;
     
     try {
       console.log("Exécution de la fonction onConfirm");
@@ -56,14 +60,16 @@ export const DeleteExpenseDialog = ({
         setTimeout(() => {
           console.log("Fermeture effective de la boîte de dialogue");
           onOpenChange(false);
-        }, 300);
+        }, 500);
       } else {
         console.log("Échec de l'opération");
         setIsProcessing(false);
+        confirmedRef.current = false;
       }
     } catch (error) {
       console.error("Erreur lors de la confirmation:", error);
       setIsProcessing(false);
+      confirmedRef.current = false;
     }
   };
 

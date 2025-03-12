@@ -10,6 +10,7 @@ const Expenses = () => {
   const [searchParams] = useSearchParams();
   const budgetId = searchParams.get('budgetId');
   const isLoadingRef = useRef(false);
+  const mountedRef = useRef(true);
   
   const {
     expenses,
@@ -35,11 +36,19 @@ const Expenses = () => {
     loadData,
   } = useExpenseManagement(budgetId);
 
+  // Nettoyer le composant à sa destruction
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
+
   // Optimiser la fonction de chargement des données avec useCallback et une protection contre les chargements multiples
   const optimizedLoadData = useCallback(async () => {
-    // Éviter les chargements simultanés
-    if (isLoadingRef.current) {
-      console.log("Chargement déjà en cours, ignoré");
+    // Éviter les chargements simultanés et vérifier que le composant est toujours monté
+    if (isLoadingRef.current || !mountedRef.current) {
+      console.log("Chargement déjà en cours ou composant démonté, ignoré");
       return;
     }
 
@@ -48,11 +57,18 @@ const Expenses = () => {
 
     try {
       await loadData();
-      console.log("Chargement optimisé des données terminé avec succès");
+      
+      // Vérifier à nouveau que le composant est monté avant de mettre à jour l'état
+      if (mountedRef.current) {
+        console.log("Chargement optimisé des données terminé avec succès");
+      }
     } catch (error) {
       console.error("Erreur lors du chargement optimisé des données:", error);
     } finally {
-      isLoadingRef.current = false;
+      // S'assurer que le flag est réinitialisé même en cas d'erreur
+      if (mountedRef.current) {
+        isLoadingRef.current = false;
+      }
     }
   }, [budgetId, loadData]);
 
