@@ -40,12 +40,12 @@ export const useExpenseDeletion = (
       const expenseId = selectedExpense.id;
       console.log("Tentative de suppression:", expenseId);
       
-      // Important: Supprimer en DB d'abord
+      // Supprimer en DB
       const result = await db.deleteExpense(expenseId);
       console.log("Résultat suppression:", result);
       
       if (result) {
-        // Mettre à jour l'état local IMMÉDIATEMENT sans attendre
+        // Mettre à jour l'état local sans rechargement immédiat
         setExpenses(prevExpenses => {
           const filtered = prevExpenses.filter(exp => exp.id !== expenseId);
           console.log(`État local mis à jour: ${prevExpenses.length} -> ${filtered.length} dépenses`);
@@ -58,17 +58,25 @@ export const useExpenseDeletion = (
         });
         
         console.log("Suppression réussie");
+        
+        // Important: D'abord réinitialiser l'état pour éviter les effets de bord
         resetDeleteState();
         
-        // Utiliser un délai plus court pour le rechargement des données
-        // et utiliser requestAnimationFrame pour s'assurer que le rendu est terminé
-        requestAnimationFrame(() => {
+        // Différer le rechargement des données en le séparant complètement 
+        // du cycle de mise à jour d'état
+        setTimeout(() => {
+          console.log("Planification du rechargement des données");
+          // Utiliser une macro-tâche pour s'assurer que toutes les mises à jour d'état sont terminées
           setTimeout(async () => {
             console.log("Rechargement des données après suppression");
-            await loadData();
-            console.log("Données rechargées avec succès");
-          }, 50);
-        });
+            try {
+              await loadData();
+              console.log("Données rechargées avec succès");
+            } catch (error) {
+              console.error("Erreur lors du rechargement des données:", error);
+            }
+          }, 100);
+        }, 0);
         
         return true;
       } else {

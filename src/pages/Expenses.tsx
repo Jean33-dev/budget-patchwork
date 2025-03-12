@@ -3,12 +3,13 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { ExpensesHeader } from "@/components/budget/ExpensesHeader";
 import { useExpenseManagement } from "@/hooks/useExpenseManagement";
 import { ExpenseList } from "@/components/budget/ExpenseList";
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useRef } from "react";
 
 const Expenses = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const budgetId = searchParams.get('budgetId');
+  const isLoadingRef = useRef(false);
   
   const {
     expenses,
@@ -34,18 +35,25 @@ const Expenses = () => {
     loadData,
   } = useExpenseManagement(budgetId);
 
-  // Optimiser la fonction de chargement des données avec useCallback
+  // Optimiser la fonction de chargement des données avec useCallback et une protection contre les chargements multiples
   const optimizedLoadData = useCallback(async () => {
+    // Éviter les chargements simultanés
+    if (isLoadingRef.current) {
+      console.log("Chargement déjà en cours, ignoré");
+      return;
+    }
+
     console.log("Démarrage du chargement optimisé des données, budgetId:", budgetId);
-    // Utiliser requestAnimationFrame pour s'assurer que le chargement se fait après le rendu
-    requestAnimationFrame(async () => {
-      try {
-        await loadData();
-        console.log("Chargement optimisé des données terminé avec succès");
-      } catch (error) {
-        console.error("Erreur lors du chargement optimisé des données:", error);
-      }
-    });
+    isLoadingRef.current = true;
+
+    try {
+      await loadData();
+      console.log("Chargement optimisé des données terminé avec succès");
+    } catch (error) {
+      console.error("Erreur lors du chargement optimisé des données:", error);
+    } finally {
+      isLoadingRef.current = false;
+    }
   }, [budgetId, loadData]);
 
   // Recharger les données quand le budgetId change
