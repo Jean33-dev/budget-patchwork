@@ -25,40 +25,39 @@ export const DeleteExpenseDialog = ({
 }: DeleteExpenseDialogProps) => {
   const [isProcessing, setIsProcessing] = useState(false);
   
-  // Réinitialiser isProcessing quand la boîte de dialogue se ferme
+  // Réinitialiser isProcessing quand la boîte de dialogue change d'état
   useEffect(() => {
     if (!open) {
-      console.log("Dialog closed, resetting processing state");
+      console.log("Dialog fermé, réinitialisation de l'état de traitement");
       setIsProcessing(false);
     }
   }, [open]);
 
   const handleConfirm = async (e: React.MouseEvent) => {
-    console.log("Confirmation clicked");
+    console.log("Confirmation cliquée");
     e.preventDefault();
     
     if (isProcessing) {
-      console.log("Déjà en cours de traitement");
+      console.log("Déjà en cours de traitement, ignoré");
       return;
     }
     
-    console.log("Setting processing state");
     setIsProcessing(true);
     
     try {
-      console.log("Executing onConfirm function");
+      console.log("Exécution de la fonction onConfirm");
       const success = await onConfirm();
-      console.log("Confirm result:", success);
+      console.log("Résultat onConfirm:", success);
       
       if (success) {
-        console.log("Success, closing dialog");
+        console.log("Suppression réussie, fermeture de la boîte de dialogue");
         onOpenChange(false);
       } else {
-        console.log("Operation failed but without error");
+        console.log("Échec de l'opération");
         setIsProcessing(false);
       }
     } catch (error) {
-      console.error("Dialog confirm error:", error);
+      console.error("Erreur lors de la confirmation:", error);
       setIsProcessing(false);
     }
   };
@@ -67,9 +66,10 @@ export const DeleteExpenseDialog = ({
     <AlertDialog 
       open={open} 
       onOpenChange={(newOpen) => {
-        console.log("Dialog state changing to:", newOpen);
+        console.log("Changement d'état de la boîte de dialogue:", newOpen);
+        // Empêcher la fermeture pendant le traitement
         if (isProcessing && !newOpen) {
-          console.log("Prevented dialog close during processing");
+          console.log("Fermeture empêchée pendant le traitement");
           return;
         }
         onOpenChange(newOpen);

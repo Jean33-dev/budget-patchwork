@@ -1,3 +1,4 @@
+
 import { Expense } from '../models/expense';
 
 export const expenseQueries = {
@@ -49,19 +50,13 @@ export const expenseQueries = {
         return false;
       }
       
-      // Vérification que l'ID existe avant de supprimer
-      const checkResult = db.exec(`SELECT id FROM expenses WHERE id = '${id}'`);
-      if (!checkResult[0] || checkResult[0].values.length === 0) {
-        console.warn(`Aucune dépense trouvée avec l'ID: ${id}`);
-        return false; // Indiquer que rien n'a été supprimé
-      }
-      
+      // Exécution directe de la suppression
       db.run('DELETE FROM expenses WHERE id = ?', [id]);
       console.log(`Dépense avec l'ID ${id} supprimée avec succès`);
-      return true; // Indiquer que la suppression a réussi
+      return true;
     } catch (error) {
       console.error(`Erreur lors de la suppression de la dépense avec l'ID ${id}:`, error);
-      throw error; // Propager l'erreur pour une meilleure gestion
+      return false;
     }
   }
 };
