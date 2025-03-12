@@ -47,18 +47,18 @@ export const useExpenseDeletion = (
     operationInProgressRef.current = false;
   }, []);
 
-  // Database deletion operation - optimisé avec Promise
-  const performDatabaseDeletion = useCallback(async (expenseId: string): Promise<boolean> => {
+  // Database hide operation - optimisé pour masquer au lieu de supprimer
+  const performDatabaseHide = useCallback(async (expenseId: string): Promise<boolean> => {
     try {
-      console.log("Exécution de la suppression en base de données pour:", expenseId);
-      return await db.deleteExpense(expenseId);
+      console.log("Exécution du masquage en base de données pour:", expenseId);
+      return await db.deleteExpense(expenseId); // On utilise la même méthode qui maintenant masque au lieu de supprimer
     } catch (error) {
-      console.error("Erreur lors de la suppression en base de données:", error);
+      console.error("Erreur lors du masquage en base de données:", error);
       return false;
     }
   }, []);
 
-  // Update local state after deletion
+  // Update local state after hiding
   const updateLocalState = useCallback((expenseId: string): void => {
     setExpenses(prevExpenses => {
       const filtered = prevExpenses.filter(exp => exp.id !== expenseId);
@@ -80,20 +80,19 @@ export const useExpenseDeletion = (
     
     try {
       const expenseId = selectedExpense.id;
-      console.log("Début suppression pour:", expenseId);
-      console.log("Tentative de suppression:", expenseId);
+      console.log("Début masquage pour:", expenseId);
       
-      // Step 1: Delete from database - wrapped in a microtask to prevent UI blocking
-      const result = await performDatabaseDeletion(expenseId);
+      // Step 1: Hide in database
+      const result = await performDatabaseHide(expenseId);
       
       if (!result) {
-        throw new Error("Échec de la suppression");
+        throw new Error("Échec du masquage");
       }
       
       // Step 2: Update local state
       updateLocalState(expenseId);
       
-      console.log("Suppression réussie");
+      console.log("Masquage réussi");
       
       // Show toast
       toast({
@@ -113,31 +112,12 @@ export const useExpenseDeletion = (
         }, 100);
       }
       
-      // Schedule data reload in the background
-      console.log("Planification du rechargement des données");
-      
-      // Clear existing timeout if present
-      if (dataLoadTimeoutRef.current !== null) {
-        window.clearTimeout(dataLoadTimeoutRef.current);
-      }
-      
       // Reset state immediately to allow UI to update
       resetDeleteState();
       
-      // Schedule deferred data reload
-      dataLoadTimeoutRef.current = window.setTimeout(() => {
-        loadData().then(() => {
-          console.log("Données rechargées avec succès après suppression");
-          dataLoadTimeoutRef.current = null;
-        }).catch(error => {
-          console.error("Erreur lors du rechargement des données:", error);
-          dataLoadTimeoutRef.current = null;
-        });
-      }, 50); // Réduit le délai pour minimiser le temps d'attente
-      
       return true;
     } catch (error) {
-      console.error("Erreur lors de la suppression:", error);
+      console.error("Erreur lors du masquage:", error);
       
       toast({
         variant: "destructive",
@@ -149,7 +129,7 @@ export const useExpenseDeletion = (
       resetDeleteState();
       return false;
     }
-  }, [selectedExpense, isDeleting, loadData, toast, resetDeleteState, performDatabaseDeletion, updateLocalState, onSuccessCallback]);
+  }, [selectedExpense, isDeleting, toast, resetDeleteState, performDatabaseHide, updateLocalState, onSuccessCallback]);
 
   return {
     selectedExpense,

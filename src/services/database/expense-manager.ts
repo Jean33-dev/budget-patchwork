@@ -29,19 +29,35 @@ export class ExpenseManager extends BaseDatabaseManager {
         return false;
       }
       
-      // Exécuter la suppression de manière optimisée
+      // Utiliser la méthode de masquage au lieu de la suppression
       return new Promise<boolean>((resolve) => {
         // Utiliser setTimeout pour éviter le blocage du thread principal
         setTimeout(() => {
-          const deleteStatus = expenseQueries.delete(this.db, id);
-          console.log(`Résultat de la suppression pour ID ${id}:`, deleteStatus);
+          const hideStatus = expenseQueries.hideExpense(this.db, id);
+          console.log(`Résultat du masquage pour ID ${id}:`, hideStatus);
           console.timeEnd('deleteExpense');
-          resolve(deleteStatus);
+          resolve(hideStatus);
         }, 0);
       });
     } catch (error) {
       console.error(`Erreur dans ExpenseManager.deleteExpense pour l'ID ${id}:`, error);
       console.timeEnd('deleteExpense');
+      return false;
+    }
+  }
+  
+  // Ajouter une méthode pour la suppression réelle si nécessaire
+  async permanentlyDeleteExpense(id: string): Promise<boolean> {
+    try {
+      await this.ensureInitialized();
+      
+      if (!id) {
+        return false;
+      }
+      
+      return expenseQueries.delete(this.db, id);
+    } catch (error) {
+      console.error(`Erreur lors de la suppression permanente:`, error);
       return false;
     }
   }
