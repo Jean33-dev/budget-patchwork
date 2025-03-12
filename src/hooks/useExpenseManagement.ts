@@ -9,7 +9,10 @@ import { Expense, Budget } from "@/types/expense";
 // Re-export the types for backward compatibility
 export type { Expense, Budget };
 
-export const useExpenseManagement = (budgetId: string | null) => {
+export const useExpenseManagement = (
+  budgetId: string | null,
+  navigateCallback?: () => void // Nouveau paramètre pour la navigation
+) => {
   // Get expense data
   const { expenses, availableBudgets, setExpenses, loadData } = useExpenseData(budgetId);
   
@@ -33,14 +36,15 @@ export const useExpenseManagement = (budgetId: string | null) => {
     resetEditState
   } = useExpenseEditing(setExpenses, loadData);
   
-  // Expense deletion functionality
+  // Expense deletion functionality avec callback de navigation
   const { 
     selectedExpense: deletingExpense,
     isDeleting,
     handleDeleteClick,
     handleDeleteConfirm,
-    resetDeleteState
-  } = useExpenseDeletion(setExpenses, loadData);
+    resetDeleteState,
+    onDeleteSuccess: navigationCallback
+  } = useExpenseDeletion(setExpenses, loadData, navigateCallback);
   
   // Expense addition functionality
   const { handleAddEnvelope } = useExpenseAddition(setExpenses, loadData, budgetId);
@@ -111,5 +115,6 @@ export const useExpenseManagement = (budgetId: string | null) => {
     handleDeleteConfirm: completeDelete,
     handleAddEnvelope: completeAddEnvelope,
     loadData,
+    navigationCallback // Exposer le callback de navigation
   };
 };

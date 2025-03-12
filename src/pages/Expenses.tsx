@@ -13,6 +13,12 @@ const Expenses = () => {
   const mountedRef = useRef(true);
   const dataLoadedOnceRef = useRef(false);
   
+  // Callback de navigation pour rediriger vers le tableau de bord
+  const navigateToDashboard = useCallback(() => {
+    console.log("Redirection vers le tableau de bord...");
+    navigate("/dashboard/budget");
+  }, [navigate]);
+  
   const {
     expenses,
     availableBudgets,
@@ -35,7 +41,7 @@ const Expenses = () => {
     handleDeleteConfirm,
     handleAddEnvelope,
     loadData,
-  } = useExpenseManagement(budgetId);
+  } = useExpenseManagement(budgetId, navigateToDashboard);
 
   // Nettoyer le composant à sa destruction
   useEffect(() => {
@@ -111,6 +117,7 @@ const Expenses = () => {
         handleDeleteConfirm={handleDeleteConfirm}
         handleAddEnvelope={handleAddEnvelope}
         defaultBudgetId={budgetId || undefined}
+        onDeleteSuccess={navigateToDashboard}
       />
     </div>
   );

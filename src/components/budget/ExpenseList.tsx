@@ -33,6 +33,7 @@ interface ExpenseListProps {
     date?: string;
   }) => Promise<boolean>;
   defaultBudgetId?: string;
+  onDeleteSuccess?: () => void; // Nouvelle prop pour le callback de navigation
 }
 
 export const ExpenseList = ({
@@ -56,7 +57,8 @@ export const ExpenseList = ({
   handleEditSubmit,
   handleDeleteConfirm,
   handleAddEnvelope,
-  defaultBudgetId
+  defaultBudgetId,
+  onDeleteSuccess
 }: ExpenseListProps) => {
   return (
     <div className="mt-6">
@@ -94,6 +96,7 @@ export const ExpenseList = ({
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={handleDeleteConfirm}
+        onSuccess={onDeleteSuccess}
       />
     </div>
   );

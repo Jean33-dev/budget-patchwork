@@ -16,12 +16,14 @@ interface DeleteExpenseDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onConfirm: () => Promise<boolean>;
+  onSuccess?: () => void; // Nouvelle prop pour action après succès
 }
 
 export const DeleteExpenseDialog = ({
   open,
   onOpenChange,
   onConfirm,
+  onSuccess,
 }: DeleteExpenseDialogProps) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const confirmedRef = useRef(false);
@@ -78,6 +80,12 @@ export const DeleteExpenseDialog = ({
       
       if (success) {
         console.log("Suppression réussie, fermeture de la boîte de dialogue");
+        
+        // Appeler onSuccess immédiatement si fourni
+        if (onSuccess) {
+          console.log("Exécution de l'action onSuccess");
+          onSuccess();
+        }
         
         // Defer dialog closure to allow UI to update
         confirmTimeoutRef.current = window.setTimeout(() => {

@@ -6,7 +6,8 @@ import { Expense } from "@/types/expense";
 
 export const useExpenseDeletion = (
   setExpenses: React.Dispatch<React.SetStateAction<Expense[]>>,
-  loadData: () => Promise<void>
+  loadData: () => Promise<void>,
+  onSuccessCallback?: () => void // Nouveau paramètre pour le callback de succès
 ) => {
   const { toast } = useToast();
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
@@ -137,6 +138,8 @@ export const useExpenseDeletion = (
     isDeleting,
     handleDeleteClick,
     handleDeleteConfirm,
-    resetDeleteState
+    resetDeleteState,
+    // Ajout de la fonction de callback pour être accessible dans les composants
+    onDeleteSuccess: onSuccessCallback 
   };
 };
