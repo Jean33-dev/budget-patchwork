@@ -29,7 +29,7 @@ export class ExpenseManager extends BaseDatabaseManager {
         return false;
       }
       
-      // Suppression directe sans vérification préalable pour éviter la double requête
+      // Suppression directe
       const deleteStatus = expenseQueries.delete(this.db, id);
       console.log(`Résultat de la suppression pour ID ${id}:`, deleteStatus);
       console.timeEnd('deleteExpense');

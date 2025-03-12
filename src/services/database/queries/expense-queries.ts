@@ -45,12 +45,12 @@ export const expenseQueries = {
     try {
       console.log(`Tentative de suppression de la dépense avec l'ID: ${id}`);
       
-      if (!id || typeof id !== 'string') {
-        console.error("ID de dépense invalide pour la suppression:", id);
+      if (!id) {
+        console.error("ID de dépense invalide pour la suppression");
         return false;
       }
       
-      // Exécution directe de la suppression
+      // Exécution directe de la suppression sans vérifications supplémentaires
       db.run('DELETE FROM expenses WHERE id = ?', [id]);
       console.log(`Dépense avec l'ID ${id} supprimée avec succès`);
       return true;

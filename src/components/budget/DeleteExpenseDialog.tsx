@@ -51,7 +51,8 @@ export const DeleteExpenseDialog = ({
       
       if (success) {
         console.log("Suppression réussie, fermeture de la boîte de dialogue");
-        onOpenChange(false);
+        // Utiliser setTimeout pour permettre à React de terminer le cycle de mise à jour avant de fermer
+        setTimeout(() => onOpenChange(false), 10);
       } else {
         console.log("Échec de l'opération");
         setIsProcessing(false);
@@ -87,6 +88,7 @@ export const DeleteExpenseDialog = ({
           <AlertDialogAction 
             onClick={handleConfirm}
             disabled={isProcessing}
+            type="button"
           >
             {isProcessing ? (
               <>

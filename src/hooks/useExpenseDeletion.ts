@@ -57,7 +57,6 @@ export const useExpenseDeletion = (
           description: "La dépense a été supprimée avec succès."
         });
         
-        // Important: Pas de loadData() ici pour éviter double chargement
         console.log("Suppression réussie");
         resetDeleteState();
         return true;
@@ -73,12 +72,10 @@ export const useExpenseDeletion = (
         description: "Impossible de supprimer la dépense"
       });
       
-      // En cas d'erreur seulement, recharger les données pour synchroniser
-      await loadData();
-      resetDeleteState();
+      setIsDeleting(false);
       return false;
     }
-  }, [selectedExpense, isDeleting, setExpenses, loadData, toast, resetDeleteState]);
+  }, [selectedExpense, isDeleting, setExpenses, toast, resetDeleteState]);
 
   return {
     selectedExpense,
