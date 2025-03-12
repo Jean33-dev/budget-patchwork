@@ -15,8 +15,11 @@ export const useExpenseEditing = (
     editBudget: 0,
     editDate: ""
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleEnvelopeClick = (expense: Expense) => {
+    if (isSubmitting) return false;
+    
     setEditState({
       selectedExpense: expense,
       editTitle: expense.title,
@@ -48,7 +51,9 @@ export const useExpenseEditing = (
   };
 
   const handleEditSubmit = async () => {
-    if (!editState.selectedExpense) return;
+    if (!editState.selectedExpense || isSubmitting) return false;
+
+    setIsSubmitting(true);
 
     try {
       const updatedExpense: Expense = {
@@ -59,19 +64,20 @@ export const useExpenseEditing = (
         date: editState.editDate
       };
 
-      await db.updateExpense(updatedExpense);
-
+      // Update UI immediately for better responsiveness
       setExpenses(prev => prev.map(expense => 
         expense.id === editState.selectedExpense?.id ? updatedExpense : expense
       ));
+      
+      // Perform database update asynchronously
+      await db.updateExpense(updatedExpense);
       
       toast({
         title: "Dépense modifiée",
         description: `La dépense "${editState.editTitle}" a été mise à jour.`
       });
 
-      await loadData();
-      return true; // Return true to indicate success
+      return true;
     } catch (error) {
       console.error("Erreur lors de la modification de la dépense:", error);
       toast({
@@ -79,12 +85,17 @@ export const useExpenseEditing = (
         title: "Erreur",
         description: "Impossible de modifier la dépense"
       });
+      // Recharger les données en cas d'erreur pour restaurer l'état précédent
+      await loadData();
       return false;
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return {
     ...editState,
+    isSubmitting,
     setEditTitle,
     setEditBudget,
     setEditDate,

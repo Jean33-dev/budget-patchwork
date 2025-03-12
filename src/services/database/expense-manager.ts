@@ -28,7 +28,7 @@ export class ExpenseManager extends BaseDatabaseManager {
       
       await this.ensureInitialized();
       
-      // Suppression simplifiée et directe
+      // Optimisation de la requête de suppression logique
       return expenseQueries.hideExpense(this.db, id);
     } catch (error) {
       console.error(`Erreur dans ExpenseManager.deleteExpense pour l'ID ${id}:`, error);

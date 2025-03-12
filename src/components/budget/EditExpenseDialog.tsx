@@ -10,6 +10,8 @@ import {
 import { Label } from "@/components/ui/label";
 import { MoneyInput } from "@/components/shared/MoneyInput";
 import { Input } from "@/components/ui/input";
+import { useState } from "react";
+import { Loader2 } from "lucide-react";
 
 interface EditExpenseDialogProps {
   open: boolean;
@@ -20,7 +22,7 @@ interface EditExpenseDialogProps {
   onBudgetChange: (budget: number) => void;
   date: string;
   onDateChange: (date: string) => void;
-  onSubmit: () => void;
+  onSubmit: () => Promise<boolean>;
 }
 
 export const EditExpenseDialog = ({
@@ -34,8 +36,34 @@ export const EditExpenseDialog = ({
   onDateChange,
   onSubmit,
 }: EditExpenseDialogProps) => {
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const handleSubmit = async () => {
+    if (isProcessing) return;
+    
+    setIsProcessing(true);
+    
+    try {
+      const success = await onSubmit();
+      
+      if (success) {
+        // Close dialog with a small delay to avoid state conflict
+        setTimeout(() => onOpenChange(false), 100);
+      }
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog 
+      open={open} 
+      onOpenChange={(newOpen) => {
+        // Prevent closing dialog during processing
+        if (isProcessing && !newOpen) return;
+        onOpenChange(newOpen);
+      }}
+    >
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Modifier la dépense</DialogTitle>
@@ -47,6 +75,7 @@ export const EditExpenseDialog = ({
               id="title"
               value={title}
               onChange={(e) => onTitleChange(e.target.value)}
+              disabled={isProcessing}
             />
           </div>
           <div className="space-y-2">
@@ -55,6 +84,7 @@ export const EditExpenseDialog = ({
               id="amount"
               value={budget}
               onChange={onBudgetChange}
+              disabled={isProcessing}
             />
           </div>
           <div className="space-y-2">
@@ -64,11 +94,24 @@ export const EditExpenseDialog = ({
               type="date"
               value={date}
               onChange={(e) => onDateChange(e.target.value)}
+              disabled={isProcessing}
             />
           </div>
         </div>
         <DialogFooter>
-          <Button onClick={onSubmit}>Enregistrer</Button>
+          <Button 
+            onClick={handleSubmit}
+            disabled={isProcessing}
+          >
+            {isProcessing ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Enregistrement...
+              </>
+            ) : (
+              "Enregistrer"
+            )}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

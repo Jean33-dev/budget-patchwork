@@ -17,14 +17,16 @@ export const expenseQueries = {
   
   getAll: (db: any): Expense[] => {
     try {
-      // Requête simplifiée pour de meilleures performances
-      const result = db.exec('SELECT * FROM expenses WHERE visible = 1 OR visible IS NULL');
+      // Requête optimisée avec préparation de la requête
+      const stmt = db.prepare('SELECT * FROM expenses WHERE visible = 1 OR visible IS NULL');
+      const result = stmt.getAsObject();
+      stmt.free();
       
-      if (!result || !result[0] || !result[0].values) {
+      if (!result || !result.values) {
         return [];
       }
       
-      return result[0].values.map((row: any[]) => ({
+      return result.values.map((row: any[]) => ({
         id: row[0],
         title: row[1],
         budget: row[2],
@@ -42,10 +44,21 @@ export const expenseQueries = {
   
   add: (db: any, expense: Expense): void => {
     try {
-      db.run(
-        'INSERT INTO expenses (id, title, budget, spent, type, linkedBudgetId, date, visible) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-        [expense.id, expense.title, expense.budget, expense.spent, expense.type, expense.linkedBudgetId, expense.date, expense.visible !== false ? 1 : 0]
+      // Utilisation d'une requête préparée
+      const stmt = db.prepare(
+        'INSERT INTO expenses (id, title, budget, spent, type, linkedBudgetId, date, visible) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
       );
+      stmt.run([
+        expense.id, 
+        expense.title, 
+        expense.budget, 
+        expense.spent, 
+        expense.type, 
+        expense.linkedBudgetId, 
+        expense.date, 
+        expense.visible !== false ? 1 : 0
+      ]);
+      stmt.free();
     } catch (error) {
       console.error("Erreur lors de l'ajout d'une dépense:", error);
       throw error;
@@ -54,22 +67,32 @@ export const expenseQueries = {
   
   update: (db: any, expense: Expense): void => {
     try {
-      db.run(
-        'UPDATE expenses SET title = ?, budget = ?, spent = ?, linkedBudgetId = ?, date = ?, visible = ? WHERE id = ?',
-        [expense.title, expense.budget, expense.spent, expense.linkedBudgetId, expense.date, expense.visible !== false ? 1 : 0, expense.id]
+      // Utilisation d'une requête préparée optimisée
+      const stmt = db.prepare(
+        'UPDATE expenses SET title = ?, budget = ?, spent = ?, linkedBudgetId = ?, date = ?, visible = ? WHERE id = ?'
       );
+      stmt.run([
+        expense.title, 
+        expense.budget, 
+        expense.spent, 
+        expense.linkedBudgetId, 
+        expense.date, 
+        expense.visible !== false ? 1 : 0, 
+        expense.id
+      ]);
+      stmt.free();
     } catch (error) {
       console.error("Erreur lors de la mise à jour d'une dépense:", error);
       throw error;
     }
   },
   
-  // Fonction de masquage simplifiée avec un minimum de surcharge
+  // Fonction de masquage optimisée
   hideExpense: (db: any, id: string): boolean => {
     try {
       if (!id) return false;
       
-      // Requête directe et simple
+      // Préparation de la requête pour un traitement optimisé
       const stmt = db.prepare('UPDATE expenses SET visible = 0 WHERE id = ?');
       stmt.run([id]);
       stmt.free();

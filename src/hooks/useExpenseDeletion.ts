@@ -15,13 +15,13 @@ export const useExpenseDeletion = (
 
   // Function to select an expense to delete
   const handleDeleteClick = useCallback((expense: Expense) => {
-    if (operationInProgressRef.current) {
+    if (operationInProgressRef.current || isDeleting) {
       return false;
     }
     
     setSelectedExpense(expense);
     return true;
-  }, []);
+  }, [isDeleting]);
 
   // Function to reset deletion state
   const resetDeleteState = useCallback(() => {
@@ -30,7 +30,7 @@ export const useExpenseDeletion = (
     operationInProgressRef.current = false;
   }, []);
 
-  // Handle delete confirmation - optimized version
+  // Handle delete confirmation - optimized with background processing
   const handleDeleteConfirm = useCallback(async () => {
     if (!selectedExpense || isDeleting || operationInProgressRef.current) {
       return false;
@@ -46,29 +46,30 @@ export const useExpenseDeletion = (
       // Update local state immediately for better UI responsiveness
       setExpenses(prevExpenses => prevExpenses.filter(exp => exp.id !== expenseId));
       
-      // Perform database update in the background
-      db.deleteExpense(expenseId)
-        .then(success => {
-          if (!success) {
-            console.error("Échec de la suppression en base de données");
-            // Recharger les données en cas d'échec
-            loadData();
-          }
-        })
-        .catch(error => {
-          console.error("Erreur lors de la suppression en base de données:", error);
-          // Recharger les données en cas d'erreur
-          loadData();
-        });
-      
-      // Show success toast immediately
+      // Show success toast immediately for better UX
       toast({
         title: "Dépense supprimée",
         description: "La dépense a été supprimée avec succès."
       });
       
-      // Reset state immediately
-      resetDeleteState();
+      // Perform database deletion asynchronously
+      setTimeout(async () => {
+        try {
+          const success = await db.deleteExpense(expenseId);
+          
+          if (!success) {
+            console.error("Échec de la suppression en base de données");
+            // Rechargement silencieux des données en cas d'échec
+            loadData().catch(err => console.error("Échec du rechargement des données:", err));
+          }
+        } catch (error) {
+          console.error("Erreur lors de la suppression en base de données:", error);
+          // Rechargement silencieux des données en cas d'erreur
+          loadData().catch(err => console.error("Échec du rechargement des données:", err));
+        } finally {
+          resetDeleteState();
+        }
+      }, 100);
       
       return true;
     } catch (error) {
