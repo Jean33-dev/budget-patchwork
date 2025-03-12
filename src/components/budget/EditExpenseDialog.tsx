@@ -10,7 +10,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { MoneyInput } from "@/components/shared/MoneyInput";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
 
 interface EditExpenseDialogProps {
@@ -37,6 +37,11 @@ export const EditExpenseDialog = ({
   onSubmit,
 }: EditExpenseDialogProps) => {
   const [isProcessing, setIsProcessing] = useState(false);
+  
+  // Reset processing state when dialog opens or closes
+  useEffect(() => {
+    setIsProcessing(false);
+  }, [open]);
 
   const handleSubmit = async () => {
     if (isProcessing) return;
@@ -47,9 +52,13 @@ export const EditExpenseDialog = ({
       const success = await onSubmit();
       
       if (success) {
-        // Close dialog with a small delay to avoid state conflict
+        // Close dialog with a small delay to avoid state conflicts
         setTimeout(() => onOpenChange(false), 100);
+      } else {
+        console.error("La mise à jour a échoué");
       }
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour:", error);
     } finally {
       setIsProcessing(false);
     }

@@ -33,6 +33,7 @@ export const useExpenseDeletion = (
   // Handle delete confirmation
   const handleDeleteConfirm = useCallback(async () => {
     if (!selectedExpense || isDeleting || operationInProgressRef.current) {
+      console.log("Opération bloquée:", { selectedExpense, isDeleting, inProgress: operationInProgressRef.current });
       return false;
     }
 
@@ -42,26 +43,33 @@ export const useExpenseDeletion = (
     
     try {
       const expenseId = selectedExpense.id;
+      console.log("Suppression de la dépense:", expenseId);
       
       // Update local state immediately for better UI responsiveness
       setExpenses(prevExpenses => prevExpenses.filter(exp => exp.id !== expenseId));
       
-      // Show success toast
-      toast({
-        title: "Dépense supprimée",
-        description: "La dépense a été supprimée avec succès."
-      });
-      
       // Perform database deletion
       const success = await db.deleteExpense(expenseId);
       
-      if (!success) {
-        console.error("Échec de la suppression en base de données");
+      if (success) {
+        // Show success toast
+        toast({
+          title: "Dépense supprimée",
+          description: "La dépense a été supprimée avec succès."
+        });
+        
+        // Reload data to ensure everything is in sync
         await loadData();
+        
+        resetDeleteState();
+        return true;
+      } else {
+        console.error("Échec de la suppression en base de données");
+        // Rechargement des données en cas d'échec pour restaurer l'état
+        await loadData();
+        resetDeleteState();
+        return false;
       }
-      
-      resetDeleteState();
-      return true;
     } catch (error) {
       console.error("Erreur lors de la suppression:", error);
       
@@ -71,7 +79,8 @@ export const useExpenseDeletion = (
         description: "Impossible de supprimer la dépense"
       });
       
-      // Reset state on error
+      // Reset state on error and reload data
+      await loadData();
       resetDeleteState();
       return false;
     }

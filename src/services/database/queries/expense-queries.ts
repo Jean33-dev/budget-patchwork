@@ -19,22 +19,23 @@ export const expenseQueries = {
     try {
       // Requête pour récupérer uniquement les dépenses visibles
       const stmt = db.prepare('SELECT * FROM expenses WHERE visible = 1 OR visible IS NULL');
-      const result = stmt.getAsObject();
+      const result = stmt.all();
       stmt.free();
       
-      if (!result || !result.values) {
+      if (!result || !Array.isArray(result)) {
+        console.log("Aucun résultat ou format invalide:", result);
         return [];
       }
       
-      return result.values.map((row: any[]) => ({
-        id: row[0],
-        title: row[1],
-        budget: row[2],
-        spent: row[3],
-        type: row[4] as 'expense',
-        linkedBudgetId: row[5],
-        date: row[6],
-        visible: row[7] === 1 || row[7] === null
+      return result.map((row: any) => ({
+        id: row.id,
+        title: row.title,
+        budget: row.budget,
+        spent: row.spent,
+        type: row.type as 'expense',
+        linkedBudgetId: row.linkedBudgetId,
+        date: row.date,
+        visible: row.visible === 1 || row.visible === null
       }));
     } catch (error) {
       console.error("Erreur lors de la récupération des dépenses:", error);
@@ -93,6 +94,7 @@ export const expenseQueries = {
       stmt.run([id]);
       stmt.free();
       
+      console.log(`Dépense ${id} masquée avec succès`);
       return true;
     } catch (error) {
       console.error(`Erreur lors du masquage de la dépense:`, error);

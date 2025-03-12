@@ -47,9 +47,13 @@ export const DeleteExpenseDialog = ({
       if (success) {
         // Notify parent component about successful deletion
         if (onSuccess) onSuccess();
-        // Close dialog
-        onOpenChange(false);
+        // Close dialog with a small delay to avoid state conflicts
+        setTimeout(() => onOpenChange(false), 100);
+      } else {
+        console.error("La suppression a échoué");
       }
+    } catch (error) {
+      console.error("Erreur lors de la suppression:", error);
     } finally {
       // Always reset processing state, even if there was an error
       setIsProcessing(false);

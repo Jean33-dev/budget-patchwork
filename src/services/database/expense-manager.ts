@@ -6,7 +6,9 @@ import { expenseQueries } from './queries/expense-queries';
 export class ExpenseManager extends BaseDatabaseManager {
   async getExpenses(): Promise<Expense[]> {
     await this.ensureInitialized();
-    return expenseQueries.getAll(this.db);
+    const expenses = expenseQueries.getAll(this.db);
+    console.log("Dépenses récupérées:", expenses.length);
+    return expenses;
   }
 
   async addExpense(expense: Expense) {
@@ -27,7 +29,12 @@ export class ExpenseManager extends BaseDatabaseManager {
       }
       
       await this.ensureInitialized();
-      return expenseQueries.hideExpense(this.db, id);
+      const result = expenseQueries.hideExpense(this.db, id);
+      
+      // Log pour le débogage
+      console.log(`Résultat de la suppression (masquage) de l'expense ${id}:`, result);
+      
+      return result;
     } catch (error) {
       console.error(`Erreur dans ExpenseManager.deleteExpense pour l'ID ${id}:`, error);
       return false;
