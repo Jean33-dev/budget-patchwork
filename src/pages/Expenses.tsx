@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { ExpensesHeader } from "@/components/budget/ExpensesHeader";
 import { useExpenseManagement } from "@/hooks/useExpenseManagement";
 import { ExpenseList } from "@/components/budget/ExpenseList";
+import { useEffect } from "react";
 
 const Expenses = () => {
   const navigate = useNavigate();
@@ -30,7 +31,14 @@ const Expenses = () => {
     handleEditSubmit,
     handleDeleteConfirm,
     handleAddEnvelope,
+    loadData,
   } = useExpenseManagement(budgetId);
+
+  // Recharger les données quand le budgetId change
+  useEffect(() => {
+    console.log("Effet de chargement des données déclenché, budgetId:", budgetId);
+    loadData();
+  }, [budgetId, loadData]);
 
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">

@@ -59,6 +59,14 @@ export const useExpenseDeletion = (
         
         console.log("Suppression réussie");
         resetDeleteState();
+        
+        // Ajouter un rechargement de données après une courte période
+        setTimeout(async () => {
+          console.log("Rechargement des données après suppression");
+          await loadData();
+          console.log("Données rechargées avec succès");
+        }, 100);
+        
         return true;
       } else {
         throw new Error("Échec de la suppression");
@@ -75,7 +83,7 @@ export const useExpenseDeletion = (
       setIsDeleting(false);
       return false;
     }
-  }, [selectedExpense, isDeleting, setExpenses, toast, resetDeleteState]);
+  }, [selectedExpense, isDeleting, setExpenses, loadData, toast, resetDeleteState]);
 
   return {
     selectedExpense,

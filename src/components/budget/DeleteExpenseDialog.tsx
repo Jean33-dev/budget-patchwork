@@ -51,8 +51,11 @@ export const DeleteExpenseDialog = ({
       
       if (success) {
         console.log("Suppression réussie, fermeture de la boîte de dialogue");
-        // Utiliser setTimeout pour permettre à React de terminer le cycle de mise à jour avant de fermer
-        setTimeout(() => onOpenChange(false), 10);
+        // Utiliser un délai plus long pour assurer que tous les états sont mis à jour
+        setTimeout(() => {
+          console.log("Fermeture effective de la boîte de dialogue");
+          onOpenChange(false);
+        }, 150);
       } else {
         console.log("Échec de l'opération");
         setIsProcessing(false);
