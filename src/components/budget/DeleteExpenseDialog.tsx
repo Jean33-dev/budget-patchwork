@@ -9,7 +9,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
 
 interface DeleteExpenseDialogProps {
@@ -23,15 +23,21 @@ export const DeleteExpenseDialog = ({
   open,
   onOpenChange,
   onConfirm,
+  onSuccess,
 }: DeleteExpenseDialogProps) => {
   const [isProcessing, setIsProcessing] = useState(false);
+  
+  // Reset processing state when dialog closes
+  useEffect(() => {
+    if (!open) {
+      setIsProcessing(false);
+    }
+  }, [open]);
   
   const handleConfirm = async (e: React.MouseEvent) => {
     e.preventDefault();
     
-    if (isProcessing) {
-      return;
-    }
+    if (isProcessing) return;
     
     setIsProcessing(true);
     
@@ -39,8 +45,13 @@ export const DeleteExpenseDialog = ({
       const success = await onConfirm();
       
       if (success) {
-        onOpenChange(false);
+        // Notify parent component about successful deletion
+        if (onSuccess) onSuccess();
+        // Close dialog with a small delay to avoid state conflict
+        setTimeout(() => onOpenChange(false), 50);
       }
+    } catch (error) {
+      console.error("Erreur lors de la suppression:", error);
     } finally {
       setIsProcessing(false);
     }
@@ -48,9 +59,8 @@ export const DeleteExpenseDialog = ({
 
   return (
     <AlertDialog open={open} onOpenChange={(newOpen) => {
-      if (isProcessing && !newOpen) {
-        return;
-      }
+      // Prevent closing dialog during processing
+      if (isProcessing && !newOpen) return;
       onOpenChange(newOpen);
     }}>
       <AlertDialogContent>

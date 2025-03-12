@@ -17,9 +17,14 @@ export const expenseQueries = {
   
   getAll: (db: any): Expense[] => {
     try {
-      // Use a simpler query for better performance
+      // Requête simplifiée pour de meilleures performances
       const result = db.exec('SELECT * FROM expenses WHERE visible = 1 OR visible IS NULL');
-      return result[0]?.values?.map((row: any[]) => ({
+      
+      if (!result || !result[0] || !result[0].values) {
+        return [];
+      }
+      
+      return result[0].values.map((row: any[]) => ({
         id: row[0],
         title: row[1],
         budget: row[2],
@@ -28,7 +33,7 @@ export const expenseQueries = {
         linkedBudgetId: row[5],
         date: row[6],
         visible: row[7] === 1 || row[7] === null
-      })) || [];
+      }));
     } catch (error) {
       console.error("Erreur lors de la récupération des dépenses:", error);
       return [];
@@ -59,13 +64,16 @@ export const expenseQueries = {
     }
   },
   
-  // Simplified hide function with minimal overhead
+  // Fonction de masquage simplifiée avec un minimum de surcharge
   hideExpense: (db: any, id: string): boolean => {
     try {
       if (!id) return false;
       
-      // Direct and simple query
-      db.run('UPDATE expenses SET visible = 0 WHERE id = ?', [id]);
+      // Requête directe et simple
+      const stmt = db.prepare('UPDATE expenses SET visible = 0 WHERE id = ?');
+      stmt.run([id]);
+      stmt.free();
+      
       return true;
     } catch (error) {
       console.error(`Erreur lors du masquage de la dépense:`, error);
@@ -76,7 +84,11 @@ export const expenseQueries = {
   delete: (db: any, id: string): boolean => {
     try {
       if (!id) return false;
-      db.run('DELETE FROM expenses WHERE id = ?', [id]);
+      
+      const stmt = db.prepare('DELETE FROM expenses WHERE id = ?');
+      stmt.run([id]);
+      stmt.free();
+      
       return true;
     } catch (error) {
       console.error(`Erreur lors de la suppression:`, error);

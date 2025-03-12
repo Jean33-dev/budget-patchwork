@@ -1,3 +1,4 @@
+
 import { BaseDatabaseManager } from './base-database-manager';
 import { Expense } from './models/expense';
 import { expenseQueries } from './queries/expense-queries';
@@ -20,14 +21,14 @@ export class ExpenseManager extends BaseDatabaseManager {
 
   async deleteExpense(id: string): Promise<boolean> {
     try {
-      await this.ensureInitialized();
-      
       if (!id) {
         console.error("Tentative de suppression avec un ID invalide");
         return false;
       }
       
-      // Simply call hideExpense - fewer layers of abstraction
+      await this.ensureInitialized();
+      
+      // Suppression simplifiée et directe
       return expenseQueries.hideExpense(this.db, id);
     } catch (error) {
       console.error(`Erreur dans ExpenseManager.deleteExpense pour l'ID ${id}:`, error);
@@ -38,12 +39,11 @@ export class ExpenseManager extends BaseDatabaseManager {
   // Keep the permanent delete method for maintenance
   async permanentlyDeleteExpense(id: string): Promise<boolean> {
     try {
-      await this.ensureInitialized();
-      
       if (!id) {
         return false;
       }
       
+      await this.ensureInitialized();
       return expenseQueries.delete(this.db, id);
     } catch (error) {
       console.error(`Erreur lors de la suppression permanente:`, error);

@@ -46,8 +46,20 @@ export const useExpenseDeletion = (
       // Update local state immediately for better UI responsiveness
       setExpenses(prevExpenses => prevExpenses.filter(exp => exp.id !== expenseId));
       
-      // Then update database - no need to wait for this to complete before updating UI
-      const hidePromise = db.deleteExpense(expenseId);
+      // Perform database update in the background
+      db.deleteExpense(expenseId)
+        .then(success => {
+          if (!success) {
+            console.error("Échec de la suppression en base de données");
+            // Recharger les données en cas d'échec
+            loadData();
+          }
+        })
+        .catch(error => {
+          console.error("Erreur lors de la suppression en base de données:", error);
+          // Recharger les données en cas d'erreur
+          loadData();
+        });
       
       // Show success toast immediately
       toast({
@@ -55,11 +67,8 @@ export const useExpenseDeletion = (
         description: "La dépense a été supprimée avec succès."
       });
       
-      // Reset state so UI can update
+      // Reset state immediately
       resetDeleteState();
-      
-      // Wait for database operation to complete in background
-      await hidePromise;
       
       return true;
     } catch (error) {
@@ -75,7 +84,7 @@ export const useExpenseDeletion = (
       resetDeleteState();
       return false;
     }
-  }, [selectedExpense, isDeleting, toast, resetDeleteState, setExpenses]);
+  }, [selectedExpense, isDeleting, toast, resetDeleteState, setExpenses, loadData]);
 
   return {
     selectedExpense,
