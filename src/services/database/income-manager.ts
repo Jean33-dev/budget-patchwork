@@ -21,6 +21,10 @@ export class IncomeManager extends BaseDatabaseManager {
 
   async deleteIncome(id: string) {
     await this.ensureInitialized();
+    if (!id) {
+      console.error("Tentative de suppression avec un ID invalide");
+      return;
+    }
     incomeQueries.delete(this.db, id);
   }
 }
