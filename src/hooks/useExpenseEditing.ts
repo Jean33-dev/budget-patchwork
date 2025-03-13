@@ -51,7 +51,7 @@ export const useExpenseEditing = (
     setIsSubmitting(false);
   };
 
-  const handleEditSubmit = async () => {
+  const handleEditSubmit = async (): Promise<boolean> => {
     if (!editState.selectedExpense) {
       console.error("Tentative de modification sans dépense sélectionnée");
       return false;
