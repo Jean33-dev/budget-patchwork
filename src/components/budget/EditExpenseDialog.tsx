@@ -113,3 +113,4 @@ export const EditExpenseDialog = ({
       </DialogContent>
     </Dialog>
   );
+};
