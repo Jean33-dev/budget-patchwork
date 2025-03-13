@@ -77,8 +77,7 @@ export const useExpenseEditing = (
       console.log("Mise à jour de la dépense:", updatedExpense);
       const updateResult = await db.updateExpense(updatedExpense);
       
-      if (updateResult === false) {
-        console.error("Échec de la mise à jour en base de données");
+      if (!updateResult) {
         throw new Error("Échec de la mise à jour en base de données");
       }
 

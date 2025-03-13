@@ -11,7 +11,6 @@ import { Label } from "@/components/ui/label";
 import { MoneyInput } from "@/components/shared/MoneyInput";
 import { Input } from "@/components/ui/input";
 import { Loader2 } from "lucide-react";
-import { useState } from "react";
 
 interface EditExpenseDialogProps {
   open: boolean;
@@ -36,29 +35,18 @@ export const EditExpenseDialog = ({
   date,
   onDateChange,
   onSubmit,
-  isSubmitting: externalIsSubmitting = false
+  isSubmitting = false
 }: EditExpenseDialogProps) => {
-  const [internalIsSubmitting, setInternalIsSubmitting] = useState(false);
-  const isSubmitting = externalIsSubmitting || internalIsSubmitting;
-
   const handleSubmit = async (e: React.MouseEvent) => {
     e.preventDefault();
     if (isSubmitting) return;
     
     console.log("Tentative de soumission du formulaire d'édition");
-    setInternalIsSubmitting(true);
+    const success = await onSubmit();
     
-    try {
-      const success = await onSubmit();
-      
-      if (success) {
-        console.log("Édition réussie, fermeture du dialogue");
-        onOpenChange(false);
-      }
-    } catch (error) {
-      console.error("Erreur lors de la soumission du formulaire:", error);
-    } finally {
-      setInternalIsSubmitting(false);
+    if (success) {
+      console.log("Édition réussie, fermeture du dialogue");
+      onOpenChange(false);
     }
   };
 
