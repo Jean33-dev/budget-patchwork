@@ -5,29 +5,46 @@ import { expenseQueries } from './queries/expense-queries';
 
 export class ExpenseManager extends BaseDatabaseManager {
   async getExpenses(): Promise<Expense[]> {
-    await this.ensureInitialized();
-    return expenseQueries.getAll(this.db);
+    try {
+      await this.ensureInitialized();
+      return await expenseQueries.getAll(this.db);
+    } catch (error) {
+      console.error("Erreur lors de la récupération des dépenses:", error);
+      return [];
+    }
   }
 
   async addExpense(expense: Expense): Promise<void> {
-    await this.ensureInitialized();
-    expenseQueries.add(this.db, expense);
+    try {
+      await this.ensureInitialized();
+      expenseQueries.add(this.db, expense);
+    } catch (error) {
+      console.error("Erreur lors de l'ajout d'une dépense:", error);
+    }
     return Promise.resolve();
   }
 
   async updateExpense(expense: Expense): Promise<void> {
-    await this.ensureInitialized();
-    expenseQueries.update(this.db, expense);
+    try {
+      await this.ensureInitialized();
+      expenseQueries.update(this.db, expense);
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour d'une dépense:", error);
+    }
     return Promise.resolve();
   }
 
   async deleteExpense(id: string): Promise<void> {
-    await this.ensureInitialized();
-    if (!id) {
-      console.error("Tentative de suppression avec un ID invalide");
-      return Promise.resolve();
+    try {
+      await this.ensureInitialized();
+      if (!id) {
+        console.error("Tentative de suppression avec un ID invalide");
+        return Promise.resolve();
+      }
+      expenseQueries.delete(this.db, id);
+    } catch (error) {
+      console.error(`Erreur lors de la suppression de la dépense avec l'ID ${id}:`, error);
     }
-    expenseQueries.delete(this.db, id);
     return Promise.resolve();
   }
 }
