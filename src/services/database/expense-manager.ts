@@ -24,9 +24,9 @@ export class ExpenseManager extends BaseDatabaseManager {
         return false;
       }
       
-      const result = expenseQueries.update(this.db, expense);
-      console.log(`Dépense avec l'ID ${expense.id} mise à jour avec succès:`, result);
-      return result;
+      expenseQueries.update(this.db, expense);
+      console.log(`Dépense avec l'ID ${expense.id} mise à jour avec succès`);
+      return true;
     } catch (error) {
       console.error(`Erreur dans ExpenseManager.updateExpense pour l'ID ${expense.id}:`, error);
       return false;

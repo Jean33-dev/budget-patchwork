@@ -51,7 +51,7 @@ export const useExpenseEditing = (
     setIsSubmitting(false);
   };
 
-  const handleEditSubmit = async (): Promise<boolean> => {
+  const handleEditSubmit = async () => {
     if (!editState.selectedExpense) {
       console.error("Tentative de modification sans dépense sélectionnée");
       return false;
@@ -77,7 +77,7 @@ export const useExpenseEditing = (
       console.log("Mise à jour de la dépense:", updatedExpense);
       const updateResult = await db.updateExpense(updatedExpense);
       
-      if (updateResult === false) {
+      if (!updateResult) {
         throw new Error("Échec de la mise à jour en base de données");
       }
 
