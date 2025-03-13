@@ -23,6 +23,7 @@ const Expenses = () => {
     setEditBudget,
     editDate,
     setEditDate,
+    isSubmitting,
     addDialogOpen,
     setAddDialogOpen,
     editDialogOpen,
@@ -111,6 +112,7 @@ const Expenses = () => {
         handleDeleteConfirm={handleDeleteConfirm}
         handleAddEnvelope={handleAddEnvelope}
         defaultBudgetId={budgetId || undefined}
+        isSubmitting={isSubmitting}
       />
     </div>
   );

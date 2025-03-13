@@ -33,6 +33,7 @@ interface ExpenseListProps {
     date?: string;
   }) => Promise<boolean>;
   defaultBudgetId?: string;
+  isSubmitting?: boolean;
 }
 
 export const ExpenseList = ({
@@ -56,7 +57,8 @@ export const ExpenseList = ({
   handleEditSubmit,
   handleDeleteConfirm,
   handleAddEnvelope,
-  defaultBudgetId
+  defaultBudgetId,
+  isSubmitting = false
 }: ExpenseListProps) => {
   return (
     <div className="mt-6">
@@ -88,6 +90,7 @@ export const ExpenseList = ({
         date={editDate}
         onDateChange={setEditDate}
         onSubmit={handleEditSubmit}
+        isSubmitting={isSubmitting}
       />
 
       <DeleteExpenseDialog
