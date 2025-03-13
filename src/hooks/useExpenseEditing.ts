@@ -15,8 +15,10 @@ export const useExpenseEditing = (
     editBudget: 0,
     editDate: ""
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleEnvelopeClick = (expense: Expense) => {
+    console.log("Sélection de la dépense pour modification:", expense.id);
     setEditState({
       selectedExpense: expense,
       editTitle: expense.title,
@@ -39,16 +41,29 @@ export const useExpenseEditing = (
   };
 
   const resetEditState = () => {
+    console.log("Réinitialisation de l'état d'édition");
     setEditState({
       selectedExpense: null,
       editTitle: "",
       editBudget: 0,
       editDate: ""
     });
+    setIsSubmitting(false);
   };
 
   const handleEditSubmit = async () => {
-    if (!editState.selectedExpense) return;
+    if (!editState.selectedExpense) {
+      console.error("Tentative de modification sans dépense sélectionnée");
+      return false;
+    }
+    
+    if (isSubmitting) {
+      console.log("Soumission déjà en cours, ignorée");
+      return false;
+    }
+    
+    setIsSubmitting(true);
+    console.log("Début de la mise à jour pour la dépense:", editState.selectedExpense.id);
 
     try {
       const updatedExpense: Expense = {
@@ -59,8 +74,14 @@ export const useExpenseEditing = (
         date: editState.editDate
       };
 
-      await db.updateExpense(updatedExpense);
+      console.log("Mise à jour de la dépense:", updatedExpense);
+      const updateResult = await db.updateExpense(updatedExpense);
+      
+      if (!updateResult) {
+        throw new Error("Échec de la mise à jour en base de données");
+      }
 
+      // Mise à jour optimiste de l'état local
       setExpenses(prev => prev.map(expense => 
         expense.id === editState.selectedExpense?.id ? updatedExpense : expense
       ));
@@ -70,7 +91,13 @@ export const useExpenseEditing = (
         description: `La dépense "${editState.editTitle}" a été mise à jour.`
       });
 
-      await loadData();
+      // Rechargement des données après un délai
+      setTimeout(async () => {
+        await loadData();
+        console.log("Données rechargées après modification");
+      }, 300);
+      
+      setIsSubmitting(false);
       return true; // Return true to indicate success
     } catch (error) {
       console.error("Erreur lors de la modification de la dépense:", error);
@@ -79,12 +106,14 @@ export const useExpenseEditing = (
         title: "Erreur",
         description: "Impossible de modifier la dépense"
       });
+      setIsSubmitting(false);
       return false;
     }
   };
 
   return {
     ...editState,
+    isSubmitting,
     setEditTitle,
     setEditBudget,
     setEditDate,
