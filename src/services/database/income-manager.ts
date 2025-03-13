@@ -9,18 +9,38 @@ export class IncomeManager extends BaseDatabaseManager {
     return incomeQueries.getAll(this.db);
   }
 
-  async addIncome(income: Income) {
-    await this.ensureInitialized();
-    incomeQueries.add(this.db, income);
+  async addIncome(income: Income): Promise<boolean> {
+    try {
+      console.log("IncomeManager - Ajout revenu avec montant:", income.budget);
+      await this.ensureInitialized();
+      incomeQueries.add(this.db, income);
+      return true;
+    } catch (error) {
+      console.error("Erreur lors de l'ajout du revenu:", error);
+      return false;
+    }
   }
 
-  async updateIncome(income: Income) {
-    await this.ensureInitialized();
-    incomeQueries.update(this.db, income);
+  async updateIncome(income: Income): Promise<boolean> {
+    try {
+      console.log("IncomeManager - Mise à jour revenu avec montant:", income.budget);
+      await this.ensureInitialized();
+      incomeQueries.update(this.db, income);
+      return true;
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour du revenu:", error);
+      return false;
+    }
   }
 
-  async deleteIncome(id: string) {
-    await this.ensureInitialized();
-    incomeQueries.delete(this.db, id);
+  async deleteIncome(id: string): Promise<boolean> {
+    try {
+      await this.ensureInitialized();
+      incomeQueries.delete(this.db, id);
+      return true;
+    } catch (error) {
+      console.error("Erreur lors de la suppression du revenu:", error);
+      return false;
+    }
   }
 }

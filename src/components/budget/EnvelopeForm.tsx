@@ -5,6 +5,7 @@ import { MoneyInput } from "../shared/MoneyInput";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { DialogFooter } from "@/components/ui/dialog";
+import { useEffect } from "react";
 
 interface EnvelopeFormProps {
   type: "income" | "expense" | "budget";
@@ -44,6 +45,16 @@ export const EnvelopeForm = ({
       default:
         return "";
     }
+  };
+
+  // Debugging
+  useEffect(() => {
+    console.log(`EnvelopeForm - Type: ${type}, Budget actuel: ${budget}`);
+  }, [type, budget]);
+
+  const handleBudgetChange = (newValue: number) => {
+    console.log(`EnvelopeForm - Montant saisi: ${newValue}`);
+    setBudget(newValue);
   };
 
   return (
@@ -100,7 +111,7 @@ export const EnvelopeForm = ({
         <MoneyInput
           id="budget"
           value={budget}
-          onChange={setBudget}
+          onChange={handleBudgetChange}
           required
         />
       </div>

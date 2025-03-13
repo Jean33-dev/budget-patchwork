@@ -60,19 +60,34 @@ export class DatabaseManager {
     return this.incomeManager.getIncomes();
   }
 
-  async addIncome(income: Income) {
-    await this.ensureInitialized();
-    await this.incomeManager.addIncome(income);
+  async addIncome(income: Income): Promise<boolean> {
+    try {
+      await this.ensureInitialized();
+      return await this.incomeManager.addIncome(income);
+    } catch (error) {
+      console.error("DatabaseManager - Erreur lors de l'ajout du revenu:", error);
+      return false;
+    }
   }
 
-  async updateIncome(income: Income) {
-    await this.ensureInitialized();
-    await this.incomeManager.updateIncome(income);
+  async updateIncome(income: Income): Promise<boolean> {
+    try {
+      await this.ensureInitialized();
+      return await this.incomeManager.updateIncome(income);
+    } catch (error) {
+      console.error("DatabaseManager - Erreur lors de la mise à jour du revenu:", error);
+      return false;
+    }
   }
 
-  async deleteIncome(id: string) {
-    await this.ensureInitialized();
-    await this.incomeManager.deleteIncome(id);
+  async deleteIncome(id: string): Promise<boolean> {
+    try {
+      await this.ensureInitialized();
+      return await this.incomeManager.deleteIncome(id);
+    } catch (error) {
+      console.error("DatabaseManager - Erreur lors de la suppression du revenu:", error);
+      return false;
+    }
   }
 
   // Expense methods
