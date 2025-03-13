@@ -10,7 +10,6 @@ import {
 import { Label } from "@/components/ui/label";
 import { MoneyInput } from "@/components/shared/MoneyInput";
 import { Input } from "@/components/ui/input";
-import { Loader2 } from "lucide-react";
 
 interface EditExpenseDialogProps {
   open: boolean;
@@ -21,8 +20,7 @@ interface EditExpenseDialogProps {
   onBudgetChange: (budget: number) => void;
   date: string;
   onDateChange: (date: string) => void;
-  onSubmit: () => Promise<boolean>;
-  isSubmitting?: boolean;
+  onSubmit: () => void;
 }
 
 export const EditExpenseDialog = ({
@@ -35,32 +33,9 @@ export const EditExpenseDialog = ({
   date,
   onDateChange,
   onSubmit,
-  isSubmitting = false
 }: EditExpenseDialogProps) => {
-  const handleSubmit = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    if (isSubmitting) return;
-    
-    console.log("Tentative de soumission du formulaire d'édition");
-    const success = await onSubmit();
-    
-    if (success) {
-      console.log("Édition réussie, fermeture du dialogue");
-      onOpenChange(false);
-    }
-  };
-
   return (
-    <Dialog 
-      open={open} 
-      onOpenChange={(newOpen) => {
-        if (isSubmitting && !newOpen) {
-          console.log("Fermeture empêchée pendant la soumission");
-          return;
-        }
-        onOpenChange(newOpen);
-      }}
-    >
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Modifier la dépense</DialogTitle>
@@ -72,7 +47,6 @@ export const EditExpenseDialog = ({
               id="title"
               value={title}
               onChange={(e) => onTitleChange(e.target.value)}
-              disabled={isSubmitting}
             />
           </div>
           <div className="space-y-2">
@@ -81,7 +55,6 @@ export const EditExpenseDialog = ({
               id="amount"
               value={budget}
               onChange={onBudgetChange}
-              disabled={isSubmitting}
             />
           </div>
           <div className="space-y-2">
@@ -91,24 +64,11 @@ export const EditExpenseDialog = ({
               type="date"
               value={date}
               onChange={(e) => onDateChange(e.target.value)}
-              disabled={isSubmitting}
             />
           </div>
         </div>
         <DialogFooter>
-          <Button 
-            onClick={handleSubmit}
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Enregistrement...
-              </>
-            ) : (
-              "Enregistrer"
-            )}
-          </Button>
+          <Button onClick={onSubmit}>Enregistrer</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

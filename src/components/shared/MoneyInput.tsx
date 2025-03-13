@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
@@ -11,8 +11,7 @@ interface MoneyInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElemen
 
 export const MoneyInput = ({ value = 0, onChange, className, ...props }: MoneyInputProps) => {
   const [isEditing, setIsEditing] = useState(false);
-  
-  // Fonctions utilitaires pour traiter les valeurs numériques
+
   const formatValue = (num: number): string => {
     if (isEditing) {
       return num.toString();
@@ -31,19 +30,21 @@ export const MoneyInput = ({ value = 0, onChange, className, ...props }: MoneyIn
     val = val.replace(/[^\d.,]/g, "");
     
     // Remplace la virgule par un point pour le calcul
-    const calculationValue = val.replace(",", ".");
+    val = val.replace(",", ".");
     
     // S'assure qu'il n'y a qu'un seul point décimal
-    const parts = calculationValue.split(".");
+    const parts = val.split(".");
     if (parts.length > 2) {
-      val = parts[0] + "," + parts.slice(1).join("");
+      val = parts[0] + "." + parts.slice(1).join("");
     }
     
+    // Limite à 2 décimales pendant la saisie
+    if (parts[1] && parts[1].length > 2) {
+      val = parts[0] + "." + parts[1].slice(0, 2);
+    }
+
     setInputValue(val);
-    
-    // Convertit la valeur en nombre pour le parent
-    const numVal = parseFloat(calculationValue) || 0;
-    console.log("MoneyInput - Valeur saisie:", val, "Valeur numérique:", numVal);
+    const numVal = parseFloat(val) || 0;
     onChange(numVal);
   };
 
@@ -51,27 +52,18 @@ export const MoneyInput = ({ value = 0, onChange, className, ...props }: MoneyIn
     setIsEditing(true);
     // Assurons-nous que value est un nombre valide
     const safeValue = typeof value === 'number' && !isNaN(value) ? value : 0;
-    const displayValue = safeValue.toString().replace(".", ",");
-    setInputValue(displayValue === "0" ? "" : displayValue);
+    setInputValue(safeValue.toString().replace(".", ","));
   };
 
   const handleBlur = () => {
     setIsEditing(false);
-    // Si la valeur est vide, on la met à 0
-    if (!inputValue.trim()) {
-      setInputValue("0,00");
-      onChange(0);
-    } else {
-      setInputValue(formatValue(value));
-    }
+    setInputValue(formatValue(value));
   };
 
-  // Mettre à jour la valeur affichée si la prop value change de l'extérieur
-  useEffect(() => {
-    if (!isEditing) {
-      setInputValue(formatValue(value));
-    }
-  }, [value, isEditing]);
+  // Mettre à jour la valeur affichée si la prop value change
+  React.useEffect(() => {
+    setInputValue(formatValue(value));
+  }, [value]);
 
   return (
     <div className={cn("relative", className)}>

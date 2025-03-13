@@ -1,117 +1,252 @@
 
-import { useExpenseData } from "./useExpenseData";
-import { useExpenseEditing } from "./useExpenseEditing";
-import { useExpenseDeletion } from "./useExpenseDeletion";
-import { useExpenseAddition } from "./useExpenseAddition";
-import { useExpenseDialogs } from "./useExpenseDialogs";
-import { Expense, Budget } from "@/types/expense";
+import { useState, useEffect, useCallback } from "react";
+import { useToast } from "@/hooks/use-toast";
+import { db } from "@/services/database";
 
-// Re-export the types for backward compatibility
-export type { Expense, Budget };
+export type Expense = {
+  id: string;
+  title: string;
+  budget: number;
+  spent: number;
+  type: "expense";
+  linkedBudgetId?: string;
+  date: string;
+};
+
+export type Budget = {
+  id: string;
+  title: string;
+  budget: number;
+  spent: number;
+  type: "budget";
+};
 
 export const useExpenseManagement = (budgetId: string | null) => {
-  // Get expense data
-  const { expenses, availableBudgets, setExpenses, loadData } = useExpenseData(budgetId);
+  const { toast } = useToast();
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [availableBudgets, setAvailableBudgets] = useState<Budget[]>([]);
+  const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editBudget, setEditBudget] = useState(0);
+  const [editDate, setEditDate] = useState("");
   
-  // Dialog state management
-  const { 
-    addDialogOpen, editDialogOpen, deleteDialogOpen, 
-    setAddDialogOpen, setEditDialogOpen, setDeleteDialogOpen 
-  } = useExpenseDialogs();
-  
-  // Expense editing functionality
-  const { 
-    selectedExpense: editingExpense,
-    editTitle, 
-    editBudget, 
-    editDate,
-    isSubmitting,
-    setEditTitle,
-    setEditBudget,
-    setEditDate,
-    handleEnvelopeClick,
-    handleEditSubmit,
-    resetEditState
-  } = useExpenseEditing(setExpenses, loadData);
-  
-  // Expense deletion functionality
-  const { 
-    selectedExpense: deletingExpense,
-    isDeleting,
-    handleDeleteClick,
-    handleDeleteConfirm,
-    resetDeleteState
-  } = useExpenseDeletion(setExpenses, loadData);
-  
-  // Expense addition functionality
-  const { handleAddEnvelope } = useExpenseAddition(setExpenses, loadData, budgetId);
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
-  // Handle envelope click with dialog opening
-  const handleEnvelopeClickWithDialog = (expense: Expense) => {
-    if (handleEnvelopeClick(expense)) {
-      setEditDialogOpen(true);
+  // Utiliser useCallback pour éviter des re-rendus inutiles
+  const loadData = useCallback(async () => {
+    try {
+      const loadedBudgets = await db.getBudgets();
+      console.log('Budgets chargés:', loadedBudgets);
+
+      if (!loadedBudgets || loadedBudgets.length === 0) {
+        // Créer des budgets par défaut si aucun n'existe
+        const defaultBudgets: Budget[] = [
+          {
+            id: "budget1",
+            title: "Budget Test 1",
+            budget: 1000,
+            spent: 0,
+            type: "budget"
+          },
+          {
+            id: "budget2",
+            title: "Budget Test 2",
+            budget: 2000,
+            spent: 0,
+            type: "budget"
+          }
+        ];
+
+        for (const budget of defaultBudgets) {
+          await db.addBudget(budget);
+        }
+
+        setAvailableBudgets(defaultBudgets);
+      } else {
+        setAvailableBudgets(loadedBudgets);
+      }
+      
+      const loadedExpenses = await db.getExpenses();
+      console.log('Dépenses chargées:', loadedExpenses);
+      setExpenses(loadedExpenses);
+    } catch (error) {
+      console.error("Erreur lors du chargement des données:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible de charger les données"
+      });
     }
+  }, [toast]);
+
+  useEffect(() => {
+    loadData();
+  }, [budgetId, loadData]);
+
+  const filteredExpenses = budgetId 
+    ? expenses.filter(expense => expense.linkedBudgetId === budgetId)
+    : expenses;
+
+  const handleEnvelopeClick = (expense: Expense) => {
+    setSelectedExpense(expense);
+    setEditTitle(expense.title);
+    setEditBudget(expense.budget);
+    setEditDate(expense.date);
+    setEditDialogOpen(true);
   };
 
-  // Handle delete click with dialog opening
-  const handleDeleteClickWithDialog = (expense: Expense) => {
-    if (handleDeleteClick(expense)) {
-      setDeleteDialogOpen(true);
-    }
+  const handleDeleteClick = (expense: Expense) => {
+    setSelectedExpense(expense);
+    setDeleteDialogOpen(true);
   };
 
-  // Handle edit completion
-  const completeEdit = async () => {
-    const result = await handleEditSubmit();
-    if (result) {
+  const handleEditSubmit = async () => {
+    if (!selectedExpense) return;
+
+    try {
+      const updatedExpense: Expense = {
+        ...selectedExpense,
+        title: editTitle,
+        budget: editBudget,
+        spent: editBudget,
+        date: editDate
+      };
+
+      await db.updateExpense(updatedExpense);
+
+      // Mettre à jour l'état local
+      setExpenses(prev => prev.map(expense => 
+        expense.id === selectedExpense.id ? updatedExpense : expense
+      ));
+      
       setEditDialogOpen(false);
-      resetEditState();
+      
+      toast({
+        title: "Dépense modifiée",
+        description: `La dépense "${editTitle}" a été mise à jour.`
+      });
+
+      // Recharger les données pour s'assurer que tout est synchronisé
+      await loadData();
+    } catch (error) {
+      console.error("Erreur lors de la modification de la dépense:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible de modifier la dépense"
+      });
     }
-    return result;
   };
 
-  // Handle delete completion
-  const completeDelete = async () => {
-    const result = await handleDeleteConfirm();
-    if (result) {
+  const handleDeleteConfirm = async () => {
+    if (!selectedExpense || isDeleting) return;
+
+    try {
+      setIsDeleting(true);
+      
+      console.log("Suppression de la dépense avec ID:", selectedExpense.id);
+      await db.deleteExpense(selectedExpense.id);
+
+      // Mettre à jour l'état local immédiatement
+      setExpenses(prev => prev.filter(expense => expense.id !== selectedExpense.id));
+      
+      toast({
+        title: "Dépense supprimée",
+        description: `La dépense "${selectedExpense.title}" a été supprimée.`
+      });
+
+      // Réinitialiser tous les états
+      setSelectedExpense(null);
       setDeleteDialogOpen(false);
+      setIsDeleting(false);
+      
+      // Recharger les données pour s'assurer que tout est synchronisé
+      await loadData();
+    } catch (error) {
+      console.error("Erreur lors de la suppression de la dépense:", error);
+      setIsDeleting(false);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible de supprimer la dépense"
+      });
     }
-    return result;
   };
 
-  // Handle adding an envelope
-  const completeAddEnvelope = async (envelope: {
+  const handleAddEnvelope = async (envelope: {
     title: string;
     budget: number;
     type: "income" | "expense" | "budget";
     linkedBudgetId?: string;
     date?: string;
-  }): Promise<boolean> => {
-    return await handleAddEnvelope(envelope);
+  }) => {
+    if (envelope.type !== "expense") {
+      toast({
+        variant: "destructive",
+        title: "Type invalide",
+        description: "Seules les dépenses peuvent être ajoutées ici."
+      });
+      return;
+    }
+
+    try {
+      const newExpense: Expense = {
+        id: Date.now().toString(), // Utiliser timestamp pour garantir unicité
+        title: envelope.title,
+        budget: envelope.budget,
+        spent: envelope.budget,
+        type: "expense",
+        linkedBudgetId: budgetId || envelope.linkedBudgetId,
+        date: envelope.date || new Date().toISOString().split('T')[0]
+      };
+
+      await db.addExpense(newExpense);
+      
+      // Mettre à jour l'état local
+      setExpenses(prev => [...prev, newExpense]);
+      setAddDialogOpen(false);
+      
+      toast({
+        title: "Dépense ajoutée",
+        description: `La dépense "${envelope.title}" a été créée avec succès.`
+      });
+      
+      // Recharger les données
+      await loadData();
+    } catch (error) {
+      console.error("Erreur lors de l'ajout de la dépense:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible d'ajouter la dépense"
+      });
+    }
   };
 
   return {
-    expenses,
+    expenses: filteredExpenses,
     availableBudgets,
-    selectedExpense: editingExpense,
+    selectedExpense,
     editTitle,
     setEditTitle,
     editBudget,
     setEditBudget,
     editDate,
     setEditDate,
-    isSubmitting,
     addDialogOpen,
     setAddDialogOpen,
     editDialogOpen,
     setEditDialogOpen,
     deleteDialogOpen,
     setDeleteDialogOpen,
-    handleEnvelopeClick: handleEnvelopeClickWithDialog,
-    handleDeleteClick: handleDeleteClickWithDialog,
-    handleEditSubmit: completeEdit,
-    handleDeleteConfirm: completeDelete,
-    handleAddEnvelope: completeAddEnvelope,
+    handleEnvelopeClick,
+    handleDeleteClick,
+    handleEditSubmit,
+    handleDeleteConfirm,
+    handleAddEnvelope,
     loadData,
   };
 };

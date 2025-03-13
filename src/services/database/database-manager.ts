@@ -1,3 +1,4 @@
+
 import { toast } from "@/components/ui/use-toast";
 import { Income } from './models/income';
 import { Expense } from './models/expense';
@@ -60,34 +61,19 @@ export class DatabaseManager {
     return this.incomeManager.getIncomes();
   }
 
-  async addIncome(income: Income): Promise<boolean> {
-    try {
-      await this.ensureInitialized();
-      return await this.incomeManager.addIncome(income);
-    } catch (error) {
-      console.error("DatabaseManager - Erreur lors de l'ajout du revenu:", error);
-      return false;
-    }
+  async addIncome(income: Income) {
+    await this.ensureInitialized();
+    await this.incomeManager.addIncome(income);
   }
 
-  async updateIncome(income: Income): Promise<boolean> {
-    try {
-      await this.ensureInitialized();
-      return await this.incomeManager.updateIncome(income);
-    } catch (error) {
-      console.error("DatabaseManager - Erreur lors de la mise à jour du revenu:", error);
-      return false;
-    }
+  async updateIncome(income: Income) {
+    await this.ensureInitialized();
+    await this.incomeManager.updateIncome(income);
   }
 
-  async deleteIncome(id: string): Promise<boolean> {
-    try {
-      await this.ensureInitialized();
-      return await this.incomeManager.deleteIncome(id);
-    } catch (error) {
-      console.error("DatabaseManager - Erreur lors de la suppression du revenu:", error);
-      return false;
-    }
+  async deleteIncome(id: string) {
+    await this.ensureInitialized();
+    await this.incomeManager.deleteIncome(id);
   }
 
   // Expense methods
@@ -106,10 +92,9 @@ export class DatabaseManager {
     await this.expenseManager.updateExpense(expense);
   }
 
-  async deleteExpense(id: string): Promise<boolean> {
+  async deleteExpense(id: string) {
     await this.ensureInitialized();
-    const result = await this.expenseManager.deleteExpense(id);
-    return result;
+    await this.expenseManager.deleteExpense(id);
   }
 
   // Budget methods

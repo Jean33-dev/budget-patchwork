@@ -9,13 +9,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useState, useEffect, useRef } from "react";
-import { Loader2 } from "lucide-react";
 
 interface DeleteExpenseDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onConfirm: () => Promise<boolean>;
+  onConfirm: () => void;
 }
 
 export const DeleteExpenseDialog = ({
@@ -23,101 +21,18 @@ export const DeleteExpenseDialog = ({
   onOpenChange,
   onConfirm,
 }: DeleteExpenseDialogProps) => {
-  const [isProcessing, setIsProcessing] = useState(false);
-  const confirmedRef = useRef(false);
-  const safeToCloseRef = useRef(true);
-  const confirmTimeoutRef = useRef<number | null>(null);
-  
-  // Réinitialiser l'état quand la boîte de dialogue change d'état
-  useEffect(() => {
-    if (!open) {
-      console.log("Dialog fermé, réinitialisation de l'état de traitement");
-      setIsProcessing(false);
-      confirmedRef.current = false;
-      
-      // Nettoyage des timeouts
-      if (confirmTimeoutRef.current !== null) {
-        window.clearTimeout(confirmTimeoutRef.current);
-        confirmTimeoutRef.current = null;
-      }
-      
-      // Réinitialiser l'état de sécurité après la fermeture
-      setTimeout(() => {
-        safeToCloseRef.current = true;
-      }, 100);
-    }
-  }, [open]);
-
-  // Nettoyage lors du démontage du composant
-  useEffect(() => {
-    return () => {
-      if (confirmTimeoutRef.current !== null) {
-        window.clearTimeout(confirmTimeoutRef.current);
-      }
-    };
-  }, []);
-
-  const handleConfirm = async (e: React.MouseEvent) => {
-    console.log("Confirmation cliquée");
-    e.preventDefault();
-    
-    // Vérifier si le traitement est déjà en cours
-    if (isProcessing || confirmedRef.current) {
-      console.log("Déjà en cours de traitement ou déjà confirmé, ignoré");
-      return;
-    }
-    
-    setIsProcessing(true);
-    confirmedRef.current = true;
-    safeToCloseRef.current = false;
-    
-    try {
-      console.log("Exécution de la fonction onConfirm");
-      const success = await onConfirm();
-      console.log("Résultat onConfirm:", success);
-      
-      if (success) {
-        console.log("Suppression réussie, fermeture de la boîte de dialogue");
-        
-        // Différer la fermeture de la boîte de dialogue pour laisser le temps à l'UI de se mettre à jour
-        confirmTimeoutRef.current = window.setTimeout(() => {
-          if (open) { // Vérifier que la boîte est encore ouverte
-            console.log("Fermeture effective de la boîte de dialogue");
-            onOpenChange(false);
-          }
-          confirmTimeoutRef.current = null;
-        }, 300);
-      } else {
-        console.log("Échec de l'opération");
-        setIsProcessing(false);
-        confirmedRef.current = false;
-        safeToCloseRef.current = true;
-      }
-    } catch (error) {
-      console.error("Erreur lors de la confirmation:", error);
-      setIsProcessing(false);
-      confirmedRef.current = false;
-      safeToCloseRef.current = true;
-    }
+  // Gérer la confirmation en s'assurant que la boîte de dialogue se ferme correctement
+  const handleConfirm = () => {
+    // Fermer d'abord la boîte de dialogue avant d'exécuter la suppression
+    onOpenChange(false);
+    // Puis exécuter la suppression après un court délai
+    setTimeout(() => {
+      onConfirm();
+    }, 10);
   };
 
   return (
-    <AlertDialog 
-      open={open} 
-      onOpenChange={(newOpen) => {
-        console.log("Changement d'état de la boîte de dialogue:", newOpen);
-        // Empêcher la fermeture pendant le traitement ou lorsque ce n'est pas sécuritaire
-        if (!safeToCloseRef.current && !newOpen) {
-          console.log("Fermeture empêchée - pas sécuritaire");
-          return;
-        }
-        if (isProcessing && !newOpen) {
-          console.log("Fermeture empêchée pendant le traitement");
-          return;
-        }
-        onOpenChange(newOpen);
-      }}
-    >
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Supprimer la dépense</AlertDialogTitle>
@@ -126,20 +41,9 @@ export const DeleteExpenseDialog = ({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isProcessing}>Annuler</AlertDialogCancel>
-          <AlertDialogAction 
-            onClick={handleConfirm}
-            disabled={isProcessing}
-            type="button"
-          >
-            {isProcessing ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Suppression...
-              </>
-            ) : (
-              "Supprimer"
-            )}
+          <AlertDialogCancel>Annuler</AlertDialogCancel>
+          <AlertDialogAction onClick={handleConfirm}>
+            Supprimer
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

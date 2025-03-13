@@ -16,6 +16,7 @@ export const useIncomeManagement = () => {
   } | null>(null);
   const [envelopes, setEnvelopes] = useState<Income[]>([]);
 
+  // Initialiser la base de données et charger les revenus
   useEffect(() => {
     const initializeData = async () => {
       await db.init();
@@ -26,132 +27,57 @@ export const useIncomeManagement = () => {
     initializeData();
   }, []);
 
-  const handleAddIncome = async (newIncome: { 
-    title: string; 
-    budget: number; 
-    type: "income"; 
-    date: string 
-  }): Promise<boolean> => {
-    try {
-      console.log("handleAddIncome - Tentative d'ajout avec montant:", newIncome.budget);
-      
-      // Assurez-vous que le budget est un nombre valide
-      const budget = typeof newIncome.budget === 'number' && !isNaN(newIncome.budget) 
-        ? newIncome.budget 
-        : 0;
-
-      const income = {
-        id: Date.now().toString(),
-        ...newIncome,
-        budget: budget,
-        spent: budget,
-      };
-      
-      console.log("handleAddIncome - Revenu à ajouter:", income);
-      const success = await db.addIncome(income);
-      
-      if (success) {
-        setEnvelopes(prev => [...prev, income]);
-        
-        toast({
-          title: "Succès",
-          description: "Nouveau revenu ajouté",
-        });
-        
-        return true;
-      } else {
-        throw new Error("Échec de l'ajout du revenu");
-      }
-    } catch (error) {
-      console.error("Erreur lors de l'ajout du revenu:", error);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Impossible d'ajouter le revenu"
-      });
-      return false;
-    }
+  const handleAddIncome = async (newIncome: { title: string; budget: number; type: "income"; date: string }) => {
+    const income = {
+      id: Date.now().toString(),
+      ...newIncome,
+      spent: newIncome.budget,
+    };
+    
+    await db.addIncome(income);
+    setEnvelopes(prev => [...prev, income]);
+    
+    toast({
+      title: "Succès",
+      description: "Nouveau revenu ajouté",
+    });
   };
 
-  const handleEditIncome = async (editedIncome: { 
-    title: string; 
-    budget: number; 
-    type: "income"; 
-    date: string 
-  }): Promise<boolean> => {
-    if (!selectedIncome) return false;
+  const handleEditIncome = async (editedIncome: { title: string; budget: number; type: "income"; date: string }) => {
+    if (!selectedIncome) return;
 
-    try {
-      // Assurez-vous que le budget est un nombre valide
-      const budget = typeof editedIncome.budget === 'number' && !isNaN(editedIncome.budget) 
-        ? editedIncome.budget 
-        : 0;
+    const updatedIncome = {
+      ...selectedIncome,
+      title: editedIncome.title,
+      budget: editedIncome.budget,
+      spent: editedIncome.budget,
+      date: editedIncome.date,
+    };
 
-      const updatedIncome = {
-        ...selectedIncome,
-        title: editedIncome.title,
-        budget: budget,
-        spent: budget,
-        date: editedIncome.date,
-      };
+    await db.updateIncome(updatedIncome);
+    setEnvelopes(prev => prev.map(env => 
+      env.id === selectedIncome.id 
+        ? updatedIncome
+        : env
+    ));
 
-      console.log("handleEditIncome - Revenu à mettre à jour:", updatedIncome);
-      const success = await db.updateIncome(updatedIncome);
-      
-      if (success) {
-        setEnvelopes(prev => prev.map(env => 
-          env.id === selectedIncome.id 
-            ? updatedIncome
-            : env
-        ));
-
-        setEditDialogOpen(false);
-        setSelectedIncome(null);
-        
-        toast({
-          title: "Succès",
-          description: "Revenu modifié",
-        });
-        
-        return true;
-      } else {
-        throw new Error("Échec de la modification du revenu");
-      }
-    } catch (error) {
-      console.error("Erreur lors de la modification du revenu:", error);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Impossible de modifier le revenu"
-      });
-      return false;
-    }
+    setEditDialogOpen(false);
+    setSelectedIncome(null);
+    
+    toast({
+      title: "Succès",
+      description: "Revenu modifié",
+    });
   };
 
-  const handleDeleteIncome = async (incomeId: string): Promise<boolean> => {
-    try {
-      const success = await db.deleteIncome(incomeId);
-      
-      if (success) {
-        setEnvelopes(prev => prev.filter(env => env.id !== incomeId));
-        
-        toast({
-          title: "Succès",
-          description: "Revenu supprimé",
-        });
-        return true;
-      } else {
-        throw new Error("Échec de la suppression du revenu");
-      }
-    } catch (error) {
-      console.error("Erreur lors de la suppression du revenu:", error);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Impossible de supprimer le revenu"
-      });
-      return false;
-    }
+  const handleDeleteIncome = async (incomeId: string) => {
+    await db.deleteIncome(incomeId);
+    setEnvelopes(prev => prev.filter(env => env.id !== incomeId));
+    
+    toast({
+      title: "Succès",
+      description: "Revenu supprimé",
+    });
   };
 
   const handleIncomeClick = (envelope: Income) => {

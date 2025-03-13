@@ -23,17 +23,16 @@ interface ExpenseListProps {
   setDeleteDialogOpen: (open: boolean) => void;
   handleEnvelopeClick: (expense: Expense) => void;
   handleDeleteClick: (expense: Expense) => void;
-  handleEditSubmit: () => Promise<boolean>;
-  handleDeleteConfirm: () => Promise<boolean>;
+  handleEditSubmit: () => void;
+  handleDeleteConfirm: () => void;
   handleAddEnvelope: (envelope: {
     title: string;
     budget: number;
     type: "income" | "expense" | "budget";
     linkedBudgetId?: string;
     date?: string;
-  }) => Promise<boolean>;
+  }) => void;
   defaultBudgetId?: string;
-  isSubmitting?: boolean;
 }
 
 export const ExpenseList = ({
@@ -57,8 +56,7 @@ export const ExpenseList = ({
   handleEditSubmit,
   handleDeleteConfirm,
   handleAddEnvelope,
-  defaultBudgetId,
-  isSubmitting = false
+  defaultBudgetId
 }: ExpenseListProps) => {
   return (
     <div className="mt-6">
@@ -90,7 +88,6 @@ export const ExpenseList = ({
         date={editDate}
         onDateChange={setEditDate}
         onSubmit={handleEditSubmit}
-        isSubmitting={isSubmitting}
       />
 
       <DeleteExpenseDialog
