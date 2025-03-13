@@ -35,6 +35,8 @@ const Expenses = () => {
     handleDeleteConfirm,
     handleAddEnvelope,
     loadData,
+    isSubmitting,
+    isDeleting
   } = useExpenseManagement(budgetId);
 
   // Nettoyer le composant à sa destruction
@@ -111,6 +113,8 @@ const Expenses = () => {
         handleDeleteConfirm={handleDeleteConfirm}
         handleAddEnvelope={handleAddEnvelope}
         defaultBudgetId={budgetId || undefined}
+        isSubmitting={isSubmitting}
+        isDeleting={isDeleting}
       />
     </div>
   );
