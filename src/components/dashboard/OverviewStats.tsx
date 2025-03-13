@@ -28,13 +28,8 @@ export const OverviewStats = ({
       <Card className="p-2 sm:col-span-2 lg:col-span-1">
         <CardContent className="flex items-center justify-between p-2">
           <CardTitle className="text-sm font-medium">Solde</CardTitle>
-          <div className="flex items-center">
-            <span className={`text-lg font-bold ${balance >= 0 ? "text-budget-income" : "text-budget-expense"}`}>
-              {Math.abs(balance).toFixed(2)} €
-            </span>
-            <span className="text-xs font-normal text-gray-500 ml-2">
-              {balance >= 0 ? "Restant" : "Dépassement"}
-            </span>
+          <div className={`text-lg font-bold ${balance >= 0 ? "text-budget-income" : "text-budget-expense"}`}>
+            {balance >= 0 ? Math.abs(balance).toFixed(2) : `-${Math.abs(balance).toFixed(2)}`} €
           </div>
         </CardContent>
       </Card>
