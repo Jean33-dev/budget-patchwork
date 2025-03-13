@@ -30,7 +30,8 @@ export const useExpenseManagement = (budgetId: string | null) => {
     setEditDate,
     handleEnvelopeClick,
     handleEditSubmit,
-    resetEditState
+    resetEditState,
+    isSubmitting
   } = useExpenseEditing(setExpenses, loadData);
   
   // Expense deletion functionality
@@ -111,5 +112,6 @@ export const useExpenseManagement = (budgetId: string | null) => {
     handleDeleteConfirm: completeDelete,
     handleAddEnvelope: completeAddEnvelope,
     loadData,
+    isSubmitting
   };
 };
