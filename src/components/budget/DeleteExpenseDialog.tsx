@@ -9,63 +9,115 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Loader2 } from "lucide-react";
 
 interface DeleteExpenseDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onConfirm: () => Promise<boolean>;
-  onSuccess?: () => void;
 }
 
 export const DeleteExpenseDialog = ({
   open,
   onOpenChange,
   onConfirm,
-  onSuccess,
 }: DeleteExpenseDialogProps) => {
   const [isProcessing, setIsProcessing] = useState(false);
+  const confirmedRef = useRef(false);
+  const safeToCloseRef = useRef(true);
+  const confirmTimeoutRef = useRef<number | null>(null);
   
-  // Reset processing state when dialog closes
+  // Réinitialiser l'état quand la boîte de dialogue change d'état
   useEffect(() => {
     if (!open) {
+      console.log("Dialog fermé, réinitialisation de l'état de traitement");
       setIsProcessing(false);
+      confirmedRef.current = false;
+      
+      // Nettoyage des timeouts
+      if (confirmTimeoutRef.current !== null) {
+        window.clearTimeout(confirmTimeoutRef.current);
+        confirmTimeoutRef.current = null;
+      }
+      
+      // Réinitialiser l'état de sécurité après la fermeture
+      setTimeout(() => {
+        safeToCloseRef.current = true;
+      }, 100);
     }
   }, [open]);
-  
+
+  // Nettoyage lors du démontage du composant
+  useEffect(() => {
+    return () => {
+      if (confirmTimeoutRef.current !== null) {
+        window.clearTimeout(confirmTimeoutRef.current);
+      }
+    };
+  }, []);
+
   const handleConfirm = async (e: React.MouseEvent) => {
+    console.log("Confirmation cliquée");
     e.preventDefault();
     
-    if (isProcessing) return;
+    // Vérifier si le traitement est déjà en cours
+    if (isProcessing || confirmedRef.current) {
+      console.log("Déjà en cours de traitement ou déjà confirmé, ignoré");
+      return;
+    }
     
     setIsProcessing(true);
+    confirmedRef.current = true;
+    safeToCloseRef.current = false;
     
     try {
+      console.log("Exécution de la fonction onConfirm");
       const success = await onConfirm();
+      console.log("Résultat onConfirm:", success);
       
       if (success) {
-        // Notify parent component about successful deletion
-        if (onSuccess) onSuccess();
-        // Close dialog with a small delay to avoid state conflicts
-        setTimeout(() => onOpenChange(false), 100);
+        console.log("Suppression réussie, fermeture de la boîte de dialogue");
+        
+        // Différer la fermeture de la boîte de dialogue pour laisser le temps à l'UI de se mettre à jour
+        confirmTimeoutRef.current = window.setTimeout(() => {
+          if (open) { // Vérifier que la boîte est encore ouverte
+            console.log("Fermeture effective de la boîte de dialogue");
+            onOpenChange(false);
+          }
+          confirmTimeoutRef.current = null;
+        }, 300);
       } else {
-        console.error("La suppression a échoué");
+        console.log("Échec de l'opération");
+        setIsProcessing(false);
+        confirmedRef.current = false;
+        safeToCloseRef.current = true;
       }
     } catch (error) {
-      console.error("Erreur lors de la suppression:", error);
-    } finally {
-      // Always reset processing state, even if there was an error
+      console.error("Erreur lors de la confirmation:", error);
       setIsProcessing(false);
+      confirmedRef.current = false;
+      safeToCloseRef.current = true;
     }
   };
 
   return (
-    <AlertDialog open={open} onOpenChange={(newOpen) => {
-      // Prevent closing dialog during processing
-      if (isProcessing && !newOpen) return;
-      onOpenChange(newOpen);
-    }}>
+    <AlertDialog 
+      open={open} 
+      onOpenChange={(newOpen) => {
+        console.log("Changement d'état de la boîte de dialogue:", newOpen);
+        // Empêcher la fermeture pendant le traitement ou lorsque ce n'est pas sécuritaire
+        if (!safeToCloseRef.current && !newOpen) {
+          console.log("Fermeture empêchée - pas sécuritaire");
+          return;
+        }
+        if (isProcessing && !newOpen) {
+          console.log("Fermeture empêchée pendant le traitement");
+          return;
+        }
+        onOpenChange(newOpen);
+      }}
+    >
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Supprimer la dépense</AlertDialogTitle>

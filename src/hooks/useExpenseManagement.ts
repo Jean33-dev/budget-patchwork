@@ -9,9 +9,7 @@ import { Expense, Budget } from "@/types/expense";
 // Re-export the types for backward compatibility
 export type { Expense, Budget };
 
-export const useExpenseManagement = (
-  budgetId: string | null
-) => {
+export const useExpenseManagement = (budgetId: string | null) => {
   // Get expense data
   const { expenses, availableBudgets, setExpenses, loadData } = useExpenseData(budgetId);
   
@@ -71,7 +69,7 @@ export const useExpenseManagement = (
     return result;
   };
 
-  // Handle delete completion - simplified
+  // Handle delete completion
   const completeDelete = async () => {
     const result = await handleDeleteConfirm();
     if (result) {
@@ -87,7 +85,7 @@ export const useExpenseManagement = (
     type: "income" | "expense" | "budget";
     linkedBudgetId?: string;
     date?: string;
-  }) => {
+  }): Promise<boolean> => {
     return await handleAddEnvelope(envelope);
   };
 
@@ -112,6 +110,6 @@ export const useExpenseManagement = (
     handleEditSubmit: completeEdit,
     handleDeleteConfirm: completeDelete,
     handleAddEnvelope: completeAddEnvelope,
-    loadData
+    loadData,
   };
 };

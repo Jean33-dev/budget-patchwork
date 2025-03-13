@@ -10,33 +10,22 @@ export const expenseQueries = {
       spent REAL DEFAULT 0,
       type TEXT,
       linkedBudgetId TEXT,
-      date TEXT,
-      visible INTEGER DEFAULT 1
+      date TEXT
     )
   `,
   
   getAll: (db: any): Expense[] => {
     try {
-      // Requête pour récupérer uniquement les dépenses visibles
-      const stmt = db.prepare('SELECT * FROM expenses WHERE visible = 1 OR visible IS NULL');
-      const result = stmt.all();
-      stmt.free();
-      
-      if (!result || !Array.isArray(result)) {
-        console.log("Aucun résultat ou format invalide:", result);
-        return [];
-      }
-      
-      return result.map((row: any) => ({
-        id: row.id,
-        title: row.title,
-        budget: row.budget,
-        spent: row.spent,
-        type: row.type as 'expense',
-        linkedBudgetId: row.linkedBudgetId,
-        date: row.date,
-        visible: row.visible === 1 || row.visible === null
-      }));
+      const result = db.exec('SELECT * FROM expenses');
+      return result[0]?.values?.map((row: any[]) => ({
+        id: row[0],
+        title: row[1],
+        budget: row[2],
+        spent: row[3],
+        type: row[4] as 'expense',
+        linkedBudgetId: row[5],
+        date: row[6]
+      })) || [];
     } catch (error) {
       console.error("Erreur lors de la récupération des dépenses:", error);
       return [];
@@ -45,20 +34,10 @@ export const expenseQueries = {
   
   add: (db: any, expense: Expense): void => {
     try {
-      const stmt = db.prepare(
-        'INSERT INTO expenses (id, title, budget, spent, type, linkedBudgetId, date, visible) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+      db.run(
+        'INSERT INTO expenses (id, title, budget, spent, type, linkedBudgetId, date) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [expense.id, expense.title, expense.budget, expense.spent, expense.type, expense.linkedBudgetId, expense.date]
       );
-      stmt.run([
-        expense.id, 
-        expense.title, 
-        expense.budget, 
-        expense.spent, 
-        expense.type, 
-        expense.linkedBudgetId, 
-        expense.date, 
-        expense.visible !== false ? 1 : 0
-      ]);
-      stmt.free();
     } catch (error) {
       console.error("Erreur lors de l'ajout d'une dépense:", error);
       throw error;
@@ -67,52 +46,36 @@ export const expenseQueries = {
   
   update: (db: any, expense: Expense): void => {
     try {
-      const stmt = db.prepare(
-        'UPDATE expenses SET title = ?, budget = ?, spent = ?, linkedBudgetId = ?, date = ?, visible = ? WHERE id = ?'
+      db.run(
+        'UPDATE expenses SET title = ?, budget = ?, spent = ?, linkedBudgetId = ?, date = ? WHERE id = ?',
+        [expense.title, expense.budget, expense.spent, expense.linkedBudgetId, expense.date, expense.id]
       );
-      stmt.run([
-        expense.title, 
-        expense.budget, 
-        expense.spent, 
-        expense.linkedBudgetId, 
-        expense.date, 
-        expense.visible !== false ? 1 : 0, 
-        expense.id
-      ]);
-      stmt.free();
     } catch (error) {
       console.error("Erreur lors de la mise à jour d'une dépense:", error);
       throw error;
     }
   },
   
-  hideExpense: (db: any, id: string): boolean => {
-    try {
-      if (!id) return false;
-      
-      const stmt = db.prepare('UPDATE expenses SET visible = 0 WHERE id = ?');
-      stmt.run([id]);
-      stmt.free();
-      
-      console.log(`Dépense ${id} masquée avec succès`);
-      return true;
-    } catch (error) {
-      console.error(`Erreur lors du masquage de la dépense:`, error);
-      return false;
-    }
-  },
-  
   delete: (db: any, id: string): boolean => {
     try {
-      if (!id) return false;
+      console.log(`Tentative de suppression de la dépense avec l'ID: ${id}`);
       
-      const stmt = db.prepare('DELETE FROM expenses WHERE id = ?');
-      stmt.run([id]);
-      stmt.free();
+      if (!id) {
+        console.error("ID de dépense invalide pour la suppression");
+        return false;
+      }
       
+      // Utilisation d'une approche plus directe pour améliorer les performances
+      const deleteSQL = 'DELETE FROM expenses WHERE id = ?';
+      const deleteStmt = db.prepare(deleteSQL);
+      deleteStmt.bind([id]);
+      deleteStmt.step();
+      deleteStmt.free();
+      
+      console.log(`Dépense avec l'ID ${id} supprimée avec succès`);
       return true;
     } catch (error) {
-      console.error(`Erreur lors de la suppression:`, error);
+      console.error(`Erreur lors de la suppression de la dépense avec l'ID ${id}:`, error);
       return false;
     }
   }
