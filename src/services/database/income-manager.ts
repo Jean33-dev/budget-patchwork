@@ -9,22 +9,25 @@ export class IncomeManager extends BaseDatabaseManager {
     return incomeQueries.getAll(this.db);
   }
 
-  async addIncome(income: Income) {
+  async addIncome(income: Income): Promise<void> {
     await this.ensureInitialized();
     incomeQueries.add(this.db, income);
+    return Promise.resolve();
   }
 
-  async updateIncome(income: Income) {
+  async updateIncome(income: Income): Promise<void> {
     await this.ensureInitialized();
     incomeQueries.update(this.db, income);
+    return Promise.resolve();
   }
 
-  async deleteIncome(id: string) {
+  async deleteIncome(id: string): Promise<void> {
     await this.ensureInitialized();
     if (!id) {
       console.error("Tentative de suppression avec un ID invalide");
-      return;
+      return Promise.resolve();
     }
     incomeQueries.delete(this.db, id);
+    return Promise.resolve();
   }
 }

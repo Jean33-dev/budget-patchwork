@@ -9,22 +9,25 @@ export class ExpenseManager extends BaseDatabaseManager {
     return expenseQueries.getAll(this.db);
   }
 
-  async addExpense(expense: Expense) {
+  async addExpense(expense: Expense): Promise<void> {
     await this.ensureInitialized();
     expenseQueries.add(this.db, expense);
+    return Promise.resolve();
   }
 
-  async updateExpense(expense: Expense) {
+  async updateExpense(expense: Expense): Promise<void> {
     await this.ensureInitialized();
     expenseQueries.update(this.db, expense);
+    return Promise.resolve();
   }
 
-  async deleteExpense(id: string) {
+  async deleteExpense(id: string): Promise<void> {
     await this.ensureInitialized();
     if (!id) {
       console.error("Tentative de suppression avec un ID invalide");
-      return;
+      return Promise.resolve();
     }
     expenseQueries.delete(this.db, id);
+    return Promise.resolve();
   }
 }
