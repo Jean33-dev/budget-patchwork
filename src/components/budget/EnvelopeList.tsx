@@ -44,7 +44,6 @@ export const EnvelopeList = ({
         <ExpenseTable 
           expenses={filteredEnvelopes}
           onEnvelopeClick={onEnvelopeClick}
-          onDeleteClick={onDeleteClick}
           availableBudgets={availableBudgets}
         />
       ) : (

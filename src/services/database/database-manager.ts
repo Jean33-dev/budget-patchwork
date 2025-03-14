@@ -52,9 +52,6 @@ export class DatabaseManager {
     }
   }
 
-  // Delegate methods to their respective managers
-  
-  // Income methods
   async getIncomes(): Promise<Income[]> {
     await this.ensureInitialized();
     return this.incomeManager.getIncomes();
@@ -75,7 +72,6 @@ export class DatabaseManager {
     await this.incomeManager.deleteIncome(id);
   }
 
-  // Expense methods
   async getExpenses(): Promise<Expense[]> {
     await this.ensureInitialized();
     return this.expenseManager.getExpenses();
@@ -86,7 +82,12 @@ export class DatabaseManager {
     await this.expenseManager.addExpense(expense);
   }
 
-  // Budget methods
+  async deleteExpense(id: string) {
+    await this.ensureInitialized();
+    console.log(`Demande de suppression de la dépense avec l'ID: ${id}`);
+    await this.expenseManager.deleteExpense(id);
+  }
+
   async getBudgets(): Promise<Budget[]> {
     await this.ensureInitialized();
     return this.budgetManager.getBudgets();
@@ -107,7 +108,6 @@ export class DatabaseManager {
     await this.budgetManager.deleteBudget(id);
   }
 
-  // Category methods
   async getCategories(): Promise<Category[]> {
     await this.ensureInitialized();
     return this.categoryManager.getCategories();
@@ -128,13 +128,11 @@ export class DatabaseManager {
     await this.categoryManager.deleteCategory(id);
   }
 
-  // Migration method
   async migrateFromLocalStorage() {
     await this.ensureInitialized();
     await this.initManager.migrateFromLocalStorage();
   }
 
-  // Add a method to reset all expenses for a specific category
   async resetCategoryExpenses(categoryId: string) {
     const category = (await this.getCategories()).find(c => c.id === categoryId);
     if (category) {
@@ -143,7 +141,6 @@ export class DatabaseManager {
     }
   }
 
-  // Utility methods
   exportData() {
     return this.initManager.exportData();
   }
