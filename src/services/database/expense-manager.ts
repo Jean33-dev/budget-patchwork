@@ -29,8 +29,7 @@ export class ExpenseManager extends BaseDatabaseManager {
     try {
       await this.ensureInitialized();
       console.log(`Suppression de la dépense avec l'ID: ${id}`);
-      // Implement this in a simple way for now - we'll just log the attempt
-      // We won't actually delete from the database to avoid introducing bugs
+      expenseQueries.delete(this.db, id);
       return Promise.resolve();
     } catch (error) {
       console.error("Erreur lors de la suppression d'une dépense:", error);
