@@ -15,6 +15,8 @@ const Expenses = () => {
     addDialogOpen,
     setAddDialogOpen,
     handleAddEnvelope,
+    handleDeleteExpense,
+    handleUpdateExpense,
   } = useExpenseManagement(budgetId);
 
   return (
@@ -27,6 +29,8 @@ const Expenses = () => {
         addDialogOpen={addDialogOpen}
         setAddDialogOpen={setAddDialogOpen}
         handleAddEnvelope={handleAddEnvelope}
+        handleDeleteExpense={handleDeleteExpense}
+        handleUpdateExpense={handleUpdateExpense}
         defaultBudgetId={budgetId || undefined}
       />
     </div>

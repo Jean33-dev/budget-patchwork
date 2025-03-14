@@ -132,12 +132,64 @@ export const useExpenseManagement = (budgetId: string | null) => {
     }
   };
 
+  const handleDeleteExpense = async (id: string) => {
+    try {
+      await db.deleteExpense(id);
+      
+      // Mise à jour de l'état local
+      setExpenses(prev => prev.filter(expense => expense.id !== id));
+      
+      toast({
+        title: "Dépense supprimée",
+        description: "La dépense a été supprimée avec succès."
+      });
+    } catch (error) {
+      console.error("Erreur lors de la suppression de la dépense:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible de supprimer la dépense"
+      });
+    }
+  };
+
+  const handleUpdateExpense = async (updatedExpense: Expense) => {
+    try {
+      // Supprimer l'ancienne dépense et ajouter la mise à jour
+      // Comme nous n'avons pas de méthode de mise à jour, nous utilisons une combinaison de suppression et d'ajout
+      await db.deleteExpense(updatedExpense.id);
+      await db.addExpense(updatedExpense);
+      
+      // Mise à jour de l'état local
+      setExpenses(prev => prev.map(expense => 
+        expense.id === updatedExpense.id ? updatedExpense : expense
+      ));
+      
+      toast({
+        title: "Dépense modifiée",
+        description: `La dépense "${updatedExpense.title}" a été modifiée avec succès.`
+      });
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour de la dépense:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible de modifier la dépense"
+      });
+      
+      // Recharger les données en cas d'erreur pour s'assurer que l'état local est synchronisé
+      await loadData();
+    }
+  };
+
   return {
     expenses: filteredExpenses,
     availableBudgets,
     addDialogOpen,
     setAddDialogOpen,
     handleAddEnvelope,
+    handleDeleteExpense,
+    handleUpdateExpense,
     loadData,
   };
 };
