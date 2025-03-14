@@ -12,23 +12,8 @@ const Expenses = () => {
   const {
     expenses,
     availableBudgets,
-    selectedExpense,
-    editTitle,
-    setEditTitle,
-    editBudget,
-    setEditBudget,
-    editDate,
-    setEditDate,
     addDialogOpen,
     setAddDialogOpen,
-    editDialogOpen,
-    setEditDialogOpen,
-    deleteDialogOpen,
-    setDeleteDialogOpen,
-    handleEnvelopeClick,
-    handleDeleteClick,
-    handleEditSubmit,
-    handleDeleteConfirm,
     handleAddEnvelope,
   } = useExpenseManagement(budgetId);
 
@@ -39,23 +24,8 @@ const Expenses = () => {
       <ExpenseList
         expenses={expenses}
         availableBudgets={availableBudgets}
-        selectedExpense={selectedExpense}
-        editTitle={editTitle}
-        setEditTitle={setEditTitle}
-        editBudget={editBudget}
-        setEditBudget={setEditBudget}
-        editDate={editDate}
-        setEditDate={setEditDate}
         addDialogOpen={addDialogOpen}
         setAddDialogOpen={setAddDialogOpen}
-        editDialogOpen={editDialogOpen}
-        setEditDialogOpen={setEditDialogOpen}
-        deleteDialogOpen={deleteDialogOpen}
-        setDeleteDialogOpen={setDeleteDialogOpen}
-        handleEnvelopeClick={handleEnvelopeClick}
-        handleDeleteClick={handleDeleteClick}
-        handleEditSubmit={handleEditSubmit}
-        handleDeleteConfirm={handleDeleteConfirm}
         handleAddEnvelope={handleAddEnvelope}
         defaultBudgetId={budgetId || undefined}
       />

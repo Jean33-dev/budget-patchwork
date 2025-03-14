@@ -46,29 +46,5 @@ export const expenseQueries = {
       console.error("Erreur lors de l'ajout d'une dépense:", error);
       throw error;
     }
-  },
-  
-  update: (db: any, expense: Expense): void => {
-    try {
-      const stmt = db.prepare(
-        'UPDATE expenses SET title = ?, budget = ?, spent = ?, linkedBudgetId = ?, date = ? WHERE id = ?'
-      );
-      stmt.run([expense.title, expense.budget, expense.spent, expense.linkedBudgetId, expense.date, expense.id]);
-      stmt.free();
-    } catch (error) {
-      console.error("Erreur lors de la mise à jour d'une dépense:", error);
-      throw error;
-    }
-  },
-  
-  delete: (db: any, id: string): void => {
-    try {
-      const stmt = db.prepare('DELETE FROM expenses WHERE id = ?');
-      stmt.run([id]);
-      stmt.free();
-    } catch (error) {
-      console.error(`Erreur lors de la suppression de la dépense avec l'ID ${id}:`, error);
-      throw error;
-    }
   }
 };

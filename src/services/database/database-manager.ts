@@ -1,4 +1,3 @@
-
 import { toast } from "@/components/ui/use-toast";
 import { Income } from './models/income';
 import { Expense } from './models/expense';
@@ -85,16 +84,6 @@ export class DatabaseManager {
   async addExpense(expense: Expense) {
     await this.ensureInitialized();
     await this.expenseManager.addExpense(expense);
-  }
-
-  async updateExpense(expense: Expense) {
-    await this.ensureInitialized();
-    await this.expenseManager.updateExpense(expense);
-  }
-
-  async deleteExpense(id: string) {
-    await this.ensureInitialized();
-    await this.expenseManager.deleteExpense(id);
   }
 
   // Budget methods

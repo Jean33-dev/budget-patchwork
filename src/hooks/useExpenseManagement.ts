@@ -25,15 +25,7 @@ export const useExpenseManagement = (budgetId: string | null) => {
   const { toast } = useToast();
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [availableBudgets, setAvailableBudgets] = useState<Budget[]>([]);
-  const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
-  const [editTitle, setEditTitle] = useState("");
-  const [editBudget, setEditBudget] = useState(0);
-  const [editDate, setEditDate] = useState("");
-  
   const [addDialogOpen, setAddDialogOpen] = useState(false);
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
 
   // Utiliser useCallback pour éviter des re-rendus inutiles
   const loadData = useCallback(async () => {
@@ -90,92 +82,6 @@ export const useExpenseManagement = (budgetId: string | null) => {
     ? expenses.filter(expense => expense.linkedBudgetId === budgetId)
     : expenses;
 
-  const handleEnvelopeClick = (expense: Expense) => {
-    setSelectedExpense(expense);
-    setEditTitle(expense.title);
-    setEditBudget(expense.budget);
-    setEditDate(expense.date);
-    setEditDialogOpen(true);
-  };
-
-  const handleDeleteClick = (expense: Expense) => {
-    setSelectedExpense(expense);
-    setDeleteDialogOpen(true);
-  };
-
-  const handleEditSubmit = async () => {
-    if (!selectedExpense) return;
-
-    try {
-      const updatedExpense: Expense = {
-        ...selectedExpense,
-        title: editTitle,
-        budget: editBudget,
-        spent: editBudget,
-        date: editDate
-      };
-
-      await db.updateExpense(updatedExpense);
-
-      // Mettre à jour l'état local
-      setExpenses(prev => prev.map(expense => 
-        expense.id === selectedExpense.id ? updatedExpense : expense
-      ));
-      
-      setEditDialogOpen(false);
-      
-      toast({
-        title: "Dépense modifiée",
-        description: `La dépense "${editTitle}" a été mise à jour.`
-      });
-
-      // Recharger les données pour s'assurer que tout est synchronisé
-      await loadData();
-    } catch (error) {
-      console.error("Erreur lors de la modification de la dépense:", error);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Impossible de modifier la dépense"
-      });
-    }
-  };
-
-  const handleDeleteConfirm = async () => {
-    if (!selectedExpense || isDeleting) return;
-
-    try {
-      setIsDeleting(true);
-      
-      console.log("Suppression de la dépense avec ID:", selectedExpense.id);
-      await db.deleteExpense(selectedExpense.id);
-
-      // Mettre à jour l'état local immédiatement
-      setExpenses(prev => prev.filter(expense => expense.id !== selectedExpense.id));
-      
-      toast({
-        title: "Dépense supprimée",
-        description: `La dépense "${selectedExpense.title}" a été supprimée.`
-      });
-
-      // Réinitialiser tous les états
-      setSelectedExpense(null);
-      setDeleteDialogOpen(false);
-      setIsDeleting(false);
-      
-      // Recharger les données pour s'assurer que tout est synchronisé
-      await loadData();
-    } catch (error) {
-      console.error("Erreur lors de la suppression de la dépense:", error);
-      setIsDeleting(false);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Impossible de supprimer la dépense"
-      });
-    }
-  };
-
   const handleAddEnvelope = async (envelope: {
     title: string;
     budget: number;
@@ -229,23 +135,8 @@ export const useExpenseManagement = (budgetId: string | null) => {
   return {
     expenses: filteredExpenses,
     availableBudgets,
-    selectedExpense,
-    editTitle,
-    setEditTitle,
-    editBudget,
-    setEditBudget,
-    editDate,
-    setEditDate,
     addDialogOpen,
     setAddDialogOpen,
-    editDialogOpen,
-    setEditDialogOpen,
-    deleteDialogOpen,
-    setDeleteDialogOpen,
-    handleEnvelopeClick,
-    handleDeleteClick,
-    handleEditSubmit,
-    handleDeleteConfirm,
     handleAddEnvelope,
     loadData,
   };

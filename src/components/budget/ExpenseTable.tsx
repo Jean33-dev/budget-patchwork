@@ -1,6 +1,4 @@
 
-import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -9,12 +7,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
@@ -31,14 +23,12 @@ interface Envelope {
 interface ExpenseTableProps {
   expenses: Envelope[];
   onEnvelopeClick: (envelope: Envelope) => void;
-  onDeleteClick?: (envelope: Envelope) => void;
   availableBudgets?: Array<{ id: string; title: string }>;
 }
 
 export const ExpenseTable = ({ 
   expenses,
   onEnvelopeClick,
-  onDeleteClick,
   availableBudgets = []
 }: ExpenseTableProps) => {
   const getBudgetTitle = (budgetId?: string) => {
@@ -67,7 +57,6 @@ export const ExpenseTable = ({
               <TableHead className="hidden sm:table-cell">Date</TableHead>
               <TableHead className="hidden sm:table-cell">Budget associé</TableHead>
               <TableHead className="text-right">Montant</TableHead>
-              <TableHead className="w-[50px]">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -75,6 +64,7 @@ export const ExpenseTable = ({
               <TableRow 
                 key={envelope.id}
                 className="cursor-pointer hover:bg-muted"
+                onClick={() => onEnvelopeClick(envelope)}
               >
                 <TableCell className="font-medium">
                   <div>
@@ -95,37 +85,6 @@ export const ExpenseTable = ({
                 </TableCell>
                 <TableCell className="text-right">
                   {envelope.budget.toFixed(2)} €
-                </TableCell>
-                <TableCell className="p-2">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 hover:bg-muted"
-                      >
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem 
-                        onClick={() => onEnvelopeClick(envelope)}
-                        className="cursor-pointer"
-                      >
-                        <Pencil className="mr-2 h-4 w-4" />
-                        Modifier
-                      </DropdownMenuItem>
-                      {onDeleteClick && (
-                        <DropdownMenuItem
-                          onClick={() => onDeleteClick(envelope)}
-                          className="cursor-pointer text-destructive focus:text-destructive"
-                        >
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Supprimer
-                        </DropdownMenuItem>
-                      )}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
                 </TableCell>
               </TableRow>
             ))}
