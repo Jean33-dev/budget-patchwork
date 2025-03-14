@@ -50,11 +50,15 @@ export const expenseQueries = {
   
   delete: (db: any, id: string): void => {
     try {
+      if (!id) {
+        throw new Error("ID de dépense manquant pour la suppression");
+      }
+      
       console.log(`Suppression de la dépense avec l'ID: ${id} dans la base de données`);
-      // Implémentation réelle de la suppression
       const stmt = db.prepare('DELETE FROM expenses WHERE id = ?');
-      stmt.run([id]);
+      const result = stmt.run([id]);
       stmt.free();
+      
       console.log(`Dépense ${id} supprimée avec succès`);
     } catch (error) {
       console.error("Erreur lors de la suppression d'une dépense:", error);

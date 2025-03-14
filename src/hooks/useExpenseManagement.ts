@@ -26,10 +26,12 @@ export const useExpenseManagement = (budgetId: string | null) => {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [availableBudgets, setAvailableBudgets] = useState<Budget[]>([]);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Utiliser useCallback pour éviter des re-rendus inutiles
   const loadData = useCallback(async () => {
     try {
+      setIsLoading(true);
       const loadedBudgets = await db.getBudgets();
       console.log('Budgets chargés:', loadedBudgets);
 
@@ -71,6 +73,8 @@ export const useExpenseManagement = (budgetId: string | null) => {
         title: "Erreur",
         description: "Impossible de charger les données"
       });
+    } finally {
+      setIsLoading(false);
     }
   }, [toast]);
 
@@ -99,6 +103,7 @@ export const useExpenseManagement = (budgetId: string | null) => {
     }
 
     try {
+      setIsLoading(true);
       const newExpense: Expense = {
         id: Date.now().toString(), // Utiliser timestamp pour garantir unicité
         title: envelope.title,
@@ -129,11 +134,20 @@ export const useExpenseManagement = (budgetId: string | null) => {
         title: "Erreur",
         description: "Impossible d'ajouter la dépense"
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleDeleteExpense = async (id: string) => {
+    if (!id) {
+      console.error("ID de dépense manquant pour la suppression");
+      return;
+    }
+    
     try {
+      setIsLoading(true);
+      console.log(`Tentative de suppression de la dépense avec l'ID: ${id}`);
       await db.deleteExpense(id);
       
       // Mise à jour de l'état local
@@ -150,14 +164,25 @@ export const useExpenseManagement = (budgetId: string | null) => {
         title: "Erreur",
         description: "Impossible de supprimer la dépense"
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleUpdateExpense = async (updatedExpense: Expense) => {
+    if (!updatedExpense || !updatedExpense.id) {
+      console.error("Données de dépense incorrectes pour la mise à jour");
+      return;
+    }
+    
     try {
-      // Supprimer l'ancienne dépense et ajouter la mise à jour
-      // Comme nous n'avons pas de méthode de mise à jour, nous utilisons une combinaison de suppression et d'ajout
+      setIsLoading(true);
+      console.log("Mise à jour de la dépense:", updatedExpense);
+      
+      // Supprimer l'ancienne dépense
       await db.deleteExpense(updatedExpense.id);
+      
+      // Ajouter la mise à jour
       await db.addExpense(updatedExpense);
       
       // Mise à jour de l'état local
@@ -179,6 +204,8 @@ export const useExpenseManagement = (budgetId: string | null) => {
       
       // Recharger les données en cas d'erreur pour s'assurer que l'état local est synchronisé
       await loadData();
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -191,5 +218,6 @@ export const useExpenseManagement = (budgetId: string | null) => {
     handleDeleteExpense,
     handleUpdateExpense,
     loadData,
+    isLoading,
   };
 };

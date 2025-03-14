@@ -29,7 +29,13 @@ export class ExpenseManager extends BaseDatabaseManager {
     try {
       await this.ensureInitialized();
       console.log(`Suppression de la dépense avec l'ID: ${id}`);
+      
+      if (!id) {
+        throw new Error("ID de dépense manquant pour la suppression");
+      }
+      
       expenseQueries.delete(this.db, id);
+      console.log(`Dépense avec l'ID: ${id} supprimée avec succès`);
       return Promise.resolve();
     } catch (error) {
       console.error("Erreur lors de la suppression d'une dépense:", error);

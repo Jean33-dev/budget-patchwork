@@ -84,7 +84,9 @@ export const ExpenseTable = ({
 
   const handleConfirmDelete = () => {
     if (selectedExpense && onDeleteExpense) {
+      console.log("Suppression de la dépense confirmée:", selectedExpense.id);
       onDeleteExpense(selectedExpense.id);
+      setSelectedExpense(null);
     }
   };
 
@@ -97,8 +99,10 @@ export const ExpenseTable = ({
         spent: editableBudget, // Pour une dépense, spent == budget
         date: editableDate
       };
+      console.log("Modification de la dépense confirmée:", updatedExpense);
       onUpdateExpense(updatedExpense);
       setIsEditDialogOpen(false);
+      setSelectedExpense(null);
     }
   };
 
