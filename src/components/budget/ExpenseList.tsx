@@ -13,9 +13,9 @@ interface ExpenseListProps {
   handleAddEnvelope: (envelope: {
     title: string;
     budget: number;
-    type: "expense";
+    type: "income" | "expense" | "budget";
     linkedBudgetId?: string;
-    date?: string;
+    date: string;
   }) => void;
   handleDeleteExpense?: (id: string) => void;
   handleUpdateExpense?: (expense: Expense) => void;
