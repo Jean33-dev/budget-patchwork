@@ -37,21 +37,22 @@ export const budgetQueries = {
         return [];
       }
       
-      // Use a more robust query approach
+      // First check if the table exists
+      try {
+        db.exec(budgetQueries.createTable);
+        console.log("Budgets table created or already exists");
+      } catch (tableError) {
+        console.error("Error creating budgets table:", tableError);
+      }
+      
+      // Use a more robust query approach with better error handling
       let result;
       try {
         result = db.exec('SELECT * FROM budgets');
+        console.log("Budget query execution successful");
       } catch (sqlError) {
         console.error("SQL error when selecting budgets:", sqlError);
-        
-        // Try to create the table and retry if it doesn't exist
-        try {
-          db.run(budgetQueries.createTable);
-          result = db.exec('SELECT * FROM budgets');
-        } catch (retryError) {
-          console.error("Failed to create and query budgets table:", retryError);
-          return [];
-        }
+        return [];
       }
       
       if (!result || result.length === 0) {

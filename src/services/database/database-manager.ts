@@ -1,3 +1,4 @@
+
 import { toast } from "@/components/ui/use-toast";
 import { Income } from './models/income';
 import { Expense } from './models/expense';
@@ -18,6 +19,8 @@ export class DatabaseManager {
   private initialized = false;
   private initializationInProgress = false;
   private initializationPromise: Promise<boolean> | null = null;
+  private maxRetries = 3;
+  private retryCount = 0;
 
   constructor() {
     this.initManager = new DatabaseInitManager();
@@ -47,6 +50,21 @@ export class DatabaseManager {
         
         if (!success) {
           console.error("Failed to initialize database");
+          
+          // Retry logic with exponential backoff
+          if (this.retryCount < this.maxRetries) {
+            this.retryCount++;
+            const delay = Math.pow(2, this.retryCount) * 500; // Exponential backoff
+            console.log(`Retrying database initialization in ${delay}ms (attempt ${this.retryCount}/${this.maxRetries})`);
+            
+            // Reset initialization flag to allow retry
+            this.initializationInProgress = false;
+            this.initializationPromise = null;
+            
+            await new Promise(resolve => setTimeout(resolve, delay));
+            return this.init(); // Retry initialization
+          }
+          
           toast({
             variant: "destructive",
             title: "Database Error",
@@ -81,6 +99,7 @@ export class DatabaseManager {
         this.categoryManager.setInitialized(true);
         
         this.initialized = true;
+        this.retryCount = 0; // Reset retry count on success
         console.log("Database manager initialized successfully");
         return true;
       } catch (err) {

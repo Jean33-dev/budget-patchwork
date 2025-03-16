@@ -20,8 +20,33 @@ export class BudgetManager extends BaseDatabaseManager {
         return [];
       }
       
+      // Initialize the budgets table if it doesn't exist
+      try {
+        this.db.exec(budgetQueries.createTable);
+        console.log("Budget table initialized or verified");
+      } catch (tableError) {
+        console.error("Error creating/checking budget table:", tableError);
+      }
+      
       const budgets = budgetQueries.getAll(this.db);
       console.log("Budgets fetched successfully:", budgets.length);
+      
+      // If no budgets, add sample data
+      if (budgets.length === 0) {
+        try {
+          console.log("Adding sample budget data");
+          const currentDate = new Date().toISOString().split('T')[0];
+          this.db.exec(budgetQueries.sampleData(currentDate));
+          
+          // Fetch again after adding sample data
+          const refreshedBudgets = budgetQueries.getAll(this.db);
+          console.log("Sample budgets added:", refreshedBudgets.length);
+          return refreshedBudgets;
+        } catch (sampleError) {
+          console.error("Error adding sample budget data:", sampleError);
+        }
+      }
+      
       return budgets;
     } catch (error) {
       console.error("Error retrieving budgets:", error);
