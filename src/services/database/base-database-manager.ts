@@ -20,7 +20,8 @@ export class BaseDatabaseManager {
       this.db = new SQL.Database();
       this.initialized = true;
       console.log("Database initialized successfully");
-
+      
+      return true;
     } catch (err) {
       console.error('Erreur lors de l\'initialisation de la base de données:', err);
       // Show more detailed error message in toast
@@ -29,7 +30,10 @@ export class BaseDatabaseManager {
         title: "Erreur de base de données",
         description: "Impossible de charger le moteur de base de données. Veuillez rafraîchir la page."
       });
-      throw err;
+      
+      this.initialized = false;
+      this.db = null;
+      return false;
     }
   }
 
@@ -37,8 +41,16 @@ export class BaseDatabaseManager {
   protected async ensureInitialized() {
     if (!this.initialized) {
       console.log("Database not initialized, initializing now...");
-      await this.init();
-      console.log("Database initialization status:", this.initialized);
+      const success = await this.init();
+      console.log("Database initialization status:", success);
+      if (!success) {
+        throw new Error("Failed to initialize database");
+      }
+    }
+    
+    if (!this.db) {
+      console.error("Database object is null after initialization");
+      throw new Error("Database object is null");
     }
   }
 

@@ -9,10 +9,11 @@ import { EditBudgetDialog } from "@/components/budget/EditBudgetDialog";
 import { DeleteBudgetDialog } from "@/components/budget/DeleteBudgetDialog";
 import { useBudgets, Budget } from "@/hooks/useBudgets";
 import { db } from "@/services/database";
+import { Loader2 } from "lucide-react";
 
 const Budgets = () => {
   const navigate = useNavigate();
-  const { budgets, remainingAmount, addBudget, updateBudget, deleteBudget } = useBudgets();
+  const { budgets, remainingAmount, addBudget, updateBudget, deleteBudget, isLoading, error } = useBudgets();
   
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -61,6 +62,7 @@ const Budgets = () => {
       type: "budget" as const
     };
     
+    console.log("Ajout d'un nouveau budget:", budgetData);
     const success = await addBudget(budgetData);
     if (success) {
       setAddDialogOpen(false);
@@ -85,6 +87,28 @@ const Budgets = () => {
     setSelectedBudget(null);
   };
 
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 py-6 flex flex-col items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
+        <p className="text-muted-foreground">Chargement des budgets...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto px-4 py-6">
+        <BudgetsHeader onNavigate={navigate} />
+        <Alert variant="destructive" className="mt-4">
+          <AlertDescription>
+            Erreur lors du chargement des budgets. Veuillez rafraîchir la page.
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
       <BudgetsHeader onNavigate={navigate} />
@@ -102,14 +126,20 @@ const Budgets = () => {
         )}
       </div>
 
-      <EnvelopeList
-        envelopes={budgets}
-        type="budget"
-        onAddClick={() => setAddDialogOpen(true)}
-        onEnvelopeClick={handleEnvelopeClick}
-        onViewExpenses={handleViewExpenses}
-        onDeleteClick={handleDeleteClick}
-      />
+      {budgets.length === 0 ? (
+        <div className="text-center py-8 bg-muted/20 rounded-lg">
+          <p className="text-muted-foreground">Aucun budget trouvé. Créez votre premier budget en cliquant sur "Ajouter un budget".</p>
+        </div>
+      ) : (
+        <EnvelopeList
+          envelopes={budgets}
+          type="budget"
+          onAddClick={() => setAddDialogOpen(true)}
+          onEnvelopeClick={handleEnvelopeClick}
+          onViewExpenses={handleViewExpenses}
+          onDeleteClick={handleDeleteClick}
+        />
+      )}
 
       <AddEnvelopeDialog
         type="budget"

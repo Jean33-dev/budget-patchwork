@@ -1,3 +1,4 @@
+
 import { toast } from "@/components/ui/use-toast";
 import { Income } from './models/income';
 import { Expense } from './models/expense';
@@ -30,10 +31,30 @@ export class DatabaseManager {
     
     try {
       // Initialize the database
-      await this.initManager.init();
+      const success = await this.initManager.init();
+      
+      if (!success) {
+        console.error("Failed to initialize database");
+        toast({
+          variant: "destructive",
+          title: "Erreur de base de données",
+          description: "Impossible d'initialiser la base de données. Veuillez rafraîchir la page."
+        });
+        return;
+      }
       
       // Share the database instance with all managers using the new accessor methods
       const dbInstance = this.initManager.getDb();
+      if (!dbInstance) {
+        console.error("Database instance is null after initialization");
+        toast({
+          variant: "destructive",
+          title: "Erreur de base de données",
+          description: "Impossible d'initialiser la base de données. Veuillez rafraîchir la page."
+        });
+        return;
+      }
+      
       this.incomeManager.setDb(dbInstance);
       this.expenseManager.setDb(dbInstance);
       this.budgetManager.setDb(dbInstance);
@@ -46,8 +67,14 @@ export class DatabaseManager {
       this.categoryManager.setInitialized(true);
       
       this.initialized = true;
+      console.log("Database manager initialized successfully");
     } catch (err) {
       console.error('Erreur lors de l\'initialisation de la base de données:', err);
+      toast({
+        variant: "destructive",
+        title: "Erreur de base de données",
+        description: "Impossible d'initialiser la base de données. Veuillez rafraîchir la page."
+      });
       throw err;
     }
   }
@@ -146,6 +173,18 @@ export class DatabaseManager {
   }
 
   private async ensureInitialized() {
-    if (!this.initialized) await this.init();
+    if (!this.initialized) {
+      console.log("Database manager not initialized, initializing now...");
+      await this.init();
+      if (!this.initialized) {
+        console.error("Failed to initialize database manager");
+        toast({
+          variant: "destructive",
+          title: "Erreur de base de données",
+          description: "Impossible d'initialiser la base de données. Veuillez rafraîchir la page."
+        });
+        throw new Error("Failed to initialize database manager");
+      }
+    }
   }
 }

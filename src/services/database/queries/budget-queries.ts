@@ -36,6 +36,11 @@ export const budgetQueries = {
   getAll: (db: any): Budget[] => {
     try {
       console.log("Exécution de la requête pour récupérer tous les budgets");
+      if (!db) {
+        console.error("Erreur: La base de données est null");
+        return [];
+      }
+      
       const result = db.exec('SELECT * FROM budgets');
       
       if (!result || result.length === 0) {

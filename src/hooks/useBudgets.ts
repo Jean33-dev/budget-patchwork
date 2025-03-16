@@ -16,15 +16,23 @@ export const useBudgets = () => {
   const [budgets, setBudgets] = useState<Budget[]>([]);
   const [totalRevenues, setTotalRevenues] = useState(0);
   const [totalExpenses, setTotalExpenses] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
     loadData();
   }, []);
 
   const loadData = async () => {
+    setIsLoading(true);
+    setError(null);
+    
     try {
+      console.log("Chargement des données de budget...");
+      
       // Chargement des budgets
       const budgetsData = await db.getBudgets();
+      console.log("Budgets chargés:", budgetsData);
       
       // Chargement des dépenses
       const expenses = await db.getExpenses();
@@ -67,11 +75,14 @@ export const useBudgets = () => {
       
     } catch (error) {
       console.error("Erreur lors du chargement des données:", error);
+      setError(error instanceof Error ? error : new Error("Erreur inconnue"));
       toast({
         variant: "destructive",
         title: "Erreur",
         description: "Impossible de charger les données"
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -85,13 +96,17 @@ export const useBudgets = () => {
         type: "budget"
       };
 
+      console.log("Ajout d'un nouveau budget:", budgetToAdd);
       await db.addBudget(budgetToAdd);
+      
+      // Mise à jour de l'état local
       setBudgets(prevBudgets => [...prevBudgets, budgetToAdd]);
       
       toast({
         title: "Budget ajouté",
         description: `Le budget "${newBudget.title}" a été créé avec succès.`
       });
+      
       return true;
     } catch (error) {
       console.error("Erreur lors de l'ajout du budget:", error);
@@ -171,9 +186,11 @@ export const useBudgets = () => {
     totalBudgets,
     totalExpenses,
     remainingAmount,
+    isLoading,
+    error,
     addBudget,
-    updateBudget,
-    deleteBudget,
+    updateBudget: (budget: Budget) => updateBudget(budget),
+    deleteBudget: (id: string) => deleteBudget(id),
     refreshData: loadData
   };
 };
