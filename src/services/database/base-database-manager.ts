@@ -10,18 +10,25 @@ export class BaseDatabaseManager {
     if (this.initialized) return;
 
     try {
+      console.log("Initializing database...");
+      // Use a more reliable CDN for WebAssembly file instead of sql.js.org
       const SQL = await initSqlJs({
-        locateFile: file => `https://sql.js.org/dist/${file}`
+        // Use jsdelivr CDN which is more reliable
+        locateFile: file => `https://cdn.jsdelivr.net/npm/sql.js@1.8.0/dist/${file}`
       });
       
       this.db = new SQL.Database();
-      
-      // Create tables will be handled by inherited classes
       this.initialized = true;
-      console.log("Base de données initialisée");
+      console.log("Database initialized successfully");
 
     } catch (err) {
       console.error('Erreur lors de l\'initialisation de la base de données:', err);
+      // Show more detailed error message in toast
+      toast({
+        variant: "destructive",
+        title: "Erreur de base de données",
+        description: "Impossible de charger le moteur de base de données. Veuillez rafraîchir la page."
+      });
       throw err;
     }
   }

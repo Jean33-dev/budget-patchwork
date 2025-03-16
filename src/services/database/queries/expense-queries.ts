@@ -16,11 +16,14 @@ export const expenseQueries = {
   
   getAll: (db: any): Expense[] => {
     try {
+      console.log("Executing query to get all expenses");
       const result = db.exec('SELECT * FROM expenses');
       if (!result || result.length === 0 || !result[0]?.values) {
+        console.log("No expenses found in database");
         return [];
       }
-      return result[0].values.map((row: any[]) => ({
+      
+      const expenses = result[0].values.map((row: any[]) => ({
         id: row[0],
         title: row[1],
         budget: row[2],
@@ -29,6 +32,9 @@ export const expenseQueries = {
         linkedBudgetId: row[5],
         date: row[6]
       }));
+      
+      console.log(`Found ${expenses.length} expenses in database`);
+      return expenses;
     } catch (error) {
       console.error("Erreur lors de la récupération des dépenses:", error);
       return [];
@@ -37,11 +43,27 @@ export const expenseQueries = {
   
   add: (db: any, expense: Expense): void => {
     try {
+      if (!expense || !expense.id) {
+        throw new Error("Invalid expense data for adding");
+      }
+      
+      console.log("Preparing to add expense:", expense);
       const stmt = db.prepare(
         'INSERT INTO expenses (id, title, budget, spent, type, linkedBudgetId, date) VALUES (?, ?, ?, ?, ?, ?, ?)'
       );
-      stmt.run([expense.id, expense.title, expense.budget, expense.spent, expense.type, expense.linkedBudgetId, expense.date]);
+      
+      stmt.run([
+        expense.id, 
+        expense.title, 
+        expense.budget, 
+        expense.spent, 
+        expense.type, 
+        expense.linkedBudgetId || null, 
+        expense.date
+      ]);
+      
       stmt.free();
+      console.log("Expense added successfully to database");
     } catch (error) {
       console.error("Erreur lors de l'ajout d'une dépense:", error);
       throw error;
@@ -54,12 +76,25 @@ export const expenseQueries = {
         throw new Error("ID de dépense manquant pour la suppression");
       }
       
-      console.log(`Suppression de la dépense avec l'ID: ${id} dans la base de données`);
-      const stmt = db.prepare('DELETE FROM expenses WHERE id = ?');
-      const result = stmt.run([id]);
-      stmt.free();
+      console.log(`Deleting expense with ID: ${id} from database`);
       
-      console.log(`Dépense ${id} supprimée avec succès`);
+      // First check if the expense exists
+      const checkStmt = db.prepare('SELECT id FROM expenses WHERE id = ?');
+      checkStmt.step([id]);
+      const exists = checkStmt.getAsObject();
+      checkStmt.free();
+      
+      if (!exists.id) {
+        console.warn(`Expense with ID ${id} not found for deletion`);
+        return; // Don't throw error if expense doesn't exist
+      }
+      
+      // If expense exists, delete it
+      const deleteStmt = db.prepare('DELETE FROM expenses WHERE id = ?');
+      deleteStmt.run([id]);
+      deleteStmt.free();
+      
+      console.log(`Expense ${id} deleted successfully from database`);
     } catch (error) {
       console.error("Erreur lors de la suppression d'une dépense:", error);
       throw error;
