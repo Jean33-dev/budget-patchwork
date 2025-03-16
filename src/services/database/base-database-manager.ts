@@ -11,10 +11,12 @@ export class BaseDatabaseManager {
 
     try {
       console.log("Initializing database...");
-      // Use a more reliable CDN for WebAssembly file
+      
+      // Initialize SQL.js with a direct reference to the wasm file
+      // Use a specific version of SQL.js to avoid compatibility issues
       const SQL = await initSqlJs({
-        // Use jsdelivr CDN which is more reliable
-        locateFile: file => `https://cdn.jsdelivr.net/npm/sql.js@1.8.0/dist/${file}`
+        // Direct path to the wasm file from unpkg (more reliable than jsdelivr)
+        locateFile: file => `https://unpkg.com/sql.js@1.8.0/dist/${file}`
       });
       
       this.db = new SQL.Database();
@@ -23,12 +25,11 @@ export class BaseDatabaseManager {
       
       return true;
     } catch (err) {
-      console.error('Erreur lors de l\'initialisation de la base de données:', err);
-      // Show more detailed error message in toast
+      console.error('Error initializing database:', err);
       toast({
         variant: "destructive",
-        title: "Erreur de base de données",
-        description: "Impossible de charger le moteur de base de données. Veuillez rafraîchir la page."
+        title: "Database Error",
+        description: "Unable to load the database engine. Please refresh the page."
       });
       
       this.initialized = false;

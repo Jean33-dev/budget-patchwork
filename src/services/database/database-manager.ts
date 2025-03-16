@@ -16,6 +16,8 @@ export class DatabaseManager {
   private budgetManager: BudgetManager;
   private categoryManager: CategoryManager;
   private initialized = false;
+  private initializationInProgress = false;
+  private initializationPromise: Promise<boolean> | null = null;
 
   constructor() {
     this.initManager = new DatabaseInitManager();
@@ -25,59 +27,77 @@ export class DatabaseManager {
     this.categoryManager = new CategoryManager();
   }
 
-  async init() {
+  async init(): Promise<boolean> {
+    // If already initialized, return true
     if (this.initialized) return true;
     
-    try {
-      // Initialize the database
-      const success = await this.initManager.init();
-      
-      if (!success) {
-        console.error("Failed to initialize database");
-        toast({
-          variant: "destructive",
-          title: "Erreur de base de données",
-          description: "Impossible d'initialiser la base de données. Veuillez rafraîchir la page."
-        });
-        return false;
-      }
-      
-      // Share the database instance with all managers using the new accessor methods
-      const dbInstance = this.initManager.getDb();
-      if (!dbInstance) {
-        console.error("Database instance is null after initialization");
-        toast({
-          variant: "destructive",
-          title: "Erreur de base de données",
-          description: "Impossible d'initialiser la base de données. Veuillez rafraîchir la page."
-        });
-        return false;
-      }
-      
-      this.incomeManager.setDb(dbInstance);
-      this.expenseManager.setDb(dbInstance);
-      this.budgetManager.setDb(dbInstance);
-      this.categoryManager.setDb(dbInstance);
-      
-      // Mark all managers as initialized
-      this.incomeManager.setInitialized(true);
-      this.expenseManager.setInitialized(true);
-      this.budgetManager.setInitialized(true);
-      this.categoryManager.setInitialized(true);
-      
-      this.initialized = true;
-      console.log("Database manager initialized successfully");
-      return true;
-    } catch (err) {
-      console.error('Erreur lors de l\'initialisation de la base de données:', err);
-      toast({
-        variant: "destructive",
-        title: "Erreur de base de données",
-        description: "Impossible d'initialiser la base de données. Veuillez rafraîchir la page."
-      });
-      this.initialized = false;
-      return false;
+    // If initialization is in progress, return the existing promise
+    if (this.initializationInProgress && this.initializationPromise) {
+      return this.initializationPromise;
     }
+    
+    // Set flag and create promise
+    this.initializationInProgress = true;
+    
+    this.initializationPromise = (async () => {
+      try {
+        console.log("Starting database initialization...");
+        // Initialize the database
+        const success = await this.initManager.init();
+        
+        if (!success) {
+          console.error("Failed to initialize database");
+          toast({
+            variant: "destructive",
+            title: "Database Error",
+            description: "Unable to initialize the database. Please refresh the page."
+          });
+          this.initialized = false;
+          return false;
+        }
+        
+        // Share the database instance with all managers using the accessor methods
+        const dbInstance = this.initManager.getDb();
+        if (!dbInstance) {
+          console.error("Database instance is null after initialization");
+          toast({
+            variant: "destructive",
+            title: "Database Error",
+            description: "Unable to initialize the database. Please refresh the page."
+          });
+          this.initialized = false;
+          return false;
+        }
+        
+        this.incomeManager.setDb(dbInstance);
+        this.expenseManager.setDb(dbInstance);
+        this.budgetManager.setDb(dbInstance);
+        this.categoryManager.setDb(dbInstance);
+        
+        // Mark all managers as initialized
+        this.incomeManager.setInitialized(true);
+        this.expenseManager.setInitialized(true);
+        this.budgetManager.setInitialized(true);
+        this.categoryManager.setInitialized(true);
+        
+        this.initialized = true;
+        console.log("Database manager initialized successfully");
+        return true;
+      } catch (err) {
+        console.error('Database initialization error:', err);
+        toast({
+          variant: "destructive",
+          title: "Database Error",
+          description: "Unable to initialize the database. Please refresh the page."
+        });
+        this.initialized = false;
+        return false;
+      } finally {
+        this.initializationInProgress = false;
+      }
+    })();
+    
+    return this.initializationPromise;
   }
 
   async getIncomes(): Promise<Income[]> {
@@ -181,8 +201,8 @@ export class DatabaseManager {
         console.error("Failed to initialize database manager");
         toast({
           variant: "destructive",
-          title: "Erreur de base de données",
-          description: "Impossible d'initialiser la base de données. Veuillez rafraîchir la page."
+          title: "Database Error",
+          description: "Unable to initialize the database. Please refresh the page."
         });
         throw new Error("Failed to initialize database manager");
       }

@@ -10,10 +10,12 @@ import { DeleteBudgetDialog } from "@/components/budget/DeleteBudgetDialog";
 import { useBudgets, Budget } from "@/hooks/useBudgets";
 import { db } from "@/services/database";
 import { Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const Budgets = () => {
   const navigate = useNavigate();
-  const { budgets, remainingAmount, addBudget, updateBudget, deleteBudget, isLoading, error } = useBudgets();
+  const { budgets, remainingAmount, addBudget, updateBudget, deleteBudget, isLoading, error, refreshData } = useBudgets();
   
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -57,12 +59,14 @@ const Budgets = () => {
     if (envelope.type !== "budget") return;
     
     const budgetData = {
+      id: Date.now().toString(),
       title: envelope.title,
       budget: envelope.budget,
+      spent: 0,
       type: "budget" as const
     };
     
-    console.log("Ajout d'un nouveau budget:", budgetData);
+    console.log("Adding new budget:", budgetData);
     const success = await addBudget(budgetData);
     if (success) {
       setAddDialogOpen(false);
@@ -72,7 +76,7 @@ const Budgets = () => {
   const handleDeleteClick = async (envelope: Budget) => {
     setSelectedBudget(envelope);
     
-    // Vérifier si le budget a des dépenses associées
+    // Check if budget has associated expenses
     const expenses = await db.getExpenses();
     const linkedExpenses = expenses.filter(expense => expense.linkedBudgetId === envelope.id);
     setHasLinkedExpenses(linkedExpenses.length > 0);
@@ -87,11 +91,15 @@ const Budgets = () => {
     setSelectedBudget(null);
   };
 
+  const handleRetry = () => {
+    refreshData();
+  };
+
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-6 flex flex-col items-center justify-center min-h-[400px]">
         <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
-        <p className="text-muted-foreground">Chargement des budgets...</p>
+        <p className="text-muted-foreground">Loading budgets...</p>
       </div>
     );
   }
@@ -102,9 +110,14 @@ const Budgets = () => {
         <BudgetsHeader onNavigate={navigate} />
         <Alert variant="destructive" className="mt-4">
           <AlertDescription>
-            Erreur lors du chargement des budgets. Veuillez rafraîchir la page.
+            Error loading budgets. Please refresh the page or try again.
           </AlertDescription>
         </Alert>
+        <div className="mt-4 flex justify-center">
+          <Button variant="outline" onClick={handleRetry}>
+            Try Again
+          </Button>
+        </div>
       </div>
     );
   }
@@ -129,6 +142,13 @@ const Budgets = () => {
       {budgets.length === 0 ? (
         <div className="text-center py-8 bg-muted/20 rounded-lg">
           <p className="text-muted-foreground">Aucun budget trouvé. Créez votre premier budget en cliquant sur "Ajouter un budget".</p>
+          <Button 
+            variant="outline" 
+            className="mt-4"
+            onClick={() => setAddDialogOpen(true)}
+          >
+            Ajouter un budget
+          </Button>
         </div>
       ) : (
         <EnvelopeList

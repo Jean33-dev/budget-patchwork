@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { toast } from "@/components/ui/use-toast";
 import { db } from "@/services/database";
 
@@ -19,32 +18,28 @@ export const useBudgets = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     
     try {
-      console.log("Chargement des données de budget...");
+      console.log("Loading budget data...");
       
-      // Chargement des budgets
+      // Load budgets
       const budgetsData = await db.getBudgets();
-      console.log("Budgets chargés:", budgetsData);
+      console.log("Budgets loaded:", budgetsData);
       
-      // Chargement des dépenses
+      // Load expenses
       const expenses = await db.getExpenses();
-      console.log("Dépenses totales chargées:", expenses);
+      console.log("Total expenses loaded:", expenses.length);
       
-      // Calcul du total des dépenses
+      // Calculate total expenses
       const totalSpent = expenses.reduce((sum, expense) => 
         sum + (Number(expense.budget) || 0), 0
       );
       setTotalExpenses(totalSpent);
       
-      // Mise à jour des budgets avec leurs dépenses associées
+      // Update budgets with their associated expenses
       const validatedBudgets = budgetsData.map(budget => {
         const budgetExpenses = expenses.filter(expense => 
           expense.linkedBudgetId === budget.id
@@ -62,29 +57,33 @@ export const useBudgets = () => {
       });
       
       setBudgets(validatedBudgets);
-      console.log("Budgets mis à jour avec dépenses:", validatedBudgets);
+      console.log("Budgets updated with expenses:", validatedBudgets);
 
-      // Chargement et calcul des revenus
+      // Load and calculate incomes
       const incomesData = await db.getIncomes();
       const totalIncome = incomesData.reduce((sum, income) => 
         sum + (Number(income.budget) || 0), 0
       );
       
       setTotalRevenues(totalIncome);
-      console.log("Revenus totaux calculés:", totalIncome);
+      console.log("Total income calculated:", totalIncome);
       
+      setIsLoading(false);
     } catch (error) {
-      console.error("Erreur lors du chargement des données:", error);
-      setError(error instanceof Error ? error : new Error("Erreur inconnue"));
+      console.error("Error loading data:", error);
+      setError(error instanceof Error ? error : new Error("Unknown error"));
       toast({
         variant: "destructive",
-        title: "Erreur",
-        description: "Impossible de charger les données"
+        title: "Error",
+        description: "Unable to load budget data"
       });
-    } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const addBudget = async (newBudget: Omit<Budget, "id" | "spent">) => {
     try {
@@ -96,24 +95,24 @@ export const useBudgets = () => {
         type: "budget"
       };
 
-      console.log("Ajout d'un nouveau budget:", budgetToAdd);
+      console.log("Adding a new budget:", budgetToAdd);
       await db.addBudget(budgetToAdd);
       
-      // Mise à jour de l'état local
+      // Update local state
       setBudgets(prevBudgets => [...prevBudgets, budgetToAdd]);
       
       toast({
-        title: "Budget ajouté",
-        description: `Le budget "${newBudget.title}" a été créé avec succès.`
+        title: "Budget added",
+        description: `The budget "${newBudget.title}" has been created successfully.`
       });
       
       return true;
     } catch (error) {
-      console.error("Erreur lors de l'ajout du budget:", error);
+      console.error("Error adding budget:", error);
       toast({
         variant: "destructive",
-        title: "Erreur",
-        description: "Impossible d'ajouter le budget"
+        title: "Error",
+        description: "Unable to add budget"
       });
       return false;
     }
@@ -127,16 +126,16 @@ export const useBudgets = () => {
       );
       
       toast({
-        title: "Budget modifié",
-        description: `Le budget "${budgetToUpdate.title}" a été mis à jour.`
+        title: "Budget updated",
+        description: `The budget "${budgetToUpdate.title}" has been updated.`
       });
       return true;
     } catch (error) {
-      console.error("Erreur lors de la modification du budget:", error);
+      console.error("Error updating budget:", error);
       toast({
         variant: "destructive",
-        title: "Erreur",
-        description: "Impossible de modifier le budget"
+        title: "Error",
+        description: "Unable to update budget"
       });
       return false;
     }
@@ -152,8 +151,8 @@ export const useBudgets = () => {
       if (hasLinkedExpenses) {
         toast({
           variant: "destructive",
-          title: "Suppression impossible",
-          description: "Ce budget a des dépenses qui lui sont affectées."
+          title: "Deletion impossible",
+          description: "This budget has expenses associated with it."
         });
         return false;
       }
@@ -162,16 +161,16 @@ export const useBudgets = () => {
       setBudgets(prevBudgets => prevBudgets.filter(b => b.id !== budgetId));
       
       toast({
-        title: "Budget supprimé",
-        description: "Le budget a été supprimé avec succès."
+        title: "Budget deleted",
+        description: "The budget has been deleted successfully."
       });
       return true;
     } catch (error) {
-      console.error("Erreur lors de la suppression du budget:", error);
+      console.error("Error deleting budget:", error);
       toast({
         variant: "destructive",
-        title: "Erreur",
-        description: "Impossible de supprimer le budget"
+        title: "Error",
+        description: "Unable to delete budget"
       });
       return false;
     }

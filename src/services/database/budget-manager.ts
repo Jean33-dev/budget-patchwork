@@ -14,8 +14,8 @@ export class BudgetManager extends BaseDatabaseManager {
         console.error("Database is null after initialization");
         toast({
           variant: "destructive",
-          title: "Erreur de base de données",
-          description: "La base de données n'a pas pu être initialisée correctement."
+          title: "Database Error",
+          description: "The database could not be properly initialized."
         });
         return [];
       }
@@ -24,11 +24,11 @@ export class BudgetManager extends BaseDatabaseManager {
       console.log("Budgets fetched successfully:", budgets.length);
       return budgets;
     } catch (error) {
-      console.error("Erreur lors de la récupération des budgets:", error);
+      console.error("Error retrieving budgets:", error);
       toast({
         variant: "destructive",
-        title: "Erreur",
-        description: "Impossible de récupérer les budgets. Veuillez rafraîchir la page."
+        title: "Error",
+        description: "Unable to retrieve budgets. Please refresh the page."
       });
       return [];
     }
@@ -36,7 +36,7 @@ export class BudgetManager extends BaseDatabaseManager {
 
   async addBudget(budget: Budget) {
     try {
-      console.log("Ajout d'un nouveau budget:", budget);
+      console.log("Adding new budget:", budget);
       await this.ensureInitialized();
       
       if (!this.db) {
@@ -44,18 +44,18 @@ export class BudgetManager extends BaseDatabaseManager {
       }
       
       budgetQueries.add(this.db, budget);
-      console.log("Budget ajouté avec succès");
+      console.log("Budget added successfully");
       
       toast({
-        title: "Budget ajouté",
-        description: `Le budget "${budget.title}" a été ajouté avec succès.`
+        title: "Budget added",
+        description: `The budget "${budget.title}" has been added successfully.`
       });
     } catch (error) {
-      console.error("Erreur lors de l'ajout du budget:", error);
+      console.error("Error adding budget:", error);
       toast({
         variant: "destructive",
-        title: "Erreur",
-        description: "Impossible d'ajouter le budget. Veuillez réessayer."
+        title: "Error",
+        description: "Unable to add the budget. Please try again."
       });
       throw error;
     }
@@ -63,7 +63,7 @@ export class BudgetManager extends BaseDatabaseManager {
 
   async updateBudget(budget: Budget) {
     try {
-      console.log("Mise à jour du budget:", budget);
+      console.log("Updating budget:", budget);
       await this.ensureInitialized();
       
       if (!this.db) {
@@ -71,18 +71,18 @@ export class BudgetManager extends BaseDatabaseManager {
       }
       
       budgetQueries.update(this.db, budget);
-      console.log("Budget mis à jour avec succès");
+      console.log("Budget updated successfully");
       
       toast({
-        title: "Budget mis à jour",
-        description: `Le budget "${budget.title}" a été mis à jour avec succès.`
+        title: "Budget updated",
+        description: `The budget "${budget.title}" has been updated successfully.`
       });
     } catch (error) {
-      console.error("Erreur lors de la mise à jour du budget:", error);
+      console.error("Error updating budget:", error);
       toast({
         variant: "destructive",
-        title: "Erreur",
-        description: "Impossible de mettre à jour le budget. Veuillez réessayer."
+        title: "Error",
+        description: "Unable to update the budget. Please try again."
       });
       throw error;
     }
@@ -90,7 +90,7 @@ export class BudgetManager extends BaseDatabaseManager {
 
   async deleteBudget(id: string) {
     try {
-      console.log("Suppression du budget:", id);
+      console.log("Deleting budget:", id);
       await this.ensureInitialized();
       
       if (!this.db) {
@@ -98,18 +98,18 @@ export class BudgetManager extends BaseDatabaseManager {
       }
       
       budgetQueries.delete(this.db, id);
-      console.log("Budget supprimé avec succès");
+      console.log("Budget deleted successfully");
       
       toast({
-        title: "Budget supprimé",
-        description: "Le budget a été supprimé avec succès."
+        title: "Budget deleted",
+        description: "The budget has been deleted successfully."
       });
     } catch (error) {
-      console.error("Erreur lors de la suppression du budget:", error);
+      console.error("Error deleting budget:", error);
       toast({
         variant: "destructive",
-        title: "Erreur",
-        description: "Impossible de supprimer le budget. Veuillez réessayer."
+        title: "Error",
+        description: "Unable to delete the budget. Please try again."
       });
       throw error;
     }
