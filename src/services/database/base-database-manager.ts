@@ -11,7 +11,7 @@ export class BaseDatabaseManager {
 
     try {
       console.log("Initializing database...");
-      // Use a more reliable CDN for WebAssembly file instead of sql.js.org
+      // Use a more reliable CDN for WebAssembly file
       const SQL = await initSqlJs({
         // Use jsdelivr CDN which is more reliable
         locateFile: file => `https://cdn.jsdelivr.net/npm/sql.js@1.8.0/dist/${file}`
@@ -35,7 +35,11 @@ export class BaseDatabaseManager {
 
   // Helper to ensure database is initialized before operations
   protected async ensureInitialized() {
-    if (!this.initialized) await this.init();
+    if (!this.initialized) {
+      console.log("Database not initialized, initializing now...");
+      await this.init();
+      console.log("Database initialization status:", this.initialized);
+    }
   }
 
   // Public getter for the db property
