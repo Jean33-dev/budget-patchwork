@@ -6,8 +6,8 @@ export class BaseDatabaseManager {
   protected db: any = null;
   protected initialized = false;
 
-  async init() {
-    if (this.initialized) return;
+  async init(): Promise<boolean> {
+    if (this.initialized) return true;
 
     try {
       console.log("Initializing database...");

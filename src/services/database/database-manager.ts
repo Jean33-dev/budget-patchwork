@@ -1,4 +1,3 @@
-
 import { toast } from "@/components/ui/use-toast";
 import { Income } from './models/income';
 import { Expense } from './models/expense';
@@ -27,7 +26,7 @@ export class DatabaseManager {
   }
 
   async init() {
-    if (this.initialized) return;
+    if (this.initialized) return true;
     
     try {
       // Initialize the database
@@ -40,7 +39,7 @@ export class DatabaseManager {
           title: "Erreur de base de données",
           description: "Impossible d'initialiser la base de données. Veuillez rafraîchir la page."
         });
-        return;
+        return false;
       }
       
       // Share the database instance with all managers using the new accessor methods
@@ -52,7 +51,7 @@ export class DatabaseManager {
           title: "Erreur de base de données",
           description: "Impossible d'initialiser la base de données. Veuillez rafraîchir la page."
         });
-        return;
+        return false;
       }
       
       this.incomeManager.setDb(dbInstance);
@@ -68,6 +67,7 @@ export class DatabaseManager {
       
       this.initialized = true;
       console.log("Database manager initialized successfully");
+      return true;
     } catch (err) {
       console.error('Erreur lors de l\'initialisation de la base de données:', err);
       toast({
@@ -75,7 +75,8 @@ export class DatabaseManager {
         title: "Erreur de base de données",
         description: "Impossible d'initialiser la base de données. Veuillez rafraîchir la page."
       });
-      throw err;
+      this.initialized = false;
+      return false;
     }
   }
 
@@ -175,8 +176,8 @@ export class DatabaseManager {
   private async ensureInitialized() {
     if (!this.initialized) {
       console.log("Database manager not initialized, initializing now...");
-      await this.init();
-      if (!this.initialized) {
+      const success = await this.init();
+      if (!success) {
         console.error("Failed to initialize database manager");
         toast({
           variant: "destructive",
