@@ -43,8 +43,19 @@ export class BudgetManager extends BaseDatabaseManager {
           try {
             console.log("Adding sample budget data");
             const currentDate = new Date().toISOString().split('T')[0];
-            const sampleData = budgetQueries.sampleData(currentDate);
-            this.db.exec(sampleData);
+            
+            // Use direct execution for simpler sample data
+            const sampleSql = `
+              INSERT INTO budgets (id, title, budget, spent, type, carriedOver)
+              VALUES 
+              ('bud_1', 'Courses', 500.00, 150.00, 'budget', 0),
+              ('bud_2', 'Transport', 200.00, 50.00, 'budget', 0),
+              ('bud_3', 'Loisirs', 150.00, 30.00, 'budget', 0),
+              ('bud_4', 'Restaurant', 300.00, 100.00, 'budget', 0),
+              ('bud_5', 'Shopping', 250.00, 75.00, 'budget', 0)
+            `;
+            
+            this.db.exec(sampleSql);
             
             // Fetch again after adding sample data
             const refreshedBudgets = budgetQueries.getAll(this.db);

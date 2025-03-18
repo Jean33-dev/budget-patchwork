@@ -1,3 +1,4 @@
+
 import initSqlJs from 'sql.js';
 import { toast } from "@/components/ui/use-toast";
 
@@ -33,10 +34,9 @@ export class BaseDatabaseManager {
       
       BaseDatabaseManager.initializing = true;
       
-      // Create a new initialization promise
+      // Try using unpkg instead of cdnjs
       BaseDatabaseManager.initPromise = initSqlJs({
-        // Use CDNJS instead of unpkg as it might be more reliable
-        locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${file}`
+        locateFile: file => `https://unpkg.com/sql.js@1.8.0/dist/${file}`
       });
       
       try {
