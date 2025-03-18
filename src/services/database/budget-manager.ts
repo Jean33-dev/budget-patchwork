@@ -1,4 +1,3 @@
-
 import { BaseDatabaseManager } from './base-database-manager';
 import { Budget } from './models/budget';
 import { budgetQueries } from './queries/budget-queries';
@@ -42,25 +41,33 @@ export class BudgetManager extends BaseDatabaseManager {
         if (budgets.length === 0) {
           try {
             console.log("Adding sample budget data");
-            const currentDate = new Date().toISOString().split('T')[0];
             
-            // Use direct execution for simpler sample data
-            const sampleSql = `
-              INSERT INTO budgets (id, title, budget, spent, type, carriedOver)
-              VALUES 
-              ('bud_1', 'Courses', 500.00, 150.00, 'budget', 0),
-              ('bud_2', 'Transport', 200.00, 50.00, 'budget', 0),
-              ('bud_3', 'Loisirs', 150.00, 30.00, 'budget', 0),
-              ('bud_4', 'Restaurant', 300.00, 100.00, 'budget', 0),
-              ('bud_5', 'Shopping', 250.00, 75.00, 'budget', 0)
-            `;
-            
-            this.db.exec(sampleSql);
+            // Create a simple INSERT statement directly
+            try {
+              const sampleInsert = `
+                INSERT INTO budgets (id, title, budget, spent, type, carriedOver)
+                VALUES 
+                ('bud_1', 'Courses', 500.00, 150.00, 'budget', 0),
+                ('bud_2', 'Transport', 200.00, 50.00, 'budget', 0),
+                ('bud_3', 'Loisirs', 150.00, 30.00, 'budget', 0),
+                ('bud_4', 'Restaurant', 300.00, 100.00, 'budget', 0),
+                ('bud_5', 'Shopping', 250.00, 75.00, 'budget', 0)
+              `;
+              this.db.exec(sampleInsert);
+              console.log("Sample data inserted successfully");
+            } catch (insertError) {
+              console.error("Error inserting sample data:", insertError);
+            }
             
             // Fetch again after adding sample data
-            const refreshedBudgets = budgetQueries.getAll(this.db);
-            console.log("Sample budgets added:", refreshedBudgets.length);
-            return refreshedBudgets;
+            try {
+              const refreshedBudgets = budgetQueries.getAll(this.db);
+              console.log("Sample budgets added:", refreshedBudgets.length);
+              return refreshedBudgets;
+            } catch (refreshError) {
+              console.error("Error fetching refreshed budgets:", refreshError);
+              return [];
+            }
           } catch (sampleError) {
             console.error("Error adding sample budget data:", sampleError);
             // Even if sample data fails, return empty array instead of throwing

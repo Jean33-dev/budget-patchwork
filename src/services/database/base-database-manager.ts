@@ -1,4 +1,3 @@
-
 import initSqlJs from 'sql.js';
 import { toast } from "@/components/ui/use-toast";
 
@@ -34,9 +33,10 @@ export class BaseDatabaseManager {
       
       BaseDatabaseManager.initializing = true;
       
-      // Try using unpkg instead of cdnjs
+      // Try using a different CDN with specific module format flags
+      console.log("Initializing SQL.js with JSDelivr CDN...");
       BaseDatabaseManager.initPromise = initSqlJs({
-        locateFile: file => `https://unpkg.com/sql.js@1.8.0/dist/${file}`
+        locateFile: file => `https://cdn.jsdelivr.net/npm/sql.js@1.8.0/dist/${file}`
       });
       
       try {
@@ -47,17 +47,33 @@ export class BaseDatabaseManager {
         console.log("Database initialized successfully with new SQL instance");
         return true;
       } catch (initError) {
-        console.error("Failed to initialize SQL.js:", initError);
-        toast({
-          variant: "destructive",
-          title: "Database Error",
-          description: "Unable to load the database engine. Please refresh and try again."
+        console.error("Failed to initialize SQL.js from JSDelivr, trying unpkg fallback:", initError);
+        
+        // Fallback to unpkg
+        BaseDatabaseManager.initPromise = initSqlJs({
+          locateFile: file => `https://unpkg.com/sql.js@1.8.0/dist/${file}`
         });
-        this.initialized = false;
-        this.db = null;
-        BaseDatabaseManager.initializing = false;
-        BaseDatabaseManager.initPromise = null;
-        return false;
+        
+        try {
+          const SQL = await BaseDatabaseManager.initPromise;
+          console.log("SQL.js loaded successfully from unpkg fallback");
+          this.db = new SQL.Database();
+          this.initialized = true;
+          console.log("Database initialized successfully with fallback SQL instance");
+          return true;
+        } catch (fallbackError) {
+          console.error("Failed to initialize SQL.js with fallback:", fallbackError);
+          toast({
+            variant: "destructive",
+            title: "Database Error",
+            description: "Unable to load the database engine. Please refresh and try again."
+          });
+          this.initialized = false;
+          this.db = null;
+          BaseDatabaseManager.initializing = false;
+          BaseDatabaseManager.initPromise = null;
+          return false;
+        }
       }
     } catch (err) {
       console.error('Error in database initialization process:', err);
