@@ -1,3 +1,4 @@
+
 import initSqlJs from 'sql.js';
 import { toast } from "@/components/ui/use-toast";
 
