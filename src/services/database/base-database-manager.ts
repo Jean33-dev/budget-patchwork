@@ -1,4 +1,3 @@
-
 import initSqlJs from 'sql.js';
 import { toast } from "@/components/ui/use-toast";
 
@@ -17,37 +16,32 @@ export class BaseDatabaseManager {
       // Use a shared initialization promise to prevent multiple concurrent initializations
       if (BaseDatabaseManager.initializing && BaseDatabaseManager.initPromise) {
         console.log("Database initialization already in progress, waiting...");
-        const SQL = await BaseDatabaseManager.initPromise;
-        if (SQL) {
-          this.db = new SQL.Database();
-          this.initialized = true;
-          console.log("Database initialized from existing promise");
-          return true;
+        try {
+          const SQL = await BaseDatabaseManager.initPromise;
+          if (SQL) {
+            this.db = new SQL.Database();
+            this.initialized = true;
+            console.log("Database initialized from existing promise");
+            return true;
+          }
+        } catch (error) {
+          console.error("Error while waiting for existing initialization:", error);
+          BaseDatabaseManager.initializing = false;
+          BaseDatabaseManager.initPromise = null;
         }
       }
       
       BaseDatabaseManager.initializing = true;
       
       // Create a new initialization promise
-      BaseDatabaseManager.initPromise = new Promise((resolve, reject) => {
-        // Try using a more reliable CDN with a specific version
-        initSqlJs({
-          locateFile: file => `https://unpkg.com/sql.js@1.8.0/dist/${file}`
-        })
-        .then(SQL => {
-          console.log("SQL.js loaded successfully");
-          resolve(SQL);
-        })
-        .catch(err => {
-          console.error('SQL.js initialization error:', err);
-          BaseDatabaseManager.initializing = false;
-          BaseDatabaseManager.initPromise = null;
-          reject(err);
-        });
+      BaseDatabaseManager.initPromise = initSqlJs({
+        // Use CDNJS instead of unpkg as it might be more reliable
+        locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${file}`
       });
       
       try {
         const SQL = await BaseDatabaseManager.initPromise;
+        console.log("SQL.js loaded successfully");
         this.db = new SQL.Database();
         this.initialized = true;
         console.log("Database initialized successfully with new SQL instance");
@@ -62,6 +56,7 @@ export class BaseDatabaseManager {
         this.initialized = false;
         this.db = null;
         BaseDatabaseManager.initializing = false;
+        BaseDatabaseManager.initPromise = null;
         return false;
       }
     } catch (err) {

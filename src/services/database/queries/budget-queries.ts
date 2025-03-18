@@ -1,3 +1,4 @@
+
 import { Budget } from '../models/budget';
 import { toast } from "@/components/ui/use-toast";
 
@@ -26,7 +27,8 @@ export const budgetQueries = {
   expenseSampleData: (currentDate: string) => `
     INSERT OR IGNORE INTO expenses (id, title, budget, spent, type, linkedBudgetId, date)
     VALUES 
-    (?, ?, ?, ?, ?, ?, ?)
+    ('exp_1', 'Courses Carrefour', 100.00, 100.00, 'expense', 'bud_1', '${currentDate}'),
+    ('exp_2', 'Metro', 25.00, 25.00, 'expense', 'bud_2', '${currentDate}')
   `,
   
   getAll: (db: any): Budget[] => {
@@ -43,6 +45,7 @@ export const budgetQueries = {
         console.log("Budgets table created or already exists");
       } catch (tableError) {
         console.error("Error creating budgets table:", tableError);
+        throw tableError;
       }
       
       // Use a more robust query approach with better error handling

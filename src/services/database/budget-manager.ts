@@ -26,28 +26,47 @@ export class BudgetManager extends BaseDatabaseManager {
         console.log("Budget table initialized or verified");
       } catch (tableError) {
         console.error("Error creating/checking budget table:", tableError);
+        toast({
+          variant: "destructive",
+          title: "Database Error",
+          description: "Could not create the budgets table."
+        });
+        return [];
       }
       
-      const budgets = budgetQueries.getAll(this.db);
-      console.log("Budgets fetched successfully:", budgets.length);
-      
-      // If no budgets, add sample data
-      if (budgets.length === 0) {
-        try {
-          console.log("Adding sample budget data");
-          const currentDate = new Date().toISOString().split('T')[0];
-          this.db.exec(budgetQueries.sampleData(currentDate));
-          
-          // Fetch again after adding sample data
-          const refreshedBudgets = budgetQueries.getAll(this.db);
-          console.log("Sample budgets added:", refreshedBudgets.length);
-          return refreshedBudgets;
-        } catch (sampleError) {
-          console.error("Error adding sample budget data:", sampleError);
+      try {
+        const budgets = budgetQueries.getAll(this.db);
+        console.log("Budgets fetched successfully:", budgets.length);
+        
+        // If no budgets, add sample data
+        if (budgets.length === 0) {
+          try {
+            console.log("Adding sample budget data");
+            const currentDate = new Date().toISOString().split('T')[0];
+            const sampleData = budgetQueries.sampleData(currentDate);
+            this.db.exec(sampleData);
+            
+            // Fetch again after adding sample data
+            const refreshedBudgets = budgetQueries.getAll(this.db);
+            console.log("Sample budgets added:", refreshedBudgets.length);
+            return refreshedBudgets;
+          } catch (sampleError) {
+            console.error("Error adding sample budget data:", sampleError);
+            // Even if sample data fails, return empty array instead of throwing
+            return [];
+          }
         }
+        
+        return budgets;
+      } catch (queryError) {
+        console.error("Error executing budget query:", queryError);
+        toast({
+          variant: "destructive",
+          title: "Database Error",
+          description: "Could not retrieve budgets from the database."
+        });
+        return [];
       }
-      
-      return budgets;
     } catch (error) {
       console.error("Error retrieving budgets:", error);
       toast({
