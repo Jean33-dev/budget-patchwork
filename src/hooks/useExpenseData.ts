@@ -8,11 +8,17 @@ import { Budget } from "@/types/categories";
 export const useExpenseData = (budgetId: string | null) => {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [availableBudgets, setAvailableBudgets] = useState<Budget[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); // Start with loading state true
   const [error, setError] = useState<Error | null>(null);
 
   const loadBudgets = useCallback(async () => {
     try {
+      // Force database initialization
+      const dbInitialized = await db.init();
+      if (!dbInitialized) {
+        throw new Error("Failed to initialize database");
+      }
+      
       // Load budgets
       const loadedBudgets = await db.getBudgets();
       console.log('Budgets loaded:', loadedBudgets);
@@ -55,6 +61,12 @@ export const useExpenseData = (budgetId: string | null) => {
 
   const loadExpenses = useCallback(async () => {
     try {
+      // Force database initialization
+      const dbInitialized = await db.init();
+      if (!dbInitialized) {
+        throw new Error("Failed to initialize database");
+      }
+      
       // Load expenses
       const loadedExpenses = await db.getExpenses();
       console.log('Expenses loaded:', loadedExpenses);
@@ -72,6 +84,14 @@ export const useExpenseData = (budgetId: string | null) => {
     setError(null);
     
     try {
+      console.log("Forcing database initialization before loading data...");
+      // Explicitly initialize the database first
+      const dbInitialized = await db.init();
+      
+      if (!dbInitialized) {
+        throw new Error("Failed to initialize database");
+      }
+      
       const budgetsLoaded = await loadBudgets();
       const expensesLoaded = await loadExpenses();
       
@@ -85,6 +105,7 @@ export const useExpenseData = (budgetId: string | null) => {
         title: "Erreur",
         description: "Impossible de charger les données"
       });
+      setError(error instanceof Error ? error : new Error("Failed to load data"));
     } finally {
       setIsLoading(false);
     }
@@ -92,6 +113,7 @@ export const useExpenseData = (budgetId: string | null) => {
 
   // Load data on component mount
   useEffect(() => {
+    console.log("useExpenseData: Loading data on mount");
     loadData();
   }, [budgetId, loadData]);
 
