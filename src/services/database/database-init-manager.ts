@@ -8,11 +8,14 @@ import { toast } from "@/components/ui/use-toast";
 
 export class DatabaseInitManager extends BaseDatabaseManager {
   async init() {
-    if (this.initialized) return;
+    if (this.initialized) return true;
 
     try {
       // Initialize the base class
-      await super.init();
+      const success = await super.init();
+      if (!success) {
+        return false;
+      }
       
       console.log("Creating database tables...");
       
@@ -47,6 +50,8 @@ export class DatabaseInitManager extends BaseDatabaseManager {
         title: "Base de données initialisée",
         description: "La base de données a été initialisée avec succès."
       });
+      
+      return true;
 
     } catch (err) {
       console.error('Erreur lors de l\'initialisation de la base de données:', err);
