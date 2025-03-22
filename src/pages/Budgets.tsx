@@ -1,16 +1,16 @@
 
 import { useNavigate } from "react-router-dom";
 import { EnvelopeList } from "@/components/budget/EnvelopeList";
-import { AddEnvelopeDialog } from "@/components/budget/AddEnvelopeDialog";
 import { useState, useEffect } from "react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { BudgetsHeader } from "@/components/budget/BudgetsHeader";
-import { EditBudgetDialog } from "@/components/budget/EditBudgetDialog";
-import { DeleteBudgetDialog } from "@/components/budget/DeleteBudgetDialog";
 import { useBudgets, Budget } from "@/hooks/useBudgets";
 import { db } from "@/services/database";
-import { Loader2, RotateCw } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { BudgetLoadingState } from "@/components/budget/BudgetLoadingState";
+import { BudgetErrorState } from "@/components/budget/BudgetErrorState";
+import { RemainingAmountAlert } from "@/components/budget/RemainingAmountAlert";
+import { RefreshButton } from "@/components/budget/RefreshButton";
+import { EmptyBudgetState } from "@/components/budget/EmptyBudgetState";
+import { BudgetDialogs } from "@/components/budget/BudgetDialogs";
 
 const Budgets = () => {
   const navigate = useNavigate();
@@ -112,81 +112,24 @@ const Budgets = () => {
   };
 
   if (isLoading) {
-    return (
-      <div className="container mx-auto px-4 py-6 flex flex-col items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
-        <p className="text-muted-foreground">Chargement des budgets...</p>
-      </div>
-    );
+    return <BudgetLoadingState />;
   }
 
   if (error) {
-    return (
-      <div className="container mx-auto px-4 py-6">
-        <BudgetsHeader onNavigate={navigate} />
-        <Alert variant="destructive" className="mt-4">
-          <AlertDescription>
-            Erreur lors du chargement des budgets. Veuillez rafraîchir la page.
-          </AlertDescription>
-        </Alert>
-        <Button 
-          onClick={handleManualRefresh} 
-          className="mt-4"
-          variant="outline"
-          disabled={isRefreshing}
-        >
-          {isRefreshing ? (
-            <>
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              Rafraîchissement...
-            </>
-          ) : (
-            <>
-              <RotateCw className="h-4 w-4 mr-2" />
-              Réessayer
-            </>
-          )}
-        </Button>
-      </div>
-    );
+    return <BudgetErrorState onRefresh={handleManualRefresh} isRefreshing={isRefreshing} />;
   }
 
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
       <div className="flex justify-between items-center">
         <BudgetsHeader onNavigate={navigate} />
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleManualRefresh}
-          disabled={isRefreshing}
-        >
-          {isRefreshing ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <RotateCw className="h-4 w-4" />
-          )}
-          <span className="ml-2 hidden sm:inline">Actualiser</span>
-        </Button>
+        <RefreshButton onRefresh={handleManualRefresh} isRefreshing={isRefreshing} />
       </div>
 
-      <div className="space-y-4">
-        <div className={`text-sm font-medium ${remainingAmount < 0 ? 'text-red-500' : ''}`}>
-          Montant restant à répartir : {Number.isFinite(remainingAmount) ? remainingAmount.toFixed(2) : "0.00"}€
-        </div>
-        {remainingAmount < 0 && (
-          <Alert variant="destructive" className="py-2">
-            <AlertDescription>
-              Le total des budgets dépasse vos revenus. Veuillez réduire certains budgets.
-            </AlertDescription>
-          </Alert>
-        )}
-      </div>
+      <RemainingAmountAlert remainingAmount={remainingAmount} />
 
       {budgets.length === 0 ? (
-        <div className="text-center py-8 bg-muted/20 rounded-lg">
-          <p className="text-muted-foreground">Aucun budget trouvé. Créez votre premier budget en cliquant sur "Ajouter un budget".</p>
-        </div>
+        <EmptyBudgetState />
       ) : (
         <EnvelopeList
           envelopes={budgets}
@@ -198,28 +141,22 @@ const Budgets = () => {
         />
       )}
 
-      <AddEnvelopeDialog
-        type="budget"
-        open={addDialogOpen}
-        onOpenChange={setAddDialogOpen}
-        onAdd={handleAddEnvelope}
-      />
-
-      <EditBudgetDialog
-        open={editDialogOpen}
-        onOpenChange={setEditDialogOpen}
-        title={editTitle}
-        onTitleChange={setEditTitle}
-        budget={editBudget}
-        onBudgetChange={setEditBudget}
-        onSubmit={handleEditSubmit}
-      />
-
-      <DeleteBudgetDialog
-        open={deleteDialogOpen}
-        onOpenChange={setDeleteDialogOpen}
-        onConfirm={handleDeleteConfirm}
+      <BudgetDialogs
+        addDialogOpen={addDialogOpen}
+        setAddDialogOpen={setAddDialogOpen}
+        editDialogOpen={editDialogOpen}
+        setEditDialogOpen={setEditDialogOpen}
+        deleteDialogOpen={deleteDialogOpen}
+        setDeleteDialogOpen={setDeleteDialogOpen}
+        selectedBudget={selectedBudget}
+        editTitle={editTitle}
+        setEditTitle={setEditTitle}
+        editBudget={editBudget}
+        setEditBudget={setEditBudget}
         hasLinkedExpenses={hasLinkedExpenses}
+        handleAddEnvelope={handleAddEnvelope}
+        handleEditSubmit={handleEditSubmit}
+        handleDeleteConfirm={handleDeleteConfirm}
       />
     </div>
   );

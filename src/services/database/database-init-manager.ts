@@ -83,9 +83,13 @@ export class DatabaseInitManager extends BaseDatabaseManager {
 
   async migrateFromLocalStorage(): Promise<boolean> {
     try {
-      // The issue is here - we need to await the initialization and properly check the boolean result
+      // Fix for the TypeScript error: ensure we capture the boolean result and check it properly
       const initialized = await this.ensureInitialized();
-      if (!initialized || !this.db) {
+      if (!initialized) {
+        throw new Error("Database initialization failed");
+      }
+      
+      if (!this.db) {
         throw new Error("Database is null after initialization");
       }
       
