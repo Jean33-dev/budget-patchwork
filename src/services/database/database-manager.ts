@@ -25,10 +25,12 @@ export class DatabaseManager {
     this.categoryManager = new CategoryManager();
   }
 
-  async init() {
-    if (this.initialized) return;
+  async init(): Promise<boolean> {
+    if (this.initialized) return true;
     
     try {
+      console.log("Database manager initializing...");
+      
       // Initialize the database
       const success = await this.initManager.init();
       
@@ -36,10 +38,10 @@ export class DatabaseManager {
         console.error("Failed to initialize database");
         toast({
           variant: "destructive",
-          title: "Erreur de base de données",
-          description: "Impossible d'initialiser la base de données. Veuillez rafraîchir la page."
+          title: "Database error",
+          description: "Unable to initialize the database. Please refresh the page."
         });
-        return;
+        return false;
       }
       
       // Share the database instance with all managers using the new accessor methods
@@ -48,10 +50,10 @@ export class DatabaseManager {
         console.error("Database instance is null after initialization");
         toast({
           variant: "destructive",
-          title: "Erreur de base de données",
-          description: "Impossible d'initialiser la base de données. Veuillez rafraîchir la page."
+          title: "Database error",
+          description: "Unable to initialize the database. Please refresh the page."
         });
-        return;
+        return false;
       }
       
       this.incomeManager.setDb(dbInstance);
@@ -67,14 +69,15 @@ export class DatabaseManager {
       
       this.initialized = true;
       console.log("Database manager initialized successfully");
+      return true;
     } catch (err) {
-      console.error('Erreur lors de l\'initialisation de la base de données:', err);
+      console.error('Error initializing database manager:', err);
       toast({
         variant: "destructive",
-        title: "Erreur de base de données",
-        description: "Impossible d'initialiser la base de données. Veuillez rafraîchir la page."
+        title: "Database error",
+        description: "Unable to initialize the database. Please refresh the page."
       });
-      throw err;
+      return false;
     }
   }
 
@@ -115,27 +118,32 @@ export class DatabaseManager {
   }
 
   async getBudgets(): Promise<Budget[]> {
-    await this.ensureInitialized();
+    const success = await this.ensureInitialized();
+    if (!success) return [];
     return this.budgetManager.getBudgets();
   }
 
   async addBudget(budget: Budget) {
-    await this.ensureInitialized();
+    const success = await this.ensureInitialized();
+    if (!success) return;
     await this.budgetManager.addBudget(budget);
   }
 
   async updateBudget(budget: Budget) {
-    await this.ensureInitialized();
+    const success = await this.ensureInitialized();
+    if (!success) return;
     await this.budgetManager.updateBudget(budget);
   }
 
   async deleteBudget(id: string) {
-    await this.ensureInitialized();
+    const success = await this.ensureInitialized();
+    if (!success) return;
     await this.budgetManager.deleteBudget(id);
   }
 
   async getCategories(): Promise<Category[]> {
-    await this.ensureInitialized();
+    const success = await this.ensureInitialized();
+    if (!success) return [];
     return this.categoryManager.getCategories();
   }
 
@@ -171,19 +179,20 @@ export class DatabaseManager {
     return this.initManager.exportData();
   }
 
-  private async ensureInitialized() {
+  private async ensureInitialized(): Promise<boolean> {
     if (!this.initialized) {
       console.log("Database manager not initialized, initializing now...");
-      await this.init();
-      if (!this.initialized) {
+      const success = await this.init();
+      if (!success) {
         console.error("Failed to initialize database manager");
         toast({
           variant: "destructive",
-          title: "Erreur de base de données",
-          description: "Impossible d'initialiser la base de données. Veuillez rafraîchir la page."
+          title: "Database error",
+          description: "Unable to initialize the database. Please refresh the page."
         });
-        throw new Error("Failed to initialize database manager");
+        return false;
       }
     }
+    return true;
   }
 }

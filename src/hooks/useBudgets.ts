@@ -28,26 +28,32 @@ export const useBudgets = () => {
     setError(null);
     
     try {
-      console.log("Chargement des données de budget...");
+      console.log("Loading budget data...");
       
-      // S'assurer que la base de données est initialisée
-      await db.init();
+      // Force database initialization
+      const dbInitialized = await db.init();
       
-      // Chargement des budgets
+      if (!dbInitialized) {
+        throw new Error("Failed to initialize database");
+      }
+      
+      console.log("Database initialized, loading budgets...");
+      
+      // Load budgets
       const budgetsData = await db.getBudgets();
-      console.log("Budgets chargés:", budgetsData);
+      console.log("Budgets loaded:", budgetsData);
       
-      // Chargement des dépenses
+      // Load expenses
       const expenses = await db.getExpenses();
-      console.log("Dépenses totales chargées:", expenses);
+      console.log("Total expenses loaded:", expenses);
       
-      // Calcul du total des dépenses
+      // Calculate total expenses
       const totalSpent = expenses.reduce((sum, expense) => 
         sum + (Number(expense.budget) || 0), 0
       );
       setTotalExpenses(totalSpent);
       
-      // Mise à jour des budgets avec leurs dépenses associées
+      // Update budgets with their associated expenses
       const validatedBudgets = budgetsData.map(budget => {
         const budgetExpenses = expenses.filter(expense => 
           expense.linkedBudgetId === budget.id
@@ -65,24 +71,24 @@ export const useBudgets = () => {
       });
       
       setBudgets(validatedBudgets);
-      console.log("Budgets mis à jour avec dépenses:", validatedBudgets);
+      console.log("Budgets updated with expenses:", validatedBudgets);
 
-      // Chargement et calcul des revenus
+      // Load and calculate incomes
       const incomesData = await db.getIncomes();
       const totalIncome = incomesData.reduce((sum, income) => 
         sum + (Number(income.budget) || 0), 0
       );
       
       setTotalRevenues(totalIncome);
-      console.log("Revenus totaux calculés:", totalIncome);
+      console.log("Total revenues calculated:", totalIncome);
       
     } catch (error) {
-      console.error("Erreur lors du chargement des données:", error);
-      setError(error instanceof Error ? error : new Error("Erreur inconnue"));
+      console.error("Error loading data:", error);
+      setError(error instanceof Error ? error : new Error("Unknown error"));
       toast({
         variant: "destructive",
-        title: "Erreur",
-        description: "Impossible de charger les données"
+        title: "Error",
+        description: "Unable to load data"
       });
     } finally {
       setIsLoading(false);
