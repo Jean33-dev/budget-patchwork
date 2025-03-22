@@ -5,29 +5,64 @@ import { toast } from "@/components/ui/use-toast";
 export class BaseDatabaseManager {
   protected db: any = null;
   protected initialized = false;
+  private static initializationPromise: Promise<boolean> | null = null;
 
   async init() {
-    if (this.initialized && this.db) return true;
+    // Si l'initialisation est déjà en cours, attendez-la
+    if (BaseDatabaseManager.initializationPromise) {
+      console.log("Initialization already in progress, waiting for it to complete...");
+      return BaseDatabaseManager.initializationPromise;
+    }
 
+    // Si déjà initialisé et la base de données existe, retournez simplement true
+    if (this.initialized && this.db) {
+      console.log("Database already initialized.");
+      return true;
+    }
+
+    // Définir la promesse d'initialisation
+    BaseDatabaseManager.initializationPromise = this.performInitialization();
     try {
-      console.log("Initializing database...");
+      return await BaseDatabaseManager.initializationPromise;
+    } finally {
+      // Réinitialiser la promesse une fois l'initialisation terminée
+      BaseDatabaseManager.initializationPromise = null;
+    }
+  }
+
+  private async performInitialization(): Promise<boolean> {
+    try {
+      console.log("Starting database initialization...");
       
-      // Use unpkg CDN which is more reliable and supports CORS
-      const SQL = await initSqlJs({
-        // Provide fallback URLs to ensure we have a reliable source
-        locateFile: file => {
-          // Try multiple CDNs in case one fails
-          const cdnUrls = [
-            `https://unpkg.com/sql.js@1.8.0/dist/${file}`,
-            `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${file}`,
-            `https://cdn.jsdelivr.net/npm/sql.js@1.8.0/dist/${file}`
-          ];
-          
-          console.log(`Loading SQL.js file: ${file} from CDN`);
-          // Return the first CDN URL, the browser will try the next one if this fails
-          return cdnUrls[0];
+      // Chargement de SQL.js avec plusieurs CDN possibles
+      const cdnUrls = [
+        'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.wasm',
+        'https://cdn.jsdelivr.net/npm/sql.js@1.8.0/dist/sql-wasm.wasm',
+        'https://unpkg.com/sql.js@1.8.0/dist/sql-wasm.wasm'
+      ];
+      
+      let SQL = null;
+      let lastError = null;
+      
+      // Tenter chaque CDN jusqu'à ce que l'un fonctionne
+      for (const url of cdnUrls) {
+        try {
+          console.log(`Trying to load SQL.js from: ${url}`);
+          SQL = await initSqlJs({
+            locateFile: () => url
+          });
+          console.log(`Successfully loaded SQL.js from: ${url}`);
+          break; // Sortir de la boucle si le chargement réussit
+        } catch (err) {
+          console.error(`Failed to load SQL.js from ${url}:`, err);
+          lastError = err;
+          // Continuer avec l'URL suivante
         }
-      });
+      }
+      
+      if (!SQL) {
+        throw lastError || new Error("Failed to load SQL.js from any CDN");
+      }
       
       this.db = new SQL.Database();
       this.initialized = true;
@@ -36,7 +71,7 @@ export class BaseDatabaseManager {
       return true;
     } catch (err) {
       console.error('Erreur lors de l\'initialisation de la base de données:', err);
-      // Show more detailed error message in toast
+      // Afficher un message d'erreur plus détaillé
       toast({
         variant: "destructive",
         title: "Erreur de base de données",
@@ -49,7 +84,7 @@ export class BaseDatabaseManager {
     }
   }
 
-  // Modified to return boolean instead of void
+  // Modifiée pour retourner un booléen au lieu de void
   protected async ensureInitialized(): Promise<boolean> {
     if (!this.initialized || !this.db) {
       console.log("Database not initialized, initializing now...");

@@ -1,4 +1,3 @@
-
 import { BaseDatabaseManager } from './base-database-manager';
 import { incomeQueries } from './queries/income-queries';
 import { expenseQueries } from './queries/expense-queries';
@@ -8,11 +7,9 @@ import { toast } from "@/components/ui/use-toast";
 
 export class DatabaseInitManager extends BaseDatabaseManager {
   async init(): Promise<boolean> {
-    // Always try to initialize if db is null, even if initialized flag is true
-    if (this.initialized && this.db) return true;
-
     try {
-      // Initialize the base class
+      // Initialiser la classe de base
+      console.log("Initializing base database manager...");
       const success = await super.init();
       if (!success) {
         console.error("Failed to initialize base database manager");
@@ -21,17 +18,28 @@ export class DatabaseInitManager extends BaseDatabaseManager {
       
       console.log("Creating database tables...");
       
-      // Create tables
-      this.db.run(incomeQueries.createTable);
-      this.db.run(expenseQueries.createTable);
-      this.db.run(budgetQueries.createTable);
-      this.db.run(categoryQueries.createTable);
+      // Créer les tables avec gestion des erreurs
+      try {
+        this.db.run(incomeQueries.createTable);
+        this.db.run(expenseQueries.createTable);
+        this.db.run(budgetQueries.createTable);
+        this.db.run(categoryQueries.createTable);
+        console.log("Database tables created successfully");
+      } catch (tableError) {
+        console.error("Error creating database tables:", tableError);
+        toast({
+          variant: "destructive",
+          title: "Erreur de création des tables",
+          description: "Impossible de créer les tables dans la base de données."
+        });
+        return false;
+      }
 
-      // Add test data
+      // Ajouter des données de test
       const currentDate = new Date().toISOString().split('T')[0];
       
       try {
-        // Check if data already exists in tables
+        // Vérifier si des données existent déjà dans les tables
         const budgetsCheckResult = this.db.exec("SELECT COUNT(*) FROM budgets");
         const budgetsCount = budgetsCheckResult[0]?.values[0][0] || 0;
         
@@ -40,14 +48,14 @@ export class DatabaseInitManager extends BaseDatabaseManager {
         if (budgetsCount === 0) {
           console.log("No existing budgets, adding sample data...");
           
-          // Add budgets
+          // Ajouter des budgets
           const budgetInsertQuery = budgetQueries.sampleData(currentDate);
           this.db.run(budgetInsertQuery);
           console.log("Budget sample data added");
           
-          // Add expenses linked to budgets
+          // Ajouter des dépenses liées aux budgets
           const expenseInsertQuery = budgetQueries.expenseSampleData(currentDate);
-          // Prepare the statement with the current date for all parameters
+          // Préparer la requête avec la date actuelle pour tous les paramètres
           const stmt = this.db.prepare(expenseInsertQuery);
           stmt.run([currentDate, currentDate, currentDate, currentDate]);
           stmt.free();
@@ -59,6 +67,7 @@ export class DatabaseInitManager extends BaseDatabaseManager {
         }
       } catch (checkError) {
         console.error("Error checking or adding sample data:", checkError);
+        // Continue même en cas d'erreur avec les données d'exemple
       }
 
       console.log("Database initialized successfully");
