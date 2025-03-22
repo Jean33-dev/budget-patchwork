@@ -7,7 +7,7 @@ export class BaseDatabaseManager {
   protected initialized = false;
 
   async init() {
-    if (this.initialized) return true;
+    if (this.initialized && this.db) return true;
 
     try {
       console.log("Initializing database...");
@@ -51,7 +51,7 @@ export class BaseDatabaseManager {
 
   // Modified to return boolean instead of void
   protected async ensureInitialized(): Promise<boolean> {
-    if (!this.initialized) {
+    if (!this.initialized || !this.db) {
       console.log("Database not initialized, initializing now...");
       const success = await this.init();
       console.log("Database initialization status:", success);
@@ -82,7 +82,7 @@ export class BaseDatabaseManager {
 
   // Public getter for the initialized property
   isInitialized() {
-    return this.initialized;
+    return this.initialized && this.db !== null;
   }
 
   // Public setter for the initialized property

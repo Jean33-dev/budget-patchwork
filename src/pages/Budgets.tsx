@@ -11,6 +11,7 @@ import { RemainingAmountAlert } from "@/components/budget/RemainingAmountAlert";
 import { RefreshButton } from "@/components/budget/RefreshButton";
 import { EmptyBudgetState } from "@/components/budget/EmptyBudgetState";
 import { BudgetDialogs } from "@/components/budget/BudgetDialogs";
+import { toast } from "@/components/ui/use-toast";
 
 const Budgets = () => {
   const navigate = useNavigate();
@@ -25,23 +26,77 @@ const Budgets = () => {
   const [hasLinkedExpenses, setHasLinkedExpenses] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Force la base de données à s'initialiser au premier chargement
+  // Force database initialization on first load with multiple retries
   useEffect(() => {
     const ensureDbInitialized = async () => {
-      console.log("Initialisation forcée de la base de données...");
-      await db.init();
-      console.log("Base de données initialisée");
-      refreshData();
+      console.log("Starting database initialization process...");
+      setIsRefreshing(true);
+      
+      try {
+        // Try up to 3 times to initialize the database
+        let success = false;
+        for (let attempt = 1; attempt <= 3; attempt++) {
+          console.log(`Database initialization attempt ${attempt}...`);
+          success = await db.init();
+          if (success) {
+            console.log(`Database successfully initialized on attempt ${attempt}`);
+            break;
+          }
+          
+          if (attempt < 3) {
+            // Wait a bit before retrying
+            await new Promise(resolve => setTimeout(resolve, 1000));
+          }
+        }
+        
+        if (!success) {
+          toast({
+            variant: "destructive",
+            title: "Erreur d'initialisation",
+            description: "Impossible d'initialiser la base de données après plusieurs tentatives. Veuillez rafraîchir la page."
+          });
+        } else {
+          refreshData();
+        }
+      } catch (error) {
+        console.error("Error initializing database:", error);
+        toast({
+          variant: "destructive",
+          title: "Erreur d'initialisation",
+          description: "Une erreur s'est produite lors de l'initialisation de la base de données. Veuillez rafraîchir la page."
+        });
+      } finally {
+        setIsRefreshing(false);
+      }
     };
     
     ensureDbInitialized();
-  }, []);
+  }, [refreshData]);
 
   const handleManualRefresh = async () => {
     setIsRefreshing(true);
     try {
-      await db.init();
-      await refreshData();
+      const success = await db.init();
+      if (success) {
+        await refreshData();
+        toast({
+          title: "Actualisation terminée",
+          description: "Les données ont été rafraîchies avec succès."
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Erreur d'actualisation",
+          description: "Impossible d'initialiser la base de données. Veuillez réessayer."
+        });
+      }
+    } catch (error) {
+      console.error("Error during manual refresh:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur d'actualisation",
+        description: "Une erreur s'est produite lors de l'actualisation des données."
+      });
     } finally {
       setIsRefreshing(false);
     }

@@ -13,12 +13,6 @@ export const useExpenseData = (budgetId: string | null) => {
 
   const loadBudgets = useCallback(async () => {
     try {
-      // Force database initialization
-      const dbInitialized = await db.init();
-      if (!dbInitialized) {
-        throw new Error("Failed to initialize database");
-      }
-      
       // Load budgets
       const loadedBudgets = await db.getBudgets();
       console.log('Budgets loaded:', loadedBudgets);
@@ -61,12 +55,6 @@ export const useExpenseData = (budgetId: string | null) => {
 
   const loadExpenses = useCallback(async () => {
     try {
-      // Force database initialization
-      const dbInitialized = await db.init();
-      if (!dbInitialized) {
-        throw new Error("Failed to initialize database");
-      }
-      
       // Load expenses
       const loadedExpenses = await db.getExpenses();
       console.log('Expenses loaded:', loadedExpenses);
@@ -84,12 +72,27 @@ export const useExpenseData = (budgetId: string | null) => {
     setError(null);
     
     try {
-      console.log("Forcing database initialization before loading data...");
-      // Explicitly initialize the database first
-      const dbInitialized = await db.init();
+      console.log("Initializing database before loading data...");
+      // Explicitly initialize the database with multiple retries
+      let dbInitialized = false;
+      
+      // Try up to 3 times to initialize the database
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        console.log(`Database initialization attempt ${attempt}...`);
+        dbInitialized = await db.init();
+        if (dbInitialized) {
+          console.log(`Database successfully initialized on attempt ${attempt}`);
+          break;
+        }
+        
+        if (attempt < 3) {
+          // Wait a bit before retrying
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+      }
       
       if (!dbInitialized) {
-        throw new Error("Failed to initialize database");
+        throw new Error("Failed to initialize database after multiple attempts");
       }
       
       const budgetsLoaded = await loadBudgets();
@@ -103,7 +106,7 @@ export const useExpenseData = (budgetId: string | null) => {
       toast({
         variant: "destructive",
         title: "Erreur",
-        description: "Impossible de charger les données"
+        description: "Impossible de charger les données. Veuillez rafraîchir la page."
       });
       setError(error instanceof Error ? error : new Error("Failed to load data"));
     } finally {

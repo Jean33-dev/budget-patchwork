@@ -8,7 +8,8 @@ import { toast } from "@/components/ui/use-toast";
 
 export class DatabaseInitManager extends BaseDatabaseManager {
   async init(): Promise<boolean> {
-    if (this.initialized) return true;
+    // Always try to initialize if db is null, even if initialized flag is true
+    if (this.initialized && this.db) return true;
 
     try {
       // Initialize the base class
@@ -63,8 +64,8 @@ export class DatabaseInitManager extends BaseDatabaseManager {
       console.log("Database initialized successfully");
       
       toast({
-        title: "Database initialized",
-        description: "The database was successfully initialized."
+        title: "Base de données initialisée",
+        description: "La base de données a été initialisée avec succès."
       });
       
       this.initialized = true;
@@ -74,9 +75,11 @@ export class DatabaseInitManager extends BaseDatabaseManager {
       console.error('Error initializing database:', err);
       toast({
         variant: "destructive",
-        title: "Initialization error",
-        description: "Unable to initialize the database. Please refresh the page."
+        title: "Erreur d'initialisation",
+        description: "Impossible d'initialiser la base de données. Veuillez rafraîchir la page."
       });
+      this.initialized = false;
+      this.db = null;
       return false;
     }
   }
@@ -140,8 +143,8 @@ export class DatabaseInitManager extends BaseDatabaseManager {
       localStorage.removeItem('app_categories');
       
       toast({
-        title: "Migration complete",
-        description: "Data successfully migrated from localStorage."
+        title: "Migration terminée",
+        description: "Données migrées avec succès depuis localStorage."
       });
       
       return true;
@@ -149,8 +152,8 @@ export class DatabaseInitManager extends BaseDatabaseManager {
       console.error("Error migrating from localStorage:", error);
       toast({
         variant: "destructive",
-        title: "Migration error",
-        description: "Unable to migrate data from localStorage."
+        title: "Erreur de migration",
+        description: "Impossible de migrer les données depuis localStorage."
       });
       return false;
     }
