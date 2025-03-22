@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { NavigateFunction } from "react-router-dom";
 import { useBudgets, Budget } from "@/hooks/useBudgets";
@@ -17,22 +16,16 @@ export const useBudgetInteractions = (navigate: NavigateFunction) => {
 
   // Refresh data whenever database is initialized
   useEffect(() => {
-    // Safely check if isInitialized exists and is callable
+    // Safely check database initialization status
     const checkAndRefresh = async () => {
       try {
-        // First check if the method exists and is a function
-        if (typeof db.isInitialized === 'function' && db.isInitialized()) {
-          console.log("Database is initialized, refreshing data...");
-          refreshData();
-        } else {
-          console.log("Database not initialized yet, waiting...");
-          // Try to initialize it
-          await db.init();
-          refreshData();
-        }
+        // Always try to initialize the database first
+        await db.init();
+        console.log("Database initialization attempted, refreshing data...");
+        refreshData();
       } catch (error) {
-        console.error("Error checking database initialization:", error);
-        // Force refresh data anyway as a fallback
+        console.error("Error during database initialization:", error);
+        // Still try to refresh data even if initialization fails
         refreshData();
       }
     };

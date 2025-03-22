@@ -17,6 +17,7 @@ export class DatabaseManager {
   private budgetManager: BudgetManager;
   private categoryManager: CategoryManager;
   private initialized = false;
+  private initPromise: Promise<boolean> | null = null;
 
   constructor() {
     this.initManager = new DatabaseInitManager();
@@ -27,8 +28,32 @@ export class DatabaseManager {
   }
 
   async init(): Promise<boolean> {
-    if (this.initialized) return true;
+    // Si l'initialisation est déjà en cours, renvoyer la promesse existante
+    if (this.initPromise) {
+      console.log("Initialization already in progress, waiting for it to complete...");
+      return this.initPromise;
+    }
     
+    // Si déjà initialisé, renvoyer simplement true
+    if (this.initialized && this.initManager.isInitialized()) {
+      console.log("Database already initialized.");
+      return true;
+    }
+    
+    // Créer une nouvelle promesse d'initialisation
+    this.initPromise = this.performInit();
+    
+    try {
+      // Attendre que l'initialisation soit terminée
+      const result = await this.initPromise;
+      return result;
+    } finally {
+      // Réinitialiser la promesse une fois l'initialisation terminée
+      this.initPromise = null;
+    }
+  }
+
+  private async performInit(): Promise<boolean> {
     try {
       console.log("Database manager initializing...");
       
@@ -78,11 +103,11 @@ export class DatabaseManager {
         title: "Database error",
         description: "Unable to initialize the database. Please refresh the page."
       });
+      this.initialized = false;
       return false;
     }
   }
 
-  // Add this method to match the BaseDatabaseManager's isInitialized method
   isInitialized(): boolean {
     return this.initialized && this.initManager.isInitialized();
   }
