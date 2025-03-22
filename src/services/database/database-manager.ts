@@ -1,3 +1,4 @@
+
 import { toast } from "@/components/ui/use-toast";
 import { Income } from './models/income';
 import { Expense } from './models/expense';
@@ -79,6 +80,11 @@ export class DatabaseManager {
       });
       return false;
     }
+  }
+
+  // Add this method to match the BaseDatabaseManager's isInitialized method
+  isInitialized(): boolean {
+    return this.initialized && this.initManager.isInitialized();
   }
 
   async getIncomes(): Promise<Income[]> {

@@ -17,9 +17,27 @@ export const useBudgetInteractions = (navigate: NavigateFunction) => {
 
   // Refresh data whenever database is initialized
   useEffect(() => {
-    if (db.isInitialized()) {
-      refreshData();
-    }
+    // Safely check if isInitialized exists and is callable
+    const checkAndRefresh = async () => {
+      try {
+        // First check if the method exists and is a function
+        if (typeof db.isInitialized === 'function' && db.isInitialized()) {
+          console.log("Database is initialized, refreshing data...");
+          refreshData();
+        } else {
+          console.log("Database not initialized yet, waiting...");
+          // Try to initialize it
+          await db.init();
+          refreshData();
+        }
+      } catch (error) {
+        console.error("Error checking database initialization:", error);
+        // Force refresh data anyway as a fallback
+        refreshData();
+      }
+    };
+    
+    checkAndRefresh();
   }, [refreshData]);
 
   const handleEnvelopeClick = (envelope: Budget) => {
