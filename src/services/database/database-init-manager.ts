@@ -7,17 +7,12 @@ import { categoryQueries } from './queries/category-queries';
 import { toast } from "@/components/ui/use-toast";
 
 export class DatabaseInitManager extends BaseDatabaseManager {
-  async init(): Promise<boolean> {
-    if (this.initialized) return true;
+  async init() {
+    if (this.initialized) return;
 
     try {
       // Initialize the base class
-      console.log("Initializing BaseDatabaseManager...");
-      const success = await super.init();
-      if (!success) {
-        console.error("Failed to initialize base database manager");
-        return false;
-      }
+      await super.init();
       
       console.log("Creating database tables...");
       
@@ -30,47 +25,37 @@ export class DatabaseInitManager extends BaseDatabaseManager {
       // Add test data
       const currentDate = new Date().toISOString().split('T')[0];
       
-      try {
-        // Check if data already exists in the tables
-        const budgetsCheck = this.db.exec("SELECT COUNT(*) FROM budgets");
-        const budgetsCount = budgetsCheck[0]?.values[0][0] || 0;
-        
-        if (budgetsCount === 0) {
-          console.log("No existing budgets, adding test data...");
-          // Insert sample budgets
-          this.db.run(budgetQueries.sampleData(currentDate));
-          
-          // Insert sample expenses with proper parameter binding
-          const stmt = this.db.prepare(budgetQueries.expenseSampleData(currentDate));
-          stmt.bind([currentDate, currentDate, currentDate, currentDate]);
-          stmt.step();
-          stmt.free();
-          
-          console.log("Test data successfully added");
-        } else {
-          console.log(`${budgetsCount} budgets found, no need to add test data`);
-        }
-      } catch (error) {
-        console.error("Error checking or adding sample data:", error);
-        // Continue initialization even if sample data fails
+      // Vérifier si des données existent déjà dans les tables
+      const budgetsCheck = this.db.exec("SELECT COUNT(*) FROM budgets");
+      const budgetsCount = budgetsCheck[0]?.values[0][0] || 0;
+      
+      if (budgetsCount === 0) {
+        console.log("Pas de budgets existants, ajout des données de test...");
+        this.db.run(budgetQueries.sampleData(currentDate));
+        this.db.run(
+          budgetQueries.expenseSampleData(currentDate), 
+          [currentDate, currentDate, currentDate, currentDate]
+        );
+        console.log("Données de test ajoutées avec succès");
+      } else {
+        console.log(`${budgetsCount} budgets trouvés, pas besoin d'ajouter des données de test`);
       }
 
-      console.log("Database successfully initialized");
+      console.log("Base de données initialisée avec succès");
       
       toast({
-        title: "Database initialized",
-        description: "The database has been successfully initialized."
+        title: "Base de données initialisée",
+        description: "La base de données a été initialisée avec succès."
       });
 
-      return true;
     } catch (err) {
-      console.error('Error initializing database:', err);
+      console.error('Erreur lors de l\'initialisation de la base de données:', err);
       toast({
         variant: "destructive",
-        title: "Initialization Error",
-        description: "Unable to initialize the database. Please refresh the page."
+        title: "Erreur d'initialisation",
+        description: "Impossible d'initialiser la base de données. Veuillez rafraîchir la page."
       });
-      return false;
+      throw err;
     }
   }
 
@@ -82,7 +67,7 @@ export class DatabaseInitManager extends BaseDatabaseManager {
         throw new Error("Database is null after initialization");
       }
       
-      // Migrate incomes
+      // Migrer les revenus
       const storedIncomes = localStorage.getItem('app_incomes');
       if (storedIncomes) {
         const incomes = JSON.parse(storedIncomes);
@@ -91,7 +76,7 @@ export class DatabaseInitManager extends BaseDatabaseManager {
         }
       }
 
-      // Migrate expenses
+      // Migrer les dépenses
       const storedExpenses = localStorage.getItem('app_expenses');
       if (storedExpenses) {
         const expenses = JSON.parse(storedExpenses);
@@ -100,7 +85,7 @@ export class DatabaseInitManager extends BaseDatabaseManager {
         }
       }
 
-      // Migrate budgets
+      // Migrer les budgets
       const storedBudgets = localStorage.getItem('app_budgets');
       if (storedBudgets) {
         const budgets = JSON.parse(storedBudgets);
@@ -109,7 +94,7 @@ export class DatabaseInitManager extends BaseDatabaseManager {
         }
       }
 
-      // Migrate categories
+      // Migrer les catégories
       const storedCategories = localStorage.getItem('app_categories');
       if (storedCategories) {
         const categories = JSON.parse(storedCategories);
@@ -118,22 +103,22 @@ export class DatabaseInitManager extends BaseDatabaseManager {
         }
       }
 
-      // Remove old data from localStorage
+      // Supprimer les anciennes données du localStorage
       localStorage.removeItem('app_incomes');
       localStorage.removeItem('app_expenses');
       localStorage.removeItem('app_budgets');
       localStorage.removeItem('app_categories');
       
       toast({
-        title: "Migration complete",
-        description: "Data has been successfully migrated from localStorage."
+        title: "Migration terminée",
+        description: "Les données ont été migrées avec succès depuis le localStorage."
       });
     } catch (error) {
-      console.error("Error migrating from localStorage:", error);
+      console.error("Erreur lors de la migration depuis localStorage:", error);
       toast({
         variant: "destructive",
-        title: "Migration Error",
-        description: "Unable to migrate data from localStorage."
+        title: "Erreur de migration",
+        description: "Impossible de migrer les données depuis le localStorage."
       });
     }
   }

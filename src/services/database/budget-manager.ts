@@ -1,3 +1,4 @@
+
 import { BaseDatabaseManager } from './base-database-manager';
 import { Budget } from './models/budget';
 import { budgetQueries } from './queries/budget-queries';
@@ -13,84 +14,21 @@ export class BudgetManager extends BaseDatabaseManager {
         console.error("Database is null after initialization");
         toast({
           variant: "destructive",
-          title: "Database Error",
-          description: "The database could not be properly initialized."
+          title: "Erreur de base de données",
+          description: "La base de données n'a pas pu être initialisée correctement."
         });
         return [];
       }
       
-      // Initialize the budgets table if it doesn't exist
-      try {
-        this.db.exec(budgetQueries.createTable);
-        console.log("Budget table initialized or verified");
-      } catch (tableError) {
-        console.error("Error creating/checking budget table:", tableError);
-        toast({
-          variant: "destructive",
-          title: "Database Error",
-          description: "Could not create the budgets table."
-        });
-        return [];
-      }
-      
-      try {
-        const budgets = budgetQueries.getAll(this.db);
-        console.log("Budgets fetched successfully:", budgets.length);
-        
-        // If no budgets, add sample data
-        if (budgets.length === 0) {
-          try {
-            console.log("Adding sample budget data");
-            
-            // Create a simple INSERT statement directly
-            try {
-              const sampleInsert = `
-                INSERT INTO budgets (id, title, budget, spent, type, carriedOver)
-                VALUES 
-                ('bud_1', 'Courses', 500.00, 150.00, 'budget', 0),
-                ('bud_2', 'Transport', 200.00, 50.00, 'budget', 0),
-                ('bud_3', 'Loisirs', 150.00, 30.00, 'budget', 0),
-                ('bud_4', 'Restaurant', 300.00, 100.00, 'budget', 0),
-                ('bud_5', 'Shopping', 250.00, 75.00, 'budget', 0)
-              `;
-              this.db.exec(sampleInsert);
-              console.log("Sample data inserted successfully");
-            } catch (insertError) {
-              console.error("Error inserting sample data:", insertError);
-            }
-            
-            // Fetch again after adding sample data
-            try {
-              const refreshedBudgets = budgetQueries.getAll(this.db);
-              console.log("Sample budgets added:", refreshedBudgets.length);
-              return refreshedBudgets;
-            } catch (refreshError) {
-              console.error("Error fetching refreshed budgets:", refreshError);
-              return [];
-            }
-          } catch (sampleError) {
-            console.error("Error adding sample budget data:", sampleError);
-            // Even if sample data fails, return empty array instead of throwing
-            return [];
-          }
-        }
-        
-        return budgets;
-      } catch (queryError) {
-        console.error("Error executing budget query:", queryError);
-        toast({
-          variant: "destructive",
-          title: "Database Error",
-          description: "Could not retrieve budgets from the database."
-        });
-        return [];
-      }
+      const budgets = budgetQueries.getAll(this.db);
+      console.log("Budgets fetched successfully:", budgets.length);
+      return budgets;
     } catch (error) {
-      console.error("Error retrieving budgets:", error);
+      console.error("Erreur lors de la récupération des budgets:", error);
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "Unable to retrieve budgets. Please refresh the page."
+        title: "Erreur",
+        description: "Impossible de récupérer les budgets. Veuillez rafraîchir la page."
       });
       return [];
     }
@@ -98,7 +36,7 @@ export class BudgetManager extends BaseDatabaseManager {
 
   async addBudget(budget: Budget) {
     try {
-      console.log("Adding new budget:", budget);
+      console.log("Ajout d'un nouveau budget:", budget);
       await this.ensureInitialized();
       
       if (!this.db) {
@@ -106,18 +44,18 @@ export class BudgetManager extends BaseDatabaseManager {
       }
       
       budgetQueries.add(this.db, budget);
-      console.log("Budget added successfully");
+      console.log("Budget ajouté avec succès");
       
       toast({
-        title: "Budget added",
-        description: `The budget "${budget.title}" has been added successfully.`
+        title: "Budget ajouté",
+        description: `Le budget "${budget.title}" a été ajouté avec succès.`
       });
     } catch (error) {
-      console.error("Error adding budget:", error);
+      console.error("Erreur lors de l'ajout du budget:", error);
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "Unable to add the budget. Please try again."
+        title: "Erreur",
+        description: "Impossible d'ajouter le budget. Veuillez réessayer."
       });
       throw error;
     }
@@ -125,7 +63,7 @@ export class BudgetManager extends BaseDatabaseManager {
 
   async updateBudget(budget: Budget) {
     try {
-      console.log("Updating budget:", budget);
+      console.log("Mise à jour du budget:", budget);
       await this.ensureInitialized();
       
       if (!this.db) {
@@ -133,18 +71,18 @@ export class BudgetManager extends BaseDatabaseManager {
       }
       
       budgetQueries.update(this.db, budget);
-      console.log("Budget updated successfully");
+      console.log("Budget mis à jour avec succès");
       
       toast({
-        title: "Budget updated",
-        description: `The budget "${budget.title}" has been updated successfully.`
+        title: "Budget mis à jour",
+        description: `Le budget "${budget.title}" a été mis à jour avec succès.`
       });
     } catch (error) {
-      console.error("Error updating budget:", error);
+      console.error("Erreur lors de la mise à jour du budget:", error);
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "Unable to update the budget. Please try again."
+        title: "Erreur",
+        description: "Impossible de mettre à jour le budget. Veuillez réessayer."
       });
       throw error;
     }
@@ -152,7 +90,7 @@ export class BudgetManager extends BaseDatabaseManager {
 
   async deleteBudget(id: string) {
     try {
-      console.log("Deleting budget:", id);
+      console.log("Suppression du budget:", id);
       await this.ensureInitialized();
       
       if (!this.db) {
@@ -160,18 +98,18 @@ export class BudgetManager extends BaseDatabaseManager {
       }
       
       budgetQueries.delete(this.db, id);
-      console.log("Budget deleted successfully");
+      console.log("Budget supprimé avec succès");
       
       toast({
-        title: "Budget deleted",
-        description: "The budget has been deleted successfully."
+        title: "Budget supprimé",
+        description: "Le budget a été supprimé avec succès."
       });
     } catch (error) {
-      console.error("Error deleting budget:", error);
+      console.error("Erreur lors de la suppression du budget:", error);
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "Unable to delete the budget. Please try again."
+        title: "Erreur",
+        description: "Impossible de supprimer le budget. Veuillez réessayer."
       });
       throw error;
     }

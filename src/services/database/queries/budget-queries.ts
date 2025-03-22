@@ -1,3 +1,4 @@
+
 import { Budget } from '../models/budget';
 import { toast } from "@/components/ui/use-toast";
 
@@ -16,69 +17,54 @@ export const budgetQueries = {
   sampleData: (currentDate: string) => `
     INSERT OR IGNORE INTO budgets (id, title, budget, spent, type, carriedOver)
     VALUES 
-    ('bud_1', 'Courses', 500.00, 150.00, 'budget', 0),
-    ('bud_2', 'Transport', 200.00, 50.00, 'budget', 0),
-    ('bud_3', 'Loisirs', 150.00, 30.00, 'budget', 0),
-    ('bud_4', 'Restaurant', 300.00, 100.00, 'budget', 0),
-    ('bud_5', 'Shopping', 250.00, 75.00, 'budget', 0)
+    ('bud_1', 'Courses', 500.00, 600.00, 'budget', 0),
+    ('bud_2', 'Transport', 200.00, 0.00, 'budget', 0),
+    ('bud_3', 'Loisirs', 150.00, 0.00, 'budget', 0),
+    ('bud_4', 'Restaurant', 300.00, 150.00, 'budget', 0),
+    ('bud_5', 'Shopping', 250.00, 100.00, 'budget', 0)
   `,
   
   expenseSampleData: (currentDate: string) => `
     INSERT OR IGNORE INTO expenses (id, title, budget, spent, type, linkedBudgetId, date)
     VALUES 
-    ('exp_1', 'Courses Carrefour', 100.00, 100.00, 'expense', 'bud_1', '${currentDate}'),
-    ('exp_2', 'Metro', 25.00, 25.00, 'expense', 'bud_2', '${currentDate}')
+    ('exp_1', 'Courses Carrefour', 350.00, 0, 'expense', 'bud_1', ?),
+    ('exp_2', 'Courses Lidl', 250.00, 0, 'expense', 'bud_1', ?),
+    ('exp_3', 'Restaurant italien', 150.00, 0, 'expense', 'bud_4', ?),
+    ('exp_4', 'Vêtements', 100.00, 0, 'expense', 'bud_5', ?)
   `,
   
   getAll: (db: any): Budget[] => {
     try {
-      console.log("Executing query to retrieve all budgets");
+      console.log("Exécution de la requête pour récupérer tous les budgets");
       if (!db) {
-        console.error("Error: Database is null");
+        console.error("Erreur: La base de données est null");
         return [];
       }
       
-      // First check if the table exists
-      try {
-        db.exec(budgetQueries.createTable);
-        console.log("Budgets table created or already exists");
-      } catch (tableError) {
-        console.error("Error creating budgets table:", tableError);
-        throw tableError;
-      }
-      
-      // Use a more robust query approach with better error handling
-      let result;
-      try {
-        result = db.exec('SELECT * FROM budgets');
-        console.log("Budget query execution successful");
-      } catch (sqlError) {
-        console.error("SQL error when selecting budgets:", sqlError);
-        return [];
-      }
+      const result = db.exec('SELECT * FROM budgets');
       
       if (!result || result.length === 0) {
-        console.log("No budgets found in database");
+        console.log("Aucun budget trouvé dans la base de données");
         return [];
       }
       
       const budgets = result[0]?.values?.map((row: any[]) => ({
         id: row[0],
         title: row[1],
-        budget: parseFloat(row[2]) || 0,
-        spent: parseFloat(row[3]) || 0,
+        budget: row[2],
+        spent: row[3],
         type: row[4] as 'budget',
-        carriedOver: parseFloat(row[5]) || 0
+        carriedOver: row[5] || 0
       })) || [];
       
-      console.log(`${budgets.length} budgets successfully retrieved`);
+      console.log(`${budgets.length} budgets récupérés avec succès`);
       return budgets;
     } catch (error) {
-      console.error("Error retrieving budgets:", error);
+      console.error("Erreur lors de la récupération des budgets:", error);
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "Unable to retrieve budgets from the database."
+        title: "Erreur",
+        description: "Impossible de récupérer les budgets depuis la base de données."
       });
       return [];
     }
@@ -86,10 +72,10 @@ export const budgetQueries = {
   
   add: (db: any, budget: Budget): void => {
     try {
-      console.log("Adding new budget:", budget);
+      console.log("Ajout d'un nouveau budget:", budget);
       
       if (!budget || !budget.id || !budget.title) {
-        throw new Error("Invalid budget data for addition");
+        throw new Error("Données de budget invalides pour l'ajout");
       }
       
       const stmt = db.prepare(
@@ -106,9 +92,9 @@ export const budgetQueries = {
       ]);
       
       stmt.free();
-      console.log("Budget successfully added:", budget.title);
+      console.log("Budget ajouté avec succès:", budget.title);
     } catch (error) {
-      console.error("Error adding budget:", error);
+      console.error("Erreur lors de l'ajout du budget:", error);
       throw error;
     }
   },

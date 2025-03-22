@@ -5,96 +5,41 @@ import { toast } from "@/components/ui/use-toast";
 export class BaseDatabaseManager {
   protected db: any = null;
   protected initialized = false;
-  private static initializing = false;
-  private static initPromise: Promise<any> | null = null;
 
-  async init(): Promise<boolean> {
-    if (this.initialized && this.db) return true;
+  async init() {
+    if (this.initialized) return;
 
     try {
       console.log("Initializing database...");
-      
-      // Use a shared initialization promise to prevent multiple concurrent initializations
-      if (BaseDatabaseManager.initializing && BaseDatabaseManager.initPromise) {
-        console.log("Database initialization already in progress, waiting...");
-        try {
-          const SQL = await BaseDatabaseManager.initPromise;
-          if (SQL) {
-            this.db = new SQL.Database();
-            this.initialized = true;
-            console.log("Database initialized from existing promise");
-            return true;
-          }
-        } catch (error) {
-          console.error("Error while waiting for existing initialization:", error);
-          BaseDatabaseManager.initializing = false;
-          BaseDatabaseManager.initPromise = null;
-        }
-      }
-      
-      BaseDatabaseManager.initializing = true;
-      
-      // Try using a different CDN with specific module format flags
-      console.log("Initializing SQL.js with JSDelivr CDN...");
-      BaseDatabaseManager.initPromise = initSqlJs({
+      // Use a more reliable CDN for WebAssembly file
+      const SQL = await initSqlJs({
+        // Use jsdelivr CDN which is more reliable
         locateFile: file => `https://cdn.jsdelivr.net/npm/sql.js@1.8.0/dist/${file}`
       });
       
-      try {
-        const SQL = await BaseDatabaseManager.initPromise;
-        console.log("SQL.js loaded successfully");
-        this.db = new SQL.Database();
-        this.initialized = true;
-        console.log("Database initialized successfully with new SQL instance");
-        return true;
-      } catch (initError) {
-        console.error("Failed to initialize SQL.js from JSDelivr, trying unpkg fallback:", initError);
-        
-        // Fallback to unpkg
-        BaseDatabaseManager.initPromise = initSqlJs({
-          locateFile: file => `https://unpkg.com/sql.js@1.8.0/dist/${file}`
-        });
-        
-        try {
-          const SQL = await BaseDatabaseManager.initPromise;
-          console.log("SQL.js loaded successfully from unpkg fallback");
-          this.db = new SQL.Database();
-          this.initialized = true;
-          console.log("Database initialized successfully with fallback SQL instance");
-          return true;
-        } catch (fallbackError) {
-          console.error("Failed to initialize SQL.js with fallback:", fallbackError);
-          toast({
-            variant: "destructive",
-            title: "Database Error",
-            description: "Unable to load the database engine. Please refresh and try again."
-          });
-          this.initialized = false;
-          this.db = null;
-          BaseDatabaseManager.initializing = false;
-          BaseDatabaseManager.initPromise = null;
-          return false;
-        }
-      }
+      this.db = new SQL.Database();
+      this.initialized = true;
+      console.log("Database initialized successfully");
+      
+      return true;
     } catch (err) {
-      console.error('Error in database initialization process:', err);
+      console.error('Erreur lors de l\'initialisation de la base de données:', err);
+      // Show more detailed error message in toast
       toast({
         variant: "destructive",
-        title: "Database Error",
-        description: "Unable to load the database engine. Please refresh the page."
+        title: "Erreur de base de données",
+        description: "Impossible de charger le moteur de base de données. Veuillez rafraîchir la page."
       });
       
       this.initialized = false;
       this.db = null;
-      BaseDatabaseManager.initializing = false;
-      BaseDatabaseManager.initPromise = null;
       return false;
     }
   }
 
   // Helper to ensure database is initialized before operations
   protected async ensureInitialized() {
-    if (!this.initialized || !this.db) {
+    if (!this.initialized) {
       console.log("Database not initialized, initializing now...");
       const success = await this.init();
       console.log("Database initialization status:", success);
