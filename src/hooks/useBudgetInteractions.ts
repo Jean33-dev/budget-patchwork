@@ -1,8 +1,8 @@
-
 import { useState, useEffect } from "react";
 import { NavigateFunction } from "react-router-dom";
 import { useBudgets, Budget } from "@/hooks/useBudgets";
 import { db } from "@/services/database";
+import { toast } from "@/components/ui/use-toast";
 
 export const useBudgetInteractions = (navigate: NavigateFunction) => {
   const { budgets, remainingAmount, addBudget, updateBudget, deleteBudget, isLoading, error, refreshData } = useBudgets();
@@ -14,24 +14,56 @@ export const useBudgetInteractions = (navigate: NavigateFunction) => {
   const [editTitle, setEditTitle] = useState("");
   const [editBudget, setEditBudget] = useState(0);
   const [hasLinkedExpenses, setHasLinkedExpenses] = useState(false);
+  const [initializationAttempted, setInitializationAttempted] = useState(false);
 
   // Refresh data whenever component mounts
   useEffect(() => {
     const initializeAndRefresh = async () => {
       try {
-        // Always attempt to initialize the database first
-        await db.init();
+        if (!initializationAttempted) {
+          setInitializationAttempted(true);
+          
+          console.log("Starting database initialization...");
+          // Try to initialize database up to 3 times
+          let success = false;
+          for (let attempt = 1; attempt <= 3; attempt++) {
+            console.log(`Database initialization attempt ${attempt}...`);
+            success = await db.init();
+            if (success) {
+              console.log(`Database initialized successfully on attempt ${attempt}`);
+              break;
+            }
+            // Wait a bit before retrying if not the last attempt
+            if (attempt < 3) {
+              await new Promise(resolve => setTimeout(resolve, 500));
+            }
+          }
+          
+          if (!success) {
+            console.error("Failed to initialize database after multiple attempts");
+            toast({
+              variant: "destructive",
+              title: "Database error",
+              description: "Unable to initialize the database. Please refresh the page."
+            });
+            return;
+          }
+        }
+        
         console.log("Database initialization completed, refreshing data...");
-        refreshData();
+        await refreshData();
       } catch (error) {
-        console.error("Error during database initialization:", error);
-        // Still try to refresh data even if initialization fails
-        refreshData();
+        console.error("Error during initialization or data refresh:", error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "An error occurred while loading budget data."
+        });
       }
     };
     
     initializeAndRefresh();
-  }, [refreshData]);
+  }, [refreshData, initializationAttempted]);
 
   const handleEnvelopeClick = (envelope: Budget) => {
     setSelectedBudget(envelope);

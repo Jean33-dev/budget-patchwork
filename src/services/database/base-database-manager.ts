@@ -8,24 +8,24 @@ export class BaseDatabaseManager {
   private static initializationPromise: Promise<boolean> | null = null;
 
   async init() {
-    // Si l'initialisation est déjà en cours, attendez-la
+    // If initialization is already in progress, wait for it
     if (BaseDatabaseManager.initializationPromise) {
       console.log("Initialization already in progress, waiting for it to complete...");
       return BaseDatabaseManager.initializationPromise;
     }
 
-    // Si déjà initialisé et la base de données existe, retournez simplement true
+    // If already initialized and the database exists, simply return true
     if (this.initialized && this.db) {
       console.log("Database already initialized.");
       return true;
     }
 
-    // Définir la promesse d'initialisation
+    // Set the initialization promise
     BaseDatabaseManager.initializationPromise = this.performInitialization();
     try {
       return await BaseDatabaseManager.initializationPromise;
     } finally {
-      // Réinitialiser la promesse une fois l'initialisation terminée
+      // Reset the promise once initialization is complete
       BaseDatabaseManager.initializationPromise = null;
     }
   }
@@ -34,7 +34,7 @@ export class BaseDatabaseManager {
     try {
       console.log("Starting database initialization...");
       
-      // Chargement de SQL.js avec plusieurs CDN possibles
+      // Load SQL.js with multiple possible CDNs
       const cdnUrls = [
         'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.wasm',
         'https://cdn.jsdelivr.net/npm/sql.js@1.8.0/dist/sql-wasm.wasm',
@@ -44,7 +44,7 @@ export class BaseDatabaseManager {
       let SQL = null;
       let lastError = null;
       
-      // Tenter chaque CDN jusqu'à ce que l'un fonctionne
+      // Try each CDN until one works
       for (const url of cdnUrls) {
         try {
           console.log(`Trying to load SQL.js from: ${url}`);
@@ -52,11 +52,11 @@ export class BaseDatabaseManager {
             locateFile: () => url
           });
           console.log(`Successfully loaded SQL.js from: ${url}`);
-          break; // Sortir de la boucle si le chargement réussit
+          break; // Exit the loop if loading succeeds
         } catch (err) {
           console.error(`Failed to load SQL.js from ${url}:`, err);
           lastError = err;
-          // Continuer avec l'URL suivante
+          // Continue with the next URL
         }
       }
       
@@ -70,12 +70,12 @@ export class BaseDatabaseManager {
       
       return true;
     } catch (err) {
-      console.error('Erreur lors de l\'initialisation de la base de données:', err);
-      // Afficher un message d'erreur plus détaillé
+      console.error('Error initializing database:', err);
+      // Display a more detailed error message
       toast({
         variant: "destructive",
-        title: "Erreur de base de données",
-        description: "Impossible de charger le moteur de base de données. Veuillez rafraîchir la page."
+        title: "Database error",
+        description: "Unable to load the database engine. Please refresh the page."
       });
       
       this.initialized = false;
@@ -84,7 +84,7 @@ export class BaseDatabaseManager {
     }
   }
 
-  // Modifiée pour retourner un booléen au lieu de void
+  // Modified to return a boolean instead of void
   protected async ensureInitialized(): Promise<boolean> {
     if (!this.initialized || !this.db) {
       console.log("Database not initialized, initializing now...");
