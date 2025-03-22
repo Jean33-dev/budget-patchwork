@@ -49,21 +49,24 @@ export class BaseDatabaseManager {
     }
   }
 
-  // Helper to ensure database is initialized before operations
-  protected async ensureInitialized() {
+  // Modified to return boolean instead of void
+  protected async ensureInitialized(): Promise<boolean> {
     if (!this.initialized) {
       console.log("Database not initialized, initializing now...");
       const success = await this.init();
       console.log("Database initialization status:", success);
       if (!success) {
-        throw new Error("Failed to initialize database");
+        console.error("Failed to initialize database");
+        return false;
       }
     }
     
     if (!this.db) {
       console.error("Database object is null after initialization");
-      throw new Error("Database object is null");
+      return false;
     }
+    
+    return true;
   }
 
   // Public getter for the db property

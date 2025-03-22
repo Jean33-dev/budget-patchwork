@@ -93,7 +93,7 @@ export class DatabaseInitManager extends BaseDatabaseManager {
       }
       
       if (!this.db) {
-        console.error("Database is null after initialization");
+        console.error("Database instance is null after initialization");
         return false;
       }
       
