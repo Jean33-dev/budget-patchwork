@@ -83,14 +83,18 @@ export class DatabaseInitManager extends BaseDatabaseManager {
 
   async migrateFromLocalStorage(): Promise<boolean> {
     try {
-      // Fix for the TypeScript error: ensure we capture the boolean result and check it properly
+      // Ensure database is initialized and capture the result
       const initialized = await this.ensureInitialized();
+      
+      // Explicitly check the boolean result
       if (!initialized) {
-        throw new Error("Database initialization failed");
+        console.error("Database initialization failed during migration");
+        return false;
       }
       
       if (!this.db) {
-        throw new Error("Database is null after initialization");
+        console.error("Database is null after initialization");
+        return false;
       }
       
       // Migrate incomes
