@@ -3,7 +3,7 @@ import { useState } from "react";
 import { EnvelopeListHeader } from "./EnvelopeListHeader";
 import { ExpenseTable } from "./ExpenseTable";
 import { AddEnvelopeDialog } from "./AddEnvelopeDialog";
-import { Budget, Expense } from "@/hooks/useExpenseManagement";
+import { Expense, Budget } from "@/hooks/useExpenseManagement";
 
 interface ExpenseListProps {
   expenses: Expense[];
