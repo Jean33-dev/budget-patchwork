@@ -30,6 +30,9 @@ export const useBudgets = () => {
     try {
       console.log("Chargement des données de budget...");
       
+      // S'assurer que la base de données est initialisée
+      await db.init();
+      
       // Chargement des budgets
       const budgetsData = await db.getBudgets();
       console.log("Budgets chargés:", budgetsData);

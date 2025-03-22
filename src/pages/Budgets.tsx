@@ -2,18 +2,19 @@
 import { useNavigate } from "react-router-dom";
 import { EnvelopeList } from "@/components/budget/EnvelopeList";
 import { AddEnvelopeDialog } from "@/components/budget/AddEnvelopeDialog";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { BudgetsHeader } from "@/components/budget/BudgetsHeader";
 import { EditBudgetDialog } from "@/components/budget/EditBudgetDialog";
 import { DeleteBudgetDialog } from "@/components/budget/DeleteBudgetDialog";
 import { useBudgets, Budget } from "@/hooks/useBudgets";
 import { db } from "@/services/database";
-import { Loader2 } from "lucide-react";
+import { Loader2, RotateCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const Budgets = () => {
   const navigate = useNavigate();
-  const { budgets, remainingAmount, addBudget, updateBudget, deleteBudget, isLoading, error } = useBudgets();
+  const { budgets, remainingAmount, addBudget, updateBudget, deleteBudget, isLoading, error, refreshData } = useBudgets();
   
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -22,6 +23,29 @@ const Budgets = () => {
   const [editTitle, setEditTitle] = useState("");
   const [editBudget, setEditBudget] = useState(0);
   const [hasLinkedExpenses, setHasLinkedExpenses] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Force la base de données à s'initialiser au premier chargement
+  useEffect(() => {
+    const ensureDbInitialized = async () => {
+      console.log("Initialisation forcée de la base de données...");
+      await db.init();
+      console.log("Base de données initialisée");
+      refreshData();
+    };
+    
+    ensureDbInitialized();
+  }, []);
+
+  const handleManualRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await db.init();
+      await refreshData();
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   const handleEnvelopeClick = (envelope: Budget) => {
     setSelectedBudget(envelope);
@@ -105,13 +129,46 @@ const Budgets = () => {
             Erreur lors du chargement des budgets. Veuillez rafraîchir la page.
           </AlertDescription>
         </Alert>
+        <Button 
+          onClick={handleManualRefresh} 
+          className="mt-4"
+          variant="outline"
+          disabled={isRefreshing}
+        >
+          {isRefreshing ? (
+            <>
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              Rafraîchissement...
+            </>
+          ) : (
+            <>
+              <RotateCw className="h-4 w-4 mr-2" />
+              Réessayer
+            </>
+          )}
+        </Button>
       </div>
     );
   }
 
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
-      <BudgetsHeader onNavigate={navigate} />
+      <div className="flex justify-between items-center">
+        <BudgetsHeader onNavigate={navigate} />
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleManualRefresh}
+          disabled={isRefreshing}
+        >
+          {isRefreshing ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <RotateCw className="h-4 w-4" />
+          )}
+          <span className="ml-2 hidden sm:inline">Actualiser</span>
+        </Button>
+      </div>
 
       <div className="space-y-4">
         <div className={`text-sm font-medium ${remainingAmount < 0 ? 'text-red-500' : ''}`}>

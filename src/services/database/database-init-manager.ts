@@ -1,4 +1,3 @@
-
 import { BaseDatabaseManager } from './base-database-manager';
 import { incomeQueries } from './queries/income-queries';
 import { expenseQueries } from './queries/expense-queries';
@@ -28,20 +27,32 @@ export class DatabaseInitManager extends BaseDatabaseManager {
       // Add test data
       const currentDate = new Date().toISOString().split('T')[0];
       
-      // Vérifier si des données existent déjà dans les tables
-      const budgetsCheck = this.db.exec("SELECT COUNT(*) FROM budgets");
-      const budgetsCount = budgetsCheck[0]?.values[0][0] || 0;
-      
-      if (budgetsCount === 0) {
-        console.log("Pas de budgets existants, ajout des données de test...");
-        this.db.run(budgetQueries.sampleData(currentDate));
-        this.db.run(
-          budgetQueries.expenseSampleData(currentDate), 
-          [currentDate, currentDate, currentDate, currentDate]
-        );
-        console.log("Données de test ajoutées avec succès");
-      } else {
-        console.log(`${budgetsCount} budgets trouvés, pas besoin d'ajouter des données de test`);
+      try {
+        // Vérifier si des données existent déjà dans les tables
+        const budgetsCheck = this.db.exec("SELECT COUNT(*) FROM budgets");
+        const budgetsCount = budgetsCheck[0]?.values[0][0] || 0;
+        
+        console.log(`Nombre de budgets existants: ${budgetsCount}`);
+        
+        if (budgetsCount === 0) {
+          console.log("Pas de budgets existants, ajout des données de test...");
+          
+          // Ajouter les budgets
+          const budgetInsertQuery = budgetQueries.sampleData(currentDate);
+          this.db.run(budgetInsertQuery);
+          console.log("Données de test pour les budgets ajoutées");
+          
+          // Ajouter les dépenses liées aux budgets
+          const expenseInsertQuery = budgetQueries.expenseSampleData(currentDate);
+          this.db.run(expenseInsertQuery, [currentDate, currentDate, currentDate, currentDate]);
+          console.log("Données de test pour les dépenses ajoutées");
+          
+          console.log("Données de test ajoutées avec succès");
+        } else {
+          console.log(`${budgetsCount} budgets trouvés, pas besoin d'ajouter des données de test`);
+        }
+      } catch (checkError) {
+        console.error("Erreur lors de la vérification ou de l'ajout des données de test:", checkError);
       }
 
       console.log("Base de données initialisée avec succès");
@@ -60,7 +71,7 @@ export class DatabaseInitManager extends BaseDatabaseManager {
         title: "Erreur d'initialisation",
         description: "Impossible d'initialiser la base de données. Veuillez rafraîchir la page."
       });
-      throw err;
+      return false;
     }
   }
 
