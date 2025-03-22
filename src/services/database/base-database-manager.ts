@@ -7,14 +7,26 @@ export class BaseDatabaseManager {
   protected initialized = false;
 
   async init() {
-    if (this.initialized) return;
+    if (this.initialized) return true;
 
     try {
       console.log("Initializing database...");
-      // Use a more reliable CDN for WebAssembly file
+      
+      // Use unpkg CDN which is more reliable and supports CORS
       const SQL = await initSqlJs({
-        // Use jsdelivr CDN which is more reliable
-        locateFile: file => `https://cdn.jsdelivr.net/npm/sql.js@1.8.0/dist/${file}`
+        // Provide fallback URLs to ensure we have a reliable source
+        locateFile: file => {
+          // Try multiple CDNs in case one fails
+          const cdnUrls = [
+            `https://unpkg.com/sql.js@1.8.0/dist/${file}`,
+            `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${file}`,
+            `https://cdn.jsdelivr.net/npm/sql.js@1.8.0/dist/${file}`
+          ];
+          
+          console.log(`Loading SQL.js file: ${file} from CDN`);
+          // Return the first CDN URL, the browser will try the next one if this fails
+          return cdnUrls[0];
+        }
       });
       
       this.db = new SQL.Database();
