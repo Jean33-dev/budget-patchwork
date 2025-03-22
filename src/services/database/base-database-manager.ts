@@ -38,7 +38,9 @@ export class BaseDatabaseManager {
       const cdnUrls = [
         'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.wasm',
         'https://cdn.jsdelivr.net/npm/sql.js@1.8.0/dist/sql-wasm.wasm',
-        'https://unpkg.com/sql.js@1.8.0/dist/sql-wasm.wasm'
+        'https://unpkg.com/sql.js@1.8.0/dist/sql-wasm.wasm',
+        // Add the relative path as a last resort
+        './sql-wasm.wasm'
       ];
       
       let SQL = null;

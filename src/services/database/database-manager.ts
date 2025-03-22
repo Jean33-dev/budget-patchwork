@@ -14,6 +14,8 @@ export class DatabaseManager {
   private initializationManager: DatabaseInitializationManager;
   private dataExportManager: DataExportManager;
   private queryManager: QueryManager;
+  private initialized = false;
+  private initializing = false;
 
   constructor() {
     this.initManager = new DatabaseInitManager();
@@ -23,11 +25,29 @@ export class DatabaseManager {
   }
 
   async init(): Promise<boolean> {
+    // If already initialized, return true
+    if (this.initialized) {
+      return true;
+    }
+    
+    // If initialization is in progress, wait
+    if (this.initializing) {
+      console.log("Database manager initialization already in progress");
+      // Wait for initialization to complete
+      while (this.initializing) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+      return this.initialized;
+    }
+    
+    this.initializing = true;
+    
     try {
       // First initialize the base database
       const success = await this.initManager.init();
       
       if (!success) {
+        console.error("Failed to initialize database manager");
         return false;
       }
       
@@ -47,6 +67,7 @@ export class DatabaseManager {
       this.dataExportManager.setInitialized(true);
       this.queryManager.setInitialized(true);
       
+      this.initialized = true;
       return true;
     } catch (err) {
       console.error('Error initializing database manager:', err);
@@ -56,11 +77,13 @@ export class DatabaseManager {
         description: "Unable to initialize the database. Please refresh the page."
       });
       return false;
+    } finally {
+      this.initializing = false;
     }
   }
 
   isInitialized(): boolean {
-    return this.initManager.isInitialized();
+    return this.initialized && this.initManager.isInitialized();
   }
 
   async getIncomes(): Promise<Income[]> {
@@ -162,7 +185,7 @@ export class DatabaseManager {
   }
 
   private async ensureInitialized(): Promise<boolean> {
-    if (!this.initializationManager.isInitialized()) {
+    if (!this.isInitialized()) {
       console.log("Database manager not initialized, initializing now...");
       const success = await this.init();
       if (!success) {

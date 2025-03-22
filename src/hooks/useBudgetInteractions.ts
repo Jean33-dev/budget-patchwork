@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+
+import { useState, useEffect, useCallback } from "react";
 import { NavigateFunction } from "react-router-dom";
 import { useBudgets, Budget } from "@/hooks/useBudgets";
 import { db } from "@/services/database";
@@ -7,6 +8,7 @@ import { toast } from "@/components/ui/use-toast";
 export const useBudgetInteractions = (navigate: NavigateFunction) => {
   const { budgets, remainingAmount, addBudget, updateBudget, deleteBudget, isLoading, error, refreshData } = useBudgets();
   
+  // Define all state variables first to maintain consistent hook order
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -15,45 +17,66 @@ export const useBudgetInteractions = (navigate: NavigateFunction) => {
   const [editBudget, setEditBudget] = useState(0);
   const [hasLinkedExpenses, setHasLinkedExpenses] = useState(false);
   const [initializationAttempted, setInitializationAttempted] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(false);
+
+  // Create a callback for database initialization
+  const initializeDatabase = useCallback(async () => {
+    if (isInitializing || initializationAttempted) return;
+    
+    setIsInitializing(true);
+    try {
+      console.log("Starting database initialization...");
+      // Try to initialize database up to 3 times
+      let success = false;
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        console.log(`Database initialization attempt ${attempt}...`);
+        success = await db.init();
+        if (success) {
+          console.log(`Database initialized successfully on attempt ${attempt}`);
+          break;
+        }
+        // Wait a bit before retrying if not the last attempt
+        if (attempt < 3) {
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
+      }
+      
+      if (!success) {
+        console.error("Failed to initialize database after multiple attempts");
+        toast({
+          variant: "destructive",
+          title: "Database error",
+          description: "Unable to initialize the database. Please refresh the page."
+        });
+        return false;
+      }
+      
+      return true;
+    } catch (error) {
+      console.error("Error during initialization:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "An error occurred while initializing the database."
+      });
+      return false;
+    } finally {
+      setIsInitializing(false);
+      setInitializationAttempted(true);
+    }
+  }, [isInitializing, initializationAttempted]);
 
   // Refresh data whenever component mounts
   useEffect(() => {
-    const initializeAndRefresh = async () => {
+    const loadData = async () => {
       try {
-        if (!initializationAttempted) {
-          setInitializationAttempted(true);
-          
-          console.log("Starting database initialization...");
-          // Try to initialize database up to 3 times
-          let success = false;
-          for (let attempt = 1; attempt <= 3; attempt++) {
-            console.log(`Database initialization attempt ${attempt}...`);
-            success = await db.init();
-            if (success) {
-              console.log(`Database initialized successfully on attempt ${attempt}`);
-              break;
-            }
-            // Wait a bit before retrying if not the last attempt
-            if (attempt < 3) {
-              await new Promise(resolve => setTimeout(resolve, 500));
-            }
-          }
-          
-          if (!success) {
-            console.error("Failed to initialize database after multiple attempts");
-            toast({
-              variant: "destructive",
-              title: "Database error",
-              description: "Unable to initialize the database. Please refresh the page."
-            });
-            return;
-          }
+        const success = await initializeDatabase();
+        if (success) {
+          console.log("Database initialization completed, refreshing data...");
+          await refreshData();
         }
-        
-        console.log("Database initialization completed, refreshing data...");
-        await refreshData();
       } catch (error) {
-        console.error("Error during initialization or data refresh:", error);
+        console.error("Error during data refresh:", error);
         toast({
           variant: "destructive",
           title: "Error",
@@ -62,17 +85,17 @@ export const useBudgetInteractions = (navigate: NavigateFunction) => {
       }
     };
     
-    initializeAndRefresh();
-  }, [refreshData, initializationAttempted]);
+    loadData();
+  }, [refreshData, initializeDatabase]);
 
-  const handleEnvelopeClick = (envelope: Budget) => {
+  const handleEnvelopeClick = useCallback((envelope: Budget) => {
     setSelectedBudget(envelope);
     setEditTitle(envelope.title);
     setEditBudget(envelope.budget);
     setEditDialogOpen(true);
-  };
+  }, []);
 
-  const handleEditSubmit = async () => {
+  const handleEditSubmit = useCallback(async () => {
     if (!selectedBudget) return;
 
     const success = await updateBudget({
@@ -85,13 +108,13 @@ export const useBudgetInteractions = (navigate: NavigateFunction) => {
       setEditDialogOpen(false);
       setSelectedBudget(null);
     }
-  };
+  }, [selectedBudget, editTitle, editBudget, updateBudget]);
 
-  const handleViewExpenses = (envelope: Budget) => {
+  const handleViewExpenses = useCallback((envelope: Budget) => {
     navigate(`/dashboard/budget/expenses?budgetId=${envelope.id}`);
-  };
+  }, [navigate]);
 
-  const handleAddEnvelope = async (envelope: { 
+  const handleAddEnvelope = useCallback(async (envelope: { 
     title: string; 
     budget: number; 
     type: "income" | "expense" | "budget";
@@ -109,9 +132,9 @@ export const useBudgetInteractions = (navigate: NavigateFunction) => {
     if (success) {
       setAddDialogOpen(false);
     }
-  };
+  }, [addBudget]);
 
-  const handleDeleteClick = async (envelope: Budget) => {
+  const handleDeleteClick = useCallback(async (envelope: Budget) => {
     setSelectedBudget(envelope);
     
     // Vérifier si le budget a des dépenses associées
@@ -120,14 +143,14 @@ export const useBudgetInteractions = (navigate: NavigateFunction) => {
     setHasLinkedExpenses(linkedExpenses.length > 0);
     
     setDeleteDialogOpen(true);
-  };
+  }, []);
 
-  const handleDeleteConfirm = async () => {
+  const handleDeleteConfirm = useCallback(async () => {
     if (!selectedBudget) return;
     await deleteBudget(selectedBudget.id);
     setDeleteDialogOpen(false);
     setSelectedBudget(null);
-  };
+  }, [selectedBudget, deleteBudget]);
 
   return {
     budgets,
