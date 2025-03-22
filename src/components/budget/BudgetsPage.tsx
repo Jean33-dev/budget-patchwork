@@ -17,6 +17,7 @@ const BudgetsPage = () => {
   const navigate = useNavigate();
   const { 
     isRefreshing, 
+    initializationSuccess,
     handleManualRefresh 
   } = useBudgetInitialization();
   
@@ -45,11 +46,20 @@ const BudgetsPage = () => {
     handleDeleteConfirm
   } = useBudgetInteractions(navigate);
 
-  if (isLoading) {
+  // Afficher un message de diagnostic si l'initialisation échoue
+  useEffect(() => {
+    if (initializationSuccess === false) {
+      console.error("Database initialization failed, showing error state");
+    }
+  }, [initializationSuccess]);
+
+  // Afficher l'état de chargement tant que nous chargeons ou que nous n'avons pas encore essayé d'initialiser
+  if (isLoading || initializationSuccess === null) {
     return <BudgetLoadingState />;
   }
 
-  if (error) {
+  // Afficher l'état d'erreur si l'initialisation a échoué ou s'il y a une erreur
+  if (error || initializationSuccess === false) {
     return <BudgetErrorState onRefresh={handleManualRefresh} isRefreshing={isRefreshing} />;
   }
 

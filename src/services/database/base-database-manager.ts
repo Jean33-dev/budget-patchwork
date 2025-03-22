@@ -6,47 +6,66 @@ export class BaseDatabaseManager {
   protected db: any = null;
   protected initialized = false;
   private static initializationPromise: Promise<boolean> | null = null;
+  private static initializationAttempts = 0;
+  private static MAX_ATTEMPTS = 3;
 
   async init() {
-    // If initialization is already in progress, wait for it
+    // Si l'initialisation est déjà en cours, attendez qu'elle se termine
     if (BaseDatabaseManager.initializationPromise) {
       console.log("Initialization already in progress, waiting for it to complete...");
       return BaseDatabaseManager.initializationPromise;
     }
 
-    // If already initialized and the database exists, simply return true
+    // Si déjà initialisé et que la base de données existe, retournez simplement true
     if (this.initialized && this.db) {
       console.log("Database already initialized.");
       return true;
     }
 
-    // Set the initialization promise
+    // Définir la promesse d'initialisation
     BaseDatabaseManager.initializationPromise = this.performInitialization();
     try {
       return await BaseDatabaseManager.initializationPromise;
     } finally {
-      // Reset the promise once initialization is complete
+      // Réinitialiser la promesse une fois l'initialisation terminée
       BaseDatabaseManager.initializationPromise = null;
     }
   }
 
   private async performInitialization(): Promise<boolean> {
     try {
-      console.log("Starting database initialization...");
+      console.log(`Starting database initialization (attempt ${++BaseDatabaseManager.initializationAttempts})...`);
       
-      // Load SQL.js with multiple possible CDNs
+      // Si trop de tentatives, attendez un peu plus longtemps avant de réessayer
+      if (BaseDatabaseManager.initializationAttempts > 1) {
+        await new Promise(resolve => setTimeout(resolve, 1000 * BaseDatabaseManager.initializationAttempts));
+      }
+      
+      // Abandonner après trop de tentatives
+      if (BaseDatabaseManager.initializationAttempts > BaseDatabaseManager.MAX_ATTEMPTS) {
+        console.error(`Abandoning initialization after ${BaseDatabaseManager.MAX_ATTEMPTS} attempts`);
+        toast({
+          variant: "destructive",
+          title: "Erreur critique de base de données",
+          description: "Impossible de charger le moteur de base de données après plusieurs tentatives. Veuillez vider le cache et rafraîchir la page."
+        });
+        return false;
+      }
+      
+      // Charger SQL.js avec plusieurs CDN possibles
       const cdnUrls = [
         'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.wasm',
         'https://cdn.jsdelivr.net/npm/sql.js@1.8.0/dist/sql-wasm.wasm',
         'https://unpkg.com/sql.js@1.8.0/dist/sql-wasm.wasm',
-        // Add the relative path as a last resort
+        // Ajouter le chemin relatif en dernier recours
+        '/sql-wasm.wasm',
         './sql-wasm.wasm'
       ];
       
       let SQL = null;
       let lastError = null;
       
-      // Try each CDN until one works
+      // Essayer chaque CDN jusqu'à ce que l'un fonctionne
       for (const url of cdnUrls) {
         try {
           console.log(`Trying to load SQL.js from: ${url}`);
@@ -54,11 +73,11 @@ export class BaseDatabaseManager {
             locateFile: () => url
           });
           console.log(`Successfully loaded SQL.js from: ${url}`);
-          break; // Exit the loop if loading succeeds
+          break; // Sortir de la boucle si le chargement réussit
         } catch (err) {
           console.error(`Failed to load SQL.js from ${url}:`, err);
           lastError = err;
-          // Continue with the next URL
+          // Continuer avec l'URL suivante
         }
       }
       
@@ -70,14 +89,19 @@ export class BaseDatabaseManager {
       this.initialized = true;
       console.log("Database initialized successfully");
       
+      // Réinitialiser le compteur de tentatives après un succès
+      BaseDatabaseManager.initializationAttempts = 0;
+      
       return true;
     } catch (err) {
       console.error('Error initializing database:', err);
-      // Display a more detailed error message
+      const errorMessage = err instanceof Error ? err.message : "Unknown error";
+      
+      // Afficher un message d'erreur plus détaillé
       toast({
         variant: "destructive",
-        title: "Database error",
-        description: "Unable to load the database engine. Please refresh the page."
+        title: "Erreur de base de données",
+        description: `Impossible de charger le moteur de base de données: ${errorMessage.substring(0, 100)}`
       });
       
       this.initialized = false;
@@ -86,7 +110,7 @@ export class BaseDatabaseManager {
     }
   }
 
-  // Modified to return a boolean instead of void
+  // Modifié pour retourner un booléen au lieu de void
   protected async ensureInitialized(): Promise<boolean> {
     if (!this.initialized || !this.db) {
       console.log("Database not initialized, initializing now...");
@@ -106,30 +130,35 @@ export class BaseDatabaseManager {
     return true;
   }
 
-  // Public getter for the db property
+  // Accesseur public pour la propriété db
   getDb() {
     return this.db;
   }
 
-  // Public setter for the db property
+  // Mutateur public pour la propriété db
   setDb(db: any) {
     this.db = db;
     return this;
   }
 
-  // Public getter for the initialized property
+  // Accesseur public pour la propriété initialized
   isInitialized() {
     return this.initialized && this.db !== null;
   }
 
-  // Public setter for the initialized property
+  // Mutateur public pour la propriété initialized
   setInitialized(value: boolean) {
     this.initialized = value;
     return this;
   }
 
-  // Save database
+  // Sauvegarder la base de données
   exportData() {
     return this.db?.export();
+  }
+  
+  // Réinitialiser le compteur de tentatives
+  static resetInitializationAttempts() {
+    BaseDatabaseManager.initializationAttempts = 0;
   }
 }

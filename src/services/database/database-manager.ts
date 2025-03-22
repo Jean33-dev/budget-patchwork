@@ -8,6 +8,7 @@ import { DatabaseInitManager } from './database-init-manager';
 import { DatabaseInitializationManager } from './initialization-manager';
 import { DataExportManager } from './data-export-manager';
 import { QueryManager } from './query-manager';
+import { BaseDatabaseManager } from './base-database-manager';
 
 export class DatabaseManager {
   private initManager: DatabaseInitManager;
@@ -25,15 +26,15 @@ export class DatabaseManager {
   }
 
   async init(): Promise<boolean> {
-    // If already initialized, return true
+    // Si déjà initialisé, retourner true
     if (this.initialized) {
       return true;
     }
     
-    // If initialization is in progress, wait
+    // Si l'initialisation est en cours, attendez
     if (this.initializing) {
       console.log("Database manager initialization already in progress");
-      // Wait for initialization to complete
+      // Attendre que l'initialisation soit terminée
       while (this.initializing) {
         await new Promise(resolve => setTimeout(resolve, 100));
       }
@@ -43,7 +44,8 @@ export class DatabaseManager {
     this.initializing = true;
     
     try {
-      // First initialize the base database
+      // D'abord initialiser la base de données
+      console.log("Starting database initialization sequence...");
       const success = await this.initManager.init();
       
       if (!success) {
@@ -51,7 +53,7 @@ export class DatabaseManager {
         return false;
       }
       
-      // Share the database instance with all managers
+      // Partager l'instance de base de données avec tous les gestionnaires
       const dbInstance = this.initManager.getDb();
       if (!dbInstance) {
         console.error("Database instance is null after initialization");
@@ -62,12 +64,13 @@ export class DatabaseManager {
       this.dataExportManager.setDb(dbInstance);
       this.queryManager.setDb(dbInstance);
       
-      // Mark all managers as initialized
+      // Marquer tous les gestionnaires comme initialisés
       this.initializationManager.setInitialized(true);
       this.dataExportManager.setInitialized(true);
       this.queryManager.setInitialized(true);
       
       this.initialized = true;
+      console.log("Database manager fully initialized");
       return true;
     } catch (err) {
       console.error('Error initializing database manager:', err);
@@ -85,7 +88,13 @@ export class DatabaseManager {
   isInitialized(): boolean {
     return this.initialized && this.initManager.isInitialized();
   }
+  
+  // Méthode pour réinitialiser le compteur de tentatives
+  resetInitializationAttempts(): void {
+    BaseDatabaseManager.resetInitializationAttempts();
+  }
 
+  // Méthodes d'accès aux données avec vérification de l'initialisation
   async getIncomes(): Promise<Income[]> {
     await this.ensureInitialized();
     return this.queryManager.executeGetIncomes();
