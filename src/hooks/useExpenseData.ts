@@ -9,11 +9,10 @@ export const useExpenseData = (budgetId: string | null) => {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [availableBudgets, setAvailableBudgets] = useState<Budget[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
 
-  const loadData = useCallback(async () => {
+  const loadBudgets = useCallback(async () => {
     try {
-      setIsLoading(true);
-      
       // Load budgets
       const loadedBudgets = await db.getBudgets();
       console.log('Budgets loaded:', loadedBudgets);
@@ -46,11 +45,39 @@ export const useExpenseData = (budgetId: string | null) => {
         setAvailableBudgets(loadedBudgets);
       }
       
+      return true;
+    } catch (error) {
+      console.error("Error loading budgets:", error);
+      setError(error instanceof Error ? error : new Error("Failed to load budgets"));
+      return false;
+    }
+  }, []);
+
+  const loadExpenses = useCallback(async () => {
+    try {
       // Load expenses
       const loadedExpenses = await db.getExpenses();
       console.log('Expenses loaded:', loadedExpenses);
       setExpenses(loadedExpenses);
+      return true;
+    } catch (error) {
+      console.error("Error loading expenses:", error);
+      setError(error instanceof Error ? error : new Error("Failed to load expenses"));
+      return false;
+    }
+  }, []);
+
+  const loadData = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const budgetsLoaded = await loadBudgets();
+      const expensesLoaded = await loadExpenses();
       
+      if (!budgetsLoaded || !expensesLoaded) {
+        throw new Error("Failed to load data");
+      }
     } catch (error) {
       console.error("Error loading data:", error);
       toast({
@@ -61,7 +88,7 @@ export const useExpenseData = (budgetId: string | null) => {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [loadBudgets, loadExpenses]);
 
   // Load data on component mount
   useEffect(() => {
@@ -77,6 +104,7 @@ export const useExpenseData = (budgetId: string | null) => {
     expenses: filteredExpenses,
     availableBudgets,
     isLoading,
+    error,
     loadData
   };
 };
