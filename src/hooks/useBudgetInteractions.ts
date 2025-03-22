@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { NavigateFunction } from "react-router-dom";
 import { useBudgets, Budget } from "@/hooks/useBudgets";
@@ -14,14 +15,13 @@ export const useBudgetInteractions = (navigate: NavigateFunction) => {
   const [editBudget, setEditBudget] = useState(0);
   const [hasLinkedExpenses, setHasLinkedExpenses] = useState(false);
 
-  // Refresh data whenever database is initialized
+  // Refresh data whenever component mounts
   useEffect(() => {
-    // Safely check database initialization status
-    const checkAndRefresh = async () => {
+    const initializeAndRefresh = async () => {
       try {
-        // Always try to initialize the database first
+        // Always attempt to initialize the database first
         await db.init();
-        console.log("Database initialization attempted, refreshing data...");
+        console.log("Database initialization completed, refreshing data...");
         refreshData();
       } catch (error) {
         console.error("Error during database initialization:", error);
@@ -30,7 +30,7 @@ export const useBudgetInteractions = (navigate: NavigateFunction) => {
       }
     };
     
-    checkAndRefresh();
+    initializeAndRefresh();
   }, [refreshData]);
 
   const handleEnvelopeClick = (envelope: Budget) => {
