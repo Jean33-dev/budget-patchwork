@@ -9,92 +9,59 @@ import { IncomeManager } from './income-manager';
 import { ExpenseManager } from './expense-manager';
 import { BudgetManager } from './budget-manager';
 import { CategoryManager } from './category-manager';
+import { DatabaseInitializationManager } from './initialization-manager';
+import { DataExportManager } from './data-export-manager';
 
 export class DatabaseManager {
   private initManager: DatabaseInitManager;
+  private initializationManager: DatabaseInitializationManager;
   private incomeManager: IncomeManager;
   private expenseManager: ExpenseManager;
   private budgetManager: BudgetManager;
   private categoryManager: CategoryManager;
-  private initialized = false;
-  private initPromise: Promise<boolean> | null = null;
+  private dataExportManager: DataExportManager;
 
   constructor() {
     this.initManager = new DatabaseInitManager();
+    this.initializationManager = new DatabaseInitializationManager();
     this.incomeManager = new IncomeManager();
     this.expenseManager = new ExpenseManager();
     this.budgetManager = new BudgetManager();
     this.categoryManager = new CategoryManager();
+    this.dataExportManager = new DataExportManager();
   }
 
   async init(): Promise<boolean> {
-    // Si l'initialisation est déjà en cours, renvoyer la promesse existante
-    if (this.initPromise) {
-      console.log("Initialization already in progress, waiting for it to complete...");
-      return this.initPromise;
-    }
-    
-    // Si déjà initialisé, renvoyer simplement true
-    if (this.initialized && this.initManager.isInitialized()) {
-      console.log("Database already initialized.");
-      return true;
-    }
-    
-    // Créer une nouvelle promesse d'initialisation
-    this.initPromise = this.performInit();
-    
     try {
-      // Attendre que l'initialisation soit terminée
-      const result = await this.initPromise;
-      return result;
-    } finally {
-      // Réinitialiser la promesse une fois l'initialisation terminée
-      this.initPromise = null;
-    }
-  }
-
-  private async performInit(): Promise<boolean> {
-    try {
-      console.log("Database manager initializing...");
-      
-      // Initialize the database
+      // First initialize the base database
       const success = await this.initManager.init();
       
       if (!success) {
-        console.error("Failed to initialize database");
-        toast({
-          variant: "destructive",
-          title: "Database error",
-          description: "Unable to initialize the database. Please refresh the page."
-        });
         return false;
       }
       
-      // Share the database instance with all managers using the new accessor methods
+      // Share the database instance with all managers
       const dbInstance = this.initManager.getDb();
       if (!dbInstance) {
         console.error("Database instance is null after initialization");
-        toast({
-          variant: "destructive",
-          title: "Database error",
-          description: "Unable to initialize the database. Please refresh the page."
-        });
         return false;
       }
       
+      this.initializationManager.setDb(dbInstance);
       this.incomeManager.setDb(dbInstance);
       this.expenseManager.setDb(dbInstance);
       this.budgetManager.setDb(dbInstance);
       this.categoryManager.setDb(dbInstance);
+      this.dataExportManager.setDb(dbInstance);
       
       // Mark all managers as initialized
+      this.initializationManager.setInitialized(true);
       this.incomeManager.setInitialized(true);
       this.expenseManager.setInitialized(true);
       this.budgetManager.setInitialized(true);
       this.categoryManager.setInitialized(true);
+      this.dataExportManager.setInitialized(true);
       
-      this.initialized = true;
-      console.log("Database manager initialized successfully");
       return true;
     } catch (err) {
       console.error('Error initializing database manager:', err);
@@ -103,13 +70,12 @@ export class DatabaseManager {
         title: "Database error",
         description: "Unable to initialize the database. Please refresh the page."
       });
-      this.initialized = false;
       return false;
     }
   }
 
   isInitialized(): boolean {
-    return this.initialized && this.initManager.isInitialized();
+    return this.initManager.isInitialized();
   }
 
   async getIncomes(): Promise<Income[]> {
@@ -207,11 +173,11 @@ export class DatabaseManager {
   }
 
   exportData() {
-    return this.initManager.exportData();
+    return this.dataExportManager.exportData();
   }
 
   private async ensureInitialized(): Promise<boolean> {
-    if (!this.initialized) {
+    if (!this.initializationManager.isInitialized()) {
       console.log("Database manager not initialized, initializing now...");
       const success = await this.init();
       if (!success) {
