@@ -13,25 +13,34 @@ export const useBudgetInitialization = () => {
     setIsRefreshing(true);
     
     try {
+      // Réinitialiser les tentatives avant de commencer
+      db.resetInitializationAttempts?.();
+      
       // Essayer jusqu'à 3 fois d'initialiser la base de données
       let success = false;
       for (let attempt = 1; attempt <= 3; attempt++) {
         console.log(`Database initialization attempt ${attempt}...`);
-        success = await db.init();
-        
-        if (success) {
-          console.log(`Database successfully initialized on attempt ${attempt}`);
-          setInitializationSuccess(true);
-          break;
+        try {
+          success = await db.init();
+          
+          if (success) {
+            console.log(`Database successfully initialized on attempt ${attempt}`);
+            setInitializationSuccess(true);
+            break;
+          }
+        } catch (initError) {
+          console.error(`Error during initialization attempt ${attempt}:`, initError);
         }
         
         if (attempt < 3) {
           // Attendre un peu avant de réessayer
-          await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+          console.log(`Waiting before attempt ${attempt + 1}...`);
+          await new Promise(resolve => setTimeout(resolve, 1500 * attempt));
         }
       }
       
       if (!success) {
+        console.error("All initialization attempts failed");
         setInitializationSuccess(false);
         toast({
           variant: "destructive",
@@ -57,23 +66,28 @@ export const useBudgetInitialization = () => {
 
   // Initialiser la base de données au premier chargement
   useEffect(() => {
+    console.log("useBudgetInitialization: Initializing database on mount");
     initializeDatabase();
   }, [initializeDatabase]);
 
   const handleManualRefresh = async () => {
     setIsRefreshing(true);
     try {
+      console.log("Manual refresh: Resetting initialization attempts");
       // Forcer la réinitialisation des tentatives avant une actualisation manuelle
       db.resetInitializationAttempts?.();
       
+      console.log("Manual refresh: Starting database initialization");
       const success = await db.init();
       if (success) {
+        console.log("Manual refresh: Database initialization successful");
         toast({
           title: "Actualisation terminée",
           description: "Les données ont été rafraîchies avec succès."
         });
         setInitializationSuccess(true);
       } else {
+        console.error("Manual refresh: Database initialization failed");
         toast({
           variant: "destructive",
           title: "Erreur d'actualisation",
@@ -97,6 +111,7 @@ export const useBudgetInitialization = () => {
   return {
     isRefreshing,
     initializationSuccess,
-    handleManualRefresh
+    handleManualRefresh,
+    initializeDatabase // Exporter la fonction pour permettre de réinitialiser la base depuis l'extérieur
   };
 };

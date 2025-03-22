@@ -52,47 +52,47 @@ export class BaseDatabaseManager {
         return false;
       }
       
-      // Charger SQL.js avec plusieurs CDN possibles
-      const cdnUrls = [
-        'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.wasm',
-        'https://cdn.jsdelivr.net/npm/sql.js@1.8.0/dist/sql-wasm.wasm',
-        'https://unpkg.com/sql.js@1.8.0/dist/sql-wasm.wasm',
-        // Ajouter le chemin relatif en dernier recours
-        '/sql-wasm.wasm',
-        './sql-wasm.wasm'
-      ];
-      
-      let SQL = null;
-      let lastError = null;
-      
-      // Essayer chaque CDN jusqu'à ce que l'un fonctionne
-      for (const url of cdnUrls) {
+      // Utiliser une approche différente pour charger SQL.js
+      try {
+        console.log("Initializing SQL.js with dynamic import...");
+        // Utiliser l'import dynamique pour SQL.js
+        const SQL = await initSqlJs({
+          // Ne pas utiliser locateFile pour laisser SQL.js trouver automatiquement le fichier wasm
+        });
+        
+        console.log("SQL.js initialized successfully");
+        this.db = new SQL.Database();
+        this.initialized = true;
+        
+        // Réinitialiser le compteur de tentatives après un succès
+        BaseDatabaseManager.initializationAttempts = 0;
+        
+        return true;
+      } catch (sqlError) {
+        console.error("Error initializing SQL.js:", sqlError);
+        
+        // Essayer avec une autre approche en cas d'échec
         try {
-          console.log(`Trying to load SQL.js from: ${url}`);
-          SQL = await initSqlJs({
-            locateFile: () => url
+          console.log("Trying alternate initialization method...");
+          
+          // Si ça échoue, essayez avec un chemin fixe
+          const SQL = await initSqlJs({
+            locateFile: () => '/sql-wasm.wasm'
           });
-          console.log(`Successfully loaded SQL.js from: ${url}`);
-          break; // Sortir de la boucle si le chargement réussit
-        } catch (err) {
-          console.error(`Failed to load SQL.js from ${url}:`, err);
-          lastError = err;
-          // Continuer avec l'URL suivante
+          
+          console.log("SQL.js initialized successfully with fixed path");
+          this.db = new SQL.Database();
+          this.initialized = true;
+          
+          // Réinitialiser le compteur de tentatives après un succès
+          BaseDatabaseManager.initializationAttempts = 0;
+          
+          return true;
+        } catch (fixedPathError) {
+          console.error("Error with fixed path initialization:", fixedPathError);
+          throw fixedPathError;
         }
       }
-      
-      if (!SQL) {
-        throw lastError || new Error("Failed to load SQL.js from any CDN");
-      }
-      
-      this.db = new SQL.Database();
-      this.initialized = true;
-      console.log("Database initialized successfully");
-      
-      // Réinitialiser le compteur de tentatives après un succès
-      BaseDatabaseManager.initializationAttempts = 0;
-      
-      return true;
     } catch (err) {
       console.error('Error initializing database:', err);
       const errorMessage = err instanceof Error ? err.message : "Unknown error";

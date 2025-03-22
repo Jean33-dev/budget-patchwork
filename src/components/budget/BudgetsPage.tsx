@@ -12,14 +12,19 @@ import { BudgetDialogs } from "@/components/budget/BudgetDialogs";
 import { toast } from "@/components/ui/use-toast";
 import { useBudgetInitialization } from "@/hooks/useBudgetInitialization";
 import { useBudgetInteractions } from "@/hooks/useBudgetInteractions";
+import { Button } from "@/components/ui/button";
+import { AlertCircle, RefreshCw } from "lucide-react";
 
 const BudgetsPage = () => {
   const navigate = useNavigate();
   const { 
     isRefreshing, 
     initializationSuccess,
-    handleManualRefresh 
+    handleManualRefresh,
+    initializeDatabase
   } = useBudgetInitialization();
+  
+  const [retryCount, setRetryCount] = useState(0);
   
   const {
     budgets,
@@ -48,19 +53,65 @@ const BudgetsPage = () => {
 
   // Afficher un message de diagnostic si l'initialisation échoue
   useEffect(() => {
+    console.log("BudgetsPage: initialization status changed:", initializationSuccess);
     if (initializationSuccess === false) {
       console.error("Database initialization failed, showing error state");
     }
   }, [initializationSuccess]);
 
+  // Réessayer l'initialisation si elle échoue
+  useEffect(() => {
+    if (initializationSuccess === false && retryCount < 2) {
+      console.log(`Auto-retry initialization (${retryCount + 1}/2)...`);
+      const timer = setTimeout(() => {
+        setRetryCount(prev => prev + 1);
+        initializeDatabase();
+      }, 3000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [initializationSuccess, retryCount, initializeDatabase]);
+
+  // Fonction pour forcer une réinitialisation complète
+  const handleForceReset = async () => {
+    setRetryCount(0);
+    localStorage.clear(); // Effacer toutes les données du localStorage
+    await handleManualRefresh();
+  };
+
   // Afficher l'état de chargement tant que nous chargeons ou que nous n'avons pas encore essayé d'initialiser
-  if (isLoading || initializationSuccess === null) {
+  if (isLoading || initializationSuccess === null || isRefreshing) {
     return <BudgetLoadingState />;
   }
 
   // Afficher l'état d'erreur si l'initialisation a échoué ou s'il y a une erreur
   if (error || initializationSuccess === false) {
-    return <BudgetErrorState onRefresh={handleManualRefresh} isRefreshing={isRefreshing} />;
+    return (
+      <div className="container mx-auto px-4 py-6 space-y-6">
+        <BudgetsHeader onNavigate={navigate} />
+        <div className="bg-destructive/10 border border-destructive rounded-lg p-4 mb-4">
+          <div className="flex items-start">
+            <AlertCircle className="h-5 w-5 text-destructive mr-2 mt-0.5" />
+            <div>
+              <h3 className="font-semibold text-destructive">Erreur de chargement</h3>
+              <p className="text-sm mt-1">
+                Impossible de charger la base de données. Veuillez essayer l'une des solutions suivantes:
+              </p>
+              <div className="mt-4 space-y-2">
+                <Button onClick={handleManualRefresh} className="mr-2" variant="outline">
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Réessayer simplement
+                </Button>
+                <Button onClick={handleForceReset} variant="destructive">
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Réinitialiser complètement
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
