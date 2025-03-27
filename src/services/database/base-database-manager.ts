@@ -16,6 +16,15 @@ export class BaseDatabaseManager {
     this.queryManager = null;
   }
 
+  // Static methods to access and modify the private static property
+  static isInitializationInProgress(): boolean {
+    return BaseDatabaseManager.initializationInProgress;
+  }
+
+  static setInitializationInProgress(value: boolean): void {
+    BaseDatabaseManager.initializationInProgress = value;
+  }
+
   async init() {
     // Si déjà initialisé et que la base de données existe, retournez simplement true
     if (this.initialized && this.db) {

@@ -10,7 +10,7 @@ export class DatabaseManagerCore extends BaseDatabaseManager {
   declare protected queryManager: QueryManager;
   protected initializing = false;
   private static initCompletePromise: Promise<boolean> | null = null;
-  private static initializationInProgress = false;
+  // Removed the duplicate static property declaration
 
   constructor() {
     super();
@@ -21,14 +21,16 @@ export class DatabaseManagerCore extends BaseDatabaseManager {
    * Vérifie si l'initialisation est en cours
    */
   protected isInitializationInProgress(): boolean {
-    return DatabaseManagerCore.initializationInProgress;
+    // Access the parent class's initialization status
+    return BaseDatabaseManager.isInitializationInProgress();
   }
 
   /**
    * Définit l'état d'initialisation
    */
   protected setInitializationInProgress(value: boolean): void {
-    DatabaseManagerCore.initializationInProgress = value;
+    // Set the initialization status in the parent class
+    BaseDatabaseManager.setInitializationInProgress(value);
   }
 
   /**
