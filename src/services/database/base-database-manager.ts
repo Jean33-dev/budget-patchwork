@@ -10,35 +10,35 @@ export class BaseDatabaseManager {
   private static initializationPromise: Promise<boolean> | null = null;
   private static initializationAttempts = 0;
   private static MAX_ATTEMPTS = 3;
+  private static initializationInProgress = false;
 
   constructor() {
     this.queryManager = null;
   }
 
   async init() {
-    // Si l'initialisation est déjà en cours, attendez qu'elle se termine
-    if (BaseDatabaseManager.initializationPromise) {
-      console.log("Initialization already in progress, waiting for it to complete...");
-      return BaseDatabaseManager.initializationPromise;
-    }
-
     // Si déjà initialisé et que la base de données existe, retournez simplement true
     if (this.initialized && this.db) {
       console.log("Database already initialized.");
       return true;
     }
-
-    // Définir la promesse d'initialisation
-    BaseDatabaseManager.initializationPromise = this.performInitialization();
-    try {
-      return await BaseDatabaseManager.initializationPromise;
-    } finally {
-      // Réinitialiser la promesse une fois l'initialisation terminée
-      BaseDatabaseManager.initializationPromise = null;
+    
+    // Si l'initialisation est déjà en cours, attendez qu'elle se termine
+    if (BaseDatabaseManager.initializationInProgress) {
+      console.log("Database initialization in progress, waiting...");
+      // Attendre que l'initialisation en cours se termine
+      while (BaseDatabaseManager.initializationInProgress) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+      // Vérifier si l'initialisation a réussi
+      if (this.initialized && this.db) {
+        return true;
+      }
     }
-  }
 
-  private async performInitialization(): Promise<boolean> {
+    // Marquer le début de l'initialisation
+    BaseDatabaseManager.initializationInProgress = true;
+
     try {
       console.log(`Starting database initialization (attempt ${++BaseDatabaseManager.initializationAttempts})...`);
       
@@ -58,12 +58,17 @@ export class BaseDatabaseManager {
         return false;
       }
       
-      // Utiliser une approche différente pour charger SQL.js
       try {
         console.log("Initializing SQL.js with dynamic import...");
-        // Utiliser l'import dynamique pour SQL.js
-        const SQL = await initSqlJs({
-          // Ne pas utiliser locateFile pour laisser SQL.js trouver automatiquement le fichier wasm
+        // Utiliser l'import dynamique pour SQL.js avec gestion d'erreur améliorée
+        const SQL = await initSqlJs().catch(async (err) => {
+          console.error("Error with default SQL.js initialization:", err);
+          console.log("Trying with fixed path...");
+          
+          // Essayer avec un chemin explicite
+          return await initSqlJs({
+            locateFile: () => '/sql-wasm.wasm'
+          });
         });
         
         console.log("SQL.js initialized successfully");
@@ -75,29 +80,8 @@ export class BaseDatabaseManager {
         
         return true;
       } catch (sqlError) {
-        console.error("Error initializing SQL.js:", sqlError);
-        
-        // Essayer avec une autre approche en cas d'échec
-        try {
-          console.log("Trying alternate initialization method...");
-          
-          // Si ça échoue, essayez avec un chemin fixe
-          const SQL = await initSqlJs({
-            locateFile: () => '/sql-wasm.wasm'
-          });
-          
-          console.log("SQL.js initialized successfully with fixed path");
-          this.db = new SQL.Database();
-          this.initialized = true;
-          
-          // Réinitialiser le compteur de tentatives après un succès
-          BaseDatabaseManager.initializationAttempts = 0;
-          
-          return true;
-        } catch (fixedPathError) {
-          console.error("Error with fixed path initialization:", fixedPathError);
-          throw fixedPathError;
-        }
+        console.error("All SQL.js initialization attempts failed:", sqlError);
+        throw sqlError;
       }
     } catch (err) {
       console.error('Error initializing database:', err);
@@ -113,6 +97,9 @@ export class BaseDatabaseManager {
       this.initialized = false;
       this.db = null;
       return false;
+    } finally {
+      // S'assurer que le flag d'initialisation en cours est réinitialisé
+      BaseDatabaseManager.initializationInProgress = false;
     }
   }
 

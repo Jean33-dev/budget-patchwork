@@ -9,6 +9,7 @@ export class WebSQLiteAdapter extends SQLiteAdapter {
   private db: any = null;
   private static SQL: any = null;
   private static initPromise: Promise<any> | null = null;
+  private static initializationInProgress = false;
 
   constructor() {
     super();
@@ -24,28 +25,61 @@ export class WebSQLiteAdapter extends SQLiteAdapter {
         return true;
       }
 
-      if (!WebSQLiteAdapter.SQL) {
-        if (!WebSQLiteAdapter.initPromise) {
-          console.log("Initialisation de SQL.js...");
-          WebSQLiteAdapter.initPromise = initSqlJs({
-            // Laisser SQL.js trouver automatiquement le fichier wasm
-          }).catch((err) => {
-            console.error("Erreur lors de l'initialisation de SQL.js, tentative avec chemin fixe", err);
-            return initSqlJs({
-              locateFile: () => '/sql-wasm.wasm'
-            });
-          });
+      // Si une initialisation est déjà en cours, attendez qu'elle se termine
+      if (WebSQLiteAdapter.initializationInProgress) {
+        console.log("SQL.js initialization already in progress, waiting...");
+        while (WebSQLiteAdapter.initializationInProgress) {
+          await new Promise(resolve => setTimeout(resolve, 100));
         }
-
-        WebSQLiteAdapter.SQL = await WebSQLiteAdapter.initPromise;
-        console.log("SQL.js initialisé avec succès");
+        
+        // Vérifier si SQL a été initialisé avec succès
+        if (WebSQLiteAdapter.SQL && !this.db) {
+          this.db = new WebSQLiteAdapter.SQL.Database();
+          this.initialized = true;
+        }
+        
+        return this.initialized;
       }
 
-      this.db = new WebSQLiteAdapter.SQL.Database();
-      this.initialized = true;
-      return true;
+      WebSQLiteAdapter.initializationInProgress = true;
+
+      try {
+        if (!WebSQLiteAdapter.SQL) {
+          console.log("Initializing SQL.js...");
+          
+          // Utiliser une approche avec catch pour gérer différentes méthodes d'initialisation
+          WebSQLiteAdapter.SQL = await initSqlJs().catch(async (err) => {
+            console.error("Error with default initialization:", err);
+            
+            // Essayer avec locateFile
+            console.log("Trying with explicit wasm file path...");
+            return await initSqlJs({
+              locateFile: () => '/sql-wasm.wasm'
+            }).catch(async (err2) => {
+              console.error("Error with fixed path:", err2);
+              
+              // Essayer une troisième approche avec un CDN
+              console.log("Trying with CDN path...");
+              return await initSqlJs({
+                locateFile: () => 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.wasm'
+              });
+            });
+          });
+          
+          console.log("SQL.js initialized successfully");
+        }
+
+        this.db = new WebSQLiteAdapter.SQL.Database();
+        this.initialized = true;
+        return true;
+      } catch (error) {
+        console.error("All SQL.js initialization methods failed:", error);
+        throw error;
+      } finally {
+        WebSQLiteAdapter.initializationInProgress = false;
+      }
     } catch (error) {
-      console.error("Erreur d'initialisation de SQL.js:", error);
+      console.error("Error initializing SQL.js:", error);
       this.logError("initialization", error);
       this.initialized = false;
       this.db = null;
@@ -58,7 +92,10 @@ export class WebSQLiteAdapter extends SQLiteAdapter {
    */
   async execute(query: string, params: any[] = []): Promise<any> {
     try {
-      await this.ensureInitialized();
+      const initialized = await this.ensureInitialized();
+      if (!initialized) {
+        throw new Error("Failed to initialize database before executing query");
+      }
       return this.db.exec(query, params);
     } catch (error) {
       this.logError("execute", error);
@@ -71,7 +108,11 @@ export class WebSQLiteAdapter extends SQLiteAdapter {
    */
   async executeSet(queries: string[]): Promise<any> {
     try {
-      await this.ensureInitialized();
+      const initialized = await this.ensureInitialized();
+      if (!initialized) {
+        throw new Error("Failed to initialize database before executing query set");
+      }
+      
       for (const query of queries) {
         this.db.exec(query);
       }
@@ -87,7 +128,11 @@ export class WebSQLiteAdapter extends SQLiteAdapter {
    */
   async run(query: string, params: any[] = []): Promise<any> {
     try {
-      await this.ensureInitialized();
+      const initialized = await this.ensureInitialized();
+      if (!initialized) {
+        throw new Error("Failed to initialize database before running query");
+      }
+      
       const stmt = this.db.prepare(query);
       const result = stmt.run(params);
       stmt.free();
@@ -103,7 +148,11 @@ export class WebSQLiteAdapter extends SQLiteAdapter {
    */
   async query(query: string, params: any[] = []): Promise<any[]> {
     try {
-      await this.ensureInitialized();
+      const initialized = await this.ensureInitialized();
+      if (!initialized) {
+        throw new Error("Failed to initialize database before querying");
+      }
+      
       const stmt = this.db.prepare(query);
       const results: any[] = [];
       

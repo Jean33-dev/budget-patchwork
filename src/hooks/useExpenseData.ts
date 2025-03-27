@@ -10,6 +10,7 @@ export const useExpenseData = (budgetId: string | null) => {
   const [availableBudgets, setAvailableBudgets] = useState<Budget[]>([]);
   const [isLoading, setIsLoading] = useState(true); // Start with loading state true
   const [error, setError] = useState<Error | null>(null);
+  const [initAttempted, setInitAttempted] = useState(false);
 
   const loadBudgets = useCallback(async () => {
     try {
@@ -76,18 +77,24 @@ export const useExpenseData = (budgetId: string | null) => {
       // Explicitly initialize the database with multiple retries
       let dbInitialized = false;
       
-      // Try up to 3 times to initialize the database
-      for (let attempt = 1; attempt <= 3; attempt++) {
+      // Try up to 5 times to initialize the database
+      for (let attempt = 1; attempt <= 5; attempt++) {
         console.log(`Database initialization attempt ${attempt}...`);
-        dbInitialized = await db.init();
-        if (dbInitialized) {
-          console.log(`Database successfully initialized on attempt ${attempt}`);
-          break;
+        try {
+          dbInitialized = await db.init();
+          if (dbInitialized) {
+            console.log(`Database successfully initialized on attempt ${attempt}`);
+            break;
+          }
+        } catch (error) {
+          console.error(`Error during initialization attempt ${attempt}:`, error);
         }
         
-        if (attempt < 3) {
-          // Wait a bit before retrying
-          await new Promise(resolve => setTimeout(resolve, 1000));
+        if (attempt < 5) {
+          // Wait before retrying with increasing delay
+          const delay = Math.min(1000 * attempt, 5000);
+          console.log(`Waiting ${delay}ms before retry...`);
+          await new Promise(resolve => setTimeout(resolve, delay));
         }
       }
       
@@ -95,12 +102,32 @@ export const useExpenseData = (budgetId: string | null) => {
         throw new Error("Failed to initialize database after multiple attempts");
       }
       
+      // Essayer de charger les budgets d'abord, car ils sont nécessaires pour les dépenses
+      console.log("Loading budgets...");
       const budgetsLoaded = await loadBudgets();
-      const expensesLoaded = await loadExpenses();
-      
-      if (!budgetsLoaded || !expensesLoaded) {
-        throw new Error("Failed to load data");
+      if (!budgetsLoaded) {
+        console.error("Failed to load budgets, retrying...");
+        // Retenter une fois
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        const retryBudgets = await loadBudgets();
+        if (!retryBudgets) {
+          throw new Error("Failed to load budgets after retry");
+        }
       }
+      
+      console.log("Loading expenses...");
+      const expensesLoaded = await loadExpenses();
+      if (!expensesLoaded) {
+        console.error("Failed to load expenses, retrying...");
+        // Retenter une fois
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        const retryExpenses = await loadExpenses();
+        if (!retryExpenses) {
+          throw new Error("Failed to load expenses after retry");
+        }
+      }
+      
+      setInitAttempted(true);
     } catch (error) {
       console.error("Error loading data:", error);
       toast({
@@ -130,6 +157,7 @@ export const useExpenseData = (budgetId: string | null) => {
     availableBudgets,
     isLoading,
     error,
-    loadData
+    loadData,
+    initAttempted
   };
 };
