@@ -6,11 +6,14 @@ import { db } from "@/services/database";
 export const useBudgetInitialization = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [initializationSuccess, setInitializationSuccess] = useState<boolean | null>(null);
+  const [attempt, setAttempt] = useState(1);
+  const maxAttempts = 3;
 
   // Fonction pour initialiser la base de données avec gestion des erreurs
   const initializeDatabase = useCallback(async () => {
     console.log("Starting database initialization process...");
     setIsRefreshing(true);
+    setAttempt(1);
     
     try {
       // Réinitialiser les tentatives avant de commencer
@@ -18,24 +21,25 @@ export const useBudgetInitialization = () => {
       
       // Essayer jusqu'à 3 fois d'initialiser la base de données
       let success = false;
-      for (let attempt = 1; attempt <= 3; attempt++) {
-        console.log(`Database initialization attempt ${attempt}...`);
+      for (let currentAttempt = 1; currentAttempt <= maxAttempts; currentAttempt++) {
+        setAttempt(currentAttempt);
+        console.log(`Database initialization attempt ${currentAttempt}...`);
         try {
           success = await db.init();
           
           if (success) {
-            console.log(`Database successfully initialized on attempt ${attempt}`);
+            console.log(`Database successfully initialized on attempt ${currentAttempt}`);
             setInitializationSuccess(true);
             break;
           }
         } catch (initError) {
-          console.error(`Error during initialization attempt ${attempt}:`, initError);
+          console.error(`Error during initialization attempt ${currentAttempt}:`, initError);
         }
         
-        if (attempt < 3) {
+        if (currentAttempt < maxAttempts) {
           // Attendre un peu avant de réessayer
-          console.log(`Waiting before attempt ${attempt + 1}...`);
-          await new Promise(resolve => setTimeout(resolve, 1500 * attempt));
+          console.log(`Waiting before attempt ${currentAttempt + 1}...`);
+          await new Promise(resolve => setTimeout(resolve, 1500 * currentAttempt));
         }
       }
       
@@ -112,6 +116,8 @@ export const useBudgetInitialization = () => {
     isRefreshing,
     initializationSuccess,
     handleManualRefresh,
-    initializeDatabase // Exporter la fonction pour permettre de réinitialiser la base depuis l'extérieur
+    initializeDatabase, // Exporter la fonction pour permettre de réinitialiser la base depuis l'extérieur
+    attempt,
+    maxAttempts
   };
 };
