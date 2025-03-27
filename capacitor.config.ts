@@ -10,7 +10,12 @@ const config: CapacitorConfig = {
     cleartext: true
   },
   plugins: {
-    // We'll add SQLite plugin configuration here in the future
+    SQLite: {
+      iosLocation: 'Library/budget-db',
+      androidLocation: 'databases',
+      androidDatabaseLocation: 'default',
+      iosDatabaseLocation: 'Library'
+    }
   }
 };
 
