@@ -8,8 +8,8 @@ import { BaseDatabaseManager } from './base-database-manager';
  */
 export class DatabaseManagerCore extends BaseDatabaseManager {
   protected queryManager: QueryManager;
-  private initialized = false;
-  private initializing = false;
+  // Make initialized protected instead of private to match base class
+  protected initializing = false;
 
   constructor() {
     super();

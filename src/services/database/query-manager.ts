@@ -1,4 +1,3 @@
-
 import { BaseDatabaseManager } from './base-database-manager';
 import { incomeQueries } from './queries/income-queries';
 import { expenseQueries } from './queries/expense-queries';
@@ -102,6 +101,22 @@ export class QueryManager extends BaseDatabaseManager {
         variant: "destructive",
         title: "Erreur",
         description: "Impossible d'ajouter la dépense"
+      });
+      throw error;
+    }
+  }
+
+  async executeUpdateExpense(expense: Expense): Promise<void> {
+    try {
+      const success = await this.ensureInitialized();
+      if (!success || !this.db) return;
+      expenseQueries.update(this.db, expense);
+    } catch (error) {
+      console.error("Error updating expense:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible de mettre à jour la dépense"
       });
       throw error;
     }
