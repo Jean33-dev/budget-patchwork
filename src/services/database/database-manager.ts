@@ -1,125 +1,33 @@
 
-import { toast } from "@/components/ui/use-toast";
 import { Income } from './models/income';
 import { Expense } from './models/expense';
 import { Budget } from './models/budget';
 import { Category } from './models/category';
 import { BaseDatabaseManager } from './base-database-manager';
 import { DatabaseInitManager } from './database-init-manager';
-import { DatabaseManagerCore } from './database-manager-core';
-import { BudgetManager } from './managers/budget-manager';
-import { ExpenseManager } from './managers/expense-manager';
-import { IncomeManager } from './managers/income-manager';
-import { CategoryManager } from './managers/category-manager';
+import { DatabaseManagerImpl } from './database-manager-impl';
+import { DatabaseManagerFactory } from './database-manager-factory';
 
-export class DatabaseManager extends DatabaseManagerCore {
-  private initManager: DatabaseInitManager;
-  private budgetManager: BudgetManager;
-  private expenseManager: ExpenseManager;
-  private incomeManager: IncomeManager;
-  private categoryManager: CategoryManager;
-  // Suppression de la déclaration statique en double qui cause le conflit
+export class DatabaseManager extends DatabaseManagerImpl {
+  private managerFactory: DatabaseManagerFactory;
 
   constructor() {
     super();
-    this.initManager = new DatabaseInitManager();
-    this.budgetManager = new BudgetManager();
-    this.expenseManager = new ExpenseManager();
-    this.incomeManager = new IncomeManager();
-    this.categoryManager = new CategoryManager();
+    this.managerFactory = new DatabaseManagerFactory();
   }
 
   async init(): Promise<boolean> {
-    // If already initialized, return true
-    if (this.initialized && this.db) {
-      return true;
+    // Call the parent implementation to initialize the core database
+    const success = await super.init();
+    
+    if (success && this.db) {
+      // Initialize all the specialized managers with the database instance
+      this.managerFactory.initializeManagers(this.db);
     }
     
-    // Utiliser la propriété statique de la classe parente pour vérifier si l'initialisation est en cours
-    // Nous utiliserons une méthode pour accéder à cette propriété, puisqu'elle est privée
-    if (this.isInitializationInProgress()) {
-      console.log("DatabaseManager initialization already in progress, waiting...");
-      while (this.isInitializationInProgress()) {
-        await new Promise(resolve => setTimeout(resolve, 100));
-      }
-      // Check if initialization was successful
-      if (this.initialized && this.db) {
-        return true;
-      }
-    }
-    
-    // Utiliser une méthode pour définir l'état d'initialisation
-    this.setInitializationInProgress(true);
-    
-    try {
-      // First initialize the core
-      console.log("Initializing database core...");
-      const coreSuccess = await super.init();
-      if (!coreSuccess) {
-        console.error("Failed to initialize database core");
-        return false;
-      }
-      
-      try {
-        // Initialize the database using the init manager
-        console.log("Initializing database using init manager...");
-        const success = await this.initManager.init();
-        
-        if (!success) {
-          console.error("Failed to initialize database with init manager");
-          return false;
-        }
-        
-        // Share the database instance with all managers
-        const dbInstance = this.initManager.getDb();
-        if (!dbInstance) {
-          console.error("Database instance is null after initialization");
-          return false;
-        }
-        
-        // Set the database instance for all managers
-        this.budgetManager.setDb(dbInstance);
-        this.expenseManager.setDb(dbInstance);
-        this.incomeManager.setDb(dbInstance);
-        this.categoryManager.setDb(dbInstance);
-        
-        // Set all managers as initialized
-        this.budgetManager.setInitialized(true);
-        this.expenseManager.setInitialized(true);
-        this.incomeManager.setInitialized(true);
-        this.categoryManager.setInitialized(true);
-        
-        // Ensure all managers have a query manager reference
-        if (this.queryManager) {
-          this.budgetManager.setQueryManager(this.queryManager);
-          this.expenseManager.setQueryManager(this.queryManager);
-          this.incomeManager.setQueryManager(this.queryManager);
-          this.categoryManager.setQueryManager(this.queryManager);
-        }
-        
-        return true;
-      } catch (err) {
-        console.error('Error initializing database managers:', err);
-        toast({
-          variant: "destructive",
-          title: "Database error",
-          description: "Unable to initialize the database. Please refresh the page."
-        });
-        return false;
-      }
-    } finally {
-      // Utiliser une méthode pour réinitialiser l'état d'initialisation
-      this.setInitializationInProgress(false);
-    }
-  }
-  
-  // Méthode pour réinitialiser le compteur de tentatives
-  resetInitializationAttempts(): void {
-    BaseDatabaseManager.resetInitializationAttempts();
+    return success;
   }
 
-  // Delegate methods to the appropriate managers
-  
   // Budget methods
   async getBudgets(): Promise<Budget[]> {
     try {
@@ -128,7 +36,7 @@ export class DatabaseManager extends DatabaseManagerCore {
         console.error("Database not initialized in getBudgets");
         return [];
       }
-      return this.budgetManager.getBudgets();
+      return this.managerFactory.getBudgetManager().getBudgets();
     } catch (error) {
       console.error("Error in getBudgets:", error);
       return [];
@@ -140,7 +48,7 @@ export class DatabaseManager extends DatabaseManagerCore {
     if (!initialized) {
       throw new Error("Database not initialized in addBudget");
     }
-    await this.budgetManager.addBudget(budget);
+    await this.managerFactory.getBudgetManager().addBudget(budget);
   }
 
   async updateBudget(budget: Budget) {
@@ -148,7 +56,7 @@ export class DatabaseManager extends DatabaseManagerCore {
     if (!initialized) {
       throw new Error("Database not initialized in updateBudget");
     }
-    await this.budgetManager.updateBudget(budget);
+    await this.managerFactory.getBudgetManager().updateBudget(budget);
   }
 
   async deleteBudget(id: string) {
@@ -156,7 +64,7 @@ export class DatabaseManager extends DatabaseManagerCore {
     if (!initialized) {
       throw new Error("Database not initialized in deleteBudget");
     }
-    await this.budgetManager.deleteBudget(id);
+    await this.managerFactory.getBudgetManager().deleteBudget(id);
   }
 
   // Expense methods
@@ -167,7 +75,7 @@ export class DatabaseManager extends DatabaseManagerCore {
         console.error("Database not initialized in getExpenses");
         return [];
       }
-      return this.expenseManager.getExpenses();
+      return this.managerFactory.getExpenseManager().getExpenses();
     } catch (error) {
       console.error("Error in getExpenses:", error);
       return [];
@@ -179,7 +87,7 @@ export class DatabaseManager extends DatabaseManagerCore {
     if (!initialized) {
       throw new Error("Database not initialized in addExpense");
     }
-    await this.expenseManager.addExpense(expense);
+    await this.managerFactory.getExpenseManager().addExpense(expense);
   }
 
   async updateExpense(expense: Expense) {
@@ -187,7 +95,7 @@ export class DatabaseManager extends DatabaseManagerCore {
     if (!initialized) {
       throw new Error("Database not initialized in updateExpense");
     }
-    await this.expenseManager.updateExpense(expense);
+    await this.managerFactory.getExpenseManager().updateExpense(expense);
   }
 
   async deleteExpense(id: string) {
@@ -196,7 +104,7 @@ export class DatabaseManager extends DatabaseManagerCore {
       throw new Error("Database not initialized in deleteExpense");
     }
     console.log(`Demande de suppression de la dépense avec l'ID: ${id}`);
-    await this.expenseManager.deleteExpense(id);
+    await this.managerFactory.getExpenseManager().deleteExpense(id);
   }
 
   // Income methods
@@ -207,7 +115,7 @@ export class DatabaseManager extends DatabaseManagerCore {
         console.error("Database not initialized in getIncomes");
         return [];
       }
-      return this.incomeManager.getIncomes();
+      return this.managerFactory.getIncomeManager().getIncomes();
     } catch (error) {
       console.error("Error in getIncomes:", error);
       return [];
@@ -219,7 +127,7 @@ export class DatabaseManager extends DatabaseManagerCore {
     if (!initialized) {
       throw new Error("Database not initialized in addIncome");
     }
-    await this.incomeManager.addIncome(income);
+    await this.managerFactory.getIncomeManager().addIncome(income);
   }
 
   async updateIncome(income: Income) {
@@ -227,7 +135,7 @@ export class DatabaseManager extends DatabaseManagerCore {
     if (!initialized) {
       throw new Error("Database not initialized in updateIncome");
     }
-    await this.incomeManager.updateIncome(income);
+    await this.managerFactory.getIncomeManager().updateIncome(income);
   }
 
   async deleteIncome(id: string) {
@@ -235,7 +143,7 @@ export class DatabaseManager extends DatabaseManagerCore {
     if (!initialized) {
       throw new Error("Database not initialized in deleteIncome");
     }
-    await this.incomeManager.deleteIncome(id);
+    await this.managerFactory.getIncomeManager().deleteIncome(id);
   }
 
   // Category methods
@@ -246,7 +154,7 @@ export class DatabaseManager extends DatabaseManagerCore {
         console.error("Database not initialized in getCategories");
         return [];
       }
-      return this.categoryManager.getCategories();
+      return this.managerFactory.getCategoryManager().getCategories();
     } catch (error) {
       console.error("Error in getCategories:", error);
       return [];
@@ -258,7 +166,7 @@ export class DatabaseManager extends DatabaseManagerCore {
     if (!initialized) {
       throw new Error("Database not initialized in addCategory");
     }
-    await this.categoryManager.addCategory(category);
+    await this.managerFactory.getCategoryManager().addCategory(category);
   }
 
   async updateCategory(category: Category) {
@@ -266,7 +174,7 @@ export class DatabaseManager extends DatabaseManagerCore {
     if (!initialized) {
       throw new Error("Database not initialized in updateCategory");
     }
-    await this.categoryManager.updateCategory(category);
+    await this.managerFactory.getCategoryManager().updateCategory(category);
   }
 
   async deleteCategory(id: string) {
@@ -274,7 +182,7 @@ export class DatabaseManager extends DatabaseManagerCore {
     if (!initialized) {
       throw new Error("Database not initialized in deleteCategory");
     }
-    await this.categoryManager.deleteCategory(id);
+    await this.managerFactory.getCategoryManager().deleteCategory(id);
   }
 
   async resetCategoryExpenses(categoryId: string) {
@@ -282,14 +190,6 @@ export class DatabaseManager extends DatabaseManagerCore {
     if (!initialized) {
       throw new Error("Database not initialized in resetCategoryExpenses");
     }
-    await this.categoryManager.resetCategoryExpenses(categoryId);
-  }
-
-  async migrateFromLocalStorage() {
-    const initialized = await this.ensureInitialized();
-    if (!initialized) {
-      throw new Error("Database not initialized in migrateFromLocalStorage");
-    }
-    await this.initManager.migrateFromLocalStorage();
+    await this.managerFactory.getCategoryManager().resetCategoryExpenses(categoryId);
   }
 }
