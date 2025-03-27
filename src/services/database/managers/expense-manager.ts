@@ -2,11 +2,13 @@
 import { toast } from "@/components/ui/use-toast";
 import { Expense } from '../models/expense';
 import { BaseDatabaseManager } from '../base-database-manager';
+import { IExpenseManager } from '../interfaces/IExpenseManager';
+import { IQueryManager } from '../interfaces/IQueryManager';
 
 /**
  * Responsible for handling expense-related database operations
  */
-export class ExpenseManager extends BaseDatabaseManager {
+export class ExpenseManager extends BaseDatabaseManager implements IExpenseManager {
   /**
    * Get all expenses from the database
    */
@@ -38,7 +40,7 @@ export class ExpenseManager extends BaseDatabaseManager {
   /**
    * Add a new expense to the database
    */
-  async addExpense(expense: Expense) {
+  async addExpense(expense: Expense): Promise<void> {
     try {
       const initialized = await this.ensureInitialized();
       if (!initialized) {
@@ -64,7 +66,7 @@ export class ExpenseManager extends BaseDatabaseManager {
   /**
    * Update an expense in the database
    */
-  async updateExpense(expense: Expense) {
+  async updateExpense(expense: Expense): Promise<void> {
     try {
       const initialized = await this.ensureInitialized();
       if (!initialized) {
@@ -91,7 +93,7 @@ export class ExpenseManager extends BaseDatabaseManager {
   /**
    * Delete an expense from the database
    */
-  async deleteExpense(id: string) {
+  async deleteExpense(id: string): Promise<void> {
     try {
       const initialized = await this.ensureInitialized();
       if (!initialized) {
@@ -113,5 +115,12 @@ export class ExpenseManager extends BaseDatabaseManager {
       });
       throw error;
     }
+  }
+  
+  /**
+   * Set the query manager for this manager
+   */
+  setQueryManager(queryManager: IQueryManager): void {
+    this.queryManager = queryManager;
   }
 }

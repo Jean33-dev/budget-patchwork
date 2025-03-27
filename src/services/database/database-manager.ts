@@ -4,11 +4,11 @@ import { Expense } from './models/expense';
 import { Budget } from './models/budget';
 import { Category } from './models/category';
 import { BaseDatabaseManager } from './base-database-manager';
-import { DatabaseInitManager } from './database-init-manager';
 import { DatabaseManagerImpl } from './database-manager-impl';
 import { DatabaseManagerFactory } from './database-manager-factory';
+import { IDatabaseManager } from './interfaces/IDatabaseManager';
 
-export class DatabaseManager extends DatabaseManagerImpl {
+export class DatabaseManager extends DatabaseManagerImpl implements IDatabaseManager {
   private managerFactory: DatabaseManagerFactory;
 
   constructor() {
@@ -43,7 +43,7 @@ export class DatabaseManager extends DatabaseManagerImpl {
     }
   }
 
-  async addBudget(budget: Budget) {
+  async addBudget(budget: Budget): Promise<void> {
     const initialized = await this.ensureInitialized();
     if (!initialized) {
       throw new Error("Database not initialized in addBudget");
@@ -51,7 +51,7 @@ export class DatabaseManager extends DatabaseManagerImpl {
     await this.managerFactory.getBudgetManager().addBudget(budget);
   }
 
-  async updateBudget(budget: Budget) {
+  async updateBudget(budget: Budget): Promise<void> {
     const initialized = await this.ensureInitialized();
     if (!initialized) {
       throw new Error("Database not initialized in updateBudget");
@@ -59,7 +59,7 @@ export class DatabaseManager extends DatabaseManagerImpl {
     await this.managerFactory.getBudgetManager().updateBudget(budget);
   }
 
-  async deleteBudget(id: string) {
+  async deleteBudget(id: string): Promise<void> {
     const initialized = await this.ensureInitialized();
     if (!initialized) {
       throw new Error("Database not initialized in deleteBudget");
@@ -82,7 +82,7 @@ export class DatabaseManager extends DatabaseManagerImpl {
     }
   }
 
-  async addExpense(expense: Expense) {
+  async addExpense(expense: Expense): Promise<void> {
     const initialized = await this.ensureInitialized();
     if (!initialized) {
       throw new Error("Database not initialized in addExpense");
@@ -90,7 +90,7 @@ export class DatabaseManager extends DatabaseManagerImpl {
     await this.managerFactory.getExpenseManager().addExpense(expense);
   }
 
-  async updateExpense(expense: Expense) {
+  async updateExpense(expense: Expense): Promise<void> {
     const initialized = await this.ensureInitialized();
     if (!initialized) {
       throw new Error("Database not initialized in updateExpense");
@@ -98,7 +98,7 @@ export class DatabaseManager extends DatabaseManagerImpl {
     await this.managerFactory.getExpenseManager().updateExpense(expense);
   }
 
-  async deleteExpense(id: string) {
+  async deleteExpense(id: string): Promise<void> {
     const initialized = await this.ensureInitialized();
     if (!initialized) {
       throw new Error("Database not initialized in deleteExpense");
@@ -122,7 +122,7 @@ export class DatabaseManager extends DatabaseManagerImpl {
     }
   }
 
-  async addIncome(income: Income) {
+  async addIncome(income: Income): Promise<void> {
     const initialized = await this.ensureInitialized();
     if (!initialized) {
       throw new Error("Database not initialized in addIncome");
@@ -130,7 +130,7 @@ export class DatabaseManager extends DatabaseManagerImpl {
     await this.managerFactory.getIncomeManager().addIncome(income);
   }
 
-  async updateIncome(income: Income) {
+  async updateIncome(income: Income): Promise<void> {
     const initialized = await this.ensureInitialized();
     if (!initialized) {
       throw new Error("Database not initialized in updateIncome");
@@ -138,7 +138,7 @@ export class DatabaseManager extends DatabaseManagerImpl {
     await this.managerFactory.getIncomeManager().updateIncome(income);
   }
 
-  async deleteIncome(id: string) {
+  async deleteIncome(id: string): Promise<void> {
     const initialized = await this.ensureInitialized();
     if (!initialized) {
       throw new Error("Database not initialized in deleteIncome");
@@ -161,7 +161,7 @@ export class DatabaseManager extends DatabaseManagerImpl {
     }
   }
 
-  async addCategory(category: Category) {
+  async addCategory(category: Category): Promise<void> {
     const initialized = await this.ensureInitialized();
     if (!initialized) {
       throw new Error("Database not initialized in addCategory");
@@ -169,7 +169,7 @@ export class DatabaseManager extends DatabaseManagerImpl {
     await this.managerFactory.getCategoryManager().addCategory(category);
   }
 
-  async updateCategory(category: Category) {
+  async updateCategory(category: Category): Promise<void> {
     const initialized = await this.ensureInitialized();
     if (!initialized) {
       throw new Error("Database not initialized in updateCategory");
@@ -177,7 +177,7 @@ export class DatabaseManager extends DatabaseManagerImpl {
     await this.managerFactory.getCategoryManager().updateCategory(category);
   }
 
-  async deleteCategory(id: string) {
+  async deleteCategory(id: string): Promise<void> {
     const initialized = await this.ensureInitialized();
     if (!initialized) {
       throw new Error("Database not initialized in deleteCategory");
@@ -185,7 +185,7 @@ export class DatabaseManager extends DatabaseManagerImpl {
     await this.managerFactory.getCategoryManager().deleteCategory(id);
   }
 
-  async resetCategoryExpenses(categoryId: string) {
+  async resetCategoryExpenses(categoryId: string): Promise<void> {
     const initialized = await this.ensureInitialized();
     if (!initialized) {
       throw new Error("Database not initialized in resetCategoryExpenses");

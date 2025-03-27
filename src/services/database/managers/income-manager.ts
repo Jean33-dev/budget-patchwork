@@ -2,11 +2,13 @@
 import { toast } from "@/components/ui/use-toast";
 import { Income } from '../models/income';
 import { BaseDatabaseManager } from '../base-database-manager';
+import { IIncomeManager } from '../interfaces/IIncomeManager';
+import { IQueryManager } from '../interfaces/IQueryManager';
 
 /**
  * Responsible for handling income-related database operations
  */
-export class IncomeManager extends BaseDatabaseManager {
+export class IncomeManager extends BaseDatabaseManager implements IIncomeManager {
   /**
    * Get all incomes from the database
    */
@@ -18,7 +20,7 @@ export class IncomeManager extends BaseDatabaseManager {
   /**
    * Add a new income to the database
    */
-  async addIncome(income: Income) {
+  async addIncome(income: Income): Promise<void> {
     await this.ensureInitialized();
     await this.queryManager.executeAddIncome(income);
   }
@@ -26,7 +28,7 @@ export class IncomeManager extends BaseDatabaseManager {
   /**
    * Update an existing income in the database
    */
-  async updateIncome(income: Income) {
+  async updateIncome(income: Income): Promise<void> {
     await this.ensureInitialized();
     await this.queryManager.executeUpdateIncome(income);
   }
@@ -34,8 +36,15 @@ export class IncomeManager extends BaseDatabaseManager {
   /**
    * Delete an income from the database
    */
-  async deleteIncome(id: string) {
+  async deleteIncome(id: string): Promise<void> {
     await this.ensureInitialized();
     await this.queryManager.executeDeleteIncome(id);
+  }
+  
+  /**
+   * Set the query manager for this manager
+   */
+  setQueryManager(queryManager: IQueryManager): void {
+    this.queryManager = queryManager;
   }
 }

@@ -4,16 +4,21 @@ import { ExpenseManager } from './managers/expense-manager';
 import { IncomeManager } from './managers/income-manager';
 import { CategoryManager } from './managers/category-manager';
 import { QueryManager } from './query-manager';
+import { IBudgetManager } from './interfaces/IBudgetManager';
+import { IExpenseManager } from './interfaces/IExpenseManager';
+import { IIncomeManager } from './interfaces/IIncomeManager';
+import { ICategoryManager } from './interfaces/ICategoryManager';
+import { IQueryManager } from './interfaces/IQueryManager';
 
 /**
  * Factory that creates and coordinates all specialized database managers
  */
 export class DatabaseManagerFactory {
-  private budgetManager: BudgetManager;
-  private expenseManager: ExpenseManager;
-  private incomeManager: IncomeManager;
-  private categoryManager: CategoryManager;
-  private queryManager: QueryManager;
+  private budgetManager: IBudgetManager;
+  private expenseManager: IExpenseManager;
+  private incomeManager: IIncomeManager;
+  private categoryManager: ICategoryManager;
+  private queryManager: IQueryManager;
   
   constructor() {
     this.queryManager = new QueryManager();
@@ -55,23 +60,23 @@ export class DatabaseManagerFactory {
     this.categoryManager.setQueryManager(this.queryManager);
   }
   
-  getBudgetManager(): BudgetManager {
+  getBudgetManager(): IBudgetManager {
     return this.budgetManager;
   }
   
-  getExpenseManager(): ExpenseManager {
+  getExpenseManager(): IExpenseManager {
     return this.expenseManager;
   }
   
-  getIncomeManager(): IncomeManager {
+  getIncomeManager(): IIncomeManager {
     return this.incomeManager;
   }
   
-  getCategoryManager(): CategoryManager {
+  getCategoryManager(): ICategoryManager {
     return this.categoryManager;
   }
   
-  getQueryManager(): QueryManager {
+  getQueryManager(): IQueryManager {
     return this.queryManager;
   }
 }

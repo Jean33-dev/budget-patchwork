@@ -1,19 +1,16 @@
 
 import { BaseDatabaseManager } from './base-database-manager';
-import { incomeQueries } from './queries/income-queries';
-import { expenseQueries } from './queries/expense-queries';
-import { budgetQueries } from './queries/budget-queries';
-import { categoryQueries } from './queries/category-queries';
-import { IncomeQueryManager } from './query-managers/income-query-manager';
-import { ExpenseQueryManager } from './query-managers/expense-query-manager';
-import { BudgetQueryManager } from './query-managers/budget-query-manager';
-import { CategoryQueryManager } from './query-managers/category-query-manager';
 import { Income } from './models/income';
 import { Expense } from './models/expense';
 import { Budget } from './models/budget';
 import { Category } from './models/category';
+import { IncomeQueryManager } from './query-managers/income-query-manager';
+import { ExpenseQueryManager } from './query-managers/expense-query-manager';
+import { BudgetQueryManager } from './query-managers/budget-query-manager';
+import { CategoryQueryManager } from './query-managers/category-query-manager';
+import { IQueryManager } from './interfaces/IQueryManager';
 
-export class QueryManager extends BaseDatabaseManager {
+export class QueryManager extends BaseDatabaseManager implements IQueryManager {
   private incomeQueryManager: IncomeQueryManager;
   private expenseQueryManager: ExpenseQueryManager;
   private budgetQueryManager: BudgetQueryManager;
