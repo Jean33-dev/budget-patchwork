@@ -2,15 +2,15 @@
 import { toast } from "@/components/ui/use-toast";
 import { QueryManager } from './query-manager';
 import { BaseDatabaseManager } from './base-database-manager';
+import { IQueryManager } from './interfaces/IQueryManager';
 
 /**
  * Core functionality for the database manager
  */
 export class DatabaseManagerCore extends BaseDatabaseManager {
-  declare protected queryManager: QueryManager;
+  declare protected queryManager: IQueryManager;
   protected initializing = false;
   private static initCompletePromise: Promise<boolean> | null = null;
-  // Removed the duplicate static property declaration
 
   constructor() {
     super();

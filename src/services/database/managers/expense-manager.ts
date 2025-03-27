@@ -120,7 +120,8 @@ export class ExpenseManager extends BaseDatabaseManager implements IExpenseManag
   /**
    * Set the query manager for this manager
    */
-  setQueryManager(queryManager: IQueryManager): void {
+  setQueryManager(queryManager: IQueryManager): this {
     this.queryManager = queryManager;
+    return this;
   }
 }

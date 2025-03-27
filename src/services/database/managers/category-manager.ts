@@ -56,7 +56,8 @@ export class CategoryManager extends BaseDatabaseManager implements ICategoryMan
   /**
    * Set the query manager for this manager
    */
-  setQueryManager(queryManager: IQueryManager): void {
+  setQueryManager(queryManager: IQueryManager): this {
     this.queryManager = queryManager;
+    return this;
   }
 }

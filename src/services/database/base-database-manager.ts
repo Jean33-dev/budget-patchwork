@@ -1,12 +1,12 @@
 
 import initSqlJs from 'sql.js';
 import { toast } from "@/components/ui/use-toast";
-import { QueryManager } from './query-manager';
+import { IQueryManager } from './interfaces/IQueryManager';
 
 export class BaseDatabaseManager {
   protected db: any = null;
   protected initialized = false;
-  protected queryManager: QueryManager | null = null;
+  protected queryManager: IQueryManager | null = null;
   private static initializationPromise: Promise<boolean> | null = null;
   private static initializationAttempts = 0;
   private static MAX_ATTEMPTS = 3;
@@ -150,7 +150,7 @@ export class BaseDatabaseManager {
   }
 
   // Setter for the query manager
-  setQueryManager(queryManager: QueryManager) {
+  setQueryManager(queryManager: IQueryManager) {
     this.queryManager = queryManager;
     return this;
   }
