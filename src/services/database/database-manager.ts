@@ -18,7 +18,7 @@ export class DatabaseManager extends DatabaseManagerCore {
   private expenseManager: ExpenseManager;
   private incomeManager: IncomeManager;
   private categoryManager: CategoryManager;
-  private static initializationInProgress = false;
+  // Suppression de la déclaration statique en double qui cause le conflit
 
   constructor() {
     super();
@@ -35,10 +35,11 @@ export class DatabaseManager extends DatabaseManagerCore {
       return true;
     }
     
-    // Prevent concurrent initialization
-    if (DatabaseManager.initializationInProgress) {
+    // Utiliser la propriété statique de la classe parente pour vérifier si l'initialisation est en cours
+    // Nous utiliserons une méthode pour accéder à cette propriété, puisqu'elle est privée
+    if (this.isInitializationInProgress()) {
       console.log("DatabaseManager initialization already in progress, waiting...");
-      while (DatabaseManager.initializationInProgress) {
+      while (this.isInitializationInProgress()) {
         await new Promise(resolve => setTimeout(resolve, 100));
       }
       // Check if initialization was successful
@@ -47,7 +48,8 @@ export class DatabaseManager extends DatabaseManagerCore {
       }
     }
     
-    DatabaseManager.initializationInProgress = true;
+    // Utiliser une méthode pour définir l'état d'initialisation
+    this.setInitializationInProgress(true);
     
     try {
       // First initialize the core
@@ -106,7 +108,8 @@ export class DatabaseManager extends DatabaseManagerCore {
         return false;
       }
     } finally {
-      DatabaseManager.initializationInProgress = false;
+      // Utiliser une méthode pour réinitialiser l'état d'initialisation
+      this.setInitializationInProgress(false);
     }
   }
   

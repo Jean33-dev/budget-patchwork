@@ -10,10 +10,25 @@ export class DatabaseManagerCore extends BaseDatabaseManager {
   declare protected queryManager: QueryManager;
   protected initializing = false;
   private static initCompletePromise: Promise<boolean> | null = null;
+  private static initializationInProgress = false;
 
   constructor() {
     super();
     this.queryManager = new QueryManager();
+  }
+
+  /**
+   * Vérifie si l'initialisation est en cours
+   */
+  protected isInitializationInProgress(): boolean {
+    return DatabaseManagerCore.initializationInProgress;
+  }
+
+  /**
+   * Définit l'état d'initialisation
+   */
+  protected setInitializationInProgress(value: boolean): void {
+    DatabaseManagerCore.initializationInProgress = value;
   }
 
   /**
