@@ -24,14 +24,6 @@ export class ExpenseManager extends BaseDatabaseManager {
   }
 
   /**
-   * Update an existing expense in the database
-   */
-  async updateExpense(expense: Expense) {
-    await this.ensureInitialized();
-    await this.queryManager.executeUpdateExpense(expense);
-  }
-
-  /**
    * Delete an expense from the database
    */
   async deleteExpense(id: string) {

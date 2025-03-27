@@ -6,14 +6,14 @@ import { Category } from './models/category';
 import { databaseService } from './database-service';
 import { DatabaseManager } from './database-manager';
 
-// Create a single instance of DatabaseManager
+// Création d'une instance unique de DatabaseManager
 const databaseManager = new DatabaseManager();
 
-// Export the database
+// Export de la base de données
 export const db = databaseService;
 
-// Export the database manager
+// Export du gestionnaire de base de données
 export const dbManager = databaseManager;
 
-// Export types
+// Export des types
 export type { Income, Expense, Budget, Category };

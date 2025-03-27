@@ -7,10 +7,9 @@ import { BaseDatabaseManager } from './base-database-manager';
  * Core functionality for the database manager
  */
 export class DatabaseManagerCore extends BaseDatabaseManager {
-  // Use declare to indicate we're using the property from the base class without redefining it
-  protected declare queryManager: QueryManager;
-  // Make initializing protected instead of private to match base class
-  protected initializing = false;
+  protected queryManager: QueryManager;
+  private initialized = false;
+  private initializing = false;
 
   constructor() {
     super();
