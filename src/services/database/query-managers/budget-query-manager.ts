@@ -3,19 +3,19 @@ import { toast } from "@/components/ui/use-toast";
 import { QueryManager } from '../query-manager';
 import { Budget } from '../models/budget';
 import { budgetQueries } from '../queries/budget-queries';
+import { BaseQueryManager } from './base-query-manager';
 
-export class BudgetQueryManager {
-  private parent: QueryManager;
-
+export class BudgetQueryManager extends BaseQueryManager {
   constructor(parent: QueryManager) {
-    this.parent = parent;
+    super(parent);
   }
 
   async getAll(): Promise<Budget[]> {
     try {
-      const success = await this.parent.ensureInitialized();
-      if (!success || !this.parent.db) return [];
-      return budgetQueries.getAll(this.parent.db);
+      const success = await this.ensureParentInitialized();
+      if (!success) return [];
+      const db = this.getDb();
+      return budgetQueries.getAll(db);
     } catch (error) {
       console.error("Error getting budgets:", error);
       toast({
@@ -29,9 +29,10 @@ export class BudgetQueryManager {
 
   async add(budget: Budget): Promise<void> {
     try {
-      const success = await this.parent.ensureInitialized();
-      if (!success || !this.parent.db) return;
-      budgetQueries.add(this.parent.db, budget);
+      const success = await this.ensureParentInitialized();
+      if (!success) return;
+      const db = this.getDb();
+      budgetQueries.add(db, budget);
     } catch (error) {
       console.error("Error adding budget:", error);
       toast({
@@ -45,9 +46,10 @@ export class BudgetQueryManager {
 
   async update(budget: Budget): Promise<void> {
     try {
-      const success = await this.parent.ensureInitialized();
-      if (!success || !this.parent.db) return;
-      budgetQueries.update(this.parent.db, budget);
+      const success = await this.ensureParentInitialized();
+      if (!success) return;
+      const db = this.getDb();
+      budgetQueries.update(db, budget);
     } catch (error) {
       console.error("Error updating budget:", error);
       toast({
@@ -61,9 +63,10 @@ export class BudgetQueryManager {
 
   async delete(id: string): Promise<void> {
     try {
-      const success = await this.parent.ensureInitialized();
-      if (!success || !this.parent.db || !id) return;
-      budgetQueries.delete(this.parent.db, id);
+      const success = await this.ensureParentInitialized();
+      if (!success || !id) return;
+      const db = this.getDb();
+      budgetQueries.delete(db, id);
     } catch (error) {
       console.error("Error deleting budget:", error);
       toast({

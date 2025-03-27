@@ -3,19 +3,19 @@ import { toast } from "@/components/ui/use-toast";
 import { QueryManager } from '../query-manager';
 import { Category } from '../models/category';
 import { categoryQueries } from '../queries/category-queries';
+import { BaseQueryManager } from './base-query-manager';
 
-export class CategoryQueryManager {
-  private parent: QueryManager;
-
+export class CategoryQueryManager extends BaseQueryManager {
   constructor(parent: QueryManager) {
-    this.parent = parent;
+    super(parent);
   }
 
   async getAll(): Promise<Category[]> {
     try {
-      const success = await this.parent.ensureInitialized();
-      if (!success || !this.parent.db) return [];
-      return categoryQueries.getAll(this.parent.db);
+      const success = await this.ensureParentInitialized();
+      if (!success) return [];
+      const db = this.getDb();
+      return categoryQueries.getAll(db);
     } catch (error) {
       console.error("Error getting categories:", error);
       toast({
@@ -29,9 +29,10 @@ export class CategoryQueryManager {
 
   async add(category: Category): Promise<void> {
     try {
-      const success = await this.parent.ensureInitialized();
-      if (!success || !this.parent.db) return;
-      categoryQueries.add(this.parent.db, category);
+      const success = await this.ensureParentInitialized();
+      if (!success) return;
+      const db = this.getDb();
+      categoryQueries.add(db, category);
     } catch (error) {
       console.error("Error adding category:", error);
       toast({
@@ -45,9 +46,10 @@ export class CategoryQueryManager {
 
   async update(category: Category): Promise<void> {
     try {
-      const success = await this.parent.ensureInitialized();
-      if (!success || !this.parent.db) return;
-      categoryQueries.update(this.parent.db, category);
+      const success = await this.ensureParentInitialized();
+      if (!success) return;
+      const db = this.getDb();
+      categoryQueries.update(db, category);
     } catch (error) {
       console.error("Error updating category:", error);
       toast({
@@ -61,9 +63,10 @@ export class CategoryQueryManager {
 
   async delete(id: string): Promise<void> {
     try {
-      const success = await this.parent.ensureInitialized();
-      if (!success || !this.parent.db || !id) return;
-      categoryQueries.delete(this.parent.db, id);
+      const success = await this.ensureParentInitialized();
+      if (!success || !id) return;
+      const db = this.getDb();
+      categoryQueries.delete(db, id);
     } catch (error) {
       console.error("Error deleting category:", error);
       toast({

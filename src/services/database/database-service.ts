@@ -299,6 +299,18 @@ class DatabaseService {
   }
 
   /**
+   * Met à jour une dépense existante
+   */
+  async updateExpense(expense: Expense): Promise<void> {
+    if (!await this.ensureInitialized()) return;
+    
+    await this.adapter!.run(
+      'UPDATE expenses SET title = ?, budget = ?, spent = ?, linkedBudgetId = ?, date = ? WHERE id = ?',
+      [expense.title, expense.budget, expense.spent, expense.linkedBudgetId, expense.date, expense.id]
+    );
+  }
+
+  /**
    * Supprime une dépense
    */
   async deleteExpense(id: string): Promise<void> {

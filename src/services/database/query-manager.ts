@@ -27,6 +27,16 @@ export class QueryManager extends BaseDatabaseManager {
     this.categoryQueryManager = new CategoryQueryManager(this);
   }
 
+  // Méthodes pour permettre aux query managers d'accéder à la base de données
+  getDb(): any {
+    return this.db;
+  }
+
+  // Expose ensureInitialized aux gestionnaires de requête
+  async ensureInitialized(): Promise<boolean> {
+    return super.ensureInitialized();
+  }
+
   // Income operations
   async executeGetIncomes(): Promise<Income[]> {
     return this.incomeQueryManager.getAll();

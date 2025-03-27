@@ -3,19 +3,19 @@ import { toast } from "@/components/ui/use-toast";
 import { QueryManager } from '../query-manager';
 import { Income } from '../models/income';
 import { incomeQueries } from '../queries/income-queries';
+import { BaseQueryManager } from './base-query-manager';
 
-export class IncomeQueryManager {
-  private parent: QueryManager;
-
+export class IncomeQueryManager extends BaseQueryManager {
   constructor(parent: QueryManager) {
-    this.parent = parent;
+    super(parent);
   }
 
   async getAll(): Promise<Income[]> {
     try {
-      const success = await this.parent.ensureInitialized();
-      if (!success || !this.parent.db) return [];
-      return incomeQueries.getAll(this.parent.db);
+      const success = await this.ensureParentInitialized();
+      if (!success) return [];
+      const db = this.getDb();
+      return incomeQueries.getAll(db);
     } catch (error) {
       console.error("Error getting incomes:", error);
       toast({
@@ -29,9 +29,10 @@ export class IncomeQueryManager {
 
   async add(income: Income): Promise<void> {
     try {
-      const success = await this.parent.ensureInitialized();
-      if (!success || !this.parent.db) return;
-      incomeQueries.add(this.parent.db, income);
+      const success = await this.ensureParentInitialized();
+      if (!success) return;
+      const db = this.getDb();
+      incomeQueries.add(db, income);
     } catch (error) {
       console.error("Error adding income:", error);
       toast({
@@ -45,9 +46,10 @@ export class IncomeQueryManager {
 
   async update(income: Income): Promise<void> {
     try {
-      const success = await this.parent.ensureInitialized();
-      if (!success || !this.parent.db) return;
-      incomeQueries.update(this.parent.db, income);
+      const success = await this.ensureParentInitialized();
+      if (!success) return;
+      const db = this.getDb();
+      incomeQueries.update(db, income);
     } catch (error) {
       console.error("Error updating income:", error);
       toast({
@@ -61,9 +63,10 @@ export class IncomeQueryManager {
 
   async delete(id: string): Promise<void> {
     try {
-      const success = await this.parent.ensureInitialized();
-      if (!success || !this.parent.db || !id) return;
-      incomeQueries.delete(this.parent.db, id);
+      const success = await this.ensureParentInitialized();
+      if (!success || !id) return;
+      const db = this.getDb();
+      incomeQueries.delete(db, id);
     } catch (error) {
       console.error("Error deleting income:", error);
       toast({

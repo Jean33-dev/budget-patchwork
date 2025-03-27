@@ -3,19 +3,19 @@ import { toast } from "@/components/ui/use-toast";
 import { QueryManager } from '../query-manager';
 import { Expense } from '../models/expense';
 import { expenseQueries } from '../queries/expense-queries';
+import { BaseQueryManager } from './base-query-manager';
 
-export class ExpenseQueryManager {
-  private parent: QueryManager;
-
+export class ExpenseQueryManager extends BaseQueryManager {
   constructor(parent: QueryManager) {
-    this.parent = parent;
+    super(parent);
   }
 
   async getAll(): Promise<Expense[]> {
     try {
-      const success = await this.parent.ensureInitialized();
-      if (!success || !this.parent.db) return [];
-      return expenseQueries.getAll(this.parent.db);
+      const success = await this.ensureParentInitialized();
+      if (!success) return [];
+      const db = this.getDb();
+      return expenseQueries.getAll(db);
     } catch (error) {
       console.error("Error getting expenses:", error);
       toast({
@@ -29,9 +29,10 @@ export class ExpenseQueryManager {
 
   async add(expense: Expense): Promise<void> {
     try {
-      const success = await this.parent.ensureInitialized();
-      if (!success || !this.parent.db) return;
-      expenseQueries.add(this.parent.db, expense);
+      const success = await this.ensureParentInitialized();
+      if (!success) return;
+      const db = this.getDb();
+      expenseQueries.add(db, expense);
     } catch (error) {
       console.error("Error adding expense:", error);
       toast({
@@ -45,9 +46,10 @@ export class ExpenseQueryManager {
 
   async update(expense: Expense): Promise<void> {
     try {
-      const success = await this.parent.ensureInitialized();
-      if (!success || !this.parent.db) return;
-      expenseQueries.update(this.parent.db, expense);
+      const success = await this.ensureParentInitialized();
+      if (!success) return;
+      const db = this.getDb();
+      expenseQueries.update(db, expense);
     } catch (error) {
       console.error("Error updating expense:", error);
       toast({
@@ -61,9 +63,10 @@ export class ExpenseQueryManager {
 
   async delete(id: string): Promise<void> {
     try {
-      const success = await this.parent.ensureInitialized();
-      if (!success || !this.parent.db || !id) return;
-      expenseQueries.delete(this.parent.db, id);
+      const success = await this.ensureParentInitialized();
+      if (!success || !id) return;
+      const db = this.getDb();
+      expenseQueries.delete(db, id);
     } catch (error) {
       console.error("Error deleting expense:", error);
       toast({
