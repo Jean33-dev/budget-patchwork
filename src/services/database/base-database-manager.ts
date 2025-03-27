@@ -1,13 +1,19 @@
 
 import initSqlJs from 'sql.js';
 import { toast } from "@/components/ui/use-toast";
+import { QueryManager } from './query-manager';
 
 export class BaseDatabaseManager {
   protected db: any = null;
   protected initialized = false;
+  protected queryManager: QueryManager | null = null;
   private static initializationPromise: Promise<boolean> | null = null;
   private static initializationAttempts = 0;
   private static MAX_ATTEMPTS = 3;
+
+  constructor() {
+    this.queryManager = null;
+  }
 
   async init() {
     // Si l'initialisation est déjà en cours, attendez qu'elle se termine
@@ -138,6 +144,18 @@ export class BaseDatabaseManager {
   // Mutateur public pour la propriété db
   setDb(db: any) {
     this.db = db;
+    
+    // If a query manager exists, update its database reference too
+    if (this.queryManager) {
+      this.queryManager.setDb(db);
+    }
+    
+    return this;
+  }
+
+  // Setter for the query manager
+  setQueryManager(queryManager: QueryManager) {
+    this.queryManager = queryManager;
     return this;
   }
 
