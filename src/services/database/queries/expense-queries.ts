@@ -70,6 +70,34 @@ export const expenseQueries = {
     }
   },
   
+  update: (db: any, expense: Expense): void => {
+    try {
+      if (!expense || !expense.id) {
+        throw new Error("Invalid expense data for updating");
+      }
+      
+      console.log("Updating expense:", expense);
+      const stmt = db.prepare(
+        'UPDATE expenses SET title = ?, budget = ?, spent = ?, linkedBudgetId = ?, date = ? WHERE id = ?'
+      );
+      
+      stmt.run([
+        expense.title, 
+        expense.budget, 
+        expense.spent, 
+        expense.linkedBudgetId || null, 
+        expense.date,
+        expense.id
+      ]);
+      
+      stmt.free();
+      console.log("Expense updated successfully in database");
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour d'une dépense:", error);
+      throw error;
+    }
+  },
+  
   delete: (db: any, id: string): void => {
     try {
       if (!id) {

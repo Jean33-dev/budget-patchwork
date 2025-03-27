@@ -113,6 +113,11 @@ export class DatabaseManager extends DatabaseManagerCore {
     await this.expenseManager.addExpense(expense);
   }
 
+  async updateExpense(expense: Expense) {
+    await this.ensureInitialized();
+    await this.expenseManager.updateExpense(expense);
+  }
+
   async deleteExpense(id: string) {
     await this.ensureInitialized();
     console.log(`Demande de suppression de la dépense avec l'ID: ${id}`);

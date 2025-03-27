@@ -7,7 +7,7 @@ import { BaseDatabaseManager } from './base-database-manager';
  * Core functionality for the database manager
  */
 export class DatabaseManagerCore extends BaseDatabaseManager {
-  protected queryManager: QueryManager;
+  declare protected queryManager: QueryManager;
   private initialized = false;
   private initializing = false;
 

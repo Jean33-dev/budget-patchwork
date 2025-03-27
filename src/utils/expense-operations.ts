@@ -52,9 +52,8 @@ export const expenseOperations = {
       
       console.log("Updating expense:", expenseToUpdate);
       
-      // Delete old expense and add updated one (since we don't have a direct update method)
-      await db.deleteExpense(expenseToUpdate.id);
-      await db.addExpense(expenseToUpdate);
+      // Now using the proper update method instead of delete and add
+      await db.updateExpense(expenseToUpdate);
       
       toast({
         title: "Dépense modifiée",

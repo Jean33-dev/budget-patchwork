@@ -4,250 +4,94 @@ import { incomeQueries } from './queries/income-queries';
 import { expenseQueries } from './queries/expense-queries';
 import { budgetQueries } from './queries/budget-queries';
 import { categoryQueries } from './queries/category-queries';
+import { IncomeQueryManager } from './query-managers/income-query-manager';
+import { ExpenseQueryManager } from './query-managers/expense-query-manager';
+import { BudgetQueryManager } from './query-managers/budget-query-manager';
+import { CategoryQueryManager } from './query-managers/category-query-manager';
 import { Income } from './models/income';
 import { Expense } from './models/expense';
 import { Budget } from './models/budget';
 import { Category } from './models/category';
-import { toast } from "@/components/ui/use-toast";
 
 export class QueryManager extends BaseDatabaseManager {
+  private incomeQueryManager: IncomeQueryManager;
+  private expenseQueryManager: ExpenseQueryManager;
+  private budgetQueryManager: BudgetQueryManager;
+  private categoryQueryManager: CategoryQueryManager;
+
+  constructor() {
+    super();
+    this.incomeQueryManager = new IncomeQueryManager(this);
+    this.expenseQueryManager = new ExpenseQueryManager(this);
+    this.budgetQueryManager = new BudgetQueryManager(this);
+    this.categoryQueryManager = new CategoryQueryManager(this);
+  }
+
+  // Income operations
   async executeGetIncomes(): Promise<Income[]> {
-    try {
-      const success = await this.ensureInitialized();
-      if (!success || !this.db) return [];
-      return incomeQueries.getAll(this.db);
-    } catch (error) {
-      console.error("Error getting incomes:", error);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Impossible de récupérer les revenus"
-      });
-      return [];
-    }
+    return this.incomeQueryManager.getAll();
   }
 
   async executeAddIncome(income: Income): Promise<void> {
-    try {
-      const success = await this.ensureInitialized();
-      if (!success || !this.db) return;
-      incomeQueries.add(this.db, income);
-    } catch (error) {
-      console.error("Error adding income:", error);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Impossible d'ajouter le revenu"
-      });
-      throw error;
-    }
+    return this.incomeQueryManager.add(income);
   }
 
   async executeUpdateIncome(income: Income): Promise<void> {
-    try {
-      const success = await this.ensureInitialized();
-      if (!success || !this.db) return;
-      incomeQueries.update(this.db, income);
-    } catch (error) {
-      console.error("Error updating income:", error);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Impossible de mettre à jour le revenu"
-      });
-      throw error;
-    }
+    return this.incomeQueryManager.update(income);
   }
 
   async executeDeleteIncome(id: string): Promise<void> {
-    try {
-      const success = await this.ensureInitialized();
-      if (!success || !this.db || !id) return;
-      incomeQueries.delete(this.db, id);
-    } catch (error) {
-      console.error("Error deleting income:", error);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Impossible de supprimer le revenu"
-      });
-      throw error;
-    }
+    return this.incomeQueryManager.delete(id);
   }
 
+  // Expense operations
   async executeGetExpenses(): Promise<Expense[]> {
-    try {
-      const success = await this.ensureInitialized();
-      if (!success || !this.db) return [];
-      return expenseQueries.getAll(this.db);
-    } catch (error) {
-      console.error("Error getting expenses:", error);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Impossible de récupérer les dépenses"
-      });
-      return [];
-    }
+    return this.expenseQueryManager.getAll();
   }
 
   async executeAddExpense(expense: Expense): Promise<void> {
-    try {
-      const success = await this.ensureInitialized();
-      if (!success || !this.db) return;
-      expenseQueries.add(this.db, expense);
-    } catch (error) {
-      console.error("Error adding expense:", error);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Impossible d'ajouter la dépense"
-      });
-      throw error;
-    }
+    return this.expenseQueryManager.add(expense);
+  }
+
+  async executeUpdateExpense(expense: Expense): Promise<void> {
+    return this.expenseQueryManager.update(expense);
   }
 
   async executeDeleteExpense(id: string): Promise<void> {
-    try {
-      const success = await this.ensureInitialized();
-      if (!success || !this.db || !id) return;
-      expenseQueries.delete(this.db, id);
-    } catch (error) {
-      console.error("Error deleting expense:", error);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Impossible de supprimer la dépense"
-      });
-      throw error;
-    }
+    return this.expenseQueryManager.delete(id);
   }
 
+  // Budget operations
   async executeGetBudgets(): Promise<Budget[]> {
-    try {
-      const success = await this.ensureInitialized();
-      if (!success || !this.db) return [];
-      return budgetQueries.getAll(this.db);
-    } catch (error) {
-      console.error("Error getting budgets:", error);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Impossible de récupérer les budgets"
-      });
-      return [];
-    }
+    return this.budgetQueryManager.getAll();
   }
 
   async executeAddBudget(budget: Budget): Promise<void> {
-    try {
-      const success = await this.ensureInitialized();
-      if (!success || !this.db) return;
-      budgetQueries.add(this.db, budget);
-    } catch (error) {
-      console.error("Error adding budget:", error);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Impossible d'ajouter le budget"
-      });
-      throw error;
-    }
+    return this.budgetQueryManager.add(budget);
   }
 
   async executeUpdateBudget(budget: Budget): Promise<void> {
-    try {
-      const success = await this.ensureInitialized();
-      if (!success || !this.db) return;
-      budgetQueries.update(this.db, budget);
-    } catch (error) {
-      console.error("Error updating budget:", error);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Impossible de mettre à jour le budget"
-      });
-      throw error;
-    }
+    return this.budgetQueryManager.update(budget);
   }
 
   async executeDeleteBudget(id: string): Promise<void> {
-    try {
-      const success = await this.ensureInitialized();
-      if (!success || !this.db || !id) return;
-      budgetQueries.delete(this.db, id);
-    } catch (error) {
-      console.error("Error deleting budget:", error);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Impossible de supprimer le budget"
-      });
-      throw error;
-    }
+    return this.budgetQueryManager.delete(id);
   }
 
+  // Category operations
   async executeGetCategories(): Promise<Category[]> {
-    try {
-      const success = await this.ensureInitialized();
-      if (!success || !this.db) return [];
-      return categoryQueries.getAll(this.db);
-    } catch (error) {
-      console.error("Error getting categories:", error);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Impossible de récupérer les catégories"
-      });
-      return [];
-    }
+    return this.categoryQueryManager.getAll();
   }
 
   async executeAddCategory(category: Category): Promise<void> {
-    try {
-      const success = await this.ensureInitialized();
-      if (!success || !this.db) return;
-      categoryQueries.add(this.db, category);
-    } catch (error) {
-      console.error("Error adding category:", error);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Impossible d'ajouter la catégorie"
-      });
-      throw error;
-    }
+    return this.categoryQueryManager.add(category);
   }
 
   async executeUpdateCategory(category: Category): Promise<void> {
-    try {
-      const success = await this.ensureInitialized();
-      if (!success || !this.db) return;
-      categoryQueries.update(this.db, category);
-    } catch (error) {
-      console.error("Error updating category:", error);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Impossible de mettre à jour la catégorie"
-      });
-      throw error;
-    }
+    return this.categoryQueryManager.update(category);
   }
 
   async executeDeleteCategory(id: string): Promise<void> {
-    try {
-      const success = await this.ensureInitialized();
-      if (!success || !this.db || !id) return;
-      categoryQueries.delete(this.db, id);
-    } catch (error) {
-      console.error("Error deleting category:", error);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Impossible de supprimer la catégorie"
-      });
-      throw error;
-    }
+    return this.categoryQueryManager.delete(id);
   }
 }
