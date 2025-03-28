@@ -68,19 +68,13 @@ export class BaseDatabaseManager {
       }
       
       try {
-        console.log("Initializing SQL.js with dynamic import...");
-        // Utiliser l'import dynamique pour SQL.js avec gestion d'erreur améliorée
-        const SQL = await initSqlJs().catch(async (err) => {
-          console.error("Error with default SQL.js initialization:", err);
-          console.log("Trying with fixed path...");
-          
-          // Essayer avec un chemin explicite
-          return await initSqlJs({
-            locateFile: () => '/sql-wasm.wasm'
-          });
+        console.log("Initializing SQL.js with absolute path...");
+        // Tentative avec un chemin absolu
+        const SQL = await initSqlJs({
+          locateFile: (filename) => `/sql-wasm.wasm`
         });
         
-        console.log("SQL.js initialized successfully");
+        console.log("SQL.js initialized successfully with absolute path");
         this.db = new SQL.Database();
         this.initialized = true;
         
@@ -89,8 +83,38 @@ export class BaseDatabaseManager {
         
         return true;
       } catch (sqlError) {
-        console.error("All SQL.js initialization attempts failed:", sqlError);
-        throw sqlError;
+        console.error("SQL.js initialization with absolute path failed:", sqlError);
+        
+        // Tentative avec un chemin relatif
+        try {
+          console.log("Trying with relative path...");
+          const SQL = await initSqlJs({
+            locateFile: (filename) => `./sql-wasm.wasm`
+          });
+          
+          console.log("SQL.js initialized successfully with relative path");
+          this.db = new SQL.Database();
+          this.initialized = true;
+          BaseDatabaseManager.initializationAttempts = 0;
+          return true;
+        } catch (relativeError) {
+          console.error("Relative path initialization failed:", relativeError);
+          
+          // Dernière tentative avec l'initialisation par défaut
+          try {
+            console.log("Trying with default initialization...");
+            const SQL = await initSqlJs();
+            
+            console.log("SQL.js initialized successfully with default settings");
+            this.db = new SQL.Database();
+            this.initialized = true;
+            BaseDatabaseManager.initializationAttempts = 0;
+            return true;
+          } catch (defaultError) {
+            console.error("Default initialization failed:", defaultError);
+            throw defaultError;
+          }
+        }
       }
     } catch (err) {
       console.error('Error initializing database:', err);
