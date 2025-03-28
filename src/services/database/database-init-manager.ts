@@ -1,170 +1,121 @@
-import { BaseDatabaseManager } from './base-database-manager';
-import { incomeQueries } from './queries/income-queries';
-import { expenseQueries } from './queries/expense-queries';
-import { budgetQueries } from './queries/budget-queries';
-import { categoryQueries } from './queries/category-queries';
+
+import { SQLiteAdapter, createSQLiteAdapter } from './sqlite-adapter';
+import { InitializationManager } from './initialization-manager';
 import { toast } from "@/components/ui/use-toast";
 
-export class DatabaseInitManager extends BaseDatabaseManager {
+/**
+ * Class responsible for database initialization
+ */
+export class DatabaseInitManager {
+  private adapter: SQLiteAdapter | null = null;
+  private initialized = false;
+  private initializing = false;
+  private initAttempts = 0;
+  private readonly MAX_INIT_ATTEMPTS = 3;
+  
+  constructor() {
+    this.initialized = false;
+  }
+  
+  /**
+   * Get the current SQLite adapter
+   */
+  getAdapter(): SQLiteAdapter | null {
+    return this.adapter;
+  }
+  
+  /**
+   * Check if the database is initialized
+   */
+  isInitialized(): boolean {
+    return this.initialized;
+  }
+  
+  /**
+   * Reset the initialization attempts counter
+   */
+  resetInitializationAttempts(): void {
+    this.initAttempts = 0;
+  }
+  
+  /**
+   * Initialize the database with the appropriate adapter
+   */
   async init(): Promise<boolean> {
+    // Si déjà initialisé, retourne true
+    if (this.initialized && this.adapter) {
+      console.log("Base de données déjà initialisée");
+      return true;
+    }
+    
+    // Si l'initialisation est en cours, attendez
+    if (this.initializing) {
+      console.log("Initialisation de la base de données en cours...");
+      while (this.initializing) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+      return this.initialized;
+    }
+    
+    this.initializing = true;
+    this.initAttempts++;
+    
     try {
-      // Initialiser la classe de base
-      console.log("Initializing base database manager...");
-      const success = await super.init();
-      if (!success) {
-        console.error("Failed to initialize base database manager");
-        return false;
+      console.log(`Tentative d'initialisation de la base de données (${this.initAttempts}/${this.MAX_INIT_ATTEMPTS})...`);
+      
+      // Créer l'adaptateur SQLite approprié selon l'environnement
+      this.adapter = await createSQLiteAdapter();
+      
+      // Initialiser l'adaptateur
+      const adapterInitialized = await this.adapter.init();
+      if (!adapterInitialized) {
+        throw new Error("Échec de l'initialisation de l'adaptateur SQLite");
       }
       
-      console.log("Creating database tables...");
+      // Create an initialization manager
+      const initManager = new InitializationManager(this.adapter);
       
-      // Créer les tables avec gestion des erreurs
-      try {
-        this.db.run(incomeQueries.createTable);
-        this.db.run(expenseQueries.createTable);
-        this.db.run(budgetQueries.createTable);
-        this.db.run(categoryQueries.createTable);
-        console.log("Database tables created successfully");
-      } catch (tableError) {
-        console.error("Error creating database tables:", tableError);
-        toast({
-          variant: "destructive",
-          title: "Erreur de création des tables",
-          description: "Impossible de créer les tables dans la base de données."
-        });
-        return false;
-      }
-
-      // Ajouter des données de test
-      const currentDate = new Date().toISOString().split('T')[0];
+      // Create the database tables
+      await initManager.createTables();
       
-      try {
-        // Vérifier si des données existent déjà dans les tables
-        const budgetsCheckResult = this.db.exec("SELECT COUNT(*) FROM budgets");
-        const budgetsCount = budgetsCheckResult[0]?.values[0][0] || 0;
-        
-        console.log(`Existing budgets count: ${budgetsCount}`);
-        
-        if (budgetsCount === 0) {
-          console.log("No existing budgets, adding sample data...");
-          
-          // Ajouter des budgets
-          const budgetInsertQuery = budgetQueries.sampleData(currentDate);
-          this.db.run(budgetInsertQuery);
-          console.log("Budget sample data added");
-          
-          // Ajouter des dépenses liées aux budgets
-          const expenseInsertQuery = budgetQueries.expenseSampleData(currentDate);
-          // Préparer la requête avec la date actuelle pour tous les paramètres
-          const stmt = this.db.prepare(expenseInsertQuery);
-          stmt.run([currentDate, currentDate, currentDate, currentDate]);
-          stmt.free();
-          console.log("Expense sample data added");
-          
-          console.log("Sample data added successfully");
-        } else {
-          console.log(`${budgetsCount} budgets found, no need to add sample data`);
-        }
-      } catch (checkError) {
-        console.error("Error checking or adding sample data:", checkError);
-        // Continue même en cas d'erreur avec les données d'exemple
-      }
-
-      console.log("Database initialized successfully");
-      
-      toast({
-        title: "Base de données initialisée",
-        description: "La base de données a été initialisée avec succès."
-      });
+      // Check if sample data needs to be added
+      await initManager.checkAndAddSampleData();
       
       this.initialized = true;
-      return true;
-
-    } catch (err) {
-      console.error('Error initializing database:', err);
-      toast({
-        variant: "destructive",
-        title: "Erreur d'initialisation",
-        description: "Impossible d'initialiser la base de données. Veuillez rafraîchir la page."
-      });
-      this.initialized = false;
-      this.db = null;
-      return false;
-    }
-  }
-
-  async migrateFromLocalStorage(): Promise<boolean> {
-    try {
-      // Ensure database is initialized and capture the result
-      const initialized = await this.ensureInitialized();
-      
-      // Explicitly check the boolean result
-      if (!initialized) {
-        console.error("Database initialization failed during migration");
-        return false;
-      }
-      
-      if (!this.db) {
-        console.error("Database instance is null after initialization");
-        return false;
-      }
-      
-      // Migrate incomes
-      const storedIncomes = localStorage.getItem('app_incomes');
-      if (storedIncomes) {
-        const incomes = JSON.parse(storedIncomes);
-        for (const income of incomes) {
-          incomeQueries.add(this.db, income);
-        }
-      }
-
-      // Migrate expenses
-      const storedExpenses = localStorage.getItem('app_expenses');
-      if (storedExpenses) {
-        const expenses = JSON.parse(storedExpenses);
-        for (const expense of expenses) {
-          expenseQueries.add(this.db, expense);
-        }
-      }
-
-      // Migrate budgets
-      const storedBudgets = localStorage.getItem('app_budgets');
-      if (storedBudgets) {
-        const budgets = JSON.parse(storedBudgets);
-        for (const budget of budgets) {
-          budgetQueries.add(this.db, budget);
-        }
-      }
-
-      // Migrate categories
-      const storedCategories = localStorage.getItem('app_categories');
-      if (storedCategories) {
-        const categories = JSON.parse(storedCategories);
-        for (const category of categories) {
-          categoryQueries.add(this.db, category);
-        }
-      }
-
-      // Remove old data from localStorage
-      localStorage.removeItem('app_incomes');
-      localStorage.removeItem('app_expenses');
-      localStorage.removeItem('app_budgets');
-      localStorage.removeItem('app_categories');
-      
-      toast({
-        title: "Migration terminée",
-        description: "Données migrées avec succès depuis localStorage."
-      });
+      console.log("Base de données initialisée avec succès");
       
       return true;
     } catch (error) {
-      console.error("Error migrating from localStorage:", error);
-      toast({
-        variant: "destructive",
-        title: "Erreur de migration",
-        description: "Impossible de migrer les données depuis localStorage."
-      });
+      console.error("Erreur lors de l'initialisation de la base de données:", error);
+      
+      // Si on n'a pas dépassé le nombre max de tentatives, on peut réessayer automatiquement
+      if (this.initAttempts < this.MAX_INIT_ATTEMPTS) {
+        this.initializing = false;
+        console.log(`Nouvelle tentative d'initialisation (${this.initAttempts + 1}/${this.MAX_INIT_ATTEMPTS})...`);
+        // On laisse le code appelant décider s'il faut réessayer
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Erreur d'initialisation",
+          description: "Impossible d'initialiser la base de données après plusieurs tentatives."
+        });
+        this.initialized = false;
+        this.adapter = null;
+      }
+      
       return false;
+    } finally {
+      this.initializing = false;
     }
+  }
+  
+  /**
+   * Ensure the database is initialized
+   */
+  async ensureInitialized(): Promise<boolean> {
+    if (!this.initialized || !this.adapter) {
+      return await this.init();
+    }
+    return true;
   }
 }
