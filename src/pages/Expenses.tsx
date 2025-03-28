@@ -16,7 +16,7 @@ const Expenses = () => {
   const budgetId = searchParams.get('budgetId');
   const [isRetrying, setIsRetrying] = useState(false);
   const [retryAttempt, setRetryAttempt] = useState(1);
-  const maxRetryAttempts = 3;
+  const maxRetryAttempts = 5; // Increased from 3 to 5
   
   const {
     expenses,
@@ -32,13 +32,22 @@ const Expenses = () => {
     initAttempted
   } = useExpenseManagement(budgetId);
 
-  // Auto-retry on initial load failure
+  // Auto-retry on initial load failure with progressive delay
   useEffect(() => {
     if (error && initAttempted && retryAttempt < maxRetryAttempts) {
-      console.log(`Auto-retrying due to error (attempt ${retryAttempt + 1})`);
-      handleRetry();
+      console.log(`Auto-retrying due to error (attempt ${retryAttempt + 1}/${maxRetryAttempts})`);
+      
+      // Set a timer with increasing delay between retries
+      const retryDelay = Math.min(1000 * Math.pow(1.5, retryAttempt), 10000);
+      console.log(`Waiting ${retryDelay}ms before retry...`);
+      
+      const timer = setTimeout(() => {
+        handleRetry();
+      }, retryDelay);
+      
+      return () => clearTimeout(timer);
     }
-  }, [error, initAttempted]);
+  }, [error, initAttempted, retryAttempt]);
 
   const handleRetry = async () => {
     if (isRetrying) return;
@@ -58,6 +67,12 @@ const Expenses = () => {
     }
   };
 
+  // Force a full page reload when all retries have failed
+  const handleForceReload = () => {
+    console.log("Forcing page reload...");
+    window.location.reload();
+  };
+
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
       <ExpensesHeader onNavigate={navigate} />
@@ -74,7 +89,7 @@ const Expenses = () => {
             Impossible de charger la base de données. {retryAttempt >= maxRetryAttempts ? 
               "Nombre maximal de tentatives atteint. Veuillez rafraîchir la page ou vider le cache." : 
               "Veuillez essayer de rafraîchir la page."}
-            <div className="mt-4">
+            <div className="mt-4 space-x-2">
               <Button 
                 onClick={handleRetry} 
                 disabled={isRetrying || retryAttempt >= maxRetryAttempts} 
@@ -84,6 +99,16 @@ const Expenses = () => {
                 <RefreshCw className={`h-4 w-4 ${isRetrying ? "animate-spin" : ""}`} />
                 {isRetrying ? "Tentative en cours..." : "Réessayer"}
               </Button>
+              
+              {retryAttempt >= maxRetryAttempts && (
+                <Button 
+                  onClick={handleForceReload}
+                  className="flex items-center gap-2"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  Rafraîchir la page
+                </Button>
+              )}
             </div>
           </AlertDescription>
         </Alert>

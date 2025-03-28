@@ -1,5 +1,6 @@
+
 import { SQLiteAdapter } from './sqlite-adapter';
-import * as sqlJsModule from 'sql.js';
+import * as sqlJs from 'sql.js';
 
 /**
  * Adaptateur SQLite pour environnement web utilisant SQL.js
@@ -59,8 +60,8 @@ export class WebSQLiteAdapter extends SQLiteAdapter {
           
           let lastError = null;
           
-          // Properly initialize SQL.js using the named exports
-          const initSqlJs = sqlJsModule.default || sqlJsModule.initSqlJs;
+          // Get the correct initialization function
+          const initSqlJs = sqlJs.initSqlJs;
           
           if (!initSqlJs) {
             throw new Error("SQL.js module could not be loaded. No valid initialization function found.");

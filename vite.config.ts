@@ -13,6 +13,10 @@ export default defineConfig(({ mode }) => ({
   },
   build: {
     assetsInlineLimit: 0, // Ne pas mettre les petits fichiers en base64
+    commonjsOptions: {
+      include: [/node_modules/],
+      transformMixedEsModules: true,
+    },
   },
   plugins: [
     react(),
@@ -28,7 +32,7 @@ export default defineConfig(({ mode }) => ({
     })
   ].filter(Boolean),
   optimizeDeps: {
-    exclude: ['sql.js'], // Exclure sql.js de l'optimisation pour éviter les problèmes de bundle
+    include: ['sql.js'], // Include sql.js in optimization to ensure it's bundled correctly
     esbuildOptions: {
       // Avoid "default export is not available" issues
       define: {

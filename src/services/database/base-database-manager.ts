@@ -1,4 +1,5 @@
-import * as sqlJsModule from 'sql.js';
+
+import * as sqlJs from 'sql.js';
 import { toast } from "@/components/ui/use-toast";
 import { IQueryManager } from './interfaces/IQueryManager';
 
@@ -70,8 +71,8 @@ export class BaseDatabaseManager {
       let lastError = null;
       let SQL = null;
       
-      // Properly initialize SQL.js using the named exports
-      const initSqlJs = sqlJsModule.default || sqlJsModule.initSqlJs;
+      // Get the proper initSqlJs function, handling both ESM and CJS imports
+      const initSqlJs = sqlJs.initSqlJs;
       
       if (!initSqlJs) {
         throw new Error("SQL.js module could not be loaded. No valid initialization function found.");
