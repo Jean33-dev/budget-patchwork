@@ -1,7 +1,7 @@
 import { SQLiteAdapter } from './sqlite-adapter';
 
 /**
- * Adaptateur SQLite pour environnement web utilisant SQL.js
+ * Web SQLite adapter using SQL.js
  */
 export class WebSQLiteAdapter extends SQLiteAdapter {
   private db: any = null;
@@ -17,7 +17,7 @@ export class WebSQLiteAdapter extends SQLiteAdapter {
   }
 
   /**
-   * Initialise SQL.js et crée une base de données en mémoire
+   * Initialize SQL.js and create an in-memory database
    */
   async init(): Promise<boolean> {
     try {
@@ -25,14 +25,14 @@ export class WebSQLiteAdapter extends SQLiteAdapter {
         return true;
       }
 
-      // Si une initialisation est déjà en cours, attendez qu'elle se termine
+      // If initialization is already in progress, wait for it to complete
       if (WebSQLiteAdapter.initializationInProgress) {
         console.log("SQL.js initialization already in progress, waiting...");
         while (WebSQLiteAdapter.initializationInProgress) {
           await new Promise(resolve => setTimeout(resolve, 100));
         }
         
-        // Vérifier si SQL a été initialisé avec succès
+        // Check if SQL was successfully initialized
         if (WebSQLiteAdapter.SQL && !this.db) {
           this.db = new WebSQLiteAdapter.SQL.Database();
           this.initialized = true;
@@ -48,7 +48,7 @@ export class WebSQLiteAdapter extends SQLiteAdapter {
         if (!WebSQLiteAdapter.SQL) {
           console.log(`Initializing SQL.js in WebSQLiteAdapter (attempt ${WebSQLiteAdapter.initializationAttempts}/${WebSQLiteAdapter.MAX_INIT_ATTEMPTS})...`);
           
-          // Abandonner après trop de tentatives
+          // Abandon after too many attempts
           if (WebSQLiteAdapter.initializationAttempts > WebSQLiteAdapter.MAX_INIT_ATTEMPTS) {
             throw new Error(`Exceeded maximum initialization attempts (${WebSQLiteAdapter.MAX_INIT_ATTEMPTS})`);
           }
@@ -73,8 +73,8 @@ export class WebSQLiteAdapter extends SQLiteAdapter {
             
             console.log("Trying to initialize SQL.js...");
             
-            // Use a direct WASM path
-            const wasmSource = 'sql-wasm.wasm';
+            // Use the correct path to WASM file - critical for proper loading
+            const wasmSource = '/assets/sql-wasm.wasm';
             
             try {
               console.log(`Loading WASM from: ${wasmSource}`);
@@ -106,12 +106,12 @@ export class WebSQLiteAdapter extends SQLiteAdapter {
         console.error("Error initializing SQL.js:", error);
         this.logError("initialization", error);
         
-        // Si ce n'est pas la dernière tentative, permettre une réinitialisation
+        // If this is not the last attempt, allow reinitializing
         if (WebSQLiteAdapter.initializationAttempts < WebSQLiteAdapter.MAX_INIT_ATTEMPTS) {
           WebSQLiteAdapter.initializationInProgress = false;
           return false;
         } else {
-          // Dernière tentative échouée
+          // Last attempt failed
           this.initialized = false;
           this.db = null;
           throw error;
@@ -129,7 +129,7 @@ export class WebSQLiteAdapter extends SQLiteAdapter {
   }
 
   /**
-   * Exécute une requête SQLite
+   * Execute a SQLite query
    */
   async execute(query: string, params: any[] = []): Promise<any> {
     try {
@@ -145,7 +145,7 @@ export class WebSQLiteAdapter extends SQLiteAdapter {
   }
 
   /**
-   * Exécute un ensemble de requêtes SQLite
+   * Execute a set of SQLite queries
    */
   async executeSet(queries: string[]): Promise<any> {
     try {
@@ -165,7 +165,7 @@ export class WebSQLiteAdapter extends SQLiteAdapter {
   }
 
   /**
-   * Exécute une requête SQLite sans résultat (INSERT, UPDATE, DELETE)
+   * Execute a SQLite query without result (INSERT, UPDATE, DELETE)
    */
   async run(query: string, params: any[] = []): Promise<any> {
     try {
@@ -185,7 +185,7 @@ export class WebSQLiteAdapter extends SQLiteAdapter {
   }
 
   /**
-   * Exécute une requête SQLite et retourne les résultats (SELECT)
+   * Execute a SQLite query and return the results (SELECT)
    */
   async query(query: string, params: any[] = []): Promise<any[]> {
     try {
@@ -210,7 +210,7 @@ export class WebSQLiteAdapter extends SQLiteAdapter {
   }
 
   /**
-   * Ferme la connexion à la base de données
+   * Close the database connection
    */
   async close(): Promise<void> {
     if (this.db) {
@@ -221,14 +221,14 @@ export class WebSQLiteAdapter extends SQLiteAdapter {
   }
 
   /**
-   * Vérifie si la base de données est initialisée
+   * Check if the database is initialized
    */
   isInitialized(): boolean {
     return this.initialized && this.db !== null;
   }
 
   /**
-   * Exporte les données de la base de données (pour la sauvegarde)
+   * Export database data (for saving)
    */
   exportData(): Uint8Array | null {
     if (this.db) {
@@ -238,7 +238,7 @@ export class WebSQLiteAdapter extends SQLiteAdapter {
   }
 
   /**
-   * Importe des données dans la base de données
+   * Import data into the database
    */
   importData(data: Uint8Array): boolean {
     try {
@@ -258,9 +258,9 @@ export class WebSQLiteAdapter extends SQLiteAdapter {
       return false;
     }
   }
-  
+
   /**
-   * Réinitialise les tentatives d'initialisation
+   * Reset initialization attempts
    */
   static resetInitializationAttempts(): void {
     WebSQLiteAdapter.initializationAttempts = 0;

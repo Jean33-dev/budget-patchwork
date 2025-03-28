@@ -1,3 +1,4 @@
+
 import { toast } from "@/components/ui/use-toast";
 import { IQueryManager } from './interfaces/IQueryManager';
 
@@ -57,12 +58,12 @@ export class BaseDatabaseManager {
         return false;
       }
       
-      // Import SQL.js dynamiquement pour éviter les problèmes d'importation statique
+      // Import SQL.js dynamically to avoid static import issues
       console.log("Dynamically importing SQL.js...");
       
       let SQL;
       try {
-        // Utilisation de l'importation dynamique pour éviter les problèmes ESM/CommonJS
+        // Use dynamic import to avoid ESM/CommonJS issues
         const SqlJsModule = await import('sql.js');
         const initSqlJs = SqlJsModule.default;
         
@@ -73,12 +74,13 @@ export class BaseDatabaseManager {
         
         console.log("SQL.js module loaded successfully:", !!initSqlJs);
         
-        // Sources WASM avec options CDN fiables
-        const wasmSource = 'sql-wasm.wasm';
+        // Use the correct path to WASM file - this is critical for correct loading
+        // The path is relative to the build output directory
+        const wasmSource = '/assets/sql-wasm.wasm';
         
-        console.log(`Trying to initialize SQL.js with WASM from: ${wasmSource}`);
+        console.log(`Initializing SQL.js with WASM from: ${wasmSource}`);
         
-        // Utiliser initSqlJs directement
+        // Use initSqlJs directly
         SQL = await initSqlJs({
           locateFile: () => wasmSource
         });

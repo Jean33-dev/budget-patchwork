@@ -12,13 +12,13 @@ export default defineConfig(({ mode }) => ({
     port: 8080,
   },
   build: {
-    assetsInlineLimit: 0, // Ne pas mettre les petits fichiers en base64
+    assetsInlineLimit: 0, // Don't inline small files as base64
     commonjsOptions: {
       include: [/node_modules/],
       transformMixedEsModules: true,
     },
     rollupOptions: {
-      // Configurer correctement SQL.js pour que l'export/import fonctionne
+      // Configure sql.js correctly for export/import to work
       output: {
         manualChunks: {
           'sql.js': ['sql.js'],
@@ -34,7 +34,7 @@ export default defineConfig(({ mode }) => ({
       targets: [
         {
           src: 'node_modules/sql.js/dist/sql-wasm.wasm',
-          dest: ''
+          dest: 'assets'
         }
       ]
     })
