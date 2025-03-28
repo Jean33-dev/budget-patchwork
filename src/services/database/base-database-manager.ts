@@ -1,4 +1,3 @@
-
 import { toast } from "@/components/ui/use-toast";
 import { IQueryManager } from './interfaces/IQueryManager';
 
@@ -65,7 +64,7 @@ export class BaseDatabaseManager {
       try {
         // Utilisation de l'importation dynamique pour éviter les problèmes ESM/CommonJS
         const SqlJsModule = await import('sql.js');
-        const initSqlJs = SqlJsModule.default || SqlJsModule;
+        const initSqlJs = SqlJsModule.default;
         
         if (typeof initSqlJs !== 'function') {
           console.error("SQL.js import failed: initSqlJs is not a function", initSqlJs);
@@ -75,46 +74,16 @@ export class BaseDatabaseManager {
         console.log("SQL.js module loaded successfully:", !!initSqlJs);
         
         // Sources WASM avec options CDN fiables
-        const wasmSources = [
-          // Chemins locaux d'abord pour les performances
-          "sql-wasm.wasm",
-          "./sql-wasm.wasm",
-          "/sql-wasm.wasm",
-          // Puis CDNs comme fallback
-          "https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.wasm",
-          "https://cdn.jsdelivr.net/npm/sql.js@1.8.0/dist/sql-wasm.wasm"
-        ];
+        const wasmSource = 'sql-wasm.wasm';
         
-        let lastError = null;
+        console.log(`Trying to initialize SQL.js with WASM from: ${wasmSource}`);
         
-        // Essayer chaque source WASM jusqu'à ce qu'une fonctionne
-        for (const wasmSource of wasmSources) {
-          try {
-            console.log(`Trying to initialize SQL.js with WASM from: ${wasmSource}`);
-            
-            // Utiliser initSqlJs directement
-            SQL = await initSqlJs({
-              locateFile: () => wasmSource
-            });
-            
-            console.log(`SQL.js initialized successfully with WASM from: ${wasmSource}`);
-            break; // Sortir de la boucle si l'initialisation réussit
-          } catch (error) {
-            console.error(`Failed to initialize with WASM from ${wasmSource}:`, error);
-            lastError = error;
-          }
-        }
+        // Utiliser initSqlJs directement
+        SQL = await initSqlJs({
+          locateFile: () => wasmSource
+        });
         
-        if (!SQL) {
-          try {
-            console.log("Trying default initialization as last resort");
-            SQL = await initSqlJs();
-            console.log("SQL.js initialized successfully with default settings");
-          } catch (defaultError) {
-            console.error("Default initialization failed:", defaultError);
-            throw lastError || defaultError;
-          }
-        }
+        console.log(`SQL.js initialized successfully with WASM from: ${wasmSource}`);
       } catch (importError) {
         console.error("Failed to import SQL.js module:", importError);
         throw new Error(`SQL.js import error: ${importError.message}`);
