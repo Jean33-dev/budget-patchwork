@@ -34,9 +34,9 @@ export const expenseQueries = {
         title: row[1],
         budget: row[2],
         spent: row[3],
-        type: row[4] as 'expense',
+        type: 'expense' as const,
         linkedBudgetId: row[5],
-        date: row[6]
+        date: row[6] || new Date().toISOString().split('T')[0]
       }));
       
       console.log(`Found ${expenses.length} expenses in database`);
@@ -60,19 +60,14 @@ export const expenseQueries = {
       console.log("Preparing to add expense:", expense);
       
       // Vérifie d'abord si la dépense existe déjà
-      try {
-        const checkStmt = db.prepare('SELECT id FROM expenses WHERE id = ?');
-        checkStmt.step([expense.id]);
-        const exists = checkStmt.getAsObject();
-        checkStmt.free();
-        
-        if (exists.id) {
-          console.warn(`Expense with ID ${expense.id} already exists`);
-          throw new Error(`Expense with ID ${expense.id} already exists`);
-        }
-      } catch (error) {
-        console.error("Error checking if expense exists:", error);
-        // Continue with the insertion attempt
+      const checkStmt = db.prepare('SELECT id FROM expenses WHERE id = ?');
+      checkStmt.bind([expense.id]);
+      const exists = checkStmt.step();
+      checkStmt.free();
+      
+      if (exists) {
+        console.warn(`Expense with ID ${expense.id} already exists`);
+        throw new Error(`Expense with ID ${expense.id} already exists`);
       }
       
       const stmt = db.prepare(
@@ -81,12 +76,12 @@ export const expenseQueries = {
       
       stmt.run([
         expense.id, 
-        expense.title, 
-        expense.budget, 
-        expense.spent, 
-        expense.type, 
+        expense.title || 'Sans titre', 
+        expense.budget || 0, 
+        expense.spent || 0, 
+        'expense', 
         expense.linkedBudgetId || null, 
-        expense.date
+        expense.date || new Date().toISOString().split('T')[0]
       ]);
       
       stmt.free();
@@ -111,40 +106,36 @@ export const expenseQueries = {
       
       // First check if the expense exists
       const checkStmt = db.prepare('SELECT id FROM expenses WHERE id = ?');
-      checkStmt.step([expense.id]);
-      const exists = checkStmt.getAsObject();
+      checkStmt.bind([expense.id]);
+      const exists = checkStmt.step();
       checkStmt.free();
       
-      if (!exists.id) {
+      if (!exists) {
         console.warn(`Expense with ID ${expense.id} not found for update`);
         return; // Exit without throwing error
       }
       
-      // Safe update with transaction
-      try {
-        db.exec('BEGIN TRANSACTION');
-        
-        const stmt = db.prepare(
-          'UPDATE expenses SET title = ?, budget = ?, spent = ?, linkedBudgetId = ?, date = ? WHERE id = ?'
-        );
-        
-        stmt.run([
-          expense.title || 'Sans titre', 
-          expense.budget || 0, 
-          expense.spent || 0, 
-          expense.linkedBudgetId || null, 
-          expense.date || new Date().toISOString().split('T')[0],
-          expense.id
-        ]);
-        
-        stmt.free();
-        db.exec('COMMIT');
-        console.log("Expense updated successfully in database");
-      } catch (error) {
-        console.error("Update transaction failed:", error);
-        db.exec('ROLLBACK');
-        throw error;
-      }
+      // Validate data before update
+      const validTitle = expense.title || 'Sans titre';
+      const validBudget = isNaN(Number(expense.budget)) ? 0 : Number(expense.budget);
+      const validSpent = isNaN(Number(expense.spent)) ? validBudget : Number(expense.spent);
+      const validDate = expense.date || new Date().toISOString().split('T')[0];
+      
+      const stmt = db.prepare(
+        'UPDATE expenses SET title = ?, budget = ?, spent = ?, linkedBudgetId = ?, date = ? WHERE id = ?'
+      );
+      
+      stmt.run([
+        validTitle,
+        validBudget,
+        validSpent,
+        expense.linkedBudgetId || null, 
+        validDate,
+        expense.id
+      ]);
+      
+      stmt.free();
+      console.log("Expense updated successfully in database");
     } catch (error) {
       console.error("Erreur lors de la mise à jour d'une dépense:", error);
       throw error;
@@ -165,31 +156,20 @@ export const expenseQueries = {
       
       // First check if the expense exists
       const checkStmt = db.prepare('SELECT id FROM expenses WHERE id = ?');
-      checkStmt.step([id]);
-      const exists = checkStmt.getAsObject();
+      checkStmt.bind([id]);
+      const exists = checkStmt.step();
       checkStmt.free();
       
-      if (!exists.id) {
+      if (!exists) {
         console.warn(`Expense with ID ${id} not found for deletion`);
         return; // Exit without throwing error
       }
       
-      // Safe delete with transaction
-      try {
-        db.exec('BEGIN TRANSACTION');
-        
-        // If expense exists, delete it
-        const deleteStmt = db.prepare('DELETE FROM expenses WHERE id = ?');
-        deleteStmt.run([id]);
-        deleteStmt.free();
-        
-        db.exec('COMMIT');
-        console.log(`Expense ${id} deleted successfully from database`);
-      } catch (error) {
-        console.error("Delete transaction failed:", error);
-        db.exec('ROLLBACK');
-        throw error;
-      }
+      // Delete the expense
+      const deleteStmt = db.prepare('DELETE FROM expenses WHERE id = ?');
+      deleteStmt.run([id]);
+      deleteStmt.free();
+      console.log(`Expense ${id} deleted successfully from database`);
     } catch (error) {
       console.error("Erreur lors de la suppression d'une dépense:", error);
       throw error;

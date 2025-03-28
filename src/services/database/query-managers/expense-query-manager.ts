@@ -47,7 +47,17 @@ export class ExpenseQueryManager extends BaseQueryManager {
         throw new Error("Database is null in ExpenseQueryManager.add");
       }
       
-      expenseQueries.add(db, expense);
+      // Utiliser une transaction pour l'ajout
+      db.exec('BEGIN TRANSACTION');
+      try {
+        expenseQueries.add(db, expense);
+        db.exec('COMMIT');
+        console.log(`Expense ${expense.id} added successfully with transaction`);
+      } catch (error) {
+        db.exec('ROLLBACK');
+        console.error("Transaction failed during add expense:", error);
+        throw error;
+      }
     } catch (error) {
       console.error("Error adding expense:", error);
       this.logError("adding expense", error);
@@ -80,7 +90,18 @@ export class ExpenseQueryManager extends BaseQueryManager {
       }
       
       console.log("ExpenseQueryManager: Executing update for expense:", expense.id);
-      expenseQueries.update(db, expense);
+      
+      // Utiliser une transaction pour la mise à jour
+      db.exec('BEGIN TRANSACTION');
+      try {
+        expenseQueries.update(db, expense);
+        db.exec('COMMIT');
+        console.log(`Expense ${expense.id} updated successfully with transaction`);
+      } catch (error) {
+        db.exec('ROLLBACK');
+        console.error("Transaction failed during update expense:", error);
+        throw error;
+      }
     } catch (error) {
       console.error("Error updating expense:", error);
       this.logError("updating expense", error);
@@ -113,7 +134,18 @@ export class ExpenseQueryManager extends BaseQueryManager {
       }
       
       console.log("ExpenseQueryManager: Executing delete for expense ID:", id);
-      expenseQueries.delete(db, id);
+      
+      // Utiliser une transaction pour la suppression
+      db.exec('BEGIN TRANSACTION');
+      try {
+        expenseQueries.delete(db, id);
+        db.exec('COMMIT');
+        console.log(`Expense ${id} deleted successfully with transaction`);
+      } catch (error) {
+        db.exec('ROLLBACK');
+        console.error("Transaction failed during delete expense:", error);
+        throw error;
+      }
     } catch (error) {
       console.error("Error deleting expense:", error);
       this.logError("deleting expense", error);

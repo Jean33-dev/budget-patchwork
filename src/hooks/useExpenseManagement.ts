@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useExpenseData } from "./useExpenseData";
 import { expenseOperations, ExpenseFormData } from "@/utils/expense-operations";
 import { Expense } from "@/services/database/models/expense";
@@ -13,7 +13,7 @@ export const useExpenseManagement = (budgetId: string | null) => {
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const handleAddEnvelope = async (envelopeData: {
+  const handleAddEnvelope = useCallback(async (envelopeData: {
     title: string;
     budget: number;
     type: "income" | "expense" | "budget";
@@ -56,9 +56,9 @@ export const useExpenseManagement = (budgetId: string | null) => {
     } finally {
       setIsProcessing(false);
     }
-  };
+  }, [budgetId, isProcessing, loadData]);
 
-  const handleDeleteExpense = async (id: string) => {
+  const handleDeleteExpense = useCallback(async (id: string) => {
     if (!id) {
       console.error("ID de dépense manquant");
       return;
@@ -91,9 +91,9 @@ export const useExpenseManagement = (budgetId: string | null) => {
     } finally {
       setIsProcessing(false);
     }
-  };
+  }, [isProcessing, loadData]);
 
-  const handleUpdateExpense = async (updatedExpense: Expense) => {
+  const handleUpdateExpense = useCallback(async (updatedExpense: Expense) => {
     if (!updatedExpense || !updatedExpense.id) {
       console.error("Données de dépense invalides");
       return;
@@ -126,7 +126,7 @@ export const useExpenseManagement = (budgetId: string | null) => {
     } finally {
       setIsProcessing(false);
     }
-  };
+  }, [isProcessing, loadData]);
 
   return {
     expenses,

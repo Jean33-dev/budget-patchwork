@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { DeleteExpenseDialog } from "./DeleteExpenseDialog";
 import { EditExpenseDialog } from "./EditExpenseDialog";
 
@@ -74,7 +74,7 @@ export const useExpenseDialogState = (onUpdateExpense: ((expense: Envelope) => v
   const [editableBudget, setEditableBudget] = useState(0);
   const [editableDate, setEditableDate] = useState("");
 
-  const handleEditClick = (envelope: Envelope) => {
+  const handleEditClick = useCallback((envelope: Envelope) => {
     if (!envelope || !envelope.id) {
       console.error("Invalid expense data for edit");
       return;
@@ -85,9 +85,9 @@ export const useExpenseDialogState = (onUpdateExpense: ((expense: Envelope) => v
     setEditableBudget(Number(envelope.budget) || 0);
     setEditableDate(envelope.date || new Date().toISOString().split('T')[0]);
     setIsEditDialogOpen(true);
-  };
+  }, []);
 
-  const handleDeleteClick = (envelope: Envelope) => {
+  const handleDeleteClick = useCallback((envelope: Envelope) => {
     if (!envelope || !envelope.id) {
       console.error("Invalid expense data for delete");
       return;
@@ -95,9 +95,9 @@ export const useExpenseDialogState = (onUpdateExpense: ((expense: Envelope) => v
     
     setSelectedExpense(envelope);
     setIsDeleteDialogOpen(true);
-  };
+  }, []);
 
-  const handleConfirmEdit = () => {
+  const handleConfirmEdit = useCallback(() => {
     if (!selectedExpense || !selectedExpense.id || !onUpdateExpense) {
       console.error("Cannot update expense: missing data or update handler");
       setIsEditDialogOpen(false);
@@ -120,13 +120,7 @@ export const useExpenseDialogState = (onUpdateExpense: ((expense: Envelope) => v
     } catch (error) {
       console.error("Erreur lors de la mise à jour de la dépense:", error);
     }
-  };
-
-  const handleConfirmDelete = () => {
-    // Vérifier que cette fonction n'est pas utilisée directement, 
-    // elle est fournie séparément dans l'interface ExpenseDialogsProps
-    console.error("handleConfirmDelete called directly - this should not happen");
-  };
+  }, [selectedExpense, editableTitle, editableBudget, editableDate, onUpdateExpense]);
 
   return {
     selectedExpense,
