@@ -1,5 +1,4 @@
-
-import * as sqlJs from 'sql.js';
+import initSqlJs from 'sql.js';
 import { toast } from "@/components/ui/use-toast";
 import { IQueryManager } from './interfaces/IQueryManager';
 
@@ -71,17 +70,14 @@ export class BaseDatabaseManager {
       let lastError = null;
       let SQL = null;
       
-      // Get the proper initSqlJs function, handling both ESM and CJS imports
-      const initSqlJs = sqlJs.initSqlJs;
+      console.log("Initializing SQL.js...");
       
-      if (!initSqlJs) {
-        throw new Error("SQL.js module could not be loaded. No valid initialization function found.");
-      }
-      
+      // Essayer chaque source WASM jusqu'à ce qu'une fonctionne
       for (const wasmSource of wasmSources) {
         try {
           console.log(`Trying to initialize SQL.js with WASM from: ${wasmSource}`);
           
+          // Utiliser initSqlJs directement, c'est une fonction
           SQL = await initSqlJs({
             locateFile: () => wasmSource
           });
