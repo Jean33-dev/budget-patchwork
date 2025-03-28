@@ -4,11 +4,12 @@ import { ExpensesHeader } from "@/components/budget/ExpensesHeader";
 import { useExpenseManagement } from "@/hooks/useExpenseManagement";
 import { ExpenseList } from "@/components/budget/ExpenseList";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle, RefreshCw } from "lucide-react";
+import { AlertCircle, RefreshCw, Database, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { db } from "@/services/database";
 import { BudgetLoadingState } from "@/components/budget/BudgetLoadingState";
+import { toast } from "@/components/ui/use-toast";
 
 const Expenses = () => {
   const navigate = useNavigate();
@@ -16,7 +17,7 @@ const Expenses = () => {
   const budgetId = searchParams.get('budgetId');
   const [isRetrying, setIsRetrying] = useState(false);
   const [retryAttempt, setRetryAttempt] = useState(1);
-  const maxRetryAttempts = 7; // Augmenté pour plus de tentatives
+  const maxRetryAttempts = 10; // Augmenté pour plus de tentatives
   
   const {
     expenses,
@@ -38,7 +39,7 @@ const Expenses = () => {
       console.log(`Auto-retrying due to error (attempt ${retryAttempt + 1}/${maxRetryAttempts})`);
       
       // Set a timer with exponential backoff for retries
-      const retryDelay = Math.min(1000 * Math.pow(2, retryAttempt), 15000); // Max delay of 15 seconds
+      const retryDelay = Math.min(1000 * Math.pow(2, retryAttempt), 30000); // Max delay of 30 seconds
       console.log(`Waiting ${retryDelay}ms before retry...`);
       
       const timer = setTimeout(() => {
@@ -57,11 +58,33 @@ const Expenses = () => {
     
     try {
       console.log(`Manual retry attempt ${retryAttempt + 1}/${maxRetryAttempts}`);
+      
+      // Importation dynamique de web-sqlite-adapter pour accéder à resetInitializationAttempts
+      try {
+        const { WebSQLiteAdapter } = await import('@/services/database/web-sqlite-adapter');
+        WebSQLiteAdapter.resetInitializationAttempts?.();
+        console.log("Reset WebSQLiteAdapter initialization attempts");
+      } catch (e) {
+        console.warn("Could not reset WebSQLiteAdapter attempts:", e);
+      }
+      
       // Réinitialiser les tentatives avant de réessayer
       db.resetInitializationAttempts?.();
       
+      toast({
+        title: "Nouvelle tentative",
+        description: `Tentative de rechargement des données (${retryAttempt}/${maxRetryAttempts})`,
+      });
+      
       // Forcer le rechargement des données
       await loadData();
+    } catch (e) {
+      console.error("Retry failed:", e);
+      toast({
+        variant: "destructive",
+        title: "Échec de la tentative",
+        description: "Impossible de charger les données. Veuillez réessayer."
+      });
     } finally {
       setIsRetrying(false);
     }
@@ -83,7 +106,17 @@ const Expenses = () => {
         const DBDeleteRequest = window.indexedDB.deleteDatabase('sqlitedb');
         DBDeleteRequest.onsuccess = () => {
           console.log("IndexedDB cache cleared successfully");
-          window.location.reload();
+          // Tenter de nettoyer également le cache du Service Worker
+          if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+            navigator.serviceWorker.controller.postMessage({
+              type: 'CLEAR_CACHE'
+            });
+          }
+          toast({
+            title: "Cache vidé",
+            description: "Rechargement de la page..."
+          });
+          setTimeout(() => window.location.reload(), 1000);
         };
         DBDeleteRequest.onerror = () => {
           console.error("Error clearing IndexedDB cache");
@@ -112,9 +145,11 @@ const Expenses = () => {
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Erreur de chargement</AlertTitle>
           <AlertDescription className="mt-2">
-            Impossible de charger la base de données. {retryAttempt >= maxRetryAttempts ? 
-              "Nombre maximal de tentatives atteint. Veuillez rafraîchir la page ou vider le cache." : 
-              "Veuillez essayer de rafraîchir la page."}
+            <p className="mb-3">
+              Impossible de charger la base de données. {retryAttempt >= maxRetryAttempts ? 
+                "Nombre maximal de tentatives atteint. Veuillez rafraîchir la page ou vider le cache." : 
+                "Veuillez essayer de rafraîchir la page ou utiliser les options ci-dessous."}
+            </p>
             <div className="mt-4 space-x-2 flex flex-wrap gap-2">
               <Button 
                 onClick={handleRetry} 
@@ -122,7 +157,7 @@ const Expenses = () => {
                 variant="outline" 
                 className="flex items-center gap-2"
               >
-                <RefreshCw className={`h-4 w-4 ${isRetrying ? "animate-spin" : ""}`} />
+                {isRetrying ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
                 {isRetrying ? "Tentative en cours..." : "Réessayer"}
               </Button>
               
@@ -135,13 +170,13 @@ const Expenses = () => {
                 Rafraîchir la page
               </Button>
               
-              {retryAttempt >= maxRetryAttempts / 2 && (
+              {retryAttempt >= 3 && (
                 <Button 
                   onClick={handleClearCacheAndReload}
                   className="flex items-center gap-2"
                   variant="destructive"
                 >
-                  <RefreshCw className="h-4 w-4" />
+                  <Database className="h-4 w-4" />
                   Vider le cache et rafraîchir
                 </Button>
               )}

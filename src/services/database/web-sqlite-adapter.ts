@@ -1,5 +1,5 @@
+
 import { SQLiteAdapter } from './sqlite-adapter';
-import initSqlJs from 'sql.js';
 
 /**
  * Adaptateur SQLite pour environnement web utilisant SQL.js
@@ -9,6 +9,8 @@ export class WebSQLiteAdapter extends SQLiteAdapter {
   private static SQL: any = null;
   private static initPromise: Promise<any> | null = null;
   private static initializationInProgress = false;
+  private static initializationAttempts = 0;
+  private static MAX_INIT_ATTEMPTS = 5;
 
   constructor() {
     super();
@@ -41,70 +43,112 @@ export class WebSQLiteAdapter extends SQLiteAdapter {
       }
 
       WebSQLiteAdapter.initializationInProgress = true;
+      WebSQLiteAdapter.initializationAttempts++;
 
       try {
         if (!WebSQLiteAdapter.SQL) {
-          console.log("Initializing SQL.js in WebSQLiteAdapter...");
+          console.log(`Initializing SQL.js in WebSQLiteAdapter (attempt ${WebSQLiteAdapter.initializationAttempts}/${WebSQLiteAdapter.MAX_INIT_ATTEMPTS})...`);
           
-          // Liste des sources WASM à essayer
-          const wasmSources = [
-            // CDN fiables
-            "https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.wasm",
-            "https://cdn.jsdelivr.net/npm/sql.js@1.8.0/dist/sql-wasm.wasm",
-            // Chemins locaux
-            "/sql-wasm.wasm",
-            "./sql-wasm.wasm",
-            "sql-wasm.wasm"
-          ];
-          
-          let lastError = null;
-          
-          // Essayer chaque source jusqu'à ce qu'une fonctionne
-          for (const wasmSource of wasmSources) {
-            try {
-              console.log(`Trying to initialize SQL.js with WASM from: ${wasmSource}`);
-              
-              // Utiliser initSqlJs directement
-              WebSQLiteAdapter.SQL = await initSqlJs({
-                locateFile: () => wasmSource
-              });
-              
-              console.log(`SQL.js initialized successfully with WASM from: ${wasmSource}`);
-              break; // Sortir de la boucle si l'initialisation réussit
-            } catch (error) {
-              console.error(`Failed to initialize with WASM from ${wasmSource}:`, error);
-              lastError = error;
-            }
+          // Abandonner après trop de tentatives
+          if (WebSQLiteAdapter.initializationAttempts > WebSQLiteAdapter.MAX_INIT_ATTEMPTS) {
+            throw new Error(`Exceeded maximum initialization attempts (${WebSQLiteAdapter.MAX_INIT_ATTEMPTS})`);
           }
           
-          // Si aucune source n'a fonctionné, essayer l'initialisation par défaut
-          if (!WebSQLiteAdapter.SQL) {
-            try {
-              console.log("Trying default initialization as last resort");
-              WebSQLiteAdapter.SQL = await initSqlJs();
-              console.log("SQL.js initialized successfully with default settings");
-            } catch (defaultError) {
-              console.error("Default initialization failed:", defaultError);
-              throw lastError || defaultError;
+          // Wait with exponential backoff for retry attempts
+          if (WebSQLiteAdapter.initializationAttempts > 1) {
+            const delay = Math.min(1000 * Math.pow(2, WebSQLiteAdapter.initializationAttempts - 1), 10000);
+            console.log(`Waiting ${delay}ms before retry attempt ${WebSQLiteAdapter.initializationAttempts}...`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+          }
+          
+          try {
+            // Import SQL.js dynamically
+            console.log("Dynamically importing SQL.js module...");
+            const SqlJsModule = await import('sql.js');
+            const initSqlJs = SqlJsModule.default || SqlJsModule;
+            
+            if (typeof initSqlJs !== 'function') {
+              console.error("SQL.js import failed: initSqlJs is not a function", initSqlJs);
+              throw new Error("SQL.js module does not export a function");
             }
+            
+            // Liste des sources WASM à essayer
+            const wasmSources = [
+              // Local paths first (better performance if available)
+              "sql-wasm.wasm",
+              "./sql-wasm.wasm",
+              "/sql-wasm.wasm",
+              // CDNs as fallback
+              "https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.wasm",
+              "https://cdn.jsdelivr.net/npm/sql.js@1.8.0/dist/sql-wasm.wasm"
+            ];
+            
+            let lastError = null;
+            
+            // Essayer chaque source jusqu'à ce qu'une fonctionne
+            for (const wasmSource of wasmSources) {
+              try {
+                console.log(`Trying to initialize SQL.js with WASM from: ${wasmSource}`);
+                
+                // Utiliser initSqlJs directement
+                WebSQLiteAdapter.SQL = await initSqlJs({
+                  locateFile: () => wasmSource
+                });
+                
+                console.log(`SQL.js initialized successfully with WASM from: ${wasmSource}`);
+                break; // Sortir de la boucle si l'initialisation réussit
+              } catch (error) {
+                console.error(`Failed to initialize with WASM from ${wasmSource}:`, error);
+                lastError = error;
+              }
+            }
+            
+            // Si aucune source n'a fonctionné, essayer l'initialisation par défaut
+            if (!WebSQLiteAdapter.SQL) {
+              try {
+                console.log("Trying default initialization as last resort");
+                WebSQLiteAdapter.SQL = await initSqlJs();
+                console.log("SQL.js initialized successfully with default settings");
+              } catch (defaultError) {
+                console.error("Default initialization failed:", defaultError);
+                throw lastError || defaultError;
+              }
+            }
+          } catch (importError) {
+            console.error("Failed to import SQL.js module:", importError);
+            throw new Error(`SQL.js import error: ${importError.message}`);
           }
         }
 
         if (WebSQLiteAdapter.SQL) {
+          console.log("Creating new SQL.js database instance...");
           this.db = new WebSQLiteAdapter.SQL.Database();
           this.initialized = true;
+          WebSQLiteAdapter.initializationAttempts = 0;
+          console.log("SQL.js database created successfully!");
           return true;
         } else {
           throw new Error("Failed to initialize SQL.js module");
         }
       } catch (error) {
-        console.error("All SQL.js initialization methods failed:", error);
-        throw error;
+        console.error("Error initializing SQL.js:", error);
+        this.logError("initialization", error);
+        
+        // Si ce n'est pas la dernière tentative, permettre une réinitialisation
+        if (WebSQLiteAdapter.initializationAttempts < WebSQLiteAdapter.MAX_INIT_ATTEMPTS) {
+          WebSQLiteAdapter.initializationInProgress = false;
+          return false;
+        } else {
+          // Dernière tentative échouée
+          this.initialized = false;
+          this.db = null;
+          throw error;
+        }
       } finally {
         WebSQLiteAdapter.initializationInProgress = false;
       }
     } catch (error) {
-      console.error("Error initializing SQL.js:", error);
+      console.error("Fatal error initializing SQL.js:", error);
       this.logError("initialization", error);
       this.initialized = false;
       this.db = null;
@@ -241,5 +285,12 @@ export class WebSQLiteAdapter extends SQLiteAdapter {
       this.logError("importData", error);
       return false;
     }
+  }
+  
+  /**
+   * Réinitialise les tentatives d'initialisation
+   */
+  static resetInitializationAttempts(): void {
+    WebSQLiteAdapter.initializationAttempts = 0;
   }
 }

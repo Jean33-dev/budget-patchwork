@@ -17,6 +17,14 @@ export default defineConfig(({ mode }) => ({
       include: [/node_modules/],
       transformMixedEsModules: true,
     },
+    rollupOptions: {
+      // Configurer correctement SQL.js pour que l'export/import fonctionne
+      output: {
+        manualChunks: {
+          'sql.js': ['sql.js'],
+        },
+      },
+    },
   },
   plugins: [
     react(),
