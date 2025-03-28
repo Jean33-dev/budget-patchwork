@@ -76,7 +76,19 @@ export const expenseQueries = {
         throw new Error("Invalid expense data for updating");
       }
       
-      console.log("Updating expense:", expense);
+      console.log("Updating expense with ID:", expense.id);
+      
+      // First check if the expense exists
+      const checkStmt = db.prepare('SELECT id FROM expenses WHERE id = ?');
+      checkStmt.step([expense.id]);
+      const exists = checkStmt.getAsObject();
+      checkStmt.free();
+      
+      if (!exists.id) {
+        console.warn(`Expense with ID ${expense.id} not found for update`);
+        throw new Error(`Expense with ID ${expense.id} not found for update`);
+      }
+      
       const stmt = db.prepare(
         'UPDATE expenses SET title = ?, budget = ?, spent = ?, linkedBudgetId = ?, date = ? WHERE id = ?'
       );

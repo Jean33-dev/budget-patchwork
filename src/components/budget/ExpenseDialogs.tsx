@@ -76,8 +76,8 @@ export const useExpenseDialogState = (onUpdateExpense: ((expense: Envelope) => v
 
   const handleEditClick = (envelope: Envelope) => {
     setSelectedExpense(envelope);
-    setEditableTitle(envelope.title);
-    setEditableBudget(envelope.budget);
+    setEditableTitle(envelope.title || "");
+    setEditableBudget(Number(envelope.budget) || 0);
     setEditableDate(envelope.date || new Date().toISOString().split('T')[0]);
     setIsEditDialogOpen(true);
   };
@@ -91,15 +91,20 @@ export const useExpenseDialogState = (onUpdateExpense: ((expense: Envelope) => v
     if (selectedExpense && onUpdateExpense) {
       const updatedExpense = {
         ...selectedExpense,
-        title: editableTitle,
-        budget: editableBudget,
-        spent: editableBudget, // Pour une dépense, spent == budget
-        date: editableDate
+        title: editableTitle || "Sans titre",
+        budget: Number(editableBudget) || 0,
+        spent: Number(editableBudget) || 0, // Pour une dépense, spent == budget
+        date: editableDate || new Date().toISOString().split('T')[0]
       };
       console.log("Modification de la dépense confirmée:", updatedExpense);
-      onUpdateExpense(updatedExpense);
+      
+      try {
+        onUpdateExpense(updatedExpense);
+      } catch (error) {
+        console.error("Erreur lors de la mise à jour de la dépense:", error);
+      }
+      
       setIsEditDialogOpen(false);
-      setSelectedExpense(null);
     }
   };
 

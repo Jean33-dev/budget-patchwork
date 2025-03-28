@@ -1,5 +1,4 @@
 
-import { toast } from "@/components/ui/use-toast";
 import { QueryManager } from '../query-manager';
 import { Expense } from '../models/expense';
 import { expenseQueries } from '../queries/expense-queries';
@@ -72,6 +71,7 @@ export class ExpenseQueryManager extends BaseQueryManager {
         throw new Error("Database is null in ExpenseQueryManager.update");
       }
       
+      console.log("ExpenseQueryManager: Executing update for expense:", expense.id);
       expenseQueries.update(db, expense);
     } catch (error) {
       console.error("Error updating expense:", error);
@@ -96,6 +96,7 @@ export class ExpenseQueryManager extends BaseQueryManager {
         throw new Error("Database is null in ExpenseQueryManager.delete");
       }
       
+      console.log("ExpenseQueryManager: Executing delete for expense ID:", id);
       expenseQueries.delete(db, id);
     } catch (error) {
       console.error("Error deleting expense:", error);

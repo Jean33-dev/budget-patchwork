@@ -68,6 +68,10 @@ export class ExpenseManager extends BaseDatabaseManager implements IExpenseManag
    */
   async updateExpense(expense: Expense): Promise<void> {
     try {
+      if (!expense || !expense.id) {
+        throw new Error("Invalid expense data: missing ID");
+      }
+      
       const initialized = await this.ensureInitialized();
       if (!initialized) {
         throw new Error("Database not initialized in ExpenseManager.updateExpense");
@@ -95,6 +99,10 @@ export class ExpenseManager extends BaseDatabaseManager implements IExpenseManag
    */
   async deleteExpense(id: string): Promise<void> {
     try {
+      if (!id) {
+        throw new Error("Invalid expense ID: missing ID");
+      }
+      
       const initialized = await this.ensureInitialized();
       if (!initialized) {
         throw new Error("Database not initialized in ExpenseManager.deleteExpense");

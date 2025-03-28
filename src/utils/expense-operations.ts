@@ -52,12 +52,22 @@ export const expenseOperations = {
       
       console.log("Updating expense:", expenseToUpdate);
       
-      // Now using the proper update method instead of delete and add
-      await db.updateExpense(expenseToUpdate);
+      // S'assurer que tous les champs nécessaires sont présents
+      const validatedExpense: Expense = {
+        id: expenseToUpdate.id,
+        title: expenseToUpdate.title || "Sans titre",
+        budget: Number(expenseToUpdate.budget) || 0,
+        spent: Number(expenseToUpdate.spent) || Number(expenseToUpdate.budget) || 0,
+        type: "expense",
+        linkedBudgetId: expenseToUpdate.linkedBudgetId || null,
+        date: expenseToUpdate.date || new Date().toISOString().split('T')[0]
+      };
+      
+      await db.updateExpense(validatedExpense);
       
       toast({
         title: "Dépense modifiée",
-        description: `La dépense "${expenseToUpdate.title}" a été modifiée avec succès.`
+        description: `La dépense "${validatedExpense.title}" a été modifiée avec succès.`
       });
       return true;
     } catch (error) {
