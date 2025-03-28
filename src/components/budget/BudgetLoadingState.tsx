@@ -15,7 +15,7 @@ export const BudgetLoadingState = ({ attempt = 1, maxAttempts = 3 }: BudgetLoadi
         Initialisation de la base de données. Cela peut prendre quelques instants 
         lors du premier chargement ou si les données ne sont pas en cache.
         {attempt > 1 && maxAttempts > 1 && (
-          <span className="block mt-2">
+          <span className="block mt-2 font-medium">
             Tentative {attempt}/{maxAttempts}...
           </span>
         )}

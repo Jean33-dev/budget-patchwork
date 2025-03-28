@@ -1,5 +1,5 @@
 
-import * as initSqlJs from 'sql.js';
+import initSqlJs from 'sql.js';
 import { toast } from "@/components/ui/use-toast";
 import { IQueryManager } from './interfaces/IQueryManager';
 
@@ -75,7 +75,7 @@ export class BaseDatabaseManager {
         try {
           console.log(`Trying to initialize SQL.js with WASM from: ${wasmSource}`);
           
-          SQL = await initSqlJs.default({
+          SQL = await initSqlJs({
             locateFile: () => wasmSource
           });
           
@@ -90,7 +90,7 @@ export class BaseDatabaseManager {
       if (!SQL) {
         try {
           console.log("Trying default initialization as last resort");
-          SQL = await initSqlJs.default();
+          SQL = await initSqlJs();
           console.log("SQL.js initialized successfully with default settings");
         } catch (defaultError) {
           console.error("Default initialization failed:", defaultError);

@@ -21,7 +21,9 @@ const BudgetsPage = () => {
     isRefreshing, 
     initializationSuccess,
     handleManualRefresh,
-    initializeDatabase
+    initializeDatabase,
+    attempt,
+    maxAttempts
   } = useBudgetInitialization();
   
   const [retryCount, setRetryCount] = useState(0);
@@ -81,7 +83,7 @@ const BudgetsPage = () => {
 
   // Afficher l'état de chargement tant que nous chargeons ou que nous n'avons pas encore essayé d'initialiser
   if (isLoading || initializationSuccess === null || isRefreshing) {
-    return <BudgetLoadingState />;
+    return <BudgetLoadingState attempt={attempt} maxAttempts={maxAttempts} />;
   }
 
   // Afficher l'état d'erreur si l'initialisation a échoué ou s'il y a une erreur

@@ -1,6 +1,6 @@
 
 import { SQLiteAdapter } from './sqlite-adapter';
-import * as initSqlJs from 'sql.js';
+import initSqlJs from 'sql.js';
 
 /**
  * Adaptateur SQLite pour environnement web utilisant SQL.js
@@ -64,7 +64,7 @@ export class WebSQLiteAdapter extends SQLiteAdapter {
           for (const wasmSource of wasmSources) {
             try {
               console.log(`Trying to initialize SQL.js with WASM from: ${wasmSource}`);
-              WebSQLiteAdapter.SQL = await initSqlJs.default({
+              WebSQLiteAdapter.SQL = await initSqlJs({
                 locateFile: () => wasmSource
               });
               console.log(`SQL.js initialized successfully with WASM from: ${wasmSource}`);
@@ -79,7 +79,7 @@ export class WebSQLiteAdapter extends SQLiteAdapter {
           if (!WebSQLiteAdapter.SQL) {
             try {
               console.log("Trying default initialization as last resort");
-              WebSQLiteAdapter.SQL = await initSqlJs.default();
+              WebSQLiteAdapter.SQL = await initSqlJs();
               console.log("SQL.js initialized successfully with default settings");
             } catch (defaultError) {
               console.error("Default initialization failed:", defaultError);
