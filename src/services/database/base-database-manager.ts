@@ -1,4 +1,3 @@
-
 import initSqlJs from 'sql.js';
 import { toast } from "@/components/ui/use-toast";
 import { IQueryManager } from './interfaces/IQueryManager';
@@ -16,7 +15,6 @@ export class BaseDatabaseManager {
     this.queryManager = null;
   }
 
-  // Static methods to access and modify the private static property
   static isInitializationInProgress(): boolean {
     return BaseDatabaseManager.initializationInProgress;
   }
@@ -26,37 +24,30 @@ export class BaseDatabaseManager {
   }
 
   async init() {
-    // Si déjà initialisé et que la base de données existe, retournez simplement true
     if (this.initialized && this.db) {
       console.log("Database already initialized.");
       return true;
     }
     
-    // Si l'initialisation est déjà en cours, attendez qu'elle se termine
     if (BaseDatabaseManager.initializationInProgress) {
       console.log("Database initialization in progress, waiting...");
-      // Attendre que l'initialisation en cours se termine
       while (BaseDatabaseManager.initializationInProgress) {
         await new Promise(resolve => setTimeout(resolve, 100));
       }
-      // Vérifier si l'initialisation a réussi
       if (this.initialized && this.db) {
         return true;
       }
     }
 
-    // Marquer le début de l'initialisation
     BaseDatabaseManager.initializationInProgress = true;
 
     try {
       console.log(`Starting database initialization (attempt ${++BaseDatabaseManager.initializationAttempts})...`);
       
-      // Si trop de tentatives, attendez un peu plus longtemps avant de réessayer
       if (BaseDatabaseManager.initializationAttempts > 1) {
         await new Promise(resolve => setTimeout(resolve, 1000 * BaseDatabaseManager.initializationAttempts));
       }
       
-      // Abandonner après trop de tentatives
       if (BaseDatabaseManager.initializationAttempts > BaseDatabaseManager.MAX_ATTEMPTS) {
         console.error(`Abandoning initialization after ${BaseDatabaseManager.MAX_ATTEMPTS} attempts`);
         toast({
@@ -69,39 +60,54 @@ export class BaseDatabaseManager {
       
       try {
         console.log("Initializing SQL.js with absolute path...");
-        // Tentative avec un chemin absolu
-        const SQL = await initSqlJs({
-          locateFile: (filename) => `/sql-wasm.wasm`
-        });
-        
-        console.log("SQL.js initialized successfully with absolute path");
-        this.db = new SQL.Database();
-        this.initialized = true;
-        
-        // Réinitialiser le compteur de tentatives après un succès
-        BaseDatabaseManager.initializationAttempts = 0;
-        
-        return true;
-      } catch (sqlError) {
-        console.error("SQL.js initialization with absolute path failed:", sqlError);
-        
-        // Tentative avec un chemin relatif
         try {
-          console.log("Trying with relative path...");
           const SQL = await initSqlJs({
-            locateFile: (filename) => `./sql-wasm.wasm`
+            locateFile: (filename) => `/${filename}`
           });
           
-          console.log("SQL.js initialized successfully with relative path");
+          console.log("SQL.js initialized successfully with absolute path");
           this.db = new SQL.Database();
           this.initialized = true;
           BaseDatabaseManager.initializationAttempts = 0;
           return true;
-        } catch (relativeError) {
-          console.error("Relative path initialization failed:", relativeError);
+        } catch (absoluteError) {
+          console.error("Absolute path initialization failed:", absoluteError);
           
-          // Dernière tentative avec l'initialisation par défaut
+          console.log("Trying with relative path...");
           try {
+            const SQL = await initSqlJs({
+              locateFile: (filename) => `./${filename}`
+            });
+            
+            console.log("SQL.js initialized successfully with relative path");
+            this.db = new SQL.Database();
+            this.initialized = true;
+            BaseDatabaseManager.initializationAttempts = 0;
+            return true;
+          } catch (relativeError) {
+            console.error("Relative path initialization failed:", relativeError);
+            
+            for (const path of [
+              '/assets/sql-wasm.wasm',
+              './assets/sql-wasm.wasm',
+              'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.wasm'
+            ]) {
+              try {
+                console.log(`Trying with path: ${path}`);
+                const SQL = await initSqlJs({
+                  locateFile: () => path
+                });
+                
+                console.log(`SQL.js initialized successfully with path: ${path}`);
+                this.db = new SQL.Database();
+                this.initialized = true;
+                BaseDatabaseManager.initializationAttempts = 0;
+                return true;
+              } catch (pathError) {
+                console.error(`Initialization with path ${path} failed:`, pathError);
+              }
+            }
+            
             console.log("Trying with default initialization...");
             const SQL = await initSqlJs();
             
@@ -110,17 +116,16 @@ export class BaseDatabaseManager {
             this.initialized = true;
             BaseDatabaseManager.initializationAttempts = 0;
             return true;
-          } catch (defaultError) {
-            console.error("Default initialization failed:", defaultError);
-            throw defaultError;
           }
         }
+      } catch (sqlError) {
+        console.error("All SQL.js initialization attempts failed:", sqlError);
+        throw sqlError;
       }
     } catch (err) {
       console.error('Error initializing database:', err);
       const errorMessage = err instanceof Error ? err.message : "Unknown error";
       
-      // Afficher un message d'erreur plus détaillé
       toast({
         variant: "destructive",
         title: "Erreur de base de données",
@@ -131,12 +136,10 @@ export class BaseDatabaseManager {
       this.db = null;
       return false;
     } finally {
-      // S'assurer que le flag d'initialisation en cours est réinitialisé
       BaseDatabaseManager.initializationInProgress = false;
     }
   }
 
-  // Modifié pour retourner un booléen au lieu de void
   protected async ensureInitialized(): Promise<boolean> {
     if (!this.initialized || !this.db) {
       console.log("Database not initialized, initializing now...");
@@ -156,16 +159,13 @@ export class BaseDatabaseManager {
     return true;
   }
 
-  // Accesseur public pour la propriété db
   getDb() {
     return this.db;
   }
 
-  // Mutateur public pour la propriété db
   setDb(db: any) {
     this.db = db;
     
-    // If a query manager exists, update its database reference too
     if (this.queryManager) {
       this.queryManager.setDb(db);
     }
@@ -173,29 +173,24 @@ export class BaseDatabaseManager {
     return this;
   }
 
-  // Setter for the query manager
   setQueryManager(queryManager: IQueryManager) {
     this.queryManager = queryManager;
     return this;
   }
 
-  // Accesseur public pour la propriété initialized
   isInitialized() {
     return this.initialized && this.db !== null;
   }
 
-  // Mutateur public pour la propriété initialized
   setInitialized(value: boolean) {
     this.initialized = value;
     return this;
   }
 
-  // Sauvegarder la base de données
   exportData() {
     return this.db?.export();
   }
-  
-  // Réinitialiser le compteur de tentatives
+
   static resetInitializationAttempts() {
     BaseDatabaseManager.initializationAttempts = 0;
   }
