@@ -8,7 +8,7 @@ import { Budget } from "@/types/categories";
 export type { Expense, Budget };
 
 export const useExpenseManagement = (budgetId: string | null) => {
-  const { expenses, availableBudgets, isLoading, loadData } = useExpenseData(budgetId);
+  const { expenses, availableBudgets, isLoading, error, initAttempted, loadData } = useExpenseData(budgetId);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
 
   const handleAddEnvelope = async (envelopeData: {
@@ -62,5 +62,7 @@ export const useExpenseManagement = (budgetId: string | null) => {
     handleUpdateExpense,
     loadData,
     isLoading,
+    error,
+    initAttempted
   };
 };
