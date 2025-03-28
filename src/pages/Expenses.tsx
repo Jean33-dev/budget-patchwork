@@ -8,12 +8,15 @@ import { AlertCircle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { db } from "@/services/database";
+import { BudgetLoadingState } from "@/components/budget/BudgetLoadingState";
 
 const Expenses = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const budgetId = searchParams.get('budgetId');
   const [isRetrying, setIsRetrying] = useState(false);
+  const [retryAttempt, setRetryAttempt] = useState(1);
+  const maxRetryAttempts = 3;
   
   const {
     expenses,
@@ -31,6 +34,8 @@ const Expenses = () => {
 
   const handleRetry = async () => {
     setIsRetrying(true);
+    setRetryAttempt(prev => Math.min(prev + 1, maxRetryAttempts));
+    
     try {
       // Réinitialiser les tentatives avant de réessayer
       db.resetInitializationAttempts?.();
@@ -47,12 +52,7 @@ const Expenses = () => {
       <ExpensesHeader onNavigate={navigate} />
       
       {isLoading && (
-        <div className="flex items-center justify-center p-8">
-          <div className="flex flex-col items-center gap-2">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
-            <p>Chargement des dépenses...</p>
-          </div>
-        </div>
+        <BudgetLoadingState attempt={retryAttempt} maxAttempts={maxRetryAttempts} />
       )}
       
       {error && initAttempted && (

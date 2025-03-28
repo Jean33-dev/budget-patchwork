@@ -59,7 +59,7 @@ export class BaseDatabaseManager {
         return false;
       }
       
-      // Updated WASM sources with more reliable CDN options
+      // Sources WASM avec options CDN fiables
       const wasmSources = [
         "https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.wasm",
         "https://cdn.jsdelivr.net/npm/sql.js@1.8.0/dist/sql-wasm.wasm",
@@ -71,11 +71,20 @@ export class BaseDatabaseManager {
       let lastError = null;
       let SQL = null;
       
+      // Vérifier comment SQL.js est exposé et l'initialiser correctement
+      const sqlJs = (typeof initSqlJs === 'function') ? initSqlJs : 
+                   ((initSqlJs as any).default && typeof (initSqlJs as any).default === 'function') ? 
+                   (initSqlJs as any).default : null;
+      
+      if (!sqlJs) {
+        throw new Error("SQL.js module is not a function and has no valid default export");
+      }
+      
       for (const wasmSource of wasmSources) {
         try {
           console.log(`Trying to initialize SQL.js with WASM from: ${wasmSource}`);
           
-          SQL = await initSqlJs({
+          SQL = await sqlJs({
             locateFile: () => wasmSource
           });
           
@@ -90,7 +99,7 @@ export class BaseDatabaseManager {
       if (!SQL) {
         try {
           console.log("Trying default initialization as last resort");
-          SQL = await initSqlJs();
+          SQL = await sqlJs();
           console.log("SQL.js initialized successfully with default settings");
         } catch (defaultError) {
           console.error("Default initialization failed:", defaultError);
