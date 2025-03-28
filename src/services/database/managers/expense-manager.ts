@@ -28,11 +28,6 @@ export class ExpenseManager extends BaseDatabaseManager implements IExpenseManag
       return await this.queryManager.executeGetExpenses();
     } catch (error) {
       console.error("Error in ExpenseManager.getExpenses:", error);
-      toast({
-        variant: "destructive",
-        title: "Erreur de récupération",
-        description: "Impossible de récupérer les dépenses"
-      });
       return [];
     }
   }
@@ -42,6 +37,10 @@ export class ExpenseManager extends BaseDatabaseManager implements IExpenseManag
    */
   async addExpense(expense: Expense): Promise<void> {
     try {
+      if (!expense || !expense.id) {
+        throw new Error("Invalid expense data: missing ID");
+      }
+      
       const initialized = await this.ensureInitialized();
       if (!initialized) {
         throw new Error("Database not initialized in ExpenseManager.addExpense");
@@ -52,13 +51,9 @@ export class ExpenseManager extends BaseDatabaseManager implements IExpenseManag
       }
       
       await this.queryManager.executeAddExpense(expense);
+      console.log(`Expense added with ID: ${expense.id}`);
     } catch (error) {
       console.error("Error in ExpenseManager.addExpense:", error);
-      toast({
-        variant: "destructive",
-        title: "Erreur d'ajout",
-        description: "Impossible d'ajouter la dépense"
-      });
       throw error;
     }
   }
@@ -81,15 +76,24 @@ export class ExpenseManager extends BaseDatabaseManager implements IExpenseManag
         throw new Error("Query manager is null in ExpenseManager.updateExpense");
       }
       
+      // Vérifie d'abord si la dépense existe
+      const expenses = await this.getExpenses();
+      const expenseExists = expenses.some(e => e.id === expense.id);
+      
+      if (!expenseExists) {
+        console.warn(`Expense with ID ${expense.id} not found for update`);
+        toast({
+          variant: "destructive",
+          title: "Dépense introuvable",
+          description: "La dépense que vous essayez de modifier n'existe plus."
+        });
+        return;
+      }
+      
       console.log(`Mise à jour de la dépense avec l'ID: ${expense.id}`);
       await this.queryManager.executeUpdateExpense(expense);
     } catch (error) {
       console.error("Error in ExpenseManager.updateExpense:", error);
-      toast({
-        variant: "destructive",
-        title: "Erreur de mise à jour",
-        description: "Impossible de mettre à jour la dépense"
-      });
       throw error;
     }
   }
@@ -112,15 +116,24 @@ export class ExpenseManager extends BaseDatabaseManager implements IExpenseManag
         throw new Error("Query manager is null in ExpenseManager.deleteExpense");
       }
       
+      // Vérifie d'abord si la dépense existe
+      const expenses = await this.getExpenses();
+      const expenseExists = expenses.some(e => e.id === id);
+      
+      if (!expenseExists) {
+        console.warn(`Expense with ID ${id} not found for deletion`);
+        toast({
+          variant: "destructive",
+          title: "Dépense introuvable",
+          description: "La dépense que vous essayez de supprimer n'existe plus."
+        });
+        return;
+      }
+      
       console.log(`Demande de suppression de la dépense avec l'ID: ${id}`);
       await this.queryManager.executeDeleteExpense(id);
     } catch (error) {
       console.error("Error in ExpenseManager.deleteExpense:", error);
-      toast({
-        variant: "destructive",
-        title: "Erreur de suppression",
-        description: "Impossible de supprimer la dépense"
-      });
       throw error;
     }
   }

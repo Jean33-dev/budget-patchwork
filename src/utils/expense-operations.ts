@@ -16,11 +16,11 @@ export const expenseOperations = {
     try {
       const newExpense: Expense = {
         id: Date.now().toString(),
-        title: data.title,
-        budget: data.budget,
-        spent: data.budget,
+        title: data.title || "Sans titre",
+        budget: Number(data.budget) || 0,
+        spent: Number(data.budget) || 0,
         type: "expense",
-        linkedBudgetId: data.linkedBudgetId,
+        linkedBudgetId: data.linkedBudgetId || null,
         date: data.date || new Date().toISOString().split('T')[0]
       };
 
@@ -47,7 +47,13 @@ export const expenseOperations = {
   async updateExpense(expenseToUpdate: Expense): Promise<boolean> {
     try {
       if (!expenseToUpdate || !expenseToUpdate.id) {
-        throw new Error("Invalid expense data for update");
+        console.error("Invalid expense data for update");
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Données de dépense invalides"
+        });
+        return false;
       }
       
       console.log("Updating expense:", expenseToUpdate);
@@ -62,6 +68,20 @@ export const expenseOperations = {
         linkedBudgetId: expenseToUpdate.linkedBudgetId || null,
         date: expenseToUpdate.date || new Date().toISOString().split('T')[0]
       };
+      
+      // Vérifier que la dépense existe avant de tenter la mise à jour
+      const expenses = await db.getExpenses();
+      const exists = expenses.some(e => e.id === validatedExpense.id);
+      
+      if (!exists) {
+        console.warn(`La dépense avec l'ID ${validatedExpense.id} n'existe pas`);
+        toast({
+          variant: "destructive",
+          title: "Dépense introuvable",
+          description: "La dépense que vous essayez de modifier n'existe plus."
+        });
+        return false;
+      }
       
       await db.updateExpense(validatedExpense);
       
@@ -84,7 +104,27 @@ export const expenseOperations = {
   async deleteExpense(expenseId: string): Promise<boolean> {
     try {
       if (!expenseId) {
-        throw new Error("Missing expense ID for deletion");
+        console.error("Missing expense ID for deletion");
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "ID de dépense manquant"
+        });
+        return false;
+      }
+      
+      // Vérifier que la dépense existe avant de tenter la suppression
+      const expenses = await db.getExpenses();
+      const exists = expenses.some(e => e.id === expenseId);
+      
+      if (!exists) {
+        console.warn(`La dépense avec l'ID ${expenseId} n'existe pas`);
+        toast({
+          variant: "destructive",
+          title: "Dépense introuvable",
+          description: "La dépense que vous essayez de supprimer n'existe plus."
+        });
+        return false;
       }
       
       console.log(`Deleting expense with ID: ${expenseId}`);

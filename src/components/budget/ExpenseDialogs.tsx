@@ -75,6 +75,11 @@ export const useExpenseDialogState = (onUpdateExpense: ((expense: Envelope) => v
   const [editableDate, setEditableDate] = useState("");
 
   const handleEditClick = (envelope: Envelope) => {
+    if (!envelope || !envelope.id) {
+      console.error("Invalid expense data for edit");
+      return;
+    }
+    
     setSelectedExpense(envelope);
     setEditableTitle(envelope.title || "");
     setEditableBudget(Number(envelope.budget) || 0);
@@ -83,29 +88,44 @@ export const useExpenseDialogState = (onUpdateExpense: ((expense: Envelope) => v
   };
 
   const handleDeleteClick = (envelope: Envelope) => {
+    if (!envelope || !envelope.id) {
+      console.error("Invalid expense data for delete");
+      return;
+    }
+    
     setSelectedExpense(envelope);
     setIsDeleteDialogOpen(true);
   };
 
   const handleConfirmEdit = () => {
-    if (selectedExpense && onUpdateExpense) {
-      const updatedExpense = {
-        ...selectedExpense,
-        title: editableTitle || "Sans titre",
-        budget: Number(editableBudget) || 0,
-        spent: Number(editableBudget) || 0, // Pour une dépense, spent == budget
-        date: editableDate || new Date().toISOString().split('T')[0]
-      };
-      console.log("Modification de la dépense confirmée:", updatedExpense);
-      
-      try {
-        onUpdateExpense(updatedExpense);
-      } catch (error) {
-        console.error("Erreur lors de la mise à jour de la dépense:", error);
-      }
-      
+    if (!selectedExpense || !selectedExpense.id || !onUpdateExpense) {
+      console.error("Cannot update expense: missing data or update handler");
       setIsEditDialogOpen(false);
+      return;
     }
+    
+    const updatedExpense = {
+      ...selectedExpense,
+      title: editableTitle || "Sans titre",
+      budget: Number(editableBudget) || 0,
+      spent: Number(editableBudget) || 0, // Pour une dépense, spent == budget
+      date: editableDate || new Date().toISOString().split('T')[0]
+    };
+    
+    console.log("Modification de la dépense confirmée:", updatedExpense);
+    
+    try {
+      onUpdateExpense(updatedExpense);
+      setIsEditDialogOpen(false);
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour de la dépense:", error);
+    }
+  };
+
+  const handleConfirmDelete = () => {
+    // Vérifier que cette fonction n'est pas utilisée directement, 
+    // elle est fournie séparément dans l'interface ExpenseDialogsProps
+    console.error("handleConfirmDelete called directly - this should not happen");
   };
 
   return {

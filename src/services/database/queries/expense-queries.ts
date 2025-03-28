@@ -17,6 +17,12 @@ export const expenseQueries = {
   getAll: (db: any): Expense[] => {
     try {
       console.log("Executing query to get all expenses");
+      
+      if (!db) {
+        console.error("Database is null in expenseQueries.getAll");
+        return [];
+      }
+      
       const result = db.exec('SELECT * FROM expenses');
       if (!result || result.length === 0 || !result[0]?.values) {
         console.log("No expenses found in database");
@@ -43,11 +49,32 @@ export const expenseQueries = {
   
   add: (db: any, expense: Expense): void => {
     try {
+      if (!db) {
+        throw new Error("Database is null in expenseQueries.add");
+      }
+      
       if (!expense || !expense.id) {
         throw new Error("Invalid expense data for adding");
       }
       
       console.log("Preparing to add expense:", expense);
+      
+      // Vérifie d'abord si la dépense existe déjà
+      try {
+        const checkStmt = db.prepare('SELECT id FROM expenses WHERE id = ?');
+        checkStmt.step([expense.id]);
+        const exists = checkStmt.getAsObject();
+        checkStmt.free();
+        
+        if (exists.id) {
+          console.warn(`Expense with ID ${expense.id} already exists`);
+          throw new Error(`Expense with ID ${expense.id} already exists`);
+        }
+      } catch (error) {
+        console.error("Error checking if expense exists:", error);
+        // Continue with the insertion attempt
+      }
+      
       const stmt = db.prepare(
         'INSERT INTO expenses (id, title, budget, spent, type, linkedBudgetId, date) VALUES (?, ?, ?, ?, ?, ?, ?)'
       );
@@ -72,6 +99,10 @@ export const expenseQueries = {
   
   update: (db: any, expense: Expense): void => {
     try {
+      if (!db) {
+        throw new Error("Database is null in expenseQueries.update");
+      }
+      
       if (!expense || !expense.id) {
         throw new Error("Invalid expense data for updating");
       }
@@ -86,24 +117,34 @@ export const expenseQueries = {
       
       if (!exists.id) {
         console.warn(`Expense with ID ${expense.id} not found for update`);
-        throw new Error(`Expense with ID ${expense.id} not found for update`);
+        return; // Exit without throwing error
       }
       
-      const stmt = db.prepare(
-        'UPDATE expenses SET title = ?, budget = ?, spent = ?, linkedBudgetId = ?, date = ? WHERE id = ?'
-      );
-      
-      stmt.run([
-        expense.title, 
-        expense.budget, 
-        expense.spent, 
-        expense.linkedBudgetId || null, 
-        expense.date,
-        expense.id
-      ]);
-      
-      stmt.free();
-      console.log("Expense updated successfully in database");
+      // Safe update with transaction
+      try {
+        db.exec('BEGIN TRANSACTION');
+        
+        const stmt = db.prepare(
+          'UPDATE expenses SET title = ?, budget = ?, spent = ?, linkedBudgetId = ?, date = ? WHERE id = ?'
+        );
+        
+        stmt.run([
+          expense.title || 'Sans titre', 
+          expense.budget || 0, 
+          expense.spent || 0, 
+          expense.linkedBudgetId || null, 
+          expense.date || new Date().toISOString().split('T')[0],
+          expense.id
+        ]);
+        
+        stmt.free();
+        db.exec('COMMIT');
+        console.log("Expense updated successfully in database");
+      } catch (error) {
+        console.error("Update transaction failed:", error);
+        db.exec('ROLLBACK');
+        throw error;
+      }
     } catch (error) {
       console.error("Erreur lors de la mise à jour d'une dépense:", error);
       throw error;
@@ -112,6 +153,10 @@ export const expenseQueries = {
   
   delete: (db: any, id: string): void => {
     try {
+      if (!db) {
+        throw new Error("Database is null in expenseQueries.delete");
+      }
+      
       if (!id) {
         throw new Error("ID de dépense manquant pour la suppression");
       }
@@ -126,15 +171,25 @@ export const expenseQueries = {
       
       if (!exists.id) {
         console.warn(`Expense with ID ${id} not found for deletion`);
-        return; // Don't throw error if expense doesn't exist
+        return; // Exit without throwing error
       }
       
-      // If expense exists, delete it
-      const deleteStmt = db.prepare('DELETE FROM expenses WHERE id = ?');
-      deleteStmt.run([id]);
-      deleteStmt.free();
-      
-      console.log(`Expense ${id} deleted successfully from database`);
+      // Safe delete with transaction
+      try {
+        db.exec('BEGIN TRANSACTION');
+        
+        // If expense exists, delete it
+        const deleteStmt = db.prepare('DELETE FROM expenses WHERE id = ?');
+        deleteStmt.run([id]);
+        deleteStmt.free();
+        
+        db.exec('COMMIT');
+        console.log(`Expense ${id} deleted successfully from database`);
+      } catch (error) {
+        console.error("Delete transaction failed:", error);
+        db.exec('ROLLBACK');
+        throw error;
+      }
     } catch (error) {
       console.error("Erreur lors de la suppression d'une dépense:", error);
       throw error;

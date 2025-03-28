@@ -71,6 +71,14 @@ export class ExpenseQueryManager extends BaseQueryManager {
         throw new Error("Database is null in ExpenseQueryManager.update");
       }
       
+      // Vérifier si la dépense existe avant de tenter de la mettre à jour
+      const expenses = await this.getAll();
+      const existingExpense = expenses.find(e => e.id === expense.id);
+      if (!existingExpense) {
+        console.warn(`ExpenseQueryManager: Expense with ID ${expense.id} not found for update`);
+        return; // Sortir sans erreur, mais sans mettre à jour
+      }
+      
       console.log("ExpenseQueryManager: Executing update for expense:", expense.id);
       expenseQueries.update(db, expense);
     } catch (error) {
@@ -94,6 +102,14 @@ export class ExpenseQueryManager extends BaseQueryManager {
       const db = this.getDb();
       if (!db) {
         throw new Error("Database is null in ExpenseQueryManager.delete");
+      }
+      
+      // Vérifier si la dépense existe avant de tenter de la supprimer
+      const expenses = await this.getAll();
+      const existingExpense = expenses.find(e => e.id === id);
+      if (!existingExpense) {
+        console.warn(`ExpenseQueryManager: Expense with ID ${id} not found for deletion`);
+        return; // Sortir sans erreur, mais sans supprimer
       }
       
       console.log("ExpenseQueryManager: Executing delete for expense ID:", id);
