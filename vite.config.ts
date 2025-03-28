@@ -29,6 +29,12 @@ export default defineConfig(({ mode }) => ({
   ].filter(Boolean),
   optimizeDeps: {
     exclude: ['sql.js'], // Exclure sql.js de l'optimisation pour éviter les problèmes de bundle
+    esbuildOptions: {
+      // Avoid "default export is not available" issues
+      define: {
+        global: 'globalThis'
+      }
+    }
   },
   resolve: {
     alias: {

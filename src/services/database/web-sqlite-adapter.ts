@@ -1,6 +1,5 @@
-
 import { SQLiteAdapter } from './sqlite-adapter';
-import initSqlJs from 'sql.js';
+import * as sqlJsModule from 'sql.js';
 
 /**
  * Adaptateur SQLite pour environnement web utilisant SQL.js
@@ -60,20 +59,18 @@ export class WebSQLiteAdapter extends SQLiteAdapter {
           
           let lastError = null;
           
-          // Vérifier comment SQL.js est exposé et l'initialiser correctement
-          const sqlJs = (typeof initSqlJs === 'function') ? initSqlJs : 
-                       ((initSqlJs as any).default && typeof (initSqlJs as any).default === 'function') ? 
-                       (initSqlJs as any).default : null;
+          // Properly initialize SQL.js using the named exports
+          const initSqlJs = sqlJsModule.default || sqlJsModule.initSqlJs;
           
-          if (!sqlJs) {
-            throw new Error("SQL.js module is not a function and has no valid default export");
+          if (!initSqlJs) {
+            throw new Error("SQL.js module could not be loaded. No valid initialization function found.");
           }
           
           // Essayer chaque source jusqu'à ce qu'une fonctionne
           for (const wasmSource of wasmSources) {
             try {
               console.log(`Trying to initialize SQL.js with WASM from: ${wasmSource}`);
-              WebSQLiteAdapter.SQL = await sqlJs({
+              WebSQLiteAdapter.SQL = await initSqlJs({
                 locateFile: () => wasmSource
               });
               console.log(`SQL.js initialized successfully with WASM from: ${wasmSource}`);
@@ -88,7 +85,7 @@ export class WebSQLiteAdapter extends SQLiteAdapter {
           if (!WebSQLiteAdapter.SQL) {
             try {
               console.log("Trying default initialization as last resort");
-              WebSQLiteAdapter.SQL = await sqlJs();
+              WebSQLiteAdapter.SQL = await initSqlJs();
               console.log("SQL.js initialized successfully with default settings");
             } catch (defaultError) {
               console.error("Default initialization failed:", defaultError);

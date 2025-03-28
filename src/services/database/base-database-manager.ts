@@ -1,5 +1,4 @@
-
-import initSqlJs from 'sql.js';
+import * as sqlJsModule from 'sql.js';
 import { toast } from "@/components/ui/use-toast";
 import { IQueryManager } from './interfaces/IQueryManager';
 
@@ -71,20 +70,18 @@ export class BaseDatabaseManager {
       let lastError = null;
       let SQL = null;
       
-      // Vérifier comment SQL.js est exposé et l'initialiser correctement
-      const sqlJs = (typeof initSqlJs === 'function') ? initSqlJs : 
-                   ((initSqlJs as any).default && typeof (initSqlJs as any).default === 'function') ? 
-                   (initSqlJs as any).default : null;
+      // Properly initialize SQL.js using the named exports
+      const initSqlJs = sqlJsModule.default || sqlJsModule.initSqlJs;
       
-      if (!sqlJs) {
-        throw new Error("SQL.js module is not a function and has no valid default export");
+      if (!initSqlJs) {
+        throw new Error("SQL.js module could not be loaded. No valid initialization function found.");
       }
       
       for (const wasmSource of wasmSources) {
         try {
           console.log(`Trying to initialize SQL.js with WASM from: ${wasmSource}`);
           
-          SQL = await sqlJs({
+          SQL = await initSqlJs({
             locateFile: () => wasmSource
           });
           
@@ -99,7 +96,7 @@ export class BaseDatabaseManager {
       if (!SQL) {
         try {
           console.log("Trying default initialization as last resort");
-          SQL = await sqlJs();
+          SQL = await initSqlJs();
           console.log("SQL.js initialized successfully with default settings");
         } catch (defaultError) {
           console.error("Default initialization failed:", defaultError);
