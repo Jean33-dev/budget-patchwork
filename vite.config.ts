@@ -23,7 +23,6 @@ export default defineConfig(({ mode }) => ({
         {
           src: 'node_modules/sql.js/dist/sql-wasm.wasm',
           dest: '',
-          rename: 'sql-wasm.wasm',
         }
       ]
     })

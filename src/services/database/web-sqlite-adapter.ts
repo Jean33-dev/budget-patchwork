@@ -47,10 +47,11 @@ export class WebSQLiteAdapter extends SQLiteAdapter {
         if (!WebSQLiteAdapter.SQL) {
           console.log("Initializing SQL.js in WebSQLiteAdapter...");
           
-          // Liste des sources WASM à essayer
+          // Liste des sources WASM à essayer (mise à jour avec des CDN plus fiables)
           const wasmSources = [
-            // Utiliser un CDN fiable en premier
+            // Utiliser des CDN fiables en premier
             "https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.wasm",
+            "https://cdn.jsdelivr.net/npm/sql.js@1.8.0/dist/sql-wasm.wasm",
             // Puis les chemins locaux
             "/sql-wasm.wasm",
             "./sql-wasm.wasm",
@@ -87,9 +88,13 @@ export class WebSQLiteAdapter extends SQLiteAdapter {
           }
         }
 
-        this.db = new WebSQLiteAdapter.SQL.Database();
-        this.initialized = true;
-        return true;
+        if (WebSQLiteAdapter.SQL) {
+          this.db = new WebSQLiteAdapter.SQL.Database();
+          this.initialized = true;
+          return true;
+        } else {
+          throw new Error("Failed to initialize SQL.js module");
+        }
       } catch (error) {
         console.error("All SQL.js initialization methods failed:", error);
         throw error;
