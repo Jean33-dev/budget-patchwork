@@ -2,6 +2,7 @@
 import { SQLiteAdapter, createSQLiteAdapter } from './sqlite-adapter';
 import { InitializationManager } from './initialization-manager';
 import { toast } from "@/components/ui/use-toast";
+import { DataExportManager } from './data-export-manager';
 
 /**
  * Class responsible for database initialization
@@ -12,6 +13,7 @@ export class DatabaseInitManager {
   private initializing = false;
   private initAttempts = 0;
   private readonly MAX_INIT_ATTEMPTS = 3;
+  private dataExportManager: DataExportManager | null = null;
   
   constructor() {
     this.initialized = false;
@@ -22,6 +24,13 @@ export class DatabaseInitManager {
    */
   getAdapter(): SQLiteAdapter | null {
     return this.adapter;
+  }
+  
+  /**
+   * Get the database instance from the adapter
+   */
+  getDb(): any {
+    return this.adapter ? (this.adapter as any).db : null;
   }
   
   /**
@@ -81,6 +90,9 @@ export class DatabaseInitManager {
       // Check if sample data needs to be added
       await initManager.checkAndAddSampleData();
       
+      // Initialize the data export manager
+      this.dataExportManager = new DataExportManager(this.adapter);
+      
       this.initialized = true;
       console.log("Base de données initialisée avec succès");
       
@@ -117,5 +129,28 @@ export class DatabaseInitManager {
       return await this.init();
     }
     return true;
+  }
+  
+  /**
+   * Migrate data from localStorage (legacy storage) to SQLite
+   * Implementation delegated to DataExportManager
+   */
+  async migrateFromLocalStorage(): Promise<boolean> {
+    if (!this.adapter || !this.dataExportManager) {
+      const initialized = await this.ensureInitialized();
+      if (!initialized) {
+        return false;
+      }
+      
+      if (!this.dataExportManager && this.adapter) {
+        this.dataExportManager = new DataExportManager(this.adapter);
+      }
+    }
+    
+    if (this.dataExportManager) {
+      return await this.dataExportManager.migrateFromLocalStorage();
+    }
+    
+    return false;
   }
 }
