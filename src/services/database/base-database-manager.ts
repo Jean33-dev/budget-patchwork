@@ -58,69 +58,45 @@ export class BaseDatabaseManager {
         return false;
       }
       
-      try {
-        console.log("Initializing SQL.js with absolute path...");
+      const wasmSources = [
+        "https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.wasm",
+        "/sql-wasm.wasm",
+        "./sql-wasm.wasm",
+        "sql-wasm.wasm"
+      ];
+      
+      let lastError = null;
+      
+      for (const wasmSource of wasmSources) {
         try {
+          console.log(`Trying to initialize SQL.js with WASM from: ${wasmSource}`);
+          
           const SQL = await initSqlJs({
-            locateFile: (filename) => `/${filename}`
+            locateFile: () => wasmSource
           });
           
-          console.log("SQL.js initialized successfully with absolute path");
+          console.log(`SQL.js initialized successfully with WASM from: ${wasmSource}`);
           this.db = new SQL.Database();
           this.initialized = true;
           BaseDatabaseManager.initializationAttempts = 0;
           return true;
-        } catch (absoluteError) {
-          console.error("Absolute path initialization failed:", absoluteError);
-          
-          console.log("Trying with relative path...");
-          try {
-            const SQL = await initSqlJs({
-              locateFile: (filename) => `./${filename}`
-            });
-            
-            console.log("SQL.js initialized successfully with relative path");
-            this.db = new SQL.Database();
-            this.initialized = true;
-            BaseDatabaseManager.initializationAttempts = 0;
-            return true;
-          } catch (relativeError) {
-            console.error("Relative path initialization failed:", relativeError);
-            
-            for (const path of [
-              '/assets/sql-wasm.wasm',
-              './assets/sql-wasm.wasm',
-              'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.wasm'
-            ]) {
-              try {
-                console.log(`Trying with path: ${path}`);
-                const SQL = await initSqlJs({
-                  locateFile: () => path
-                });
-                
-                console.log(`SQL.js initialized successfully with path: ${path}`);
-                this.db = new SQL.Database();
-                this.initialized = true;
-                BaseDatabaseManager.initializationAttempts = 0;
-                return true;
-              } catch (pathError) {
-                console.error(`Initialization with path ${path} failed:`, pathError);
-              }
-            }
-            
-            console.log("Trying with default initialization...");
-            const SQL = await initSqlJs();
-            
-            console.log("SQL.js initialized successfully with default settings");
-            this.db = new SQL.Database();
-            this.initialized = true;
-            BaseDatabaseManager.initializationAttempts = 0;
-            return true;
-          }
+        } catch (error) {
+          console.error(`Failed to initialize with WASM from ${wasmSource}:`, error);
+          lastError = error;
         }
-      } catch (sqlError) {
-        console.error("All SQL.js initialization attempts failed:", sqlError);
-        throw sqlError;
+      }
+      
+      try {
+        console.log("Trying default initialization as last resort");
+        const SQL = await initSqlJs();
+        console.log("SQL.js initialized successfully with default settings");
+        this.db = new SQL.Database();
+        this.initialized = true;
+        BaseDatabaseManager.initializationAttempts = 0;
+        return true;
+      } catch (defaultError) {
+        console.error("Default initialization failed:", defaultError);
+        throw lastError || defaultError;
       }
     } catch (err) {
       console.error('Error initializing database:', err);
