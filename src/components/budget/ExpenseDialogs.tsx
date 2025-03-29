@@ -66,7 +66,10 @@ export const ExpenseDialogs = ({
   );
 };
 
-export const useExpenseDialogState = (onUpdateExpense: ((expense: Envelope) => void) | undefined, onDeleteExpense: ((id: string) => void) | undefined) => {
+export const useExpenseDialogState = (
+  onUpdateExpense: ((expense: Envelope) => void) | undefined, 
+  onDeleteExpense: ((id: string) => void) | undefined
+) => {
   const [selectedExpense, setSelectedExpense] = useState<Envelope | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
