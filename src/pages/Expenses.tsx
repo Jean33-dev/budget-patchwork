@@ -6,6 +6,8 @@ import { ExpenseList } from "@/components/budget/ExpenseList";
 import { BudgetLoadingState } from "@/components/budget/BudgetLoadingState";
 import { ExpenseErrorState } from "@/components/budget/ExpenseErrorState";
 import { useExpenseRetry } from "@/hooks/useExpenseRetry";
+import { useEffect } from "react";
+import { toast } from "@/components/ui/use-toast";
 
 const Expenses = () => {
   const navigate = useNavigate();
@@ -34,6 +36,18 @@ const Expenses = () => {
     handleForceReload,
     handleClearCacheAndReload
   } = useExpenseRetry(loadData);
+
+  // Ajouter un effet pour surveiller les erreurs
+  useEffect(() => {
+    if (error && !isLoading) {
+      console.error("Erreur détectée dans la page Expenses:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur de chargement",
+        description: "Une erreur est survenue lors du chargement des dépenses"
+      });
+    }
+  }, [error, isLoading]);
 
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
