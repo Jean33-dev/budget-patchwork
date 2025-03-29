@@ -25,7 +25,11 @@ export const useExpenseManagement = (budgetId: string | null) => {
     }
 
     if (isProcessing) {
-      console.log("Une opération est déjà en cours, veuillez patienter");
+      toast({
+        variant: "warning",
+        title: "Opération en cours",
+        description: "Une opération est déjà en cours, veuillez patienter"
+      });
       return;
     }
 
@@ -60,18 +64,25 @@ export const useExpenseManagement = (budgetId: string | null) => {
 
   const handleDeleteExpense = useCallback(async (id: string) => {
     if (!id) {
-      console.error("ID de dépense manquant");
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "ID de dépense manquant"
+      });
       return;
     }
 
     if (isProcessing) {
-      console.log("Une opération est déjà en cours, veuillez patienter");
+      toast({
+        variant: "warning",
+        title: "Opération en cours",
+        description: "Une opération est déjà en cours, veuillez patienter"
+      });
       return;
     }
 
-    setIsProcessing(true);
-
     try {
+      setIsProcessing(true);
       console.log(`Demande de suppression de la dépense avec l'ID: ${id}`);
       const success = await expenseOperations.deleteExpense(id);
       
@@ -95,18 +106,25 @@ export const useExpenseManagement = (budgetId: string | null) => {
 
   const handleUpdateExpense = useCallback(async (updatedExpense: Expense) => {
     if (!updatedExpense || !updatedExpense.id) {
-      console.error("Données de dépense invalides");
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Données de dépense invalides"
+      });
       return;
     }
 
     if (isProcessing) {
-      console.log("Une opération est déjà en cours, veuillez patienter");
+      toast({
+        variant: "warning",
+        title: "Opération en cours",
+        description: "Une opération est déjà en cours, veuillez patienter"
+      });
       return;
     }
 
-    setIsProcessing(true);
-
     try {
+      setIsProcessing(true);
       console.log(`Demande de mise à jour de la dépense avec l'ID: ${updatedExpense.id}`);
       const success = await expenseOperations.updateExpense(updatedExpense);
       
