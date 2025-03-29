@@ -26,7 +26,7 @@ export const useExpenseManagement = (budgetId: string | null) => {
 
     if (isProcessing) {
       toast({
-        variant: "warning",
+        variant: "default",
         title: "Opération en cours",
         description: "Une opération est déjà en cours, veuillez patienter"
       });
@@ -74,7 +74,7 @@ export const useExpenseManagement = (budgetId: string | null) => {
 
     if (isProcessing) {
       toast({
-        variant: "warning",
+        variant: "default",
         title: "Opération en cours",
         description: "Une opération est déjà en cours, veuillez patienter"
       });
@@ -116,7 +116,7 @@ export const useExpenseManagement = (budgetId: string | null) => {
 
     if (isProcessing) {
       toast({
-        variant: "warning",
+        variant: "default",
         title: "Opération en cours",
         description: "Une opération est déjà en cours, veuillez patienter"
       });
