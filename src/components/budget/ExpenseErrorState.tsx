@@ -30,6 +30,9 @@ export const ExpenseErrorState = ({
             "Nombre maximal de tentatives atteint. Veuillez rafraîchir la page ou vider le cache." : 
             "Veuillez essayer de rafraîchir la page ou utiliser les options ci-dessous."}
         </p>
+        <p className="mb-3 text-xs opacity-70">
+          Si les problèmes persistent après modification ou suppression d'une dépense, essayez de rafraîchir la page.
+        </p>
         <div className="mt-4 space-x-2 flex flex-wrap gap-2">
           <Button 
             onClick={handleRetry} 

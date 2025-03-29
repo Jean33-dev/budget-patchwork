@@ -13,6 +13,7 @@ export const useExpenseManagement = (budgetId: string | null) => {
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const operationTimeoutRef = useRef<number | null>(null);
+  const operationInProgressRef = useRef(false);
 
   // Helper function to safely perform database operations with timeout protection
   const safeOperation = useCallback(async (
@@ -20,7 +21,7 @@ export const useExpenseManagement = (budgetId: string | null) => {
     successMessage: string,
     errorMessage: string
   ) => {
-    if (isProcessing) {
+    if (operationInProgressRef.current) {
       toast({
         variant: "default",
         title: "Opération en cours",
@@ -30,6 +31,7 @@ export const useExpenseManagement = (budgetId: string | null) => {
     }
 
     setIsProcessing(true);
+    operationInProgressRef.current = true;
     
     // Set a timeout to reset processing state if operation takes too long
     if (operationTimeoutRef.current) {
@@ -39,6 +41,7 @@ export const useExpenseManagement = (budgetId: string | null) => {
     operationTimeoutRef.current = window.setTimeout(() => {
       console.log("Operation timeout - resetting processing state");
       setIsProcessing(false);
+      operationInProgressRef.current = false;
     }, 10000); // 10 seconds timeout
 
     try {
@@ -51,6 +54,8 @@ export const useExpenseManagement = (budgetId: string | null) => {
         });
         
         try {
+          // Utiliser une courte pause avant de recharger les données
+          await new Promise(resolve => setTimeout(resolve, 300));
           await loadData();
         } catch (loadError) {
           console.error("Erreur lors du rechargement des données:", loadError);
@@ -83,8 +88,9 @@ export const useExpenseManagement = (budgetId: string | null) => {
         operationTimeoutRef.current = null;
       }
       setIsProcessing(false);
+      operationInProgressRef.current = false;
     }
-  }, [isProcessing, loadData]);
+  }, [loadData]);
 
   const handleAddEnvelope = useCallback(async (envelopeData: {
     title: string;
@@ -131,7 +137,7 @@ export const useExpenseManagement = (budgetId: string | null) => {
     if (!expenseExists) {
       console.warn(`La dépense avec l'ID ${id} n'existe pas ou a déjà été supprimée`);
       toast({
-        variant: "destructive",
+        variant: "default",
         title: "Dépense introuvable",
         description: "La dépense que vous essayez de supprimer n'existe plus."
       });
@@ -140,8 +146,15 @@ export const useExpenseManagement = (budgetId: string | null) => {
 
     console.log(`Suppression de la dépense confirmée: ${id}`);
     
+    // Créer une copie locale de la liste des dépenses sans celle qui va être supprimée
+    // pour éviter de devoir attendre le rechargement des données
+    const updatedExpenses = expenses.filter(exp => exp.id !== id);
+    
     await safeOperation(
-      () => expenseOperations.deleteExpense(id),
+      async () => {
+        const result = await expenseOperations.deleteExpense(id);
+        return result;
+      },
       "La dépense a été supprimée avec succès",
       "Une erreur est survenue lors de la suppression de la dépense"
     );
@@ -162,7 +175,7 @@ export const useExpenseManagement = (budgetId: string | null) => {
     if (!expenseExists) {
       console.warn(`La dépense avec l'ID ${updatedExpense.id} n'existe pas ou a déjà été supprimée`);
       toast({
-        variant: "destructive",
+        variant: "default",
         title: "Dépense introuvable",
         description: "La dépense que vous essayez de modifier n'existe plus."
       });
@@ -178,7 +191,10 @@ export const useExpenseManagement = (budgetId: string | null) => {
     };
     
     await safeOperation(
-      () => expenseOperations.updateExpense(validatedExpense),
+      async () => {
+        const result = await expenseOperations.updateExpense(validatedExpense);
+        return result;
+      },
       `La dépense "${validatedExpense.title}" a été modifiée avec succès`,
       "Une erreur est survenue lors de la mise à jour de la dépense"
     );

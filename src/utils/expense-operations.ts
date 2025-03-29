@@ -1,5 +1,4 @@
 
-import { toast } from "@/components/ui/use-toast";
 import { db } from "@/services/database";
 import { Expense } from "@/services/database/models/expense";
 
@@ -27,19 +26,9 @@ export const expenseOperations = {
       console.log("Adding new expense:", newExpense);
       await db.addExpense(newExpense);
       
-      toast({
-        title: "Dépense ajoutée",
-        description: `La dépense "${data.title}" a été créée avec succès.`
-      });
-      
       return true;
     } catch (error) {
       console.error("Error adding expense:", error);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Impossible d'ajouter la dépense"
-      });
       return false;
     }
   },
@@ -48,11 +37,6 @@ export const expenseOperations = {
     try {
       if (!expenseToUpdate || !expenseToUpdate.id) {
         console.error("Invalid expense data for update");
-        toast({
-          variant: "destructive",
-          title: "Erreur",
-          description: "Données de dépense invalides"
-        });
         return false;
       }
       
@@ -75,28 +59,13 @@ export const expenseOperations = {
       
       if (!exists) {
         console.warn(`La dépense avec l'ID ${validatedExpense.id} n'existe pas`);
-        toast({
-          variant: "destructive",
-          title: "Dépense introuvable",
-          description: "La dépense que vous essayez de modifier n'existe plus."
-        });
         return false;
       }
       
       await db.updateExpense(validatedExpense);
-      
-      toast({
-        title: "Dépense modifiée",
-        description: `La dépense "${validatedExpense.title}" a été modifiée avec succès.`
-      });
       return true;
     } catch (error) {
       console.error("Error updating expense:", error);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Impossible de modifier la dépense"
-      });
       return false;
     }
   },
@@ -105,11 +74,6 @@ export const expenseOperations = {
     try {
       if (!expenseId) {
         console.error("Missing expense ID for deletion");
-        toast({
-          variant: "destructive",
-          title: "Erreur",
-          description: "ID de dépense manquant"
-        });
         return false;
       }
       
@@ -119,29 +83,14 @@ export const expenseOperations = {
       
       if (!exists) {
         console.warn(`La dépense avec l'ID ${expenseId} n'existe pas`);
-        toast({
-          variant: "destructive",
-          title: "Dépense introuvable",
-          description: "La dépense que vous essayez de supprimer n'existe plus."
-        });
         return false;
       }
       
       console.log(`Deleting expense with ID: ${expenseId}`);
       await db.deleteExpense(expenseId);
-      
-      toast({
-        title: "Dépense supprimée",
-        description: "La dépense a été supprimée avec succès."
-      });
       return true;
     } catch (error) {
       console.error("Error deleting expense:", error);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Impossible de supprimer la dépense"
-      });
       return false;
     }
   }
