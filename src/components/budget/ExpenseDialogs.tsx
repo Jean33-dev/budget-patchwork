@@ -66,7 +66,7 @@ export const ExpenseDialogs = ({
   );
 };
 
-export const useExpenseDialogState = (onUpdateExpense: ((expense: Envelope) => void) | undefined) => {
+export const useExpenseDialogState = (onUpdateExpense: ((expense: Envelope) => void) | undefined, onDeleteExpense: ((id: string) => void) | undefined) => {
   const [selectedExpense, setSelectedExpense] = useState<Envelope | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -114,13 +114,22 @@ export const useExpenseDialogState = (onUpdateExpense: ((expense: Envelope) => v
     
     console.log("Modification de la dépense confirmée:", updatedExpense);
     
-    try {
-      onUpdateExpense(updatedExpense);
-      setIsEditDialogOpen(false);
-    } catch (error) {
-      console.error("Erreur lors de la mise à jour de la dépense:", error);
-    }
+    onUpdateExpense(updatedExpense);
+    setIsEditDialogOpen(false);
   }, [selectedExpense, editableTitle, editableBudget, editableDate, onUpdateExpense]);
+
+  const handleConfirmDelete = useCallback(() => {
+    if (!selectedExpense || !selectedExpense.id || !onDeleteExpense) {
+      console.error("Cannot delete expense: missing data or delete handler");
+      setIsDeleteDialogOpen(false);
+      return;
+    }
+    
+    console.log("Suppression de la dépense confirmée:", selectedExpense.id);
+    
+    onDeleteExpense(selectedExpense.id);
+    setIsDeleteDialogOpen(false);
+  }, [selectedExpense, onDeleteExpense]);
 
   return {
     selectedExpense,
@@ -137,6 +146,7 @@ export const useExpenseDialogState = (onUpdateExpense: ((expense: Envelope) => v
     setEditableDate,
     handleEditClick,
     handleDeleteClick,
-    handleConfirmEdit
+    handleConfirmEdit,
+    handleConfirmDelete
   };
 };

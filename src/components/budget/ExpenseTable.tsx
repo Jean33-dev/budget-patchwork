@@ -48,20 +48,14 @@ export const ExpenseTable = ({
     setEditableDate,
     handleEditClick,
     handleDeleteClick,
-    handleConfirmEdit
-  } = useExpenseDialogState(onUpdateExpense);
+    handleConfirmEdit,
+    handleConfirmDelete
+  } = useExpenseDialogState(onUpdateExpense, onDeleteExpense);
   
   const getBudgetTitle = (budgetId?: string) => {
     if (!budgetId) return "Non assigné";
     const budget = availableBudgets.find(b => b.id === budgetId);
     return budget ? budget.title : "Budget inconnu";
-  };
-
-  const handleConfirmDelete = () => {
-    if (selectedExpense && onDeleteExpense) {
-      console.log("Suppression de la dépense confirmée:", selectedExpense.id);
-      onDeleteExpense(selectedExpense.id);
-    }
   };
 
   return (
