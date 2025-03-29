@@ -48,6 +48,10 @@ export const useExpenseManagement = (budgetId: string | null) => {
       
       if (success) {
         setAddDialogOpen(false);
+        toast({
+          title: "Succès",
+          description: "La dépense a été ajoutée avec succès"
+        });
         await loadData();
       }
     } catch (error) {
@@ -81,16 +85,47 @@ export const useExpenseManagement = (budgetId: string | null) => {
       return;
     }
 
+    setIsProcessing(true);
+
     try {
-      setIsProcessing(true);
-      console.log(`Demande de suppression de la dépense avec l'ID: ${id}`);
+      console.log(`Tentative de suppression de la dépense avec l'ID: ${id}`);
+      
+      // Vérifier que la dépense existe avant de tenter de la supprimer
+      const expenseExists = expenses.some(exp => exp.id === id);
+      if (!expenseExists) {
+        console.warn(`La dépense avec l'ID ${id} n'existe pas ou a déjà été supprimée`);
+        toast({
+          variant: "destructive",
+          title: "Dépense introuvable",
+          description: "La dépense que vous essayez de supprimer n'existe plus."
+        });
+        setIsProcessing(false);
+        return;
+      }
+      
+      // Effectuer la suppression
       const success = await expenseOperations.deleteExpense(id);
       
       if (success) {
         console.log(`Dépense ${id} supprimée avec succès`);
-        await loadData();
+        toast({
+          title: "Succès",
+          description: "La dépense a été supprimée avec succès"
+        });
+        
+        // Rechargement des données après la suppression
+        try {
+          await loadData();
+        } catch (loadError) {
+          console.error("Erreur lors du rechargement des données après suppression:", loadError);
+        }
       } else {
         console.warn(`Échec de la suppression de la dépense ${id}`);
+        toast({
+          variant: "destructive",
+          title: "Échec",
+          description: "La suppression de la dépense a échoué"
+        });
       }
     } catch (error) {
       console.error(`Erreur lors de la suppression de la dépense ${id}:`, error);
@@ -102,7 +137,7 @@ export const useExpenseManagement = (budgetId: string | null) => {
     } finally {
       setIsProcessing(false);
     }
-  }, [isProcessing, loadData]);
+  }, [expenses, isProcessing, loadData]);
 
   const handleUpdateExpense = useCallback(async (updatedExpense: Expense) => {
     if (!updatedExpense || !updatedExpense.id) {
@@ -123,16 +158,54 @@ export const useExpenseManagement = (budgetId: string | null) => {
       return;
     }
 
+    setIsProcessing(true);
+
     try {
-      setIsProcessing(true);
-      console.log(`Demande de mise à jour de la dépense avec l'ID: ${updatedExpense.id}`);
-      const success = await expenseOperations.updateExpense(updatedExpense);
+      console.log(`Tentative de mise à jour de la dépense avec l'ID: ${updatedExpense.id}`);
+      
+      // Vérifier que la dépense existe avant de tenter de la mettre à jour
+      const expenseExists = expenses.some(exp => exp.id === updatedExpense.id);
+      if (!expenseExists) {
+        console.warn(`La dépense avec l'ID ${updatedExpense.id} n'existe pas ou a déjà été supprimée`);
+        toast({
+          variant: "destructive",
+          title: "Dépense introuvable",
+          description: "La dépense que vous essayez de modifier n'existe plus."
+        });
+        setIsProcessing(false);
+        return;
+      }
+      
+      // S'assurer que toutes les propriétés nécessaires sont définies
+      const validatedExpense: Expense = {
+        ...updatedExpense,
+        type: "expense",
+        spent: updatedExpense.budget, // Pour une dépense, spent == budget
+        date: updatedExpense.date || new Date().toISOString().split('T')[0]
+      };
+      
+      const success = await expenseOperations.updateExpense(validatedExpense);
       
       if (success) {
-        console.log(`Dépense ${updatedExpense.id} mise à jour avec succès`);
-        await loadData();
+        console.log(`Dépense ${validatedExpense.id} mise à jour avec succès`);
+        toast({
+          title: "Succès",
+          description: "La dépense a été modifiée avec succès"
+        });
+        
+        // Rechargement des données après la mise à jour
+        try {
+          await loadData();
+        } catch (loadError) {
+          console.error("Erreur lors du rechargement des données après mise à jour:", loadError);
+        }
       } else {
-        console.warn(`Échec de la mise à jour de la dépense ${updatedExpense.id}`);
+        console.warn(`Échec de la mise à jour de la dépense ${validatedExpense.id}`);
+        toast({
+          variant: "destructive",
+          title: "Échec",
+          description: "La modification de la dépense a échoué"
+        });
       }
     } catch (error) {
       console.error(`Erreur lors de la mise à jour de la dépense ${updatedExpense.id}:`, error);
@@ -144,7 +217,7 @@ export const useExpenseManagement = (budgetId: string | null) => {
     } finally {
       setIsProcessing(false);
     }
-  }, [isProcessing, loadData]);
+  }, [expenses, isProcessing, loadData]);
 
   return {
     expenses,
