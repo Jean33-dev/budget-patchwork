@@ -45,15 +45,6 @@ export const expenseOperations = {
 
   async updateExpense(expenseToUpdate: Expense): Promise<boolean> {
     try {
-      if (!expenseToUpdate?.id) {
-        toast({
-          variant: "destructive",
-          title: "Erreur",
-          description: "Données de dépense invalides"
-        });
-        return false;
-      }
-
       const validatedExpense: Expense = {
         id: expenseToUpdate.id,
         title: expenseToUpdate.title || "Sans titre",
@@ -63,19 +54,6 @@ export const expenseOperations = {
         linkedBudgetId: expenseToUpdate.linkedBudgetId || null,
         date: expenseToUpdate.date || new Date().toISOString().split('T')[0]
       };
-
-      // Vérifier si la dépense existe
-      const expenses = await db.getExpenses();
-      const exists = expenses.some(e => e.id === validatedExpense.id);
-      
-      if (!exists) {
-        toast({
-          variant: "destructive",
-          title: "Erreur",
-          description: "La dépense n'existe plus"
-        });
-        return false;
-      }
 
       await db.updateExpense(validatedExpense);
       
@@ -98,28 +76,6 @@ export const expenseOperations = {
 
   async deleteExpense(expenseId: string): Promise<boolean> {
     try {
-      if (!expenseId) {
-        toast({
-          variant: "destructive",
-          title: "Erreur",
-          description: "ID de dépense manquant"
-        });
-        return false;
-      }
-
-      // Vérifier si la dépense existe
-      const expenses = await db.getExpenses();
-      const exists = expenses.some(e => e.id === expenseId);
-      
-      if (!exists) {
-        toast({
-          variant: "destructive",
-          title: "Erreur",
-          description: "La dépense n'existe plus"
-        });
-        return false;
-      }
-
       await db.deleteExpense(expenseId);
       
       toast({

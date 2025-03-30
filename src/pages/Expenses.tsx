@@ -1,11 +1,10 @@
 
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ExpensesHeader } from "@/components/budget/ExpensesHeader";
-import { useExpenseManagement } from "@/hooks/expense/useExpenseManagement";
+import { useExpenseManagement } from "@/hooks/useExpenseManagement";
 import { ExpenseList } from "@/components/budget/ExpenseList";
 import { BudgetLoadingState } from "@/components/budget/BudgetLoadingState";
 import { ExpenseErrorState } from "@/components/budget/ExpenseErrorState";
-import { useExpenseRetry } from "@/hooks/useExpenseRetry";
 import { useEffect } from "react";
 import { toast } from "@/components/ui/use-toast";
 import { Loader2, RefreshCw } from "lucide-react";
@@ -28,18 +27,8 @@ const Expenses = () => {
     isLoading,
     isProcessing,
     error,
-    loadData,
     initAttempted
   } = useExpenseManagement(budgetId);
-
-  const {
-    isRetrying,
-    retryAttempt,
-    maxRetryAttempts,
-    handleRetry,
-    handleForceReload,
-    handleClearCacheAndReload
-  } = useExpenseRetry(loadData);
 
   // Effet pour surveiller les erreurs
   useEffect(() => {
@@ -52,6 +41,11 @@ const Expenses = () => {
       });
     }
   }, [error, isLoading, isProcessing]);
+
+  // Fonction de retry simplifiée
+  const handleRetry = async () => {
+    forceReload();
+  };
 
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
@@ -70,18 +64,18 @@ const Expenses = () => {
         </Button>
       </div>
       
-      {(isLoading || isRetrying) && (
-        <BudgetLoadingState attempt={retryAttempt} maxAttempts={maxRetryAttempts} />
+      {isLoading && (
+        <BudgetLoadingState attempt={1} maxAttempts={1} />
       )}
       
       {error && initAttempted && !isProcessing && (
         <ExpenseErrorState 
-          retryAttempt={retryAttempt}
-          maxRetryAttempts={maxRetryAttempts}
-          isRetrying={isRetrying}
+          retryAttempt={1}
+          maxRetryAttempts={3}
+          isRetrying={false}
           handleRetry={handleRetry}
-          handleForceReload={handleForceReload}
-          handleClearCacheAndReload={handleClearCacheAndReload}
+          handleForceReload={forceReload}
+          handleClearCacheAndReload={() => window.location.reload()}
         />
       )}
       
