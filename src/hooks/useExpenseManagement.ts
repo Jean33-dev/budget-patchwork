@@ -12,26 +12,22 @@ export const useExpenseManagement = (budgetId: string | null) => {
   const { expenses, availableBudgets, isLoading, error, initAttempted, loadData } = useExpenseData(budgetId);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [lastOperation, setLastOperation] = useState<{
-    type: 'add' | 'update' | 'delete';
-    id?: string;
-    timestamp: number;
-  } | null>(null);
+  const [needsReload, setNeedsReload] = useState(false);
 
-  // Effect pour recharger les données après une opération
+  // Effet pour recharger les données après une opération
   useEffect(() => {
-    if (lastOperation && !isProcessing && !isLoading) {
+    if (needsReload && !isProcessing && !isLoading) {
       const timer = setTimeout(() => {
-        console.log(`Recharging data after ${lastOperation.type} operation on id: ${lastOperation.id || 'new'}`);
+        console.log("Rechargement automatique des données après opération");
         loadData().catch(err => {
-          console.error("Error reloading data after operation:", err);
+          console.error("Erreur lors du rechargement automatique des données:", err);
         });
-        setLastOperation(null);
-      }, 300);
+        setNeedsReload(false);
+      }, 500);
       
       return () => clearTimeout(timer);
     }
-  }, [lastOperation, isProcessing, isLoading, loadData]);
+  }, [needsReload, isProcessing, isLoading, loadData]);
 
   const handleAddEnvelope = useCallback(async (envelopeData: {
     title: string;
@@ -68,10 +64,7 @@ export const useExpenseManagement = (budgetId: string | null) => {
       
       if (success) {
         setAddDialogOpen(false);
-        setLastOperation({
-          type: 'add',
-          timestamp: Date.now()
-        });
+        setNeedsReload(true);
       }
     } catch (error) {
       console.error("Erreur lors de l'ajout de la dépense:", error);
@@ -112,11 +105,7 @@ export const useExpenseManagement = (budgetId: string | null) => {
       
       if (success) {
         console.log(`Suppression de la dépense ${id} réussie`);
-        setLastOperation({
-          type: 'delete',
-          id,
-          timestamp: Date.now()
-        });
+        setNeedsReload(true);
       }
     } catch (error) {
       console.error(`Erreur lors de la suppression de la dépense ${id}:`, error);
@@ -157,11 +146,7 @@ export const useExpenseManagement = (budgetId: string | null) => {
       
       if (success) {
         console.log(`Mise à jour de la dépense ${updatedExpense.id} réussie`);
-        setLastOperation({
-          type: 'update',
-          id: updatedExpense.id,
-          timestamp: Date.now()
-        });
+        setNeedsReload(true);
       }
     } catch (error) {
       console.error(`Erreur lors de la mise à jour de la dépense ${updatedExpense.id}:`, error);
@@ -220,7 +205,6 @@ export const useExpenseManagement = (budgetId: string | null) => {
     isLoading,
     isProcessing,
     error,
-    initAttempted,
-    lastOperation
+    initAttempted
   };
 };

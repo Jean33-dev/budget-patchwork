@@ -29,8 +29,7 @@ const Expenses = () => {
     isProcessing,
     error,
     loadData,
-    initAttempted,
-    lastOperation
+    initAttempted
   } = useExpenseManagement(budgetId);
 
   const {
@@ -53,13 +52,6 @@ const Expenses = () => {
       });
     }
   }, [error, isLoading, isProcessing]);
-
-  // Log quand lastOperation change
-  useEffect(() => {
-    if (lastOperation) {
-      console.log(`Opération ${lastOperation.type} détectée sur ${lastOperation.id || 'nouvelle dépense'}`);
-    }
-  }, [lastOperation]);
 
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
