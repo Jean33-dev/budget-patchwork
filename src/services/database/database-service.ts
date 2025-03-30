@@ -1,327 +1,127 @@
-
 import { Income } from './models/income';
 import { Expense } from './models/expense';
 import { Budget } from './models/budget';
 import { Category } from './models/category';
-import { DatabaseInitManager } from './database-init-manager';
-import { DataExportManager } from './data-export-manager';
+import { IncomeService } from './services/income-service';
+import { ExpenseService } from './services/expense-service';
+import { BudgetService } from './services/budget-service';
+import { CategoryService } from './services/category-service';
 
 /**
- * Service de base de données avec transition progressive vers SQLite
- * Cette classe utilise l'adaptateur SQLite pour abstraire l'accès à la base de données
+ * Main database service that uses specialized service classes for each entity
  */
 class DatabaseService {
-  private initManager: DatabaseInitManager;
-  private exportManager: DataExportManager | null = null;
+  private incomeService: IncomeService;
+  private expenseService: ExpenseService;
+  private budgetService: BudgetService;
+  private categoryService: CategoryService;
 
   constructor() {
-    this.initManager = new DatabaseInitManager();
+    this.incomeService = new IncomeService();
+    this.expenseService = new ExpenseService();
+    this.budgetService = new BudgetService();
+    this.categoryService = new CategoryService();
   }
 
   /**
-   * Initialise la base de données avec l'adaptateur approprié
+   * Initializes the database
    */
   async init(): Promise<boolean> {
-    const success = await this.initManager.init();
-    
-    if (success && this.initManager.getAdapter()) {
-      this.exportManager = new DataExportManager(this.initManager.getAdapter()!);
-    }
-    
+    // Initialize all services with the same database
+    const success = await this.incomeService.init();
+    // Other services will use the same database instance
     return success;
   }
 
   /**
-   * Réinitialise le compteur de tentatives d'initialisation
+   * Resets the counter of initialization attempts
    */
   resetInitializationAttempts(): void {
-    this.initManager.resetInitializationAttempts();
+    this.incomeService.resetInitializationAttempts();
   }
 
-  /**
-   * Vérifie si la base de données est initialisée et l'initialise si nécessaire
-   */
-  private async ensureInitialized(): Promise<boolean> {
-    return await this.initManager.ensureInitialized();
-  }
-
-  /**
-   * Récupère tous les revenus
-   */
+  // Income methods delegated to IncomeService
   async getIncomes(): Promise<Income[]> {
-    try {
-      if (!await this.ensureInitialized()) return [];
-      
-      const adapter = this.initManager.getAdapter();
-      const results = await adapter!.query("SELECT * FROM incomes");
-      
-      return results.map(row => ({
-        id: row.id,
-        title: row.title,
-        budget: Number(row.budget),
-        spent: Number(row.spent),
-        type: 'income' as const,
-        date: row.date
-      }));
-    } catch (error) {
-      console.error("Erreur lors de la récupération des revenus:", error);
-      return [];
-    }
+    return this.incomeService.getIncomes();
   }
 
-  /**
-   * Ajoute un nouveau revenu
-   */
   async addIncome(income: Income): Promise<void> {
-    if (!await this.ensureInitialized()) return;
-    
-    const adapter = this.initManager.getAdapter();
-    await adapter!.run(
-      'INSERT INTO incomes (id, title, budget, spent, type, date) VALUES (?, ?, ?, ?, ?, ?)',
-      [income.id, income.title, income.budget, income.spent, income.type, income.date]
-    );
+    return this.incomeService.addIncome(income);
   }
 
-  /**
-   * Met à jour un revenu existant
-   */
   async updateIncome(income: Income): Promise<void> {
-    if (!await this.ensureInitialized()) return;
-    
-    const adapter = this.initManager.getAdapter();
-    await adapter!.run(
-      'UPDATE incomes SET title = ?, budget = ?, spent = ? WHERE id = ?',
-      [income.title, income.budget, income.spent, income.id]
-    );
+    return this.incomeService.updateIncome(income);
   }
 
-  /**
-   * Supprime un revenu
-   */
   async deleteIncome(id: string): Promise<void> {
-    if (!await this.ensureInitialized()) return;
-    
-    const adapter = this.initManager.getAdapter();
-    await adapter!.run('DELETE FROM incomes WHERE id = ?', [id]);
+    return this.incomeService.deleteIncome(id);
   }
 
-  /**
-   * Récupère toutes les dépenses
-   */
+  // Expense methods delegated to ExpenseService
   async getExpenses(): Promise<Expense[]> {
-    try {
-      if (!await this.ensureInitialized()) return [];
-      
-      const adapter = this.initManager.getAdapter();
-      const results = await adapter!.query("SELECT * FROM expenses");
-      
-      return results.map(row => ({
-        id: row.id,
-        title: row.title,
-        budget: Number(row.budget),
-        spent: Number(row.spent),
-        type: 'expense' as const,
-        linkedBudgetId: row.linkedBudgetId,
-        date: row.date
-      }));
-    } catch (error) {
-      console.error("Erreur lors de la récupération des dépenses:", error);
-      return [];
-    }
+    return this.expenseService.getExpenses();
   }
 
-  /**
-   * Ajoute une nouvelle dépense
-   */
   async addExpense(expense: Expense): Promise<void> {
-    if (!await this.ensureInitialized()) return;
-    
-    const adapter = this.initManager.getAdapter();
-    await adapter!.run(
-      'INSERT INTO expenses (id, title, budget, spent, type, linkedBudgetId, date) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [expense.id, expense.title, expense.budget, expense.spent, expense.type, expense.linkedBudgetId, expense.date]
-    );
+    return this.expenseService.addExpense(expense);
   }
 
-  /**
-   * Met à jour une dépense existante
-   */
   async updateExpense(expense: Expense): Promise<void> {
-    if (!await this.ensureInitialized()) return;
-    
-    const adapter = this.initManager.getAdapter();
-    await adapter!.run(
-      'UPDATE expenses SET title = ?, budget = ?, spent = ?, linkedBudgetId = ?, date = ? WHERE id = ?',
-      [expense.title, expense.budget, expense.spent, expense.linkedBudgetId, expense.date, expense.id]
-    );
+    return this.expenseService.updateExpense(expense);
   }
 
-  /**
-   * Supprime une dépense
-   */
   async deleteExpense(id: string): Promise<void> {
-    if (!await this.ensureInitialized()) return;
-    
-    const adapter = this.initManager.getAdapter();
-    await adapter!.run('DELETE FROM expenses WHERE id = ?', [id]);
+    return this.expenseService.deleteExpense(id);
   }
 
-  /**
-   * Récupère tous les budgets
-   */
+  // Budget methods delegated to BudgetService
   async getBudgets(): Promise<Budget[]> {
-    try {
-      if (!await this.ensureInitialized()) return [];
-      
-      const adapter = this.initManager.getAdapter();
-      const results = await adapter!.query("SELECT * FROM budgets");
-      
-      return results.map(row => ({
-        id: row.id,
-        title: row.title,
-        budget: Number(row.budget),
-        spent: Number(row.spent),
-        type: 'budget' as const,
-        carriedOver: Number(row.carriedOver || 0)
-      }));
-    } catch (error) {
-      console.error("Erreur lors de la récupération des budgets:", error);
-      return [];
-    }
+    return this.budgetService.getBudgets();
   }
 
-  /**
-   * Ajoute un nouveau budget
-   */
   async addBudget(budget: Budget): Promise<void> {
-    if (!await this.ensureInitialized()) return;
-    
-    const adapter = this.initManager.getAdapter();
-    await adapter!.run(
-      'INSERT INTO budgets (id, title, budget, spent, type, carriedOver) VALUES (?, ?, ?, ?, ?, ?)',
-      [budget.id, budget.title, budget.budget, budget.spent, budget.type, budget.carriedOver || 0]
-    );
+    return this.budgetService.addBudget(budget);
   }
 
-  /**
-   * Met à jour un budget existant
-   */
   async updateBudget(budget: Budget): Promise<void> {
-    if (!await this.ensureInitialized()) return;
-    
-    const adapter = this.initManager.getAdapter();
-    await adapter!.run(
-      'UPDATE budgets SET title = ?, budget = ?, spent = ?, carriedOver = ? WHERE id = ?',
-      [budget.title, budget.budget, budget.spent, budget.carriedOver || 0, budget.id]
-    );
+    return this.budgetService.updateBudget(budget);
   }
 
-  /**
-   * Supprime un budget
-   */
   async deleteBudget(id: string): Promise<void> {
-    if (!await this.ensureInitialized()) return;
-    
-    const adapter = this.initManager.getAdapter();
-    await adapter!.run('DELETE FROM budgets WHERE id = ?', [id]);
+    return this.budgetService.deleteBudget(id);
   }
 
-  /**
-   * Récupère toutes les catégories
-   */
+  // Category methods delegated to CategoryService
   async getCategories(): Promise<Category[]> {
-    try {
-      if (!await this.ensureInitialized()) return [];
-      
-      const adapter = this.initManager.getAdapter();
-      const results = await adapter!.query("SELECT * FROM categories");
-      
-      return results.map(row => {
-        let budgets;
-        try {
-          budgets = row.budgets && typeof row.budgets === 'string' 
-            ? JSON.parse(row.budgets) 
-            : [];
-        } catch (e) {
-          console.error(`Erreur de parsing des budgets pour la catégorie ${row.id}:`, e);
-          budgets = [];
-        }
-        
-        return {
-          id: row.id,
-          name: row.name,
-          budgets: Array.isArray(budgets) ? budgets : [],
-          total: Number(row.total) || 0,
-          spent: Number(row.spent) || 0,
-          description: row.description || ''
-        };
-      });
-    } catch (error) {
-      console.error("Erreur lors de la récupération des catégories:", error);
-      return [];
-    }
+    return this.categoryService.getCategories();
   }
 
-  /**
-   * Ajoute une nouvelle catégorie
-   */
   async addCategory(category: Category): Promise<void> {
-    if (!await this.ensureInitialized()) return;
-    
-    const adapter = this.initManager.getAdapter();
-    const budgetsJson = JSON.stringify(category.budgets || []);
-    
-    await adapter!.run(
-      'INSERT INTO categories (id, name, budgets, total, spent, description) VALUES (?, ?, ?, ?, ?, ?)',
-      [category.id, category.name, budgetsJson, category.total, category.spent, category.description]
-    );
+    return this.categoryService.addCategory(category);
   }
 
-  /**
-   * Met à jour une catégorie existante
-   */
   async updateCategory(category: Category): Promise<void> {
-    if (!await this.ensureInitialized()) return;
-    
-    const adapter = this.initManager.getAdapter();
-    const budgetsJson = JSON.stringify(category.budgets || []);
-    
-    await adapter!.run(
-      'UPDATE categories SET name = ?, budgets = ?, total = ?, spent = ?, description = ? WHERE id = ?',
-      [category.name, budgetsJson, category.total, category.spent, category.description, category.id]
-    );
+    return this.categoryService.updateCategory(category);
   }
 
-  /**
-   * Supprime une catégorie
-   */
   async deleteCategory(id: string): Promise<void> {
-    if (!await this.ensureInitialized()) return;
-    
-    const adapter = this.initManager.getAdapter();
-    await adapter!.run('DELETE FROM categories WHERE id = ?', [id]);
+    return this.categoryService.deleteCategory(id);
   }
 
   /**
-   * Exporte les données de la base de données
+   * Exports database data
    */
   exportData(): Uint8Array | null {
-    if (this.exportManager) {
-      return this.exportManager.exportData();
-    }
-    return null;
+    return this.incomeService.exportData();
   }
 
   /**
-   * Importe des données dans la base de données
+   * Imports data into the database
    */
   importData(data: Uint8Array): boolean {
-    if (this.exportManager) {
-      return this.exportManager.importData(data);
-    }
-    return false;
+    return this.incomeService.importData(data);
   }
 }
 
-// Exporter une instance du service de base de données
+// Export a singleton instance of the database service
 export const databaseService = new DatabaseService();
