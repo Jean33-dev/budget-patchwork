@@ -12,16 +12,6 @@ export const useExpenseManagement = (budgetId: string | null) => {
   const { expenses, availableBudgets, isLoading, error, initAttempted, loadData } = useExpenseData(budgetId);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   
-  const { 
-    needsReload,
-    setNeedsReload,
-    forceReload
-  } = useDataReloader({ 
-    loadData, 
-    isLoading, 
-    isProcessing: false 
-  });
-  
   const {
     isProcessing,
     handleAddEnvelope,
@@ -32,6 +22,16 @@ export const useExpenseManagement = (budgetId: string | null) => {
     setAddDialogOpen,
     setNeedsReload
   );
+  
+  const { 
+    needsReload,
+    setNeedsReload,
+    forceReload
+  } = useDataReloader({ 
+    loadData, 
+    isLoading, 
+    isProcessing // Pass the actual isProcessing state here, not hardcoded false
+  });
 
   return {
     expenses,
