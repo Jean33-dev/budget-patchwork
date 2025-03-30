@@ -2,7 +2,7 @@
 import { useCallback, useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { db } from "@/services/database";
-import { Expense } from "../useExpenseManagement";
+import { Expense } from "../models/expense";
 
 export const useExpenseOperationHandlers = (
   budgetId: string | null,
@@ -11,7 +11,7 @@ export const useExpenseOperationHandlers = (
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Ajouter une dépense
+  // Add an expense
   const handleAddEnvelope = useCallback(async (envelopeData: {
     title: string;
     budget: number;
@@ -60,7 +60,7 @@ export const useExpenseOperationHandlers = (
     }
   }, [budgetId, isProcessing, loadData, toast]);
 
-  // Supprimer une dépense
+  // Delete an expense
   const handleDeleteExpense = useCallback(async (id: string) => {
     if (isProcessing) {
       toast({
@@ -92,7 +92,7 @@ export const useExpenseOperationHandlers = (
     }
   }, [isProcessing, loadData, toast]);
 
-  // Mettre à jour une dépense
+  // Update an expense
   const handleUpdateExpense = useCallback(async (expense: Expense) => {
     if (isProcessing) {
       toast({

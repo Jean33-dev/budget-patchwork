@@ -1,3 +1,6 @@
 
-// Export from the main file for backward compatibility
-export * from '../useExpenseManagement';
+// Export all expense-related hooks
+export * from './useExpenseManagement';
+export * from './useExpenseDataLoading';
+export * from './useExpenseOperationHandlers';
+export * from './useDataReloader';
