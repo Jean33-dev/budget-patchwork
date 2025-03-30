@@ -6,7 +6,7 @@ import { ExpenseList } from "@/components/budget/ExpenseList";
 import { BudgetLoadingState } from "@/components/budget/BudgetLoadingState";
 import { ExpenseErrorState } from "@/components/budget/ExpenseErrorState";
 import { useExpenseRetry } from "@/hooks/useExpenseRetry";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { toast } from "@/components/ui/use-toast";
 import { Loader2 } from "lucide-react";
 
@@ -50,6 +50,14 @@ const Expenses = () => {
       });
     }
   }, [error, isLoading, isProcessing]);
+
+  // Forcer un rechargement des données après une opération réussie
+  useEffect(() => {
+    if (!isLoading && !isProcessing && !error && initAttempted) {
+      // Ce code est exécuté lorsque le chargement est terminé et qu'aucune opération n'est en cours
+      // Nous pouvons éventuellement prévoir un rechargement périodique ici
+    }
+  }, [isLoading, isProcessing, error, initAttempted]);
 
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">

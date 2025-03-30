@@ -28,12 +28,12 @@ export const ExpenseErrorState = ({
       <AlertTitle>Erreur de chargement</AlertTitle>
       <AlertDescription className="mt-2">
         <p className="mb-3">
-          Impossible de charger la base de données. {maxAttemptsReached ? 
-            "Nombre maximal de tentatives atteint. Veuillez rafraîchir la page ou vider le cache." : 
-            "Veuillez essayer de rafraîchir la page ou utiliser les options ci-dessous."}
+          Problème lors du chargement des données. {maxAttemptsReached ? 
+            "Nombre maximal de tentatives atteint. Essayez de rafraîchir la page." : 
+            "Veuillez essayer les options ci-dessous."}
         </p>
         <p className="mb-3 text-xs opacity-70">
-          Si les problèmes persistent après modification ou suppression d'une dépense, essayez de rafraîchir la page.
+          Si les problèmes persistent après modification ou suppression d'une dépense, utilisez le bouton "Rafraîchir la page".
         </p>
         <div className="mt-4 space-x-2 flex flex-wrap gap-2">
           <Button 
@@ -57,7 +57,7 @@ export const ExpenseErrorState = ({
             Rafraîchir la page
           </Button>
           
-          {retryAttempt >= 3 && (
+          {retryAttempt >= 2 && (
             <Button 
               onClick={handleClearCacheAndReload}
               className="flex items-center gap-2"
