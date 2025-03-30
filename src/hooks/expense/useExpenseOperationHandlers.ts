@@ -31,9 +31,10 @@ export const useExpenseOperationHandlers = (
       return;
     }
 
-    setIsProcessing(true);
-
     try {
+      setIsProcessing(true);
+      console.log("Début de l'ajout d'une dépense");
+
       const expenseData: ExpenseFormData = {
         title: envelopeData.title,
         budget: envelopeData.budget,
@@ -57,6 +58,7 @@ export const useExpenseOperationHandlers = (
       });
     } finally {
       setIsProcessing(false);
+      console.log("Fin de l'ajout d'une dépense");
     }
   }, [budgetId, isProcessing, setAddDialogOpen, setNeedsReload]);
 
@@ -79,10 +81,10 @@ export const useExpenseOperationHandlers = (
       return;
     }
 
-    setIsProcessing(true);
-    console.log(`Suppression de la dépense ${id} commencée`);
-
     try {
+      setIsProcessing(true);
+      console.log(`Début de la suppression de la dépense ${id}`);
+
       const success = await expenseOperations.deleteExpense(id);
       
       if (success) {
@@ -98,6 +100,7 @@ export const useExpenseOperationHandlers = (
       });
     } finally {
       setIsProcessing(false);
+      console.log(`Fin de la suppression de la dépense ${id}`);
     }
   }, [isProcessing, setNeedsReload]);
 
@@ -120,10 +123,10 @@ export const useExpenseOperationHandlers = (
       return;
     }
 
-    setIsProcessing(true);
-    console.log(`Mise à jour de la dépense ${updatedExpense.id} commencée`);
-
     try {
+      setIsProcessing(true);
+      console.log(`Début de la mise à jour de la dépense ${updatedExpense.id}`);
+
       const success = await expenseOperations.updateExpense(updatedExpense);
       
       if (success) {
@@ -139,6 +142,7 @@ export const useExpenseOperationHandlers = (
       });
     } finally {
       setIsProcessing(false);
+      console.log(`Fin de la mise à jour de la dépense ${updatedExpense.id}`);
     }
   }, [isProcessing, setNeedsReload]);
 

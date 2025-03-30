@@ -15,29 +15,37 @@ export const useDataReloader = ({
   isProcessing, 
   initialNeedsReload = false 
 }: UseDataReloaderProps) => {
-  // Utiliser initialNeedsReload comme valeur initiale
+  // État interne au hook pour gérer le rechargement
   const [needsReload, setNeedsReload] = useState(initialNeedsReload);
   
-  // Synchroniser needsReload avec initialNeedsReload quand celle-ci change
+  // Réagir aux changements de initialNeedsReload
   useEffect(() => {
-    if (initialNeedsReload && !needsReload) {
+    if (initialNeedsReload) {
       setNeedsReload(true);
     }
-  }, [initialNeedsReload, needsReload]);
+  }, [initialNeedsReload]);
   
   // Effet pour recharger les données après une opération
   useEffect(() => {
+    let timer: NodeJS.Timeout | null = null;
+    
     if (needsReload && !isProcessing && !isLoading) {
-      const timer = setTimeout(() => {
-        console.log("Rechargement automatique des données après opération");
-        loadData().catch(err => {
+      console.log("Programmation du rechargement automatique des données après opération");
+      timer = setTimeout(async () => {
+        try {
+          console.log("Rechargement automatique des données après opération");
+          await loadData();
+        } catch (err) {
           console.error("Erreur lors du rechargement automatique des données:", err);
-        });
-        setNeedsReload(false);
+        } finally {
+          setNeedsReload(false);
+        }
       }, 500);
-      
-      return () => clearTimeout(timer);
     }
+    
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
   }, [needsReload, isProcessing, isLoading, loadData]);
 
   // Fonction pour forcer un rechargement manuel des données
