@@ -8,7 +8,8 @@ import { ExpenseErrorState } from "@/components/budget/ExpenseErrorState";
 import { useExpenseRetry } from "@/hooks/useExpenseRetry";
 import { useEffect } from "react";
 import { toast } from "@/components/ui/use-toast";
-import { Loader2 } from "lucide-react";
+import { Loader2, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const Expenses = () => {
   const navigate = useNavigate();
@@ -23,11 +24,13 @@ const Expenses = () => {
     handleAddEnvelope,
     handleDeleteExpense,
     handleUpdateExpense,
+    forceReload,
     isLoading,
     isProcessing,
     error,
     loadData,
-    initAttempted
+    initAttempted,
+    lastOperation
   } = useExpenseManagement(budgetId);
 
   const {
@@ -51,17 +54,29 @@ const Expenses = () => {
     }
   }, [error, isLoading, isProcessing]);
 
-  // Forcer un rechargement des données après une opération réussie
+  // Log quand lastOperation change
   useEffect(() => {
-    if (!isLoading && !isProcessing && !error && initAttempted) {
-      // Ce code est exécuté lorsque le chargement est terminé et qu'aucune opération n'est en cours
-      // Nous pouvons éventuellement prévoir un rechargement périodique ici
+    if (lastOperation) {
+      console.log(`Opération ${lastOperation.type} détectée sur ${lastOperation.id || 'nouvelle dépense'}`);
     }
-  }, [isLoading, isProcessing, error, initAttempted]);
+  }, [lastOperation]);
 
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
       <ExpensesHeader onNavigate={navigate} />
+      
+      <div className="flex justify-end">
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={forceReload} 
+          disabled={isLoading || isProcessing}
+          className="flex items-center gap-2"
+        >
+          {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+          Recharger les données
+        </Button>
+      </div>
       
       {(isLoading || isRetrying) && (
         <BudgetLoadingState attempt={retryAttempt} maxAttempts={maxRetryAttempts} />

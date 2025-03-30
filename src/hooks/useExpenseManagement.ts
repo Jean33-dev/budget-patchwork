@@ -1,5 +1,5 @@
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useExpenseData } from "./useExpenseData";
 import { expenseOperations, ExpenseFormData } from "@/utils/expense-operations";
 import { Expense } from "@/services/database/models/expense";
@@ -12,6 +12,26 @@ export const useExpenseManagement = (budgetId: string | null) => {
   const { expenses, availableBudgets, isLoading, error, initAttempted, loadData } = useExpenseData(budgetId);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [lastOperation, setLastOperation] = useState<{
+    type: 'add' | 'update' | 'delete';
+    id?: string;
+    timestamp: number;
+  } | null>(null);
+
+  // Effect pour recharger les données après une opération
+  useEffect(() => {
+    if (lastOperation && !isProcessing && !isLoading) {
+      const timer = setTimeout(() => {
+        console.log(`Recharging data after ${lastOperation.type} operation on id: ${lastOperation.id || 'new'}`);
+        loadData().catch(err => {
+          console.error("Error reloading data after operation:", err);
+        });
+        setLastOperation(null);
+      }, 300);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [lastOperation, isProcessing, isLoading, loadData]);
 
   const handleAddEnvelope = useCallback(async (envelopeData: {
     title: string;
@@ -48,9 +68,10 @@ export const useExpenseManagement = (budgetId: string | null) => {
       
       if (success) {
         setAddDialogOpen(false);
-        // Attendre un peu avant de recharger les données
-        await new Promise(resolve => setTimeout(resolve, 500));
-        await loadData();
+        setLastOperation({
+          type: 'add',
+          timestamp: Date.now()
+        });
       }
     } catch (error) {
       console.error("Erreur lors de l'ajout de la dépense:", error);
@@ -60,12 +81,9 @@ export const useExpenseManagement = (budgetId: string | null) => {
         description: "Une erreur est survenue lors de l'ajout de la dépense"
       });
     } finally {
-      // Petit délai avant de réinitialiser l'état de traitement
-      setTimeout(() => {
-        setIsProcessing(false);
-      }, 300);
+      setIsProcessing(false);
     }
-  }, [budgetId, isProcessing, loadData]);
+  }, [budgetId, isProcessing]);
 
   const handleDeleteExpense = useCallback(async (id: string) => {
     if (!id) {
@@ -87,14 +105,18 @@ export const useExpenseManagement = (budgetId: string | null) => {
     }
 
     setIsProcessing(true);
+    console.log(`Suppression de la dépense ${id} commencée`);
 
     try {
       const success = await expenseOperations.deleteExpense(id);
       
       if (success) {
-        // Attendre un peu avant de recharger les données
-        await new Promise(resolve => setTimeout(resolve, 500));
-        await loadData();
+        console.log(`Suppression de la dépense ${id} réussie`);
+        setLastOperation({
+          type: 'delete',
+          id,
+          timestamp: Date.now()
+        });
       }
     } catch (error) {
       console.error(`Erreur lors de la suppression de la dépense ${id}:`, error);
@@ -104,12 +126,9 @@ export const useExpenseManagement = (budgetId: string | null) => {
         description: "Une erreur est survenue lors de la suppression de la dépense"
       });
     } finally {
-      // Petit délai avant de réinitialiser l'état de traitement
-      setTimeout(() => {
-        setIsProcessing(false);
-      }, 300);
+      setIsProcessing(false);
     }
-  }, [isProcessing, loadData]);
+  }, [isProcessing]);
 
   const handleUpdateExpense = useCallback(async (updatedExpense: Expense) => {
     if (!updatedExpense?.id) {
@@ -131,14 +150,18 @@ export const useExpenseManagement = (budgetId: string | null) => {
     }
 
     setIsProcessing(true);
+    console.log(`Mise à jour de la dépense ${updatedExpense.id} commencée`);
 
     try {
       const success = await expenseOperations.updateExpense(updatedExpense);
       
       if (success) {
-        // Attendre un peu avant de recharger les données
-        await new Promise(resolve => setTimeout(resolve, 500));
-        await loadData();
+        console.log(`Mise à jour de la dépense ${updatedExpense.id} réussie`);
+        setLastOperation({
+          type: 'update',
+          id: updatedExpense.id,
+          timestamp: Date.now()
+        });
       }
     } catch (error) {
       console.error(`Erreur lors de la mise à jour de la dépense ${updatedExpense.id}:`, error);
@@ -148,12 +171,41 @@ export const useExpenseManagement = (budgetId: string | null) => {
         description: "Une erreur est survenue lors de la mise à jour de la dépense"
       });
     } finally {
-      // Petit délai avant de réinitialiser l'état de traitement
-      setTimeout(() => {
-        setIsProcessing(false);
-      }, 300);
+      setIsProcessing(false);
     }
-  }, [isProcessing, loadData]);
+  }, [isProcessing]);
+
+  // Fonction pour forcer un rechargement manuel des données
+  const forceReload = useCallback(async () => {
+    if (isProcessing || isLoading) {
+      toast({
+        variant: "default",
+        title: "Opération en cours",
+        description: "Veuillez attendre la fin de l'opération en cours"
+      });
+      return;
+    }
+    
+    setIsProcessing(true);
+    console.log("Forçage du rechargement des données");
+    
+    try {
+      await loadData();
+      toast({
+        title: "Données rechargées",
+        description: "Les données ont été actualisées avec succès"
+      });
+    } catch (error) {
+      console.error("Erreur lors du rechargement forcé des données:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible de recharger les données"
+      });
+    } finally {
+      setIsProcessing(false);
+    }
+  }, [isProcessing, isLoading, loadData]);
 
   return {
     expenses,
@@ -164,9 +216,11 @@ export const useExpenseManagement = (budgetId: string | null) => {
     handleDeleteExpense,
     handleUpdateExpense,
     loadData,
+    forceReload,
     isLoading,
     isProcessing,
     error,
-    initAttempted
+    initAttempted,
+    lastOperation
   };
 };
