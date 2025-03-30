@@ -6,10 +6,16 @@ interface UseDataReloaderProps {
   loadData: () => Promise<void>;
   isLoading: boolean;
   isProcessing: boolean;
+  initialNeedsReload?: boolean;
 }
 
-export const useDataReloader = ({ loadData, isLoading, isProcessing }: UseDataReloaderProps) => {
-  const [needsReload, setNeedsReload] = useState(false);
+export const useDataReloader = ({ 
+  loadData, 
+  isLoading, 
+  isProcessing, 
+  initialNeedsReload = false 
+}: UseDataReloaderProps) => {
+  const [needsReload, setNeedsReload] = useState(initialNeedsReload);
   
   // Effet pour recharger les données après une opération
   useEffect(() => {

@@ -11,19 +11,12 @@ export type { Expense, Budget };
 export const useExpenseManagement = (budgetId: string | null) => {
   const { expenses, availableBudgets, isLoading, error, initAttempted, loadData } = useExpenseData(budgetId);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [isProcessingState, setIsProcessingState] = useState(false);
   
-  // First initialize the data reloader to get setNeedsReload
-  const { 
-    needsReload,
-    setNeedsReload,
-    forceReload
-  } = useDataReloader({ 
-    loadData, 
-    isLoading,
-    isProcessing: false // Initial value, will be updated in the effect
-  });
+  // État local pour suivre si un rechargement est nécessaire
+  const [needsReloadState, setNeedsReloadState] = useState(false);
   
-  // Now we can use setNeedsReload in the handlers
+  // Maintenant nous pouvons utiliser setNeedsReloadState dans les gestionnaires
   const {
     isProcessing,
     handleAddEnvelope,
@@ -32,14 +25,20 @@ export const useExpenseManagement = (budgetId: string | null) => {
   } = useExpenseOperationHandlers(
     budgetId,
     setAddDialogOpen,
-    setNeedsReload
+    setNeedsReloadState
   );
   
-  // Update the data reloader with the correct isProcessing state
-  useDataReloader({ 
+  // Mettre à jour l'état local de isProcessing pour qu'il soit synchronisé
+  if (isProcessingState !== isProcessing) {
+    setIsProcessingState(isProcessing);
+  }
+  
+  // Utilisez un seul useDataReloader avec les valeurs correctes
+  const { forceReload } = useDataReloader({ 
     loadData, 
     isLoading, 
-    isProcessing 
+    isProcessing,
+    initialNeedsReload: needsReloadState
   });
 
   return {
