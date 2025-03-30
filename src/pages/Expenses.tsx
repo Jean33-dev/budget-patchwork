@@ -6,7 +6,7 @@ import { ExpenseList } from "@/components/budget/ExpenseList";
 import { BudgetLoadingState } from "@/components/budget/BudgetLoadingState";
 import { ExpenseErrorState } from "@/components/budget/ExpenseErrorState";
 import { useEffect } from "react";
-import { toast } from "@/components/ui/use-toast";
+import { useToast } from "@/components/ui/use-toast";
 import { Loader2, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -14,6 +14,7 @@ const Expenses = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const budgetId = searchParams.get('budgetId');
+  const { toast } = useToast();
   
   const {
     expenses,
@@ -40,7 +41,7 @@ const Expenses = () => {
         description: "Une erreur est survenue lors du chargement des dépenses"
       });
     }
-  }, [error, isLoading, isProcessing]);
+  }, [error, isLoading, isProcessing, toast]);
 
   // Fonction de retry simplifiée
   const handleRetry = async () => {

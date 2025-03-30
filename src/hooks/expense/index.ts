@@ -1,3 +1,3 @@
 
-// Exporter depuis le fichier principal pour la compatibilité ascendante
+// Export from the main file for backward compatibility
 export * from '../useExpenseManagement';
