@@ -15,7 +15,15 @@ export const useDataReloader = ({
   isProcessing, 
   initialNeedsReload = false 
 }: UseDataReloaderProps) => {
+  // Utiliser initialNeedsReload comme valeur initiale
   const [needsReload, setNeedsReload] = useState(initialNeedsReload);
+  
+  // Synchroniser needsReload avec initialNeedsReload quand celle-ci change
+  useEffect(() => {
+    if (initialNeedsReload && !needsReload) {
+      setNeedsReload(true);
+    }
+  }, [initialNeedsReload, needsReload]);
   
   // Effet pour recharger les données après une opération
   useEffect(() => {

@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useExpenseData } from "../useExpenseData";
 import { useDataReloader } from "./useDataReloader";
 import { useExpenseOperationHandlers } from "./useExpenseOperationHandlers";
@@ -11,12 +11,11 @@ export type { Expense, Budget };
 export const useExpenseManagement = (budgetId: string | null) => {
   const { expenses, availableBudgets, isLoading, error, initAttempted, loadData } = useExpenseData(budgetId);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
-  const [isProcessingState, setIsProcessingState] = useState(false);
   
   // État local pour suivre si un rechargement est nécessaire
   const [needsReloadState, setNeedsReloadState] = useState(false);
   
-  // Maintenant nous pouvons utiliser setNeedsReloadState dans les gestionnaires
+  // Utiliser les gestionnaires d'opérations avec la mise à jour correcte
   const {
     isProcessing,
     handleAddEnvelope,
@@ -28,16 +27,11 @@ export const useExpenseManagement = (budgetId: string | null) => {
     setNeedsReloadState
   );
   
-  // Mettre à jour l'état local de isProcessing pour qu'il soit synchronisé
-  if (isProcessingState !== isProcessing) {
-    setIsProcessingState(isProcessing);
-  }
-  
-  // Utilisez un seul useDataReloader avec les valeurs correctes
+  // Utilisez useDataReloader avec les valeurs correctes
   const { forceReload } = useDataReloader({ 
     loadData, 
     isLoading, 
-    isProcessing,
+    isProcessing, // Utiliser directement isProcessing du handler
     initialNeedsReload: needsReloadState
   });
 
@@ -52,7 +46,7 @@ export const useExpenseManagement = (budgetId: string | null) => {
     loadData,
     forceReload,
     isLoading,
-    isProcessing,
+    isProcessing, // Retourner directement isProcessing du handler
     error,
     initAttempted
   };
