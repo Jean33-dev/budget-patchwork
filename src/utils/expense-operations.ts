@@ -1,7 +1,7 @@
 
 import { db } from "@/services/database";
 import { Expense } from "@/services/database/models/expense";
-import { toast } from "@/components/ui/use-toast";
+import { useToast } from "@/components/ui/use-toast";
 
 export type ExpenseFormData = {
   title: string;
@@ -26,19 +26,9 @@ export const expenseOperations = {
 
       await db.addExpense(newExpense);
       
-      toast({
-        title: "Succès",
-        description: `La dépense "${data.title}" a été ajoutée`
-      });
-      
       return true;
     } catch (error) {
       console.error("Error adding expense:", error);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Impossible d'ajouter la dépense"
-      });
       return false;
     }
   },
@@ -57,19 +47,9 @@ export const expenseOperations = {
 
       await db.updateExpense(validatedExpense);
       
-      toast({
-        title: "Succès",
-        description: `La dépense "${validatedExpense.title}" a été mise à jour`
-      });
-      
       return true;
     } catch (error) {
       console.error("Error updating expense:", error);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Impossible de modifier la dépense"
-      });
       return false;
     }
   },
@@ -78,19 +58,9 @@ export const expenseOperations = {
     try {
       await db.deleteExpense(expenseId);
       
-      toast({
-        title: "Succès",
-        description: "La dépense a été supprimée"
-      });
-      
       return true;
     } catch (error) {
       console.error("Error deleting expense:", error);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Impossible de supprimer la dépense"
-      });
       return false;
     }
   }

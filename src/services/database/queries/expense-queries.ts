@@ -29,8 +29,8 @@ export const expenseQueries = {
       const expenses = result[0].values.map((row: any[]) => ({
         id: row[0],
         title: row[1],
-        budget: row[2],
-        spent: row[3],
+        budget: Number(row[2]),
+        spent: Number(row[3]),
         type: 'expense' as const,
         linkedBudgetId: row[5],
         date: row[6] || new Date().toISOString().split('T')[0]

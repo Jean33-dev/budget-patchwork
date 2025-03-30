@@ -15,7 +15,7 @@ export const useExpenseOperationHandlers = (
   const handleAddEnvelope = useCallback(async (envelopeData: {
     title: string;
     budget: number;
-    type: "expense";
+    type: "income" | "expense" | "budget";
     linkedBudgetId?: string;
     date: string;
   }) => {
@@ -72,6 +72,7 @@ export const useExpenseOperationHandlers = (
 
     try {
       setIsProcessing(true);
+      console.log(`Suppression de la dépense confirmée: ${id}`);
       await db.deleteExpense(id);
       
       toast({
