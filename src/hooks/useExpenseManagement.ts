@@ -1,10 +1,20 @@
 
 import { useState, useEffect, useCallback } from "react";
-import { db, Expense } from "@/services/database";
+import { db } from "@/services/database";
 import { useToast } from "@/components/ui/use-toast";
 import { Budget } from "@/types/categories";
 
-export type { Expense, Budget };
+export interface Expense {
+  id: string;
+  title: string;
+  budget: number;
+  spent: number;
+  type: 'expense';
+  linkedBudgetId?: string;
+  date: string;
+}
+
+export type { Budget };
 
 export const useExpenseManagement = (budgetId: string | null) => {
   const { toast } = useToast();

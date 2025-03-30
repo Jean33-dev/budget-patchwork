@@ -1,3 +1,3 @@
-// Since we've moved functionality to the main useExpenseManagement.ts file,
-// we'll keep this file for backward compatibility but update its exports
+
+// Exporter depuis le fichier principal pour la compatibilité ascendante
 export * from '../useExpenseManagement';
