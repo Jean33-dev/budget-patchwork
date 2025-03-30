@@ -1,33 +1,15 @@
 
-import { useState, useCallback, useEffect } from "react";
-import { useExpenseData } from "./useExpenseData";
+import { useState, useCallback } from "react";
 import { expenseOperations, ExpenseFormData } from "@/utils/expense-operations";
 import { Expense } from "@/services/database/models/expense";
-import { Budget } from "@/types/categories";
 import { toast } from "@/components/ui/use-toast";
 
-export type { Expense, Budget };
-
-export const useExpenseManagement = (budgetId: string | null) => {
-  const { expenses, availableBudgets, isLoading, error, initAttempted, loadData } = useExpenseData(budgetId);
-  const [addDialogOpen, setAddDialogOpen] = useState(false);
+export const useExpenseOperationHandlers = (
+  budgetId: string | null,
+  setAddDialogOpen: (open: boolean) => void,
+  setNeedsReload: (needsReload: boolean) => void
+) => {
   const [isProcessing, setIsProcessing] = useState(false);
-  const [needsReload, setNeedsReload] = useState(false);
-
-  // Effet pour recharger les données après une opération
-  useEffect(() => {
-    if (needsReload && !isProcessing && !isLoading) {
-      const timer = setTimeout(() => {
-        console.log("Rechargement automatique des données après opération");
-        loadData().catch(err => {
-          console.error("Erreur lors du rechargement automatique des données:", err);
-        });
-        setNeedsReload(false);
-      }, 500);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [needsReload, isProcessing, isLoading, loadData]);
 
   const handleAddEnvelope = useCallback(async (envelopeData: {
     title: string;
@@ -76,7 +58,7 @@ export const useExpenseManagement = (budgetId: string | null) => {
     } finally {
       setIsProcessing(false);
     }
-  }, [budgetId, isProcessing]);
+  }, [budgetId, isProcessing, setAddDialogOpen, setNeedsReload]);
 
   const handleDeleteExpense = useCallback(async (id: string) => {
     if (!id) {
@@ -117,7 +99,7 @@ export const useExpenseManagement = (budgetId: string | null) => {
     } finally {
       setIsProcessing(false);
     }
-  }, [isProcessing]);
+  }, [isProcessing, setNeedsReload]);
 
   const handleUpdateExpense = useCallback(async (updatedExpense: Expense) => {
     if (!updatedExpense?.id) {
@@ -158,53 +140,12 @@ export const useExpenseManagement = (budgetId: string | null) => {
     } finally {
       setIsProcessing(false);
     }
-  }, [isProcessing]);
-
-  // Fonction pour forcer un rechargement manuel des données
-  const forceReload = useCallback(async () => {
-    if (isProcessing || isLoading) {
-      toast({
-        variant: "default",
-        title: "Opération en cours",
-        description: "Veuillez attendre la fin de l'opération en cours"
-      });
-      return;
-    }
-    
-    setIsProcessing(true);
-    console.log("Forçage du rechargement des données");
-    
-    try {
-      await loadData();
-      toast({
-        title: "Données rechargées",
-        description: "Les données ont été actualisées avec succès"
-      });
-    } catch (error) {
-      console.error("Erreur lors du rechargement forcé des données:", error);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Impossible de recharger les données"
-      });
-    } finally {
-      setIsProcessing(false);
-    }
-  }, [isProcessing, isLoading, loadData]);
+  }, [isProcessing, setNeedsReload]);
 
   return {
-    expenses,
-    availableBudgets,
-    addDialogOpen,
-    setAddDialogOpen,
+    isProcessing,
     handleAddEnvelope,
     handleDeleteExpense,
-    handleUpdateExpense,
-    loadData,
-    forceReload,
-    isLoading,
-    isProcessing,
-    error,
-    initAttempted
+    handleUpdateExpense
   };
 };

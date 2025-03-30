@@ -1,7 +1,7 @@
 
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ExpensesHeader } from "@/components/budget/ExpensesHeader";
-import { useExpenseManagement } from "@/hooks/useExpenseManagement";
+import { useExpenseManagement } from "@/hooks/expense/useExpenseManagement";
 import { ExpenseList } from "@/components/budget/ExpenseList";
 import { BudgetLoadingState } from "@/components/budget/BudgetLoadingState";
 import { ExpenseErrorState } from "@/components/budget/ExpenseErrorState";
