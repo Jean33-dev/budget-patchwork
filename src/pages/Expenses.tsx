@@ -8,12 +8,12 @@ import { ExpenseErrorState } from "@/components/budget/ExpenseErrorState";
 import { useExpenseRetry } from "@/hooks/useExpenseRetry";
 import { useEffect, useState } from "react";
 import { toast } from "@/components/ui/use-toast";
+import { Loader2 } from "lucide-react";
 
 const Expenses = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const budgetId = searchParams.get('budgetId');
-  const [isContentLoading, setIsContentLoading] = useState(false);
   
   const {
     expenses,
@@ -39,14 +39,9 @@ const Expenses = () => {
     handleClearCacheAndReload
   } = useExpenseRetry(loadData);
 
-  // Effet pour gérer l'état de chargement global
-  useEffect(() => {
-    setIsContentLoading(isLoading || isProcessing);
-  }, [isLoading, isProcessing]);
-
   // Effet pour surveiller les erreurs
   useEffect(() => {
-    if (error && !isLoading) {
+    if (error && !isLoading && !isProcessing) {
       console.error("Erreur détectée dans la page Expenses:", error);
       toast({
         variant: "destructive",
@@ -54,35 +49,7 @@ const Expenses = () => {
         description: "Une erreur est survenue lors du chargement des dépenses"
       });
     }
-  }, [error, isLoading]);
-
-  // Wrapper pour les opérations de suppression qui ajoute une gestion supplémentaire des erreurs
-  const handleSafeDeleteExpense = async (id: string) => {
-    try {
-      await handleDeleteExpense(id);
-    } catch (err) {
-      console.error("Erreur non gérée lors de la suppression:", err);
-      toast({
-        variant: "destructive",
-        title: "Erreur critique",
-        description: "Une erreur inattendue est survenue. Veuillez rafraîchir la page."
-      });
-    }
-  };
-
-  // Wrapper pour les opérations de mise à jour qui ajoute une gestion supplémentaire des erreurs
-  const handleSafeUpdateExpense = async (expense: any) => {
-    try {
-      await handleUpdateExpense(expense);
-    } catch (err) {
-      console.error("Erreur non gérée lors de la mise à jour:", err);
-      toast({
-        variant: "destructive",
-        title: "Erreur critique",
-        description: "Une erreur inattendue est survenue. Veuillez rafraîchir la page."
-      });
-    }
-  };
+  }, [error, isLoading, isProcessing]);
 
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
@@ -92,7 +59,7 @@ const Expenses = () => {
         <BudgetLoadingState attempt={retryAttempt} maxAttempts={maxRetryAttempts} />
       )}
       
-      {error && initAttempted && (
+      {error && initAttempted && !isProcessing && (
         <ExpenseErrorState 
           retryAttempt={retryAttempt}
           maxRetryAttempts={maxRetryAttempts}
@@ -110,18 +77,21 @@ const Expenses = () => {
           addDialogOpen={addDialogOpen}
           setAddDialogOpen={setAddDialogOpen}
           handleAddEnvelope={handleAddEnvelope}
-          handleDeleteExpense={handleSafeDeleteExpense}
-          handleUpdateExpense={handleSafeUpdateExpense}
+          handleDeleteExpense={handleDeleteExpense}
+          handleUpdateExpense={handleUpdateExpense}
           defaultBudgetId={budgetId || undefined}
         />
       )}
       
-      {isProcessing && !isLoading && (
-        <div className="fixed inset-0 bg-black/10 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg">
-            <div className="flex items-center space-x-4">
-              <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-              <p>Opération en cours...</p>
+      {isProcessing && (
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+            <div className="flex flex-col items-center space-y-4">
+              <Loader2 className="h-8 w-8 text-blue-500 animate-spin" />
+              <p className="text-lg font-medium">Opération en cours...</p>
+              <p className="text-sm text-gray-500 text-center">
+                Veuillez patienter pendant le traitement de votre demande.
+              </p>
             </div>
           </div>
         </div>

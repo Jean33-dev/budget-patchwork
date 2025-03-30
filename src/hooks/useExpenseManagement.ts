@@ -1,5 +1,5 @@
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { useExpenseData } from "./useExpenseData";
 import { expenseOperations, ExpenseFormData } from "@/utils/expense-operations";
 import { Expense } from "@/services/database/models/expense";
@@ -9,11 +9,29 @@ import { toast } from "@/components/ui/use-toast";
 export type { Expense, Budget };
 
 export const useExpenseManagement = (budgetId: string | null) => {
-  const { expenses, availableBudgets, isLoading, error, initAttempted, loadData } = useExpenseData(budgetId);
+  const { expenses, availableBudgets, isLoading: isDataLoading, error, initAttempted, loadData } = useExpenseData(budgetId);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const operationTimeoutRef = useRef<number | null>(null);
   const operationInProgressRef = useRef(false);
+  const [operationError, setOperationError] = useState<Error | null>(null);
+
+  // Reset operation error when data loading changes
+  useEffect(() => {
+    if (!isDataLoading) {
+      setOperationError(null);
+    }
+  }, [isDataLoading]);
+
+  // Cleanup function to reset processing state if component unmounts during operation
+  useEffect(() => {
+    return () => {
+      if (operationTimeoutRef.current) {
+        window.clearTimeout(operationTimeoutRef.current);
+        operationTimeoutRef.current = null;
+      }
+    };
+  }, []);
 
   // Helper function to safely perform database operations with timeout protection
   const safeOperation = useCallback(async (
@@ -30,6 +48,7 @@ export const useExpenseManagement = (budgetId: string | null) => {
       return false;
     }
 
+    // Set processing state
     setIsProcessing(true);
     operationInProgressRef.current = true;
     
@@ -42,10 +61,21 @@ export const useExpenseManagement = (budgetId: string | null) => {
       console.log("Operation timeout - resetting processing state");
       setIsProcessing(false);
       operationInProgressRef.current = false;
-    }, 10000); // 10 seconds timeout
+      toast({
+        variant: "destructive",
+        title: "Opération trop longue",
+        description: "L'opération a pris trop de temps. Veuillez réessayer."
+      });
+    }, 8000); // 8 seconds timeout
 
     try {
       const success = await operation();
+      
+      // Clear timeout since operation completed
+      if (operationTimeoutRef.current) {
+        window.clearTimeout(operationTimeoutRef.current);
+        operationTimeoutRef.current = null;
+      }
       
       if (success) {
         toast({
@@ -54,8 +84,8 @@ export const useExpenseManagement = (budgetId: string | null) => {
         });
         
         try {
-          // Utiliser une courte pause avant de recharger les données
-          await new Promise(resolve => setTimeout(resolve, 300));
+          // Schedule data reload after a short delay to allow the database operations to complete
+          await new Promise(resolve => setTimeout(resolve, 500));
           await loadData();
         } catch (loadError) {
           console.error("Erreur lors du rechargement des données:", loadError);
@@ -76,6 +106,7 @@ export const useExpenseManagement = (budgetId: string | null) => {
       }
     } catch (error) {
       console.error("Erreur d'opération:", error);
+      setOperationError(error instanceof Error ? error : new Error(errorMessage));
       toast({
         variant: "destructive",
         title: "Erreur",
@@ -83,12 +114,17 @@ export const useExpenseManagement = (budgetId: string | null) => {
       });
       return false;
     } finally {
+      // Ensure processing state is reset regardless of outcome
       if (operationTimeoutRef.current) {
         window.clearTimeout(operationTimeoutRef.current);
         operationTimeoutRef.current = null;
       }
-      setIsProcessing(false);
-      operationInProgressRef.current = false;
+      
+      // Short delay to ensure UI updates properly before resetting state
+      setTimeout(() => {
+        setIsProcessing(false);
+        operationInProgressRef.current = false;
+      }, 300);
     }
   }, [loadData]);
 
@@ -132,7 +168,7 @@ export const useExpenseManagement = (budgetId: string | null) => {
       return;
     }
 
-    // Vérifie si la dépense existe avant de tenter de la supprimer
+    // Légère vérification côté client avant d'envoyer à la base de données
     const expenseExists = expenses.some(exp => exp.id === id);
     if (!expenseExists) {
       console.warn(`La dépense avec l'ID ${id} n'existe pas ou a déjà été supprimée`);
@@ -146,14 +182,9 @@ export const useExpenseManagement = (budgetId: string | null) => {
 
     console.log(`Suppression de la dépense confirmée: ${id}`);
     
-    // Créer une copie locale de la liste des dépenses sans celle qui va être supprimée
-    // pour éviter de devoir attendre le rechargement des données
-    const updatedExpenses = expenses.filter(exp => exp.id !== id);
-    
     await safeOperation(
       async () => {
-        const result = await expenseOperations.deleteExpense(id);
-        return result;
+        return await expenseOperations.deleteExpense(id);
       },
       "La dépense a été supprimée avec succès",
       "Une erreur est survenue lors de la suppression de la dépense"
@@ -170,7 +201,7 @@ export const useExpenseManagement = (budgetId: string | null) => {
       return;
     }
 
-    // Vérifie si la dépense existe avant de tenter de la mettre à jour
+    // Légère vérification côté client avant d'envoyer à la base de données
     const expenseExists = expenses.some(exp => exp.id === updatedExpense.id);
     if (!expenseExists) {
       console.warn(`La dépense avec l'ID ${updatedExpense.id} n'existe pas ou a déjà été supprimée`);
@@ -192,8 +223,7 @@ export const useExpenseManagement = (budgetId: string | null) => {
     
     await safeOperation(
       async () => {
-        const result = await expenseOperations.updateExpense(validatedExpense);
-        return result;
+        return await expenseOperations.updateExpense(validatedExpense);
       },
       `La dépense "${validatedExpense.title}" a été modifiée avec succès`,
       "Une erreur est survenue lors de la mise à jour de la dépense"
@@ -209,9 +239,9 @@ export const useExpenseManagement = (budgetId: string | null) => {
     handleDeleteExpense,
     handleUpdateExpense,
     loadData,
-    isLoading,
+    isLoading: isDataLoading,
     isProcessing,
-    error,
+    error: error || operationError,
     initAttempted
   };
 };

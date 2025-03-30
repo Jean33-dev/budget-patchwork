@@ -13,6 +13,7 @@ export type ExpenseFormData = {
 export const expenseOperations = {
   async addExpense(data: ExpenseFormData): Promise<boolean> {
     try {
+      console.log("Starting addExpense operation");
       const newExpense: Expense = {
         id: Date.now().toString(),
         title: data.title || "Sans titre",
@@ -25,6 +26,7 @@ export const expenseOperations = {
 
       console.log("Adding new expense:", newExpense);
       await db.addExpense(newExpense);
+      console.log("Expense added successfully:", newExpense.id);
       
       return true;
     } catch (error) {
@@ -40,7 +42,7 @@ export const expenseOperations = {
         return false;
       }
       
-      console.log("Updating expense:", expenseToUpdate);
+      console.log("Starting updateExpense operation for ID:", expenseToUpdate.id);
       
       // S'assurer que tous les champs nécessaires sont présents
       const validatedExpense: Expense = {
@@ -53,16 +55,11 @@ export const expenseOperations = {
         date: expenseToUpdate.date || new Date().toISOString().split('T')[0]
       };
       
-      // Vérifier que la dépense existe avant de tenter la mise à jour
-      const expenses = await db.getExpenses();
-      const exists = expenses.some(e => e.id === validatedExpense.id);
-      
-      if (!exists) {
-        console.warn(`La dépense avec l'ID ${validatedExpense.id} n'existe pas`);
-        return false;
-      }
+      // Ne pas vérifier si la dépense existe ici, laissons la couche de base de données le faire
+      // pour réduire les requêtes redondantes
       
       await db.updateExpense(validatedExpense);
+      console.log("Expense updated successfully:", validatedExpense.id);
       return true;
     } catch (error) {
       console.error("Error updating expense:", error);
@@ -77,17 +74,13 @@ export const expenseOperations = {
         return false;
       }
       
-      // Vérifier que la dépense existe avant de tenter la suppression
-      const expenses = await db.getExpenses();
-      const exists = expenses.some(e => e.id === expenseId);
+      console.log("Starting deleteExpense operation for ID:", expenseId);
       
-      if (!exists) {
-        console.warn(`La dépense avec l'ID ${expenseId} n'existe pas`);
-        return false;
-      }
+      // Ne pas vérifier si la dépense existe ici, laissons la couche de base de données le faire
+      // pour réduire les requêtes redondantes
       
-      console.log(`Deleting expense with ID: ${expenseId}`);
       await db.deleteExpense(expenseId);
+      console.log("Expense deleted successfully:", expenseId);
       return true;
     } catch (error) {
       console.error("Error deleting expense:", error);
