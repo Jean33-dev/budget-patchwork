@@ -73,16 +73,24 @@ export const ExpenseTable = ({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {expenses.map((envelope) => (
-                <ExpenseTableRow
-                  key={envelope.id}
-                  envelope={envelope}
-                  onEnvelopeClick={onEnvelopeClick}
-                  onEditClick={handleEditClick}
-                  onDeleteClick={handleDeleteClick}
-                  getBudgetTitle={getBudgetTitle}
-                />
-              ))}
+              {expenses.length > 0 ? (
+                expenses.map((envelope) => (
+                  <ExpenseTableRow
+                    key={envelope.id}
+                    envelope={envelope}
+                    onEnvelopeClick={onEnvelopeClick}
+                    onEditClick={handleEditClick}
+                    onDeleteClick={handleDeleteClick}
+                    getBudgetTitle={getBudgetTitle}
+                  />
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center py-6">
+                    Aucune dépense trouvée
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </div>

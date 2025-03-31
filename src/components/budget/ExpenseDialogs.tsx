@@ -83,10 +83,11 @@ export const useExpenseDialogState = (
       return;
     }
     
+    console.log("handleEditClick: Setting selected expense:", envelope);
     setSelectedExpense(envelope);
-    setEditableTitle(envelope.title || "");
+    setEditableTitle(String(envelope.title || ""));
     setEditableBudget(Number(envelope.budget) || 0);
-    setEditableDate(envelope.date || new Date().toISOString().split('T')[0]);
+    setEditableDate(String(envelope.date || new Date().toISOString().split('T')[0]));
     setIsEditDialogOpen(true);
   }, []);
 
@@ -96,6 +97,7 @@ export const useExpenseDialogState = (
       return;
     }
     
+    console.log("handleDeleteClick: Setting selected expense:", envelope);
     setSelectedExpense(envelope);
     setIsDeleteDialogOpen(true);
   }, []);
@@ -109,13 +111,13 @@ export const useExpenseDialogState = (
     
     const updatedExpense = {
       ...selectedExpense,
-      title: editableTitle || "Sans titre",
+      title: String(editableTitle || "Sans titre"),
       budget: Number(editableBudget) || 0,
       spent: Number(editableBudget) || 0, // Pour une dépense, spent == budget
-      date: editableDate || new Date().toISOString().split('T')[0]
+      date: String(editableDate || new Date().toISOString().split('T')[0])
     };
     
-    console.log("Modification de la dépense confirmée:", updatedExpense);
+    console.log("handleConfirmEdit: Updated expense:", updatedExpense);
     
     onUpdateExpense(updatedExpense);
     setIsEditDialogOpen(false);
@@ -128,9 +130,9 @@ export const useExpenseDialogState = (
       return;
     }
     
-    console.log("Suppression de la dépense confirmée:", selectedExpense.id);
+    console.log("handleConfirmDelete: Deleting expense:", selectedExpense.id);
     
-    onDeleteExpense(selectedExpense.id);
+    onDeleteExpense(String(selectedExpense.id));
     setIsDeleteDialogOpen(false);
   }, [selectedExpense, onDeleteExpense]);
 

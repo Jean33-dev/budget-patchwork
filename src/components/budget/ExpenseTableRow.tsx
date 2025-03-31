@@ -32,9 +32,25 @@ export const ExpenseTableRow = ({
     try {
       const date = new Date(dateString);
       return format(date, 'dd/MM/yyyy', { locale: fr });
-    } catch {
+    } catch (error) {
+      console.error("Error formatting date:", error);
       return "Date invalide";
     }
+  };
+
+  const handleRowClick = () => {
+    console.log("Row clicked for expense:", envelope);
+    onEnvelopeClick(envelope);
+  };
+
+  const handleEditButtonClick = () => {
+    console.log("Edit button clicked for expense:", envelope);
+    onEditClick(envelope);
+  };
+
+  const handleDeleteButtonClick = () => {
+    console.log("Delete button clicked for expense:", envelope);
+    onDeleteClick(envelope);
   };
 
   return (
@@ -44,7 +60,7 @@ export const ExpenseTableRow = ({
     >
       <TableCell 
         className="font-medium"
-        onClick={() => onEnvelopeClick(envelope)}
+        onClick={handleRowClick}
       >
         <div>
           {envelope.title}
@@ -58,26 +74,26 @@ export const ExpenseTableRow = ({
       </TableCell>
       <TableCell 
         className="hidden sm:table-cell"
-        onClick={() => onEnvelopeClick(envelope)}
+        onClick={handleRowClick}
       >
         {formatDate(envelope.date)}
       </TableCell>
       <TableCell 
         className="hidden sm:table-cell"
-        onClick={() => onEnvelopeClick(envelope)}
+        onClick={handleRowClick}
       >
         {getBudgetTitle(envelope.linkedBudgetId)}
       </TableCell>
       <TableCell 
         className="text-right"
-        onClick={() => onEnvelopeClick(envelope)}
+        onClick={handleRowClick}
       >
-        {envelope.budget.toFixed(2)} €
+        {Number(envelope.budget).toFixed(2)} €
       </TableCell>
       <TableCell>
         <ExpenseActionMenu
-          onEditClick={() => onEditClick(envelope)}
-          onDeleteClick={() => onDeleteClick(envelope)}
+          onEditClick={handleEditButtonClick}
+          onDeleteClick={handleDeleteButtonClick}
         />
       </TableCell>
     </TableRow>

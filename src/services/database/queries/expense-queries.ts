@@ -26,15 +26,18 @@ export const expenseQueries = {
         return [];
       }
       
-      const expenses = result[0].values.map((row: any[]) => ({
-        id: row[0],
-        title: row[1],
-        budget: Number(row[2]),
-        spent: Number(row[3]),
-        type: 'expense' as const,
-        linkedBudgetId: row[5],
-        date: row[6] || new Date().toISOString().split('T')[0]
-      }));
+      const expenses = result[0].values.map((row: any[]) => {
+        // Utilisation de conversions explicites pour s'assurer que les valeurs sont du bon type
+        return {
+          id: String(row[0]),
+          title: String(row[1] || ''),
+          budget: Number(row[2] || 0),
+          spent: Number(row[3] || 0),
+          type: 'expense' as const,
+          linkedBudgetId: row[5] ? String(row[5]) : null,
+          date: String(row[6] || new Date().toISOString().split('T')[0])
+        };
+      });
       
       return expenses;
     } catch (error) {
@@ -44,49 +47,71 @@ export const expenseQueries = {
   },
   
   add: (db: any, expense: Expense): void => {
-    if (!db) return;
+    if (!db) {
+      console.error("Database is null in expenseQueries.add");
+      return;
+    }
     
-    const stmt = db.prepare(
-      'INSERT INTO expenses (id, title, budget, spent, type, linkedBudgetId, date) VALUES (?, ?, ?, ?, ?, ?, ?)'
-    );
-    
-    stmt.run([
-      expense.id, 
-      expense.title || 'Sans titre', 
-      expense.budget || 0, 
-      expense.spent || 0, 
-      'expense', 
-      expense.linkedBudgetId || null, 
-      expense.date || new Date().toISOString().split('T')[0]
-    ]);
-    
-    stmt.free();
+    try {
+      const stmt = db.prepare(
+        'INSERT INTO expenses (id, title, budget, spent, type, linkedBudgetId, date) VALUES (?, ?, ?, ?, ?, ?, ?)'
+      );
+      
+      stmt.run([
+        String(expense.id), 
+        String(expense.title || 'Sans titre'), 
+        Number(expense.budget || 0), 
+        Number(expense.spent || 0), 
+        'expense', 
+        expense.linkedBudgetId ? String(expense.linkedBudgetId) : null, 
+        String(expense.date || new Date().toISOString().split('T')[0])
+      ]);
+      
+      stmt.free();
+    } catch (error) {
+      console.error("Erreur lors de l'ajout d'une dépense:", error);
+    }
   },
   
   update: (db: any, expense: Expense): void => {
-    if (!db) return;
+    if (!db) {
+      console.error("Database is null in expenseQueries.update");
+      return;
+    }
     
-    const stmt = db.prepare(
-      'UPDATE expenses SET title = ?, budget = ?, spent = ?, linkedBudgetId = ?, date = ? WHERE id = ?'
-    );
-    
-    stmt.run([
-      expense.title || 'Sans titre',
-      expense.budget || 0,
-      expense.spent || expense.budget || 0,
-      expense.linkedBudgetId || null, 
-      expense.date || new Date().toISOString().split('T')[0],
-      expense.id
-    ]);
-    
-    stmt.free();
+    try {
+      const stmt = db.prepare(
+        'UPDATE expenses SET title = ?, budget = ?, spent = ?, linkedBudgetId = ?, date = ? WHERE id = ?'
+      );
+      
+      stmt.run([
+        String(expense.title || 'Sans titre'),
+        Number(expense.budget || 0),
+        Number(expense.spent || expense.budget || 0),
+        expense.linkedBudgetId ? String(expense.linkedBudgetId) : null, 
+        String(expense.date || new Date().toISOString().split('T')[0]),
+        String(expense.id)
+      ]);
+      
+      stmt.free();
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour d'une dépense:", error);
+    }
   },
   
   delete: (db: any, id: string): void => {
-    if (!db) return;
+    if (!db) {
+      console.error("Database is null in expenseQueries.delete");
+      return;
+    }
     
-    const stmt = db.prepare('DELETE FROM expenses WHERE id = ?');
-    stmt.run([id]);
-    stmt.free();
+    try {
+      const stmt = db.prepare('DELETE FROM expenses WHERE id = ?');
+      console.log("Executing DELETE query with ID:", id);
+      stmt.run([String(id)]);
+      stmt.free();
+    } catch (error) {
+      console.error("Erreur lors de la suppression d'une dépense:", error);
+    }
   }
 };

@@ -1,6 +1,6 @@
 
 import { useCallback, useState } from "react";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { db } from "@/services/database";
 import { Expense } from "../models/expense";
 
@@ -29,17 +29,19 @@ export const useExpenseOperationHandlers = (
 
     try {
       setIsProcessing(true);
+      console.log("handleAddEnvelope: Starting with data:", envelopeData);
       
       const newExpense: Expense = {
         id: Date.now().toString(),
-        title: envelopeData.title || "Sans titre",
+        title: String(envelopeData.title || "Sans titre"),
         budget: Number(envelopeData.budget) || 0,
         spent: Number(envelopeData.budget) || 0,
         type: "expense",
-        linkedBudgetId: budgetId || envelopeData.linkedBudgetId,
-        date: envelopeData.date || new Date().toISOString().split('T')[0]
+        linkedBudgetId: budgetId ? String(budgetId) : envelopeData.linkedBudgetId ? String(envelopeData.linkedBudgetId) : null,
+        date: String(envelopeData.date || new Date().toISOString().split('T')[0])
       };
 
+      console.log("handleAddEnvelope: Created expense object:", newExpense);
       await db.addExpense(newExpense);
       
       toast({
@@ -72,8 +74,13 @@ export const useExpenseOperationHandlers = (
 
     try {
       setIsProcessing(true);
-      console.log(`Suppression de la dépense confirmée: ${id}`);
-      await db.deleteExpense(id);
+      console.log(`handleDeleteExpense: Starting with ID: ${id}`);
+      
+      if (!id) {
+        throw new Error("ID invalide pour la suppression");
+      }
+      
+      await db.deleteExpense(String(id));
       
       toast({
         title: "Succès",
@@ -105,7 +112,23 @@ export const useExpenseOperationHandlers = (
 
     try {
       setIsProcessing(true);
-      await db.updateExpense(expense);
+      console.log("handleUpdateExpense: Starting with data:", expense);
+      
+      if (!expense || !expense.id) {
+        throw new Error("Données de dépense invalides pour la mise à jour");
+      }
+      
+      const validatedExpense: Expense = {
+        id: String(expense.id),
+        title: String(expense.title || "Sans titre"),
+        budget: Number(expense.budget) || 0,
+        spent: Number(expense.spent || expense.budget) || 0,
+        type: "expense",
+        linkedBudgetId: expense.linkedBudgetId ? String(expense.linkedBudgetId) : null,
+        date: String(expense.date || new Date().toISOString().split('T')[0])
+      };
+      
+      await db.updateExpense(validatedExpense);
       
       toast({
         title: "Succès",
