@@ -7,8 +7,7 @@ import { BudgetLoadingState } from "@/components/budget/BudgetLoadingState";
 import { ExpenseErrorState } from "@/components/budget/ExpenseErrorState";
 import { useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
-import { Loader2, RefreshCw } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 
 const Expenses = () => {
   const navigate = useNavigate();
@@ -51,19 +50,6 @@ const Expenses = () => {
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
       <ExpensesHeader onNavigate={navigate} />
-      
-      <div className="flex justify-end">
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={forceReload} 
-          disabled={isLoading || isProcessing}
-          className="flex items-center gap-2"
-        >
-          {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
-          Recharger les données
-        </Button>
-      </div>
       
       {isLoading && (
         <BudgetLoadingState attempt={1} maxAttempts={1} />

@@ -6,7 +6,6 @@ import { EnvelopeList } from "@/components/budget/EnvelopeList";
 import { BudgetLoadingState } from "@/components/budget/BudgetLoadingState";
 import { BudgetErrorState } from "@/components/budget/BudgetErrorState";
 import { RemainingAmountAlert } from "@/components/budget/RemainingAmountAlert";
-import { RefreshButton } from "@/components/budget/RefreshButton";
 import { EmptyBudgetState } from "@/components/budget/EmptyBudgetState";
 import { BudgetDialogs } from "@/components/budget/BudgetDialogs";
 import { toast } from "@/components/ui/use-toast";
@@ -118,10 +117,7 @@ const BudgetsPage = () => {
 
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <BudgetsHeader onNavigate={navigate} />
-        <RefreshButton onRefresh={handleManualRefresh} isRefreshing={isRefreshing} />
-      </div>
+      <BudgetsHeader onNavigate={navigate} />
 
       <RemainingAmountAlert remainingAmount={remainingAmount} />
 
