@@ -9,8 +9,8 @@ import { Button } from "@/components/ui/button";
 import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 
 interface ExpenseActionMenuProps {
-  onEditClick: () => void;
-  onDeleteClick: () => void;
+  onEditClick: (e: React.MouseEvent) => void;
+  onDeleteClick: (e: React.MouseEvent) => void;
 }
 
 export const ExpenseActionMenu = ({ onEditClick, onDeleteClick }: ExpenseActionMenuProps) => {
@@ -31,7 +31,7 @@ export const ExpenseActionMenu = ({ onEditClick, onDeleteClick }: ExpenseActionM
         <DropdownMenuItem 
           onClick={(e) => {
             e.stopPropagation();
-            onEditClick();
+            onEditClick(e);
           }}
         >
           <Pencil className="mr-2 h-4 w-4" />
@@ -40,7 +40,7 @@ export const ExpenseActionMenu = ({ onEditClick, onDeleteClick }: ExpenseActionM
         <DropdownMenuItem 
           onClick={(e) => {
             e.stopPropagation();
-            onDeleteClick();
+            onDeleteClick(e);
           }}
           className="text-red-600"
         >
