@@ -5,6 +5,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
+  TableCell
 } from "@/components/ui/table";
 import { ExpenseTableRow } from "./ExpenseTableRow";
 import { ExpenseDialogs, useExpenseDialogState } from "./ExpenseDialogs";
@@ -114,3 +115,4 @@ export const ExpenseTable = ({
     </>
   );
 };
+
