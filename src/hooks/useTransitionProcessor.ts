@@ -172,6 +172,59 @@ export const useTransitionProcessor = (categories: any[], setCategories: (catego
             }
           }
           break;
+          
+        case "multi-transfer":
+          if (envelope.multiTransfers && envelope.multiTransfers.length > 0) {
+            console.log(`Transferts multiples pour ${budget.title}:`, envelope.multiTransfers);
+            
+            // Calculer le montant total à transférer
+            const totalTransferAmount = envelope.multiTransfers.reduce(
+              (sum, transfer) => sum + transfer.amount, 0
+            );
+            
+            // S'assurer que le montant total n'excède pas le montant disponible
+            if (totalTransferAmount <= currentRemaining) {
+              // Réinitialiser le budget source avec le montant restant non transféré
+              const remainingAfterTransfers = currentRemaining - totalTransferAmount;
+              
+              await db.updateBudget({
+                ...budget,
+                spent: 0,
+                carriedOver: remainingAfterTransfers
+              });
+              
+              console.log(`Multi-transfert - Budget source mis à jour:`, {
+                title: budget.title,
+                spent: 0,
+                carriedOver: remainingAfterTransfers
+              });
+              
+              // Distribuer les montants aux budgets cibles
+              for (const transfer of envelope.multiTransfers) {
+                // Récupérer le budget cible
+                const targetBudget = await db.getBudgets().then(budgets => 
+                  budgets.find(b => b.id === transfer.targetId)
+                );
+                
+                if (targetBudget) {
+                  // Ajouter le montant au report du budget cible
+                  await db.updateBudget({
+                    ...targetBudget,
+                    carriedOver: (targetBudget.carriedOver || 0) + transfer.amount
+                  });
+                  
+                  console.log(`Multi-transfert - Budget cible mis à jour:`, {
+                    title: targetBudget.title,
+                    amount: transfer.amount,
+                    newCarriedOver: (targetBudget.carriedOver || 0) + transfer.amount
+                  });
+                }
+              }
+            } else {
+              console.error(`Montant total de transfert (${totalTransferAmount}) supérieur au montant disponible (${currentRemaining})`);
+            }
+          }
+          break;
       }
     }
   };

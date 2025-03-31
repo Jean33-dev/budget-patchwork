@@ -14,7 +14,8 @@ export const useTransitionPreferences = () => {
           id: env.id,
           transitionOption: env.transitionOption,
           partialAmount: undefined as number | undefined,
-          transferTargetId: undefined as string | undefined
+          transferTargetId: undefined as string | undefined,
+          multiTransfers: undefined as { targetId: string; amount: number }[] | undefined
         };
         
         // Only include relevant fields based on the option
@@ -24,6 +25,10 @@ export const useTransitionPreferences = () => {
         
         if (env.transitionOption === "transfer" && env.transferTargetId) {
           pref.transferTargetId = env.transferTargetId;
+        }
+        
+        if (env.transitionOption === "multi-transfer" && env.multiTransfers) {
+          pref.multiTransfers = env.multiTransfers;
         }
         
         return pref;

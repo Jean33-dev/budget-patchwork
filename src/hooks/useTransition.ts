@@ -57,12 +57,26 @@ export const useTransition = (onComplete: () => void) => {
             transferTargetTitle = targetEnvelope?.title;
           }
           
+          // For multi-transfer options, we need to find the target envelope names
+          let multiTransfers;
+          if (savedPref.transitionOption === "multi-transfer" && savedPref.multiTransfers) {
+            multiTransfers = savedPref.multiTransfers.map(transfer => {
+              const targetEnvelope = initialEnvelopes.find(e => e.id === transfer.targetId);
+              return {
+                targetId: transfer.targetId,
+                targetTitle: targetEnvelope?.title || "Unknown",
+                amount: transfer.amount
+              };
+            });
+          }
+          
           return {
             ...env,
             transitionOption: savedPref.transitionOption as TransitionOption,
             transferTargetId: savedPref.transferTargetId,
             transferTargetTitle,
-            partialAmount: savedPref.partialAmount
+            partialAmount: savedPref.partialAmount,
+            multiTransfers
           };
         }
         return env;
@@ -100,6 +114,10 @@ export const useTransition = (onComplete: () => void) => {
           if (option !== "transfer") {
             delete updatedEnv.transferTargetId;
             delete updatedEnv.transferTargetTitle;
+          }
+          
+          if (option !== "multi-transfer") {
+            delete updatedEnv.multiTransfers;
           }
           
           console.log('Updated envelope:', updatedEnv);
@@ -148,6 +166,18 @@ export const useTransition = (onComplete: () => void) => {
     
     console.log(`Transfer target set for ${envelopeId}: ${targetId} (${targetEnvelope.title})`);
   };
+  
+  const handleMultiTransferChange = (envelopeId: string, transfers: { targetId: string; targetTitle: string; amount: number }[]) => {
+    console.log(`Multi-transfer changed for ${envelopeId}:`, transfers);
+    
+    setEnvelopes(prev =>
+      prev.map(env =>
+        env.id === envelopeId
+          ? { ...env, multiTransfers: transfers }
+          : env
+      )
+    );
+  };
 
   const handleTransitionConfirm = async () => {
     setIsProcessing(true);
@@ -164,13 +194,28 @@ export const useTransition = (onComplete: () => void) => {
         return;
       }
       
+      // Verify all multi-transfer options have at least one target
+      const missingMultiTargets = envelopes.filter(
+        env => env.transitionOption === "multi-transfer" && (!env.multiTransfers || env.multiTransfers.length === 0)
+      );
+      
+      if (missingMultiTargets.length > 0) {
+        toast.error("Certains transferts multiples n'ont pas de cibles");
+        setIsProcessing(false);
+        return;
+      }
+      
       // Convert budget envelopes to transition envelopes format expected by the hook
       const transitionData = envelopes.map(env => ({
         id: env.id,
         title: env.title,
         transitionOption: env.transitionOption,
         partialAmount: env.partialAmount,
-        transferTargetId: env.transferTargetId
+        transferTargetId: env.transferTargetId,
+        multiTransfers: env.multiTransfers?.map(t => ({
+          targetId: t.targetId,
+          amount: t.amount
+        }))
       }));
       
       console.log('Sending transition data:', transitionData);
@@ -203,6 +248,7 @@ export const useTransition = (onComplete: () => void) => {
     handleOptionChange,
     handlePartialAmountChange,
     handleTransferTargetChange,
+    handleMultiTransferChange,
     handleTransitionConfirm
   };
 };

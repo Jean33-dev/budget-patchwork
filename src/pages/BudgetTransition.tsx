@@ -22,6 +22,7 @@ export const BudgetTransition = () => {
     handleOptionChange,
     handlePartialAmountChange,
     handleTransferTargetChange,
+    handleMultiTransferChange,
     handleTransitionConfirm
   } = useTransition(() => navigate("/dashboard/budget"));
 
@@ -42,6 +43,7 @@ export const BudgetTransition = () => {
           onOptionChange={handleOptionChange}
           onTransferTargetChange={handleTransferTargetChange}
           onPartialAmountChange={handlePartialAmountChange}
+          onMultiTransferChange={handleMultiTransferChange}
         />
 
         <TransitionActionButtons 
