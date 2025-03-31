@@ -33,8 +33,8 @@ export const useExpenseOperationHandlers = (
       const newExpense: Expense = {
         id: Date.now().toString(),
         title: envelopeData.title || "Sans titre",
-        budget: envelopeData.budget || 0,
-        spent: envelopeData.budget || 0,
+        budget: Number(envelopeData.budget) || 0,
+        spent: Number(envelopeData.budget) || 0,
         type: "expense",
         linkedBudgetId: budgetId || envelopeData.linkedBudgetId,
         date: envelopeData.date || new Date().toISOString().split('T')[0]

@@ -1,7 +1,6 @@
 
 import { db } from "@/services/database";
 import { Expense } from "@/services/database/models/expense";
-import { useToast } from "@/components/ui/use-toast";
 
 export type ExpenseFormData = {
   title: string;

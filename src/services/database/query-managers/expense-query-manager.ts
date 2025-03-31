@@ -1,5 +1,4 @@
 
-import { useToast } from "@/components/ui/use-toast";
 import { QueryManager } from '../query-manager';
 import { Expense } from '../models/expense';
 import { expenseQueries } from '../queries/expense-queries';
