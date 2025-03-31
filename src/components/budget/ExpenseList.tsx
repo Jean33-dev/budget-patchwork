@@ -35,6 +35,7 @@ export const ExpenseList = ({
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
 
   const handleExpenseClick = (expense: Expense) => {
+    console.log("Expense clicked:", expense);
     setSelectedExpense(expense);
   };
 

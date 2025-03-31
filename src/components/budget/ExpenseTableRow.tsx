@@ -43,12 +43,14 @@ export const ExpenseTableRow = ({
     onEnvelopeClick(envelope);
   };
 
-  const handleEditButtonClick = () => {
+  const handleEditButtonClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
     console.log("Edit button clicked for expense:", envelope);
     onEditClick(envelope);
   };
 
-  const handleDeleteButtonClick = () => {
+  const handleDeleteButtonClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
     console.log("Delete button clicked for expense:", envelope);
     onDeleteClick(envelope);
   };
