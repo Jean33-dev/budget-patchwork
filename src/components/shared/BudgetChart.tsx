@@ -1,4 +1,3 @@
-
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts";
 
 interface BudgetData {
@@ -51,6 +50,13 @@ export const BudgetChart = ({ data, totalIncome = 0, addUnallocated = false }: B
     return ((value / totalIncome) * 100).toFixed(1);
   };
 
+  // Calculate the new thickness by increasing the original thickness by 35%
+  // Original: innerRadius=60, outerRadius=80, difference=20
+  // 20 * 1.35 = 27, so new thickness should be 27
+  // Keep innerRadius at 60 and increase outerRadius to 87
+  const innerRadius = 60;
+  const outerRadius = 87;  // Increased from 80 to 87 (35% thicker)
+
   return (
     <div className="relative w-full h-[300px]">
       <ResponsiveContainer width="100%" height="100%">
@@ -60,8 +66,8 @@ export const BudgetChart = ({ data, totalIncome = 0, addUnallocated = false }: B
             cx="50%"
             cy="50%"
             labelLine={false}
-            innerRadius={60}
-            outerRadius={80}
+            innerRadius={innerRadius}
+            outerRadius={outerRadius}
             fill="#8884d8"
             dataKey="value"
           >
