@@ -11,6 +11,7 @@ const Dashboard = () => {
   const { dashboards } = useDashboards();
   const [title, setTitle] = useState("Budget Personnel");
   const [isDefaultDashboard, setIsDefaultDashboard] = useState(true);
+  const [currentDate, setCurrentDate] = useState(new Date());
 
   // Déterminer le titre du tableau de bord en fonction de l'ID
   useEffect(() => {
@@ -35,12 +36,21 @@ const Dashboard = () => {
     navigate(path);
   };
 
+  const handleMonthChange = (date: Date) => {
+    setCurrentDate(date);
+    // Add any additional logic needed for month changes
+  };
+
+  const handleBackClick = () => {
+    navigate("/");
+  };
+
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
       <DashboardHeader 
-        dashboardId={dashboardId}
-        title={title}
-        onNavigate={handleNavigate}
+        currentDate={currentDate}
+        onMonthChange={handleMonthChange}
+        onBackClick={handleBackClick}
       />
       <DashboardOverview 
         dashboardId={dashboardId}
