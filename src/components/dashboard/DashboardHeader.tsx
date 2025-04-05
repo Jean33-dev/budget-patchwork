@@ -13,9 +13,10 @@ interface DashboardHeaderProps {
   currentDate: Date;
   onMonthChange: (date: Date) => void;
   onBackClick: () => void;
+  onExportPDF?: () => void;
 }
 
-export const DashboardHeader = ({ currentDate, onMonthChange, onBackClick }: DashboardHeaderProps) => {
+export const DashboardHeader = ({ currentDate, onMonthChange, onBackClick, onExportPDF }: DashboardHeaderProps) => {
   const navigate = useNavigate();
 
   return (
@@ -52,6 +53,11 @@ export const DashboardHeader = ({ currentDate, onMonthChange, onBackClick }: Das
             <DropdownMenuItem onClick={() => navigate("/dashboard/budget/expenses")}>
               Gérer les Dépenses
             </DropdownMenuItem>
+            {onExportPDF && (
+              <DropdownMenuItem onClick={onExportPDF}>
+                Exporter en PDF
+              </DropdownMenuItem>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
 

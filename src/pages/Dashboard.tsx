@@ -5,6 +5,7 @@ import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { DashboardOverview } from "@/components/dashboard/DashboardOverview";
 import { BudgetStats } from "@/components/dashboard/BudgetStats";
 import { useBudgets } from "@/hooks/useBudgets";
+import { BudgetPDFDownload } from "@/components/pdf/BudgetPDF";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,11 +16,19 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [showTransitionDialog, setShowTransitionDialog] = useState(false);
+  const [showPDFDialog, setShowPDFDialog] = useState(false);
   const [nextDate, setNextDate] = useState<Date | null>(null);
 
   // Utilisation du hook useBudgets pour obtenir toutes les données
@@ -49,6 +58,11 @@ const Dashboard = () => {
     setNextDate(null);
     setShowTransitionDialog(false);
   };
+  
+  // Gérer l'export PDF
+  const handleExportPDF = () => {
+    setShowPDFDialog(true);
+  };
 
   // Créer la liste des enveloppes à partir des budgets
   const envelopes = budgets.map(budget => ({
@@ -65,6 +79,7 @@ const Dashboard = () => {
         currentDate={currentDate}
         onMonthChange={handleMonthChange}
         onBackClick={() => navigate("/")}
+        onExportPDF={handleExportPDF}
       />
       
       <DashboardOverview
@@ -95,6 +110,25 @@ const Dashboard = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      
+      <Dialog open={showPDFDialog} onOpenChange={setShowPDFDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Exporter en PDF</DialogTitle>
+            <DialogDescription>
+              Téléchargez un rapport budgétaire au format PDF.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-4 py-4">
+            <BudgetPDFDownload
+              fileName={`rapport-budget-${currentDate.toISOString().slice(0, 7)}.pdf`}
+              totalIncome={totalRevenues}
+              totalExpenses={totalExpenses}
+              budgets={envelopes}
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
