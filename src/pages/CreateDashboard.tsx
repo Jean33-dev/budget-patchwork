@@ -11,6 +11,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import { useDashboards } from "@/hooks/useDashboards";
+import { Textarea } from "@/components/ui/textarea";
 
 // Définir le schéma de validation
 const formSchema = z.object({
@@ -25,6 +27,7 @@ type FormValues = z.infer<typeof formSchema>;
 const CreateDashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { addDashboard } = useDashboards();
   const [isCreating, setIsCreating] = useState(false);
 
   const form = useForm<FormValues>({
@@ -38,21 +41,25 @@ const CreateDashboard = () => {
   const onSubmit = async (data: FormValues) => {
     setIsCreating(true);
     
-    // Dans une future version, ces données pourraient être stockées dans une base de données
-    // Pour l'instant, nous simulons la création du tableau de bord
-    
     try {
-      // Simuler un délai d'attente pour donner l'impression de la création
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Notifier l'utilisateur que le tableau de bord a été créé
-      toast({
-        title: "Tableau de bord créé",
-        description: `Votre tableau de bord "${data.title}" a été créé avec succès.`,
+      // Créer le nouveau tableau de bord avec notre hook
+      const newDashboard = addDashboard({
+        title: data.title,
+        description: data.description || "",
       });
       
-      // Rediriger l'utilisateur vers la page d'accueil
-      navigate("/");
+      if (newDashboard) {
+        // Notifier l'utilisateur que le tableau de bord a été créé
+        toast({
+          title: "Tableau de bord créé",
+          description: `Votre tableau de bord "${data.title}" a été créé avec succès.`,
+        });
+        
+        // Rediriger l'utilisateur vers la page d'accueil
+        navigate("/");
+      } else {
+        throw new Error("Échec de la création du tableau de bord");
+      }
     } catch (error) {
       toast({
         title: "Erreur",
@@ -109,7 +116,11 @@ const CreateDashboard = () => {
                   <FormItem>
                     <FormLabel>Description (optionnelle)</FormLabel>
                     <FormControl>
-                      <Input placeholder="Décrivez l'objectif de ce tableau de bord" {...field} />
+                      <Textarea 
+                        placeholder="Décrivez l'objectif de ce tableau de bord" 
+                        className="min-h-24"
+                        {...field} 
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
