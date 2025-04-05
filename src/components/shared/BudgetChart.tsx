@@ -1,3 +1,4 @@
+
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts";
 
 interface BudgetData {
@@ -19,9 +20,9 @@ const COLORS = {
     "#8B5CF6", // Vivid Purple
     "#D946EF", // Magenta Pink
     "#F97316", // Bright Orange
-    "#7E69AB", // Secondary Purple
-    "#6E59A5", // Tertiary Purple
-    "#ea384c", // Red
+    "#0EA5E9", // Ocean Blue
+    "#10B981", // Emerald Green
+    "#EF4444", // Bright Red
   ],
 };
 

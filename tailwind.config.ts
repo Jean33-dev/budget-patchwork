@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -28,6 +29,10 @@ export default {
           income: "#10B981",
           expense: "#EF4444",
           neutral: "#3B82F6",
+          purple: "#8B5CF6",
+          pink: "#D946EF",
+          orange: "#F97316",
+          blue: "#0EA5E9",
         },
         primary: {
           DEFAULT: "hsl(var(--primary))",
