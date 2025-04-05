@@ -9,7 +9,7 @@ interface Envelope {
   title: string;
   budget: number;
   spent: number;
-  type: "income" | "expense" | "budget";
+  type: string; // Changed from union type to allow both database values
   category?: string;
 }
 
@@ -30,7 +30,7 @@ export const useChartData = (envelopes: Envelope[], totalIncome: number) => {
       .map((env) => ({
         name: env.title,
         value: env.budget,
-        type: env.type,
+        type: env.type as "budget",
       })), [envelopes]
   );
 
