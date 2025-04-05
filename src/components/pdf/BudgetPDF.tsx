@@ -248,6 +248,7 @@ interface BudgetPDFDownloadProps {
     type: "expense";
     date?: string;
   }>;
+  className?: string;
 }
 
 export const BudgetPDFDownload = ({ 
@@ -256,7 +257,8 @@ export const BudgetPDFDownload = ({
   totalExpenses,
   budgets,
   incomes,
-  expenses
+  expenses,
+  className
 }: BudgetPDFDownloadProps) => {
   return (
     <PDFDownloadLink
@@ -270,18 +272,17 @@ export const BudgetPDFDownload = ({
         />
       }
       fileName={fileName}
+      className={className}
     >
       {/* Fixed issue: Changed function component to ReactNode */}
       <Button 
         variant="outline" 
         size="sm" 
-        className="flex items-center gap-2"
+        className="w-full flex items-center justify-center gap-2"
       >
         <FileDown className="h-4 w-4" />
-        {/* Use text instead of conditional rendering based on loading state */}
         Télécharger PDF
       </Button>
     </PDFDownloadLink>
   );
 };
-

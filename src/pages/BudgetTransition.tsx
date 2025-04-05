@@ -112,12 +112,13 @@ export const BudgetTransition = () => {
                 </AlertDescription>
               </Alert>
               
-              <div className="flex justify-center mt-4" onClick={handlePDFExported}>
+              <div className="flex justify-center w-full mt-4" onClick={handlePDFExported}>
                 <BudgetPDFDownload
                   fileName={pdfFileName}
                   totalIncome={totalRevenues}
                   totalExpenses={totalExpenses}
                   budgets={budgets}
+                  className="w-full"
                 />
               </div>
               
