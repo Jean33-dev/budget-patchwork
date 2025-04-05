@@ -23,6 +23,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { AlertTriangle } from "lucide-react";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -95,11 +96,19 @@ const Dashboard = () => {
 
       <AlertDialog open={showTransitionDialog} onOpenChange={setShowTransitionDialog}>
         <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Transition vers un nouveau mois</AlertDialogTitle>
-            <AlertDialogDescription>
-              Voulez-vous configurer la transition des budgets vers le nouveau mois ? 
-              Cela vous permettra de définir comment chaque budget doit être géré pour le mois suivant.
+          <AlertDialogHeader className="space-y-3">
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-yellow-500" />
+              Transition vers un nouveau mois
+            </AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2">
+              <p>
+                Voulez-vous configurer la transition des budgets vers le nouveau mois ?
+                Cela vous permettra de définir comment chaque budget sera géré pour le mois suivant.
+              </p>
+              <div className="bg-yellow-50 border border-yellow-200 p-3 rounded-md text-yellow-800 mt-2">
+                <strong>Attention :</strong> Si vous ne configurez pas correctement cette transition, vos données budgétaires actuelles (dépenses et revenus) seront définitivement supprimées sans possibilité de récupération.
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -134,4 +143,3 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-
