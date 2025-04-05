@@ -129,11 +129,21 @@ export const BudgetTransition = () => {
               )}
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
-            <AlertDialogCancel onClick={() => setShowConfirmDialog(false)}>Annuler</AlertDialogCancel>
-            <AlertDialogAction onClick={handleFinalConfirm}>
+          <AlertDialogFooter className="flex-col gap-2">
+            <div className="w-full flex-1">
+              <BudgetPDFDownload
+                fileName={pdfFileName}
+                totalIncome={totalRevenues}
+                totalExpenses={totalExpenses}
+                budgets={budgets}
+                className="w-full"
+                onClick={handlePDFExported}
+              />
+            </div>
+            <AlertDialogAction onClick={handleFinalConfirm} className="w-full">
               Confirmer la transition
             </AlertDialogAction>
+            <AlertDialogCancel className="w-full mt-0">Annuler</AlertDialogCancel>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
