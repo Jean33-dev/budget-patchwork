@@ -42,6 +42,12 @@ export const BudgetChart = ({ data, totalIncome = 0, addUnallocated = false }: B
   }
 
   const getPercentage = (value: number) => {
+    if (totalIncome <= 0) {
+      // Si pas de revenu total, calcule le pourcentage basé sur la somme de tous les budgets
+      const totalBudgetSum = chartData.reduce((sum, item) => sum + item.value, 0);
+      return totalBudgetSum > 0 ? ((value / totalBudgetSum) * 100).toFixed(1) : "0.0";
+    }
+    // Calcul normal basé sur le revenu total
     return ((value / totalIncome) * 100).toFixed(1);
   };
 
