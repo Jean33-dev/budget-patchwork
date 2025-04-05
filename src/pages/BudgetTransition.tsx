@@ -20,6 +20,7 @@ import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { AlertTriangle, FileText } from "lucide-react";
 import { BudgetPDFDownload } from "@/components/pdf/BudgetPDF";
 import { useBudgets } from "@/hooks/useBudgets";
+import { Button } from "@/components/ui/button";
 
 export const BudgetTransition = () => {
   const navigate = useNavigate();
@@ -108,26 +109,26 @@ export const BudgetTransition = () => {
                     <FileText className="h-4 w-4" />
                     <span className="text-xs font-medium">Nous vous recommandons d'exporter vos données en PDF avant de continuer.</span>
                   </div>
-                  
-                  <div className="mt-2" onClick={handlePDFExported}>
-                    <BudgetPDFDownload
-                      fileName={pdfFileName}
-                      totalIncome={totalRevenues}
-                      totalExpenses={totalExpenses}
-                      budgets={budgets}
-                    />
-                  </div>
-                  
-                  {pdfExported && (
-                    <p className="text-xs text-green-600 dark:text-green-400 mt-2">
-                      PDF exporté avec succès. Vous pouvez maintenant procéder à la transition.
-                    </p>
-                  )}
                 </AlertDescription>
               </Alert>
+              
+              <div className="flex justify-center mt-4" onClick={handlePDFExported}>
+                <BudgetPDFDownload
+                  fileName={pdfFileName}
+                  totalIncome={totalRevenues}
+                  totalExpenses={totalExpenses}
+                  budgets={budgets}
+                />
+              </div>
+              
+              {pdfExported && (
+                <p className="text-xs text-green-600 dark:text-green-400 text-center mt-2">
+                  PDF exporté avec succès. Vous pouvez maintenant procéder à la transition.
+                </p>
+              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
+          <AlertDialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
             <AlertDialogCancel onClick={() => setShowConfirmDialog(false)}>Annuler</AlertDialogCancel>
             <AlertDialogAction onClick={handleFinalConfirm}>
               Confirmer la transition
