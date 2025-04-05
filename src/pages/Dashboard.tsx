@@ -6,6 +6,7 @@ import { DashboardOverview } from "@/components/dashboard/DashboardOverview";
 import { BudgetStats } from "@/components/dashboard/BudgetStats";
 import { useBudgets } from "@/hooks/useBudgets";
 import { BudgetPDFDownload } from "@/components/pdf/BudgetPDF";
+import { AlertTriangle, FileText } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,6 +17,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import {
   Dialog,
   DialogContent,
@@ -30,6 +32,7 @@ const Dashboard = () => {
   const [showTransitionDialog, setShowTransitionDialog] = useState(false);
   const [showPDFDialog, setShowPDFDialog] = useState(false);
   const [nextDate, setNextDate] = useState<Date | null>(null);
+  const [pdfExported, setPdfExported] = useState(false);
 
   // Utilisation du hook useBudgets pour obtenir toutes les données
   const { 
@@ -45,6 +48,7 @@ const Dashboard = () => {
     // Show transition dialog when month is changed
     setNextDate(newDate);
     setShowTransitionDialog(true);
+    setPdfExported(false);
   };
 
   const handleTransitionConfirm = () => {
@@ -62,6 +66,11 @@ const Dashboard = () => {
   // Gérer l'export PDF
   const handleExportPDF = () => {
     setShowPDFDialog(true);
+  };
+
+  // Suivi de l'export PDF
+  const handlePDFExported = () => {
+    setPdfExported(true);
   };
 
   // Créer la liste des enveloppes à partir des budgets
@@ -97,9 +106,42 @@ const Dashboard = () => {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Transition vers un nouveau mois</AlertDialogTitle>
-            <AlertDialogDescription>
-              Voulez-vous configurer la transition des budgets vers le nouveau mois ? 
-              Cela vous permettra de définir comment chaque budget doit être géré pour le mois suivant.
+            <AlertDialogDescription className="space-y-4">
+              <div>
+                Voulez-vous configurer la transition des budgets vers le nouveau mois ? 
+                Cela vous permettra de définir comment chaque budget doit être géré pour le mois suivant.
+              </div>
+              
+              <Alert variant="destructive" className="mt-4">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>Attention : Sauvegardez vos données</AlertTitle>
+                <AlertDescription>
+                  <p className="text-sm">
+                    En passant au nouveau mois, vos dépenses et revenus actuels seront réinitialisés.
+                    Ces données seront définitivement perdues.
+                  </p>
+                  
+                  <div className="flex items-center gap-2 mt-2">
+                    <FileText className="h-4 w-4" />
+                    <span className="text-xs font-medium">Nous vous recommandons d'exporter vos données en PDF avant de continuer.</span>
+                  </div>
+                  
+                  <div className="mt-2" onClick={handlePDFExported}>
+                    <BudgetPDFDownload
+                      fileName={`rapport-budget-${currentDate.toISOString().slice(0, 7)}.pdf`}
+                      totalIncome={totalRevenues}
+                      totalExpenses={totalExpenses}
+                      budgets={envelopes}
+                    />
+                  </div>
+                  
+                  {pdfExported && (
+                    <p className="text-xs text-green-600 dark:text-green-400 mt-2">
+                      PDF exporté avec succès. Vous pouvez maintenant procéder à la transition.
+                    </p>
+                  )}
+                </AlertDescription>
+              </Alert>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -134,4 +176,3 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-

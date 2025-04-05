@@ -5,6 +5,7 @@ import { TransitionPageHeader } from "@/components/budget-transition/TransitionP
 import { TransitionInfoBox } from "@/components/budget-transition/TransitionInfoBox";
 import { TransitionEnvelopeGrid } from "@/components/budget-transition/TransitionEnvelopeGrid";
 import { TransitionActionButtons } from "@/components/budget-transition/TransitionActionButtons";
+import { TransitionWarningAlert } from "@/components/budget-transition/TransitionWarningAlert";
 import { useTransition } from "@/hooks/useTransition";
 
 export const BudgetTransition = () => {
@@ -36,6 +37,8 @@ export const BudgetTransition = () => {
       <TransitionPageHeader onBackClick={handleBack} />
 
       <div className="space-y-6">
+        <TransitionWarningAlert />
+        
         <TransitionInfoBox />
 
         <TransitionEnvelopeGrid 
