@@ -112,16 +112,6 @@ export const BudgetTransition = () => {
                 </AlertDescription>
               </Alert>
               
-              <div className="flex justify-center w-full mt-4" onClick={handlePDFExported}>
-                <BudgetPDFDownload
-                  fileName={pdfFileName}
-                  totalIncome={totalRevenues}
-                  totalExpenses={totalExpenses}
-                  budgets={budgets}
-                  className="w-full"
-                />
-              </div>
-              
               {pdfExported && (
                 <p className="text-xs text-green-600 dark:text-green-400 text-center mt-2">
                   PDF exporté avec succès. Vous pouvez maintenant procéder à la transition.
@@ -130,16 +120,14 @@ export const BudgetTransition = () => {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="flex-col gap-2">
-            <div className="w-full flex-1">
-              <BudgetPDFDownload
-                fileName={pdfFileName}
-                totalIncome={totalRevenues}
-                totalExpenses={totalExpenses}
-                budgets={budgets}
-                className="w-full"
-                onClick={handlePDFExported}
-              />
-            </div>
+            <BudgetPDFDownload
+              fileName={pdfFileName}
+              totalIncome={totalRevenues}
+              totalExpenses={totalExpenses}
+              budgets={budgets}
+              className="w-full"
+              onClick={handlePDFExported}
+            />
             <AlertDialogAction onClick={handleFinalConfirm} className="w-full">
               Confirmer la transition
             </AlertDialogAction>
