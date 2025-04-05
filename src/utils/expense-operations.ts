@@ -8,12 +8,22 @@ export type ExpenseFormData = {
   type: "expense";
   linkedBudgetId?: string;
   date: string;
+  dashboardId?: string; // Ajout du champ dashboardId
 };
 
 export const expenseOperations = {
   async addExpense(data: ExpenseFormData): Promise<boolean> {
     try {
       console.log("expenseOperations.addExpense: Starting with data:", data);
+      
+      // Get current dashboard ID from URL if not provided
+      let dashboardId = data.dashboardId;
+      if (!dashboardId) {
+        const url = window.location.pathname;
+        const urlMatch = url.match(/\/dashboard\/(dashboard_[0-9]+)/);
+        dashboardId = urlMatch ? urlMatch[1] : 'budget';
+      }
+      
       const newExpense: Expense = {
         id: Date.now().toString(),
         title: data.title || "Sans titre",
@@ -21,7 +31,8 @@ export const expenseOperations = {
         spent: Number(data.budget) || 0,
         type: "expense",
         linkedBudgetId: data.linkedBudgetId || null,
-        date: data.date || new Date().toISOString().split('T')[0]
+        date: data.date || new Date().toISOString().split('T')[0],
+        dashboardId: dashboardId // Association au tableau de bord actif
       };
 
       console.log("expenseOperations.addExpense: Created expense object:", newExpense);
@@ -43,6 +54,14 @@ export const expenseOperations = {
         return false;
       }
       
+      // Conserver le dashboardId existant ou récupérer celui de l'URL
+      let dashboardId = expenseToUpdate.dashboardId;
+      if (!dashboardId) {
+        const url = window.location.pathname;
+        const urlMatch = url.match(/\/dashboard\/(dashboard_[0-9]+)/);
+        dashboardId = urlMatch ? urlMatch[1] : 'budget';
+      }
+      
       const validatedExpense: Expense = {
         id: String(expenseToUpdate.id),
         title: String(expenseToUpdate.title || "Sans titre"),
@@ -50,7 +69,8 @@ export const expenseOperations = {
         spent: Number(expenseToUpdate.spent) || Number(expenseToUpdate.budget) || 0,
         type: "expense",
         linkedBudgetId: expenseToUpdate.linkedBudgetId ? String(expenseToUpdate.linkedBudgetId) : null,
-        date: String(expenseToUpdate.date || new Date().toISOString().split('T')[0])
+        date: String(expenseToUpdate.date || new Date().toISOString().split('T')[0]),
+        dashboardId: dashboardId
       };
 
       console.log("expenseOperations.updateExpense: Validated expense:", validatedExpense);

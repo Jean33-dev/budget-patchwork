@@ -18,6 +18,7 @@ export const useExpenseOperationHandlers = (
     type: "income" | "expense" | "budget";
     linkedBudgetId?: string;
     date: string;
+    dashboardId?: string;
   }) => {
     if (isProcessing) {
       toast({
@@ -31,6 +32,16 @@ export const useExpenseOperationHandlers = (
       setIsProcessing(true);
       console.log("handleAddEnvelope: Starting with data:", envelopeData);
       
+      // Get the current URL to extract the dashboard ID
+      const url = window.location.pathname;
+      // Extract dashboard ID from URL
+      const urlMatch = url.match(/\/dashboard\/(dashboard_[0-9]+)/);
+      const dashboardIdFromUrl = urlMatch ? urlMatch[1] : null;
+      // Use either the dashboard ID from URL, or the default budget dashboard
+      const currentDashboardId = dashboardIdFromUrl || 'budget';
+      
+      console.log("Current dashboard ID detected:", currentDashboardId);
+
       const newExpense: Expense = {
         id: Date.now().toString(),
         title: String(envelopeData.title || "Sans titre"),
@@ -38,7 +49,8 @@ export const useExpenseOperationHandlers = (
         spent: Number(envelopeData.budget) || 0,
         type: "expense",
         linkedBudgetId: budgetId ? String(budgetId) : envelopeData.linkedBudgetId ? String(envelopeData.linkedBudgetId) : null,
-        date: String(envelopeData.date || new Date().toISOString().split('T')[0])
+        date: String(envelopeData.date || new Date().toISOString().split('T')[0]),
+        dashboardId: currentDashboardId // Ajouter le dashboardId pour lier cette dépense au tableau de bord actif
       };
 
       console.log("handleAddEnvelope: Created expense object:", newExpense);
@@ -118,6 +130,12 @@ export const useExpenseOperationHandlers = (
         throw new Error("Données de dépense invalides pour la mise à jour");
       }
       
+      // Get current dashboard ID from URL
+      const url = window.location.pathname;
+      const urlMatch = url.match(/\/dashboard\/(dashboard_[0-9]+)/);
+      const dashboardIdFromUrl = urlMatch ? urlMatch[1] : null;
+      const currentDashboardId = dashboardIdFromUrl || 'budget';
+      
       const validatedExpense: Expense = {
         id: String(expense.id),
         title: String(expense.title || "Sans titre"),
@@ -125,7 +143,8 @@ export const useExpenseOperationHandlers = (
         spent: Number(expense.spent || expense.budget) || 0,
         type: "expense",
         linkedBudgetId: expense.linkedBudgetId ? String(expense.linkedBudgetId) : null,
-        date: String(expense.date || new Date().toISOString().split('T')[0])
+        date: String(expense.date || new Date().toISOString().split('T')[0]),
+        dashboardId: expense.dashboardId || currentDashboardId // Conserver le dashboardId existant ou utiliser l'actuel
       };
       
       await db.updateExpense(validatedExpense);

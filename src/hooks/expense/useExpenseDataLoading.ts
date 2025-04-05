@@ -1,55 +1,72 @@
 
-import { useState, useEffect, useCallback } from "react";
-import { useToast } from "@/components/ui/use-toast";
+import { useState, useEffect } from "react";
 import { db } from "@/services/database";
-import { Budget } from "@/types/categories";
 import { Expense } from "../models/expense";
+import { Budget } from "@/types/categories";
 
 export const useExpenseDataLoading = () => {
-  const { toast } = useToast();
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [availableBudgets, setAvailableBudgets] = useState<Budget[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [initAttempted, setInitAttempted] = useState(false);
 
-  // Load data function
-  const loadData = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    
+  // Fonction de chargement des données
+  const loadData = async () => {
     try {
-      console.log("Initializing database...");
-      await db.init();
+      console.log("useExpenseDataLoading: Starting data load");
+      setIsLoading(true);
       
-      // Load budgets
-      const loadedBudgets = await db.getBudgets();
-      console.log('Budgets loaded:', loadedBudgets);
-      setAvailableBudgets(loadedBudgets);
+      // Get current dashboard ID from URL
+      const url = window.location.pathname;
+      const urlMatch = url.match(/\/dashboard\/(dashboard_[0-9]+)/);
+      const dashboardIdFromUrl = urlMatch ? urlMatch[1] : null;
+      const currentDashboardId = dashboardIdFromUrl || 'budget';
       
-      // Load expenses
-      const loadedExpenses = await db.getExpenses();
-      console.log('Expenses loaded:', loadedExpenses);
-      setExpenses(loadedExpenses);
+      console.log(`Loading expenses for dashboard ID: ${currentDashboardId}`);
       
-      setInitAttempted(true);
+      // Charger toutes les dépenses
+      const allExpenses = await db.getExpenses();
+      
+      // Filtrer les dépenses par tableau de bord actif
+      const filteredExpenses = allExpenses.filter(expense => 
+        !expense.dashboardId || expense.dashboardId === currentDashboardId
+      );
+      
+      console.log(`Loaded ${allExpenses.length} total expenses, filtered to ${filteredExpenses.length} for current dashboard`);
+      
+      setExpenses(filteredExpenses);
+      
+      // Charger les budgets disponibles
+      const budgets = await db.getBudgets();
+      setAvailableBudgets(budgets);
+      
+      setError(null);
     } catch (error) {
-      console.error("Error loading data:", error);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Impossible de charger les données"
-      });
-      setError(error instanceof Error ? error : new Error("Failed to load data"));
+      console.error("Error loading expense data:", error);
+      setError(error instanceof Error ? error : new Error("Failed to load expense data"));
     } finally {
       setIsLoading(false);
+      setInitAttempted(true);
     }
-  }, [toast]);
+  };
 
-  // Load data on component mount
+  // Chargement initial des données
   useEffect(() => {
-    loadData();
-  }, [loadData]);
+    const initializeData = async () => {
+      try {
+        await db.init();
+        await loadData();
+      } catch (error) {
+        console.error("Failed to initialize expense data:", error);
+        setError(error instanceof Error ? error : new Error("Failed to initialize expense data"));
+        setInitAttempted(true);
+        setIsLoading(false);
+      }
+    };
+
+    initializeData();
+  }, []);
 
   return {
     expenses,

@@ -23,7 +23,8 @@ export class ExpenseService extends BaseService {
         spent: Number(row.spent),
         type: 'expense' as const,
         linkedBudgetId: row.linkedBudgetId,
-        date: row.date
+        date: row.date,
+        dashboardId: row.dashboardId || 'budget' // Support du dashboardId avec valeur par défaut
       }));
     } catch (error) {
       console.error("Erreur lors de la récupération des dépenses:", error);
@@ -39,8 +40,8 @@ export class ExpenseService extends BaseService {
     
     const adapter = this.initManager.getAdapter();
     await adapter!.run(
-      'INSERT INTO expenses (id, title, budget, spent, type, linkedBudgetId, date) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [expense.id, expense.title, expense.budget, expense.spent, expense.type, expense.linkedBudgetId, expense.date]
+      'INSERT INTO expenses (id, title, budget, spent, type, linkedBudgetId, date, dashboardId) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      [expense.id, expense.title, expense.budget, expense.spent, expense.type, expense.linkedBudgetId, expense.date, expense.dashboardId || 'budget']
     );
   }
 
@@ -52,8 +53,8 @@ export class ExpenseService extends BaseService {
     
     const adapter = this.initManager.getAdapter();
     await adapter!.run(
-      'UPDATE expenses SET title = ?, budget = ?, spent = ?, linkedBudgetId = ?, date = ? WHERE id = ?',
-      [expense.title, expense.budget, expense.spent, expense.linkedBudgetId, expense.date, expense.id]
+      'UPDATE expenses SET title = ?, budget = ?, spent = ?, linkedBudgetId = ?, date = ?, dashboardId = ? WHERE id = ?',
+      [expense.title, expense.budget, expense.spent, expense.linkedBudgetId, expense.date, expense.dashboardId || 'budget', expense.id]
     );
   }
 
