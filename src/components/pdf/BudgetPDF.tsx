@@ -249,6 +249,7 @@ interface BudgetPDFDownloadProps {
     date?: string;
   }>;
   className?: string;
+  onClick?: () => void; // Added the onClick prop to fix the TypeScript error
 }
 
 export const BudgetPDFDownload = ({ 
@@ -258,7 +259,8 @@ export const BudgetPDFDownload = ({
   budgets,
   incomes,
   expenses,
-  className
+  className,
+  onClick // Adding onClick as a prop
 }: BudgetPDFDownloadProps) => {
   return (
     <PDFDownloadLink
@@ -273,6 +275,7 @@ export const BudgetPDFDownload = ({
       }
       fileName={fileName}
       className={className}
+      onClick={onClick} // Pass the onClick prop to PDFDownloadLink
     >
       {/* Fixed issue: Changed function component to ReactNode */}
       <Button 
