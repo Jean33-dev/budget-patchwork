@@ -271,17 +271,17 @@ export const BudgetPDFDownload = ({
       }
       fileName={fileName}
     >
-      {({ loading }) => (
-        <Button 
-          variant="outline" 
-          size="sm" 
-          disabled={loading}
-          className="flex items-center gap-2"
-        >
-          <FileDown className="h-4 w-4" />
-          {loading ? "Génération..." : "Télécharger PDF"}
-        </Button>
-      )}
+      {/* Fixed issue: Changed function component to ReactNode */}
+      <Button 
+        variant="outline" 
+        size="sm" 
+        className="flex items-center gap-2"
+      >
+        <FileDown className="h-4 w-4" />
+        {/* Use text instead of conditional rendering based on loading state */}
+        Télécharger PDF
+      </Button>
     </PDFDownloadLink>
   );
 };
+

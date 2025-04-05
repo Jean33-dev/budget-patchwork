@@ -77,3 +77,4 @@ export const DashboardHeader = ({ currentDate, onMonthChange, onBackClick, onExp
     </div>
   );
 };
+
