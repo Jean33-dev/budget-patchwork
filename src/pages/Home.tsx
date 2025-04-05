@@ -1,18 +1,14 @@
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { PlusCircle, LineChart } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
 
 const Home = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
 
   const handleCreateDashboard = () => {
-    toast({
-      title: "Bientôt disponible",
-      description: "La création de nouveaux tableaux de bord sera disponible prochainement.",
-    });
+    navigate("/create-dashboard");
   };
 
   return (
@@ -37,7 +33,7 @@ const Home = () => {
           </CardContent>
         </Card>
 
-        <Card className="border-dashed">
+        <Card className="border-dashed cursor-pointer hover:shadow-lg transition-shadow" onClick={handleCreateDashboard}>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <PlusCircle className="h-6 w-6" />
@@ -48,9 +44,9 @@ const Home = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button variant="outline" className="w-full" onClick={handleCreateDashboard}>
-              Créer
-            </Button>
+            <p className="text-sm text-muted-foreground">
+              Définissez un nouveau tableau de bord pour suivre différents aspects de votre vie financière.
+            </p>
           </CardContent>
         </Card>
       </div>
