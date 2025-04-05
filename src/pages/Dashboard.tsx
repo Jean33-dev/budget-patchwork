@@ -31,11 +31,16 @@ const Dashboard = () => {
     }
   }, [dashboardId, dashboards, navigate]);
 
+  const handleNavigate = (path: string) => {
+    navigate(path);
+  };
+
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
       <DashboardHeader 
+        dashboardId={dashboardId}
         title={title}
-        onNavigate={(path) => navigate(path)}
+        onNavigate={handleNavigate}
       />
       <DashboardOverview 
         dashboardId={dashboardId}

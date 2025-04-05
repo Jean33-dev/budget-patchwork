@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { useBudgetData } from "@/hooks/useBudgetData";
 import { useExpenseManagement } from "@/hooks/useExpenseManagement";
+import { useBudgets } from "@/hooks/useBudgets";
 
 interface DashboardOverviewProps {
   dashboardId: string;
@@ -22,6 +23,9 @@ export const DashboardOverview = ({ dashboardId, isDefaultDashboard }: Dashboard
   
   // Charger les données budgétaires
   const { budgets, totalRevenues, totalExpenses, isLoading: budgetsLoading } = useBudgetData();
+  
+  // Hook pour obtenir des informations supplémentaires sur le budget
+  const { remainingAmount } = useBudgets();
   
   // Charger les dépenses liées au tableau de bord actuel
   const { expenses, isLoading: expensesLoading } = useExpenseManagement(null);
@@ -65,18 +69,31 @@ export const DashboardOverview = ({ dashboardId, isDefaultDashboard }: Dashboard
   };
 
   const isLoading = budgetsLoading || expensesLoading;
+  
+  // Calcul des statistiques de budget
+  const budget = totalRevenues || 0;
+  const spent = totalExpenses || 0;
+  const remaining = budget - spent;
+  const allocated = budgets.reduce((sum, b) => sum + (Number(b.budget) || 0), 0);
+  const remainingBudget = budget - allocated;
+  const remainingBudgetAfterExpenses = remainingBudget - spent;
 
   return (
     <div className="space-y-8">
       <BudgetStats 
         totalRevenues={totalRevenues}
         totalExpenses={totalExpenses}
+        remainingBudget={remainingAmount}
+        remainingBudgetAfterExpenses={remaining}
         isLoading={isLoading}
       />
       
       <Separator />
       
       <OverviewStats 
+        totalIncome={totalRevenues}
+        totalExpenses={totalExpenses}
+        balance={totalRevenues - totalExpenses}
         budgets={budgets}
         expenses={expenses}
         onManageBudgets={handleManageBudgets}

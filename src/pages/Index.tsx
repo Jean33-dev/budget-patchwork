@@ -114,9 +114,8 @@ const Index = () => {
       <h1 className="text-4xl font-bold">Tableau de Bord Budget</h1>
       
       <DashboardOverview
-        totalIncome={totalIncome}
-        totalExpenses={totalExpenses}
-        envelopes={envelopes}
+        dashboardId="budget"
+        isDefaultDashboard={true}
       />
       
       <div className="space-y-8">

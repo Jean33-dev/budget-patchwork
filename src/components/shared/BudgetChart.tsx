@@ -26,11 +26,21 @@ const COLORS = {
   ],
 };
 
-export const BudgetChart = ({ data, totalIncome = 0, addUnallocated = false }: BudgetChartProps) => {
+export const BudgetChart = ({ data = [], totalIncome = 0, addUnallocated = false }: BudgetChartProps) => {
+  // Vérifier si data est bien un tableau
+  if (!Array.isArray(data)) {
+    console.error("BudgetChart: data is not an array", data);
+    return (
+      <div className="flex items-center justify-center h-full">
+        <p className="text-muted-foreground">Données incorrectes pour le graphique</p>
+      </div>
+    );
+  }
+  
   let chartData = [...data];
   
-  if (addUnallocated) {
-    const totalAllocated = data.reduce((sum, item) => sum + item.value, 0);
+  if (addUnallocated && totalIncome > 0) {
+    const totalAllocated = data.reduce((sum, item) => sum + (item.value || 0), 0);
     const remainingBudget = totalIncome - totalAllocated;
     if (remainingBudget > 0) {
       chartData.push({
@@ -44,19 +54,25 @@ export const BudgetChart = ({ data, totalIncome = 0, addUnallocated = false }: B
   const getPercentage = (value: number) => {
     if (totalIncome <= 0) {
       // Si pas de revenu total, calcule le pourcentage basé sur la somme de tous les budgets
-      const totalBudgetSum = chartData.reduce((sum, item) => sum + item.value, 0);
+      const totalBudgetSum = chartData.reduce((sum, item) => sum + (item.value || 0), 0);
       return totalBudgetSum > 0 ? ((value / totalBudgetSum) * 100).toFixed(1) : "0.0";
     }
     // Calcul normal basé sur le revenu total
     return ((value / totalIncome) * 100).toFixed(1);
   };
 
-  // Calculate the new thickness by increasing the original thickness by 35%
-  // Original: innerRadius=60, outerRadius=80, difference=20
-  // 20 * 1.35 = 27, so new thickness should be 27
-  // Keep innerRadius at 60 and increase outerRadius to 87
+  // Si pas de données à afficher, montrer un message
+  if (chartData.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <p className="text-muted-foreground">Aucune donnée à afficher</p>
+      </div>
+    );
+  }
+
+  // Dimensions du graphique
   const innerRadius = 60;
-  const outerRadius = 87;  // Increased from 80 to 87 (35% thicker)
+  const outerRadius = 87;
 
   return (
     <div className="relative w-full h-[300px]">
@@ -75,7 +91,7 @@ export const BudgetChart = ({ data, totalIncome = 0, addUnallocated = false }: B
             {chartData.map((entry, index) => (
               <Cell
                 key={`cell-${index}`}
-                fill={COLORS[entry.type][index % COLORS[entry.type].length]}
+                fill={COLORS[entry.type]?.[index % (COLORS[entry.type]?.length || 1)] || "#8884d8"}
               />
             ))}
           </Pie>
