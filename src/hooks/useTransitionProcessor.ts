@@ -3,6 +3,7 @@ import { useToast } from "@/hooks/use-toast";
 import { TransitionEnvelope } from "@/types/transition";
 import { db } from "@/services/database";
 import { useTransitionPreferences } from "./useTransitionPreferences";
+import { v4 as uuidv4 } from 'uuid';
 
 export const useTransitionProcessor = (categories: any[], setCategories: (categories: any[]) => void) => {
   const { toast } = useToast();
@@ -15,8 +16,16 @@ export const useTransitionProcessor = (categories: any[], setCategories: (catego
       // Save preferences for next time
       saveTransitionPreferences(envelopes);
       
-      // Suppression de toutes les dépenses
+      // Récupérer les dépenses et revenus fixes avant la suppression
       const expenses = await db.getExpenses();
+      const fixedExpenses = expenses.filter(expense => expense.isFixed === true);
+      console.log(`Trouvé ${fixedExpenses.length} dépenses fixes à reporter`);
+      
+      const incomes = await db.getIncomes();
+      const fixedIncomes = incomes.filter(income => income.isFixed === true);
+      console.log(`Trouvé ${fixedIncomes.length} revenus fixes à reporter`);
+      
+      // Suppression de toutes les dépenses
       console.log(`Suppression de ${expenses.length} dépenses`);
       
       // Utiliser Promise.all pour supprimer toutes les dépenses en parallèle
@@ -25,7 +34,6 @@ export const useTransitionProcessor = (categories: any[], setCategories: (catego
       );
       
       // Suppression de tous les revenus
-      const incomes = await db.getIncomes();
       console.log(`Suppression de ${incomes.length} revenus`);
       
       // Utiliser Promise.all pour supprimer tous les revenus en parallèle
@@ -41,6 +49,9 @@ export const useTransitionProcessor = (categories: any[], setCategories: (catego
       
       // Traitement des budgets pour la transition
       await processEnvelopeTransitions(envelopes);
+      
+      // Re-création des dépenses et revenus fixes
+      await recreateFixedTransactions(fixedExpenses, fixedIncomes);
 
       // Maintenant, mettons à jour les spent des catégories
       console.log("Mise à jour des catégories après transition");
@@ -71,6 +82,38 @@ export const useTransitionProcessor = (categories: any[], setCategories: (catego
     }
 
     return success;
+  };
+
+  const recreateFixedTransactions = async (fixedExpenses, fixedIncomes) => {
+    // Obtenir la date actuelle (pour le mois suivant)
+    const today = new Date();
+    const nextMonth = new Date(today);
+    nextMonth.setMonth(today.getMonth() + 1);
+    const nextMonthDateString = nextMonth.toISOString().split('T')[0];
+    
+    // Recréer les dépenses fixes avec de nouveaux IDs
+    for (const expense of fixedExpenses) {
+      const newExpense = {
+        ...expense,
+        id: uuidv4(), // Générer un nouvel ID
+        date: nextMonthDateString, // Mettre à jour la date pour le mois suivant
+      };
+      console.log(`Recréation de la dépense fixe: ${newExpense.title}`);
+      await db.addExpense(newExpense);
+    }
+    
+    // Recréer les revenus fixes avec de nouveaux IDs
+    for (const income of fixedIncomes) {
+      const newIncome = {
+        ...income,
+        id: uuidv4(), // Générer un nouvel ID
+        date: nextMonthDateString, // Mettre à jour la date pour le mois suivant
+      };
+      console.log(`Recréation du revenu fixe: ${newIncome.title}`);
+      await db.addIncome(newIncome);
+    }
+    
+    console.log(`Total: ${fixedExpenses.length} dépenses fixes et ${fixedIncomes.length} revenus fixes recréés`);
   };
 
   const processEnvelopeTransitions = async (envelopes: TransitionEnvelope[]) => {
