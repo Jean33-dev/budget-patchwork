@@ -9,9 +9,8 @@ interface Envelope {
   title: string;
   budget: number;
   spent: number;
-  type: string; // Using string type to accommodate both "budget" and "income"
+  type: "income" | "expense" | "budget";
   category?: string;
-  linkedBudgetId?: string;
 }
 
 interface ChartData {
@@ -31,7 +30,7 @@ export const useChartData = (envelopes: Envelope[], totalIncome: number) => {
       .map((env) => ({
         name: env.title,
         value: env.budget,
-        type: "budget" as const,
+        type: env.type,
       })), [envelopes]
   );
 

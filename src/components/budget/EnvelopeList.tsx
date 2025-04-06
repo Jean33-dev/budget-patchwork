@@ -25,7 +25,7 @@ interface EnvelopeListProps {
 }
 
 export const EnvelopeList = ({ 
-  envelopes = [], 
+  envelopes, 
   type, 
   onAddClick, 
   onEnvelopeClick,
@@ -34,20 +34,7 @@ export const EnvelopeList = ({
   onDeleteEnvelope,
   availableBudgets = []
 }: EnvelopeListProps) => {
-  // Validation des enveloppes pour éviter l'erreur de filtrage
-  if (!Array.isArray(envelopes)) {
-    console.error("EnvelopeList: envelopes is not an array", envelopes);
-    return (
-      <div className="space-y-4">
-        <EnvelopeListHeader type={type} onAddClick={onAddClick} />
-        <div className="p-4 border rounded-lg text-center text-muted-foreground">
-          Données d'enveloppes invalides
-        </div>
-      </div>
-    );
-  }
-  
-  const filteredEnvelopes = envelopes.filter((env) => env && env.type === type);
+  const filteredEnvelopes = envelopes.filter((env) => env.type === type);
 
   return (
     <div className="space-y-4">

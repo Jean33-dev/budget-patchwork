@@ -1,5 +1,4 @@
 
-import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MoreVertical } from "lucide-react";
@@ -10,72 +9,25 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { BudgetChart } from "../shared/BudgetChart";
-import { ChartType, useChartData } from "@/hooks/useChartData";
-import { Budget } from "@/services/database/models/budget";
-import { Expense } from "@/services/database/models/expense";
+import { ChartType } from "@/hooks/useChartData";
 
 interface ChartSectionProps {
-  budgets?: Budget[];
-  expenses?: Expense[];
-  isLoading?: boolean;
+  chartType: ChartType;
+  onChartTypeChange: (type: ChartType) => void;
+  title: string;
+  data: any[];
+  totalIncome: number;
+  addUnallocated: boolean;
 }
 
 export const ChartSection = ({ 
-  budgets = [], 
-  expenses = [], 
-  isLoading = false
+  chartType, 
+  onChartTypeChange, 
+  title, 
+  data, 
+  totalIncome, 
+  addUnallocated 
 }: ChartSectionProps) => {
-  const [chartType, setChartType] = useState<ChartType>("budget");
-  
-  // Calculer le revenu total à partir des budgets
-  const totalIncome = budgets
-    .filter(b => b.type === 'income')
-    .reduce((sum, b) => sum + Number(b.budget), 0);
-  
-  // Combiner les budgets et les dépenses pour les données du graphique
-  const allEnvelopes = [
-    ...budgets.map(b => ({
-      id: b.id,
-      title: b.title,
-      budget: Number(b.budget),
-      spent: Number(b.spent || 0),
-      type: b.type as string,
-    })),
-    ...expenses.map(e => ({
-      id: e.id,
-      title: e.title,
-      budget: Number(e.budget),
-      spent: Number(e.spent || 0),
-      type: e.type as string,
-      linkedBudgetId: e.linkedBudgetId
-    }))
-  ];
-  
-  const { getChartData, getChartTitle } = useChartData(allEnvelopes, totalIncome);
-  const { data, total, addUnallocated } = getChartData(chartType);
-  
-  const onChartTypeChange = (type: ChartType) => {
-    setChartType(type);
-  };
-
-  const title = getChartTitle(chartType);
-
-  // Si les données sont en cours de chargement, afficher un indicateur
-  if (isLoading) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base sm:text-lg">
-            Chargement des données...
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-2 sm:p-6 min-h-[300px] flex items-center justify-center">
-          <p className="text-muted-foreground">Chargement du graphique...</p>
-        </CardContent>
-      </Card>
-    );
-  }
-
   return (
     <Card>
       <CardHeader>
@@ -104,9 +56,9 @@ export const ChartSection = ({
         <div className="w-full overflow-x-auto">
           <div className="min-w-[300px] h-[300px] sm:h-[400px]">
             <BudgetChart 
-              data={data || []}
-              totalIncome={total || 0}
-              addUnallocated={addUnallocated || false}
+              data={data}
+              totalIncome={totalIncome}
+              addUnallocated={addUnallocated}
             />
           </div>
         </div>

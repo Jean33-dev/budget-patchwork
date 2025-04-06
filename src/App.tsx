@@ -11,7 +11,6 @@ import Expenses from "./pages/Expenses";
 import Income from "./pages/Income";
 import Categories from "./pages/Categories";
 import BudgetTransition from "./pages/BudgetTransition";
-import CreateDashboard from "./pages/CreateDashboard";
 
 const queryClient = new QueryClient();
 
@@ -24,9 +23,7 @@ function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/create-dashboard" element={<CreateDashboard />} />
             <Route path="/dashboard/budget" element={<Dashboard />} />
-            <Route path="/dashboard/:dashboardId" element={<Dashboard />} />
             <Route path="/dashboard/budget/budgets" element={<Budgets />} />
             <Route path="/dashboard/budget/expenses" element={<Expenses />} />
             <Route path="/dashboard/budget/income" element={<Income />} />

@@ -5,7 +5,6 @@ export interface Expense {
   budget: number;
   spent: number;
   type: 'expense';
-  linkedBudgetId?: string | null;
+  linkedBudgetId?: string;
   date: string;
-  dashboardId?: string; // Nouvel attribut pour associer une dépense à un tableau de bord
 }
