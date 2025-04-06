@@ -39,14 +39,14 @@ export const ChartSection = ({
       title: b.title,
       budget: Number(b.budget),
       spent: Number(b.spent || 0),
-      type: b.type,
+      type: b.type as string,
     })),
     ...expenses.map(e => ({
       id: e.id,
       title: e.title,
       budget: Number(e.budget),
       spent: Number(e.spent || 0),
-      type: e.type,
+      type: e.type as string,
       linkedBudgetId: e.linkedBudgetId
     }))
   ];

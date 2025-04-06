@@ -9,7 +9,7 @@ interface Envelope {
   title: string;
   budget: number;
   spent: number;
-  type: string; // Changed from union type to allow both database values
+  type: string; // Using string type to accommodate both "budget" and "income"
   category?: string;
   linkedBudgetId?: string;
 }
