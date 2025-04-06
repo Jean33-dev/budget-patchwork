@@ -13,6 +13,7 @@ interface AddEnvelopeDialogProps {
     type: "income" | "expense" | "budget";
     linkedBudgetId?: string;
     date: string;
+    isFixed?: boolean;
   }) => void;
   availableBudgets?: Array<{ id: string; title: string }>;
   defaultBudgetId?: string;
@@ -30,6 +31,7 @@ export const AddEnvelopeDialog = ({
   const [budget, setBudget] = useState(0);
   const [linkedBudgetId, setLinkedBudgetId] = useState(defaultBudgetId || "");
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [isFixed, setIsFixed] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,13 +46,15 @@ export const AddEnvelopeDialog = ({
       budget, 
       type,
       linkedBudgetId: type === "expense" ? linkedBudgetId : undefined,
-      date
+      date,
+      isFixed: (type === "income" || type === "expense") ? isFixed : undefined
     });
     
     setTitle("");
     setBudget(0);
     setLinkedBudgetId(defaultBudgetId || "");
     setDate(new Date().toISOString().split('T')[0]);
+    setIsFixed(false);
     onOpenChange(false);
   };
 
@@ -83,6 +87,8 @@ export const AddEnvelopeDialog = ({
           setLinkedBudgetId={setLinkedBudgetId}
           date={date}
           setDate={setDate}
+          isFixed={isFixed}
+          setIsFixed={setIsFixed}
           onSubmit={handleSubmit}
           availableBudgets={availableBudgets}
         />

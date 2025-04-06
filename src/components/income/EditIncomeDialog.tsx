@@ -12,6 +12,7 @@ interface EditIncomeDialogProps {
     budget: number;
     type: "income";
     date: string;
+    isFixed?: boolean;
   } | null;
   setSelectedIncome: (income: {
     id: string;
@@ -19,12 +20,14 @@ interface EditIncomeDialogProps {
     budget: number;
     type: "income";
     date: string;
+    isFixed?: boolean;
   } | null) => void;
   onEditIncome: (editedIncome: { 
     title: string; 
     budget: number; 
     type: "income"; 
-    date: string 
+    date: string;
+    isFixed?: boolean;
   }) => void;
 }
 
@@ -35,7 +38,7 @@ export const EditIncomeDialog = ({
   setSelectedIncome,
   onEditIncome
 }: EditIncomeDialogProps) => {
-  // These functions update individual properties of selectedIncome
+  // Ces fonctions mettent à jour les propriétés individuelles de selectedIncome
   const updateIncomeTitle = (title: string) => {
     if (selectedIncome) {
       setSelectedIncome({
@@ -63,6 +66,15 @@ export const EditIncomeDialog = ({
     }
   };
 
+  const updateIncomeIsFixed = (isFixed: boolean) => {
+    if (selectedIncome) {
+      setSelectedIncome({
+        ...selectedIncome,
+        isFixed
+      });
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
@@ -80,6 +92,8 @@ export const EditIncomeDialog = ({
             setLinkedBudgetId={() => {}}
             date={selectedIncome.date}
             setDate={updateIncomeDate}
+            isFixed={selectedIncome.isFixed || false}
+            setIsFixed={updateIncomeIsFixed}
             onSubmit={(e) => {
               e.preventDefault();
               if (selectedIncome) {

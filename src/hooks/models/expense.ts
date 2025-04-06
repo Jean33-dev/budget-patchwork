@@ -7,4 +7,5 @@ export interface Expense {
   type: 'expense';
   linkedBudgetId?: string;
   date: string;
+  isFixed?: boolean;
 }
