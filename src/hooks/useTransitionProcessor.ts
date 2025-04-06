@@ -2,7 +2,6 @@ import { useToast } from "@/hooks/use-toast";
 import { TransitionEnvelope } from "@/types/transition";
 import { db } from "@/services/database";
 import { useTransitionPreferences } from "./useTransitionPreferences";
-import { v4 as uuidv4 } from 'uuid';
 
 export const useTransitionProcessor = (categories: any[], setCategories: (categories: any[]) => void) => {
   const { toast } = useToast();
