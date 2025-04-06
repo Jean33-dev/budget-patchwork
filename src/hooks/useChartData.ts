@@ -11,6 +11,7 @@ interface Envelope {
   spent: number;
   type: string; // Changed from union type to allow both database values
   category?: string;
+  linkedBudgetId?: string;
 }
 
 interface ChartData {
@@ -30,7 +31,7 @@ export const useChartData = (envelopes: Envelope[], totalIncome: number) => {
       .map((env) => ({
         name: env.title,
         value: env.budget,
-        type: env.type as "budget",
+        type: "budget" as const,
       })), [envelopes]
   );
 
