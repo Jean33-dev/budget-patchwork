@@ -1,4 +1,3 @@
-
 import { useToast } from "@/hooks/use-toast";
 import { TransitionEnvelope } from "@/types/transition";
 import { db } from "@/services/database";
@@ -89,6 +88,7 @@ export const useTransitionProcessor = (categories: any[], setCategories: (catego
     const nextMonthDateString = nextMonth.toISOString().split('T')[0];
     
     console.log(`Mise à jour des dates pour ${fixedExpenses.length} dépenses fixes et ${fixedIncomes.length} revenus fixes`);
+    console.log(`Nouvelle date pour le prochain mois: ${nextMonthDateString}`);
     
     // Mise à jour des dates des dépenses fixes
     for (const expense of fixedExpenses) {
@@ -96,7 +96,7 @@ export const useTransitionProcessor = (categories: any[], setCategories: (catego
         ...expense,
         date: nextMonthDateString
       };
-      console.log(`Mise à jour de la date pour la dépense fixe: ${updatedExpense.title}`);
+      console.log(`Mise à jour de la dépense fixe: ${updatedExpense.title}, ancienne date: ${expense.date}, nouvelle date: ${updatedExpense.date}`);
       await db.updateExpense(updatedExpense);
     }
     
@@ -106,7 +106,7 @@ export const useTransitionProcessor = (categories: any[], setCategories: (catego
         ...income,
         date: nextMonthDateString
       };
-      console.log(`Mise à jour de la date pour le revenu fixe: ${updatedIncome.title}`);
+      console.log(`Mise à jour du revenu fixe: ${updatedIncome.title}, ancienne date: ${income.date}, nouvelle date: ${updatedIncome.date}`);
       await db.updateIncome(updatedIncome);
     }
     
