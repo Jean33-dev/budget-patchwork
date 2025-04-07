@@ -13,74 +13,79 @@ export const useTransitionProcessor = (categories: any[], setCategories: (catego
     let success = true;
     
     try {
+      console.log("Début de la transition du mois...");
+      
       // Save preferences for next time
       saveTransitionPreferences(envelopes);
       
+      // Process budget transitions first (this is faster and doesn't require loading all expenses)
+      console.log("Traitement des budgets pour la transition...");
+      await processEnvelopeTransitions(envelopes);
+      console.log("Transition des budgets terminée");
+      
       // Récupérer toutes les dépenses et revenus
-      const expenses = await dbManager.getExpenses();
-      const incomes = await dbManager.getIncomes();
+      console.log("Récupération des données de transactions...");
+      const [expenses, incomes, nextFixedExpenses, nextFixedIncomes] = await Promise.all([
+        dbManager.getExpenses(),
+        dbManager.getIncomes(),
+        fixedTransactionOperations.getFixedExpensesForImport(),
+        fixedTransactionOperations.getFixedIncomesForImport()
+      ]);
       
       console.log(`Total de ${expenses.length} dépenses et ${incomes.length} revenus à traiter`);
-      
-      // Traitement des budgets pour la transition
-      await processEnvelopeTransitions(envelopes);
-      
-      // Récupérer les dépenses et revenus fixes depuis leurs tables respectives
-      console.log("Récupération des transactions fixes pour le mois suivant...");
-      const nextFixedExpenses = await fixedTransactionOperations.getFixedExpensesForImport();
-      const nextFixedIncomes = await fixedTransactionOperations.getFixedIncomesForImport();
-      
       console.log(`${nextFixedExpenses.length} dépenses fixes et ${nextFixedIncomes.length} revenus fixes récupérés`);
       
-      // Suppression de TOUTES les dépenses
-      console.log(`Suppression de toutes les ${expenses.length} dépenses`);
-      await Promise.all(
-        expenses.map(expense => dbManager.deleteExpense(expense.id))
-      );
+      // Batch delete operations to improve performance
+      console.log("Suppression des transactions existantes...");
+      const deletePromises = [
+        ...expenses.map(expense => dbManager.deleteExpense(expense.id)),
+        ...incomes.map(income => dbManager.deleteIncome(income.id))
+      ];
       
-      // Suppression de TOUS les revenus
-      console.log(`Suppression de tous les ${incomes.length} revenus`);
-      await Promise.all(
-        incomes.map(income => dbManager.deleteIncome(income.id))
-      );
+      // Execute deletions in chunks to prevent overwhelming the database
+      const CHUNK_SIZE = 20;
+      for (let i = 0; i < deletePromises.length; i += CHUNK_SIZE) {
+        await Promise.all(deletePromises.slice(i, i + CHUNK_SIZE));
+      }
+      console.log("Toutes les transactions ont été supprimées");
       
-      // Ajouter les nouvelles dépenses fixes pour le mois suivant
-      console.log(`Ajout de ${nextFixedExpenses.length} dépenses fixes pour le mois suivant`);
-      for (const expense of nextFixedExpenses) {
-        await dbManager.addExpense(expense);
-        console.log(`Dépense fixe ajoutée: ${expense.title}, date: ${expense.date}`);
+      // Add new fixed transactions in chunks
+      console.log("Ajout des transactions fixes pour le mois suivant...");
+      
+      // Process expenses in chunks
+      for (let i = 0; i < nextFixedExpenses.length; i += CHUNK_SIZE) {
+        const chunk = nextFixedExpenses.slice(i, i + CHUNK_SIZE);
+        await Promise.all(chunk.map(expense => dbManager.addExpense(expense)));
       }
       
-      // Ajouter les nouveaux revenus fixes pour le mois suivant
-      console.log(`Ajout de ${nextFixedIncomes.length} revenus fixes pour le mois suivant`);
-      for (const income of nextFixedIncomes) {
-        await dbManager.addIncome(income);
-        console.log(`Revenu fixe ajouté: ${income.title}, date: ${income.date}`);
+      // Process incomes in chunks
+      for (let i = 0; i < nextFixedIncomes.length; i += CHUNK_SIZE) {
+        const chunk = nextFixedIncomes.slice(i, i + CHUNK_SIZE);
+        await Promise.all(chunk.map(income => dbManager.addIncome(income)));
       }
       
-      // Mettre à jour les dates dans les tables des transactions fixes pour le mois suivant
+      console.log("Toutes les transactions fixes ont été ajoutées");
+      
+      // Update fixed transaction dates for next month in one operation
       await fixedTransactionOperations.updateFixedTransactionsDates();
-
-      console.log("Vérification après transition:");
-      const remainingExpenses = await dbManager.getExpenses();
-      const remainingIncomes = await dbManager.getIncomes();
-      console.log(`Dépenses restantes: ${remainingExpenses.length}`);
-      console.log(`Revenus restants: ${remainingIncomes.length}`);
       
-      // Maintenant, mettons à jour les spent des catégories
-      console.log("Mise à jour des catégories après transition");
-      const updatedCategories = [...categories];
+      // Reset category spent values in one batch
+      console.log("Mise à jour des catégories...");
+      const updatedCategories = categories.map(category => ({
+        ...category,
+        spent: 0
+      }));
       
-      for (let category of updatedCategories) {
-        // Réinitialiser le montant dépensé à 0 puisque toutes les dépenses ont été supprimées
-        category.spent = 0;
-        await dbManager.updateCategory(category);
-        console.log(`Catégorie ${category.name} mise à jour, dépenses réinitialisées à 0`);
+      // Update categories in chunks
+      for (let i = 0; i < updatedCategories.length; i += CHUNK_SIZE) {
+        const chunk = updatedCategories.slice(i, i + CHUNK_SIZE);
+        await Promise.all(chunk.map(category => dbManager.updateCategory(category)));
       }
       
-      // Mettre à jour l'état local des catégories
+      // Update local state
       setCategories(updatedCategories);
-
+      
+      console.log("Transition du mois terminée avec succès");
       toast({
         title: "Transition effectuée",
         description: "Les budgets ont été mis à jour pour le nouveau mois."
@@ -99,63 +104,39 @@ export const useTransitionProcessor = (categories: any[], setCategories: (catego
   };
 
   const processEnvelopeTransitions = async (envelopes: TransitionEnvelope[]) => {
-    // Traitement des budgets pour la transition
+    // Get all budgets at once rather than querying for each envelope
+    const allBudgets = await dbManager.getBudgets();
+    const budgetUpdates = [];
+    
+    // Process all envelopes and collect updates
     for (const envelope of envelopes) {
-      const budget = await dbManager.getBudgets().then(budgets => 
-        budgets.find(b => b.id === envelope.id)
-      );
-
+      const budget = allBudgets.find(b => b.id === envelope.id);
       if (!budget) continue;
 
       // Calcul du montant restant : budget initial + report précédent - dépenses
       const currentRemaining = budget.budget + (budget.carriedOver || 0) - budget.spent;
-      console.log(`Transition du budget ${budget.title}:`, {
-        budgetInitial: budget.budget,
-        carriedOver: budget.carriedOver || 0,
-        spent: budget.spent,
-        remaining: currentRemaining,
-        transitionOption: envelope.transitionOption
-      });
       
       switch (envelope.transitionOption) {
         case "reset":
-          // Réinitialise les dépenses et le report, garde le budget initial
-          await dbManager.updateBudget({
+          budgetUpdates.push({
             ...budget,
-            spent: 0,
-            carriedOver: 0
-          });
-          console.log(`Reset - Nouveau budget état:`, {
-            title: budget.title,
             spent: 0,
             carriedOver: 0
           });
           break;
         
         case "carry":
-          // Garde le même budget mais ajoute le solde restant au report
-          await dbManager.updateBudget({
+          budgetUpdates.push({
             ...budget,
-            spent: 0,
-            carriedOver: currentRemaining
-          });
-          console.log(`Report total - Nouveau budget état:`, {
-            title: budget.title,
             spent: 0,
             carriedOver: currentRemaining
           });
           break;
         
         case "partial":
-          // Garde le même budget mais ajoute le montant spécifié au report
           if (envelope.partialAmount !== undefined) {
-            await dbManager.updateBudget({
+            budgetUpdates.push({
               ...budget,
-              spent: 0,
-              carriedOver: envelope.partialAmount
-            });
-            console.log(`Report partiel - Nouveau budget état:`, {
-              title: budget.title,
               spent: 0,
               carriedOver: envelope.partialAmount
             });
@@ -164,35 +145,20 @@ export const useTransitionProcessor = (categories: any[], setCategories: (catego
         
         case "transfer":
           if (envelope.transferTargetId) {
-            // Récupérer le budget cible
-            const targetBudget = await dbManager.getBudgets().then(budgets => 
-              budgets.find(b => b.id === envelope.transferTargetId)
-            );
-
+            const targetBudget = allBudgets.find(b => b.id === envelope.transferTargetId);
+            
             if (targetBudget) {
-              // Réinitialise le budget source
-              await dbManager.updateBudget({
+              // Source budget update
+              budgetUpdates.push({
                 ...budget,
                 spent: 0,
                 carriedOver: 0
               });
-
-              // Ajoute le montant restant au report du budget cible
-              await dbManager.updateBudget({
+              
+              // Target budget update
+              budgetUpdates.push({
                 ...targetBudget,
                 carriedOver: (targetBudget.carriedOver || 0) + currentRemaining
-              });
-
-              console.log(`Transfert - Nouveau état:`, {
-                sourceBudget: {
-                  title: budget.title,
-                  spent: 0,
-                  carriedOver: 0
-                },
-                targetBudget: {
-                  title: targetBudget.title,
-                  carriedOver: (targetBudget.carriedOver || 0) + currentRemaining
-                }
               });
             }
           }
@@ -200,57 +166,40 @@ export const useTransitionProcessor = (categories: any[], setCategories: (catego
           
         case "multi-transfer":
           if (envelope.multiTransfers && envelope.multiTransfers.length > 0) {
-            console.log(`Transferts multiples pour ${budget.title}:`, envelope.multiTransfers);
-            
-            // Calculer le montant total à transférer
             const totalTransferAmount = envelope.multiTransfers.reduce(
               (sum, transfer) => sum + transfer.amount, 0
             );
             
-            // S'assurer que le montant total n'excède pas le montant disponible
             if (totalTransferAmount <= currentRemaining) {
-              // Réinitialiser le budget source avec le montant restant non transféré
+              // Source budget update with remaining amount
               const remainingAfterTransfers = currentRemaining - totalTransferAmount;
-              
-              await dbManager.updateBudget({
+              budgetUpdates.push({
                 ...budget,
                 spent: 0,
                 carriedOver: remainingAfterTransfers
               });
               
-              console.log(`Multi-transfert - Budget source mis à jour:`, {
-                title: budget.title,
-                spent: 0,
-                carriedOver: remainingAfterTransfers
-              });
-              
-              // Distribuer les montants aux budgets cibles
+              // Process target budget updates
               for (const transfer of envelope.multiTransfers) {
-                // Récupérer le budget cible
-                const targetBudget = await dbManager.getBudgets().then(budgets => 
-                  budgets.find(b => b.id === transfer.targetId)
-                );
-                
+                const targetBudget = allBudgets.find(b => b.id === transfer.targetId);
                 if (targetBudget) {
-                  // Ajouter le montant au report du budget cible
-                  await dbManager.updateBudget({
+                  budgetUpdates.push({
                     ...targetBudget,
                     carriedOver: (targetBudget.carriedOver || 0) + transfer.amount
                   });
-                  
-                  console.log(`Multi-transfert - Budget cible mis à jour:`, {
-                    title: targetBudget.title,
-                    amount: transfer.amount,
-                    newCarriedOver: (targetBudget.carriedOver || 0) + transfer.amount
-                  });
                 }
               }
-            } else {
-              console.error(`Montant total de transfert (${totalTransferAmount}) supérieur au montant disponible (${currentRemaining})`);
             }
           }
           break;
       }
+    }
+    
+    // Apply all budget updates in chunks for better performance
+    const CHUNK_SIZE = 20;
+    for (let i = 0; i < budgetUpdates.length; i += CHUNK_SIZE) {
+      const chunk = budgetUpdates.slice(i, i + CHUNK_SIZE);
+      await Promise.all(chunk.map(budget => dbManager.updateBudget(budget)));
     }
   };
 
