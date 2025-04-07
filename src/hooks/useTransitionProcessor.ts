@@ -101,7 +101,7 @@ export const useTransitionProcessor = (categories: any[], setCategories: (catego
   const processEnvelopeTransitions = async (envelopes: TransitionEnvelope[]) => {
     // Traitement des budgets pour la transition
     for (const envelope of envelopes) {
-      const budget = await db.getBudgets().then(budgets => 
+      const budget = await dbManager.getBudgets().then(budgets => 
         budgets.find(b => b.id === envelope.id)
       );
 
@@ -120,7 +120,7 @@ export const useTransitionProcessor = (categories: any[], setCategories: (catego
       switch (envelope.transitionOption) {
         case "reset":
           // Réinitialise les dépenses et le report, garde le budget initial
-          await db.updateBudget({
+          await dbManager.updateBudget({
             ...budget,
             spent: 0,
             carriedOver: 0
@@ -134,7 +134,7 @@ export const useTransitionProcessor = (categories: any[], setCategories: (catego
         
         case "carry":
           // Garde le même budget mais ajoute le solde restant au report
-          await db.updateBudget({
+          await dbManager.updateBudget({
             ...budget,
             spent: 0,
             carriedOver: currentRemaining
@@ -149,7 +149,7 @@ export const useTransitionProcessor = (categories: any[], setCategories: (catego
         case "partial":
           // Garde le même budget mais ajoute le montant spécifié au report
           if (envelope.partialAmount !== undefined) {
-            await db.updateBudget({
+            await dbManager.updateBudget({
               ...budget,
               spent: 0,
               carriedOver: envelope.partialAmount
@@ -165,20 +165,20 @@ export const useTransitionProcessor = (categories: any[], setCategories: (catego
         case "transfer":
           if (envelope.transferTargetId) {
             // Récupérer le budget cible
-            const targetBudget = await db.getBudgets().then(budgets => 
+            const targetBudget = await dbManager.getBudgets().then(budgets => 
               budgets.find(b => b.id === envelope.transferTargetId)
             );
 
             if (targetBudget) {
               // Réinitialise le budget source
-              await db.updateBudget({
+              await dbManager.updateBudget({
                 ...budget,
                 spent: 0,
                 carriedOver: 0
               });
 
               // Ajoute le montant restant au report du budget cible
-              await db.updateBudget({
+              await dbManager.updateBudget({
                 ...targetBudget,
                 carriedOver: (targetBudget.carriedOver || 0) + currentRemaining
               });
@@ -212,7 +212,7 @@ export const useTransitionProcessor = (categories: any[], setCategories: (catego
               // Réinitialiser le budget source avec le montant restant non transféré
               const remainingAfterTransfers = currentRemaining - totalTransferAmount;
               
-              await db.updateBudget({
+              await dbManager.updateBudget({
                 ...budget,
                 spent: 0,
                 carriedOver: remainingAfterTransfers
@@ -227,13 +227,13 @@ export const useTransitionProcessor = (categories: any[], setCategories: (catego
               // Distribuer les montants aux budgets cibles
               for (const transfer of envelope.multiTransfers) {
                 // Récupérer le budget cible
-                const targetBudget = await db.getBudgets().then(budgets => 
+                const targetBudget = await dbManager.getBudgets().then(budgets => 
                   budgets.find(b => b.id === transfer.targetId)
                 );
                 
                 if (targetBudget) {
                   // Ajouter le montant au report du budget cible
-                  await db.updateBudget({
+                  await dbManager.updateBudget({
                     ...targetBudget,
                     carriedOver: (targetBudget.carriedOver || 0) + transfer.amount
                   });
