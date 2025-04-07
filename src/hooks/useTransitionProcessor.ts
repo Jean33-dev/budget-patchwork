@@ -3,6 +3,7 @@ import { useToast } from "@/hooks/use-toast";
 import { TransitionEnvelope } from "@/types/transition";
 import { db } from "@/services/database";
 import { useTransitionPreferences } from "./useTransitionPreferences";
+import { fixedTransactionOperations } from "@/utils/fixed-transaction-operations";
 
 export const useTransitionProcessor = (categories: any[], setCategories: (categories: any[]) => void) => {
   const { toast } = useToast();
@@ -15,46 +16,50 @@ export const useTransitionProcessor = (categories: any[], setCategories: (catego
       // Save preferences for next time
       saveTransitionPreferences(envelopes);
       
-      // Récupérer les dépenses et revenus fixes
+      // Récupérer toutes les dépenses et revenus
       const expenses = await db.getExpenses();
-      const fixedExpenses = expenses.filter(expense => expense.isFixed === true);
-      console.log(`Trouvé ${fixedExpenses.length} dépenses fixes à reporter`);
-      
       const incomes = await db.getIncomes();
-      const fixedIncomes = incomes.filter(income => income.isFixed === true);
-      console.log(`Trouvé ${fixedIncomes.length} revenus fixes à reporter`);
+      
+      console.log(`Total de ${expenses.length} dépenses et ${incomes.length} revenus à traiter`);
       
       // Traitement des budgets pour la transition
       await processEnvelopeTransitions(envelopes);
       
-      // Cloner les dépenses fixes pour le mois suivant avant de supprimer les anciennes
-      const nextFixedExpenses = await cloneFixedExpensesForNextMonth(fixedExpenses);
-      const nextFixedIncomes = await cloneFixedIncomesForNextMonth(fixedIncomes);
+      // Récupérer les dépenses et revenus fixes depuis leurs tables respectives
+      console.log("Récupération des transactions fixes pour le mois suivant...");
+      const nextFixedExpenses = await fixedTransactionOperations.getFixedExpensesForImport();
+      const nextFixedIncomes = await fixedTransactionOperations.getFixedIncomesForImport();
       
-      // Suppression de TOUTES les dépenses (fixes et non-fixes)
+      console.log(`${nextFixedExpenses.length} dépenses fixes et ${nextFixedIncomes.length} revenus fixes récupérés`);
+      
+      // Suppression de TOUTES les dépenses
       console.log(`Suppression de toutes les ${expenses.length} dépenses`);
       await Promise.all(
         expenses.map(expense => db.deleteExpense(expense.id))
       );
       
-      // Suppression de TOUS les revenus (fixes et non-fixes)
+      // Suppression de TOUS les revenus
       console.log(`Suppression de tous les ${incomes.length} revenus`);
       await Promise.all(
         incomes.map(income => db.deleteIncome(income.id))
       );
       
-      // Ajouter les nouvelles dépenses et revenus fixes avec des ID différents pour le mois suivant
+      // Ajouter les nouvelles dépenses fixes pour le mois suivant
       console.log(`Ajout de ${nextFixedExpenses.length} dépenses fixes pour le mois suivant`);
       for (const expense of nextFixedExpenses) {
         await db.addExpense(expense);
         console.log(`Dépense fixe ajoutée: ${expense.title}, date: ${expense.date}`);
       }
       
+      // Ajouter les nouveaux revenus fixes pour le mois suivant
       console.log(`Ajout de ${nextFixedIncomes.length} revenus fixes pour le mois suivant`);
       for (const income of nextFixedIncomes) {
         await db.addIncome(income);
         console.log(`Revenu fixe ajouté: ${income.title}, date: ${income.date}`);
       }
+      
+      // Mettre à jour les dates dans les tables des transactions fixes pour le mois suivant
+      await fixedTransactionOperations.updateFixedTransactionsDates();
 
       console.log("Vérification après transition:");
       const remainingExpenses = await db.getExpenses();
@@ -91,51 +96,6 @@ export const useTransitionProcessor = (categories: any[], setCategories: (catego
     }
 
     return success;
-  };
-
-  // Fonction pour cloner les dépenses fixes pour le mois suivant
-  const cloneFixedExpensesForNextMonth = async (fixedExpenses) => {
-    // Obtenir la date pour le mois suivant
-    const today = new Date();
-    const nextMonth = new Date(today);
-    nextMonth.setMonth(today.getMonth() + 1);
-    const nextMonthDateString = nextMonth.toISOString().split('T')[0];
-    
-    console.log(`Préparation de ${fixedExpenses.length} dépenses fixes pour le mois suivant: ${nextMonthDateString}`);
-    
-    // Créer de nouvelles dépenses fixes avec de nouveaux IDs
-    return fixedExpenses.map(expense => ({
-      id: Date.now() + "-" + Math.random().toString(36).substr(2, 9), // Nouveau ID unique
-      title: expense.title,
-      budget: expense.budget,
-      spent: expense.budget, // On réinitialise le spent à la valeur du budget
-      type: expense.type,
-      linkedBudgetId: expense.linkedBudgetId,
-      date: nextMonthDateString,
-      isFixed: true // S'assurer que c'est toujours marqué comme fixe
-    }));
-  };
-
-  // Fonction pour cloner les revenus fixes pour le mois suivant
-  const cloneFixedIncomesForNextMonth = async (fixedIncomes) => {
-    // Obtenir la date pour le mois suivant
-    const today = new Date();
-    const nextMonth = new Date(today);
-    nextMonth.setMonth(today.getMonth() + 1);
-    const nextMonthDateString = nextMonth.toISOString().split('T')[0];
-    
-    console.log(`Préparation de ${fixedIncomes.length} revenus fixes pour le mois suivant: ${nextMonthDateString}`);
-    
-    // Créer de nouveaux revenus fixes avec de nouveaux IDs
-    return fixedIncomes.map(income => ({
-      id: Date.now() + "-" + Math.random().toString(36).substr(2, 9), // Nouveau ID unique
-      title: income.title,
-      budget: income.budget,
-      spent: income.budget, // On réinitialise le spent à la valeur du budget
-      type: income.type,
-      date: nextMonthDateString,
-      isFixed: true // S'assurer que c'est toujours marqué comme fixe
-    }));
   };
 
   const processEnvelopeTransitions = async (envelopes: TransitionEnvelope[]) => {
