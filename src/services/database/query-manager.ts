@@ -4,10 +4,14 @@ import { Income } from './models/income';
 import { Expense } from './models/expense';
 import { Budget } from './models/budget';
 import { Category } from './models/category';
+import { FixedIncome } from './models/fixedIncome';
+import { FixedExpense } from './models/fixedExpense';
 import { IncomeQueryManager } from './query-managers/income-query-manager';
 import { ExpenseQueryManager } from './query-managers/expense-query-manager';
 import { BudgetQueryManager } from './query-managers/budget-query-manager';
 import { CategoryQueryManager } from './query-managers/category-query-manager';
+import { FixedIncomeQueryManager } from './query-managers/fixed-income-query-manager';
+import { FixedExpenseQueryManager } from './query-managers/fixed-expense-query-manager';
 import { IQueryManager } from './interfaces/IQueryManager';
 
 export class QueryManager extends BaseDatabaseManager implements IQueryManager {
@@ -15,6 +19,8 @@ export class QueryManager extends BaseDatabaseManager implements IQueryManager {
   private expenseQueryManager: ExpenseQueryManager;
   private budgetQueryManager: BudgetQueryManager;
   private categoryQueryManager: CategoryQueryManager;
+  private fixedIncomeQueryManager: FixedIncomeQueryManager;
+  private fixedExpenseQueryManager: FixedExpenseQueryManager;
 
   constructor() {
     super();
@@ -22,6 +28,8 @@ export class QueryManager extends BaseDatabaseManager implements IQueryManager {
     this.expenseQueryManager = new ExpenseQueryManager(this);
     this.budgetQueryManager = new BudgetQueryManager(this);
     this.categoryQueryManager = new CategoryQueryManager(this);
+    this.fixedIncomeQueryManager = new FixedIncomeQueryManager(this);
+    this.fixedExpenseQueryManager = new FixedExpenseQueryManager(this);
   }
 
   // Méthodes pour permettre aux query managers d'accéder à la base de données
@@ -100,5 +108,55 @@ export class QueryManager extends BaseDatabaseManager implements IQueryManager {
 
   async executeDeleteCategory(id: string): Promise<void> {
     return this.categoryQueryManager.delete(id);
+  }
+  
+  // Fixed Income operations
+  async executeGetFixedIncomes(): Promise<FixedIncome[]> {
+    return this.fixedIncomeQueryManager.getAll();
+  }
+
+  async executeAddFixedIncome(fixedIncome: FixedIncome): Promise<void> {
+    return this.fixedIncomeQueryManager.add(fixedIncome);
+  }
+
+  async executeUpdateFixedIncome(fixedIncome: FixedIncome): Promise<void> {
+    return this.fixedIncomeQueryManager.update(fixedIncome);
+  }
+
+  async executeDeleteFixedIncome(id: string): Promise<void> {
+    return this.fixedIncomeQueryManager.delete(id);
+  }
+  
+  async executeDeleteFixedIncomeIfExists(id: string): Promise<void> {
+    return this.fixedIncomeQueryManager.deleteIfExists(id);
+  }
+  
+  async executeUpdateFixedIncomesDates(newDate: string): Promise<void> {
+    return this.fixedIncomeQueryManager.updateDates(newDate);
+  }
+  
+  // Fixed Expense operations
+  async executeGetFixedExpenses(): Promise<FixedExpense[]> {
+    return this.fixedExpenseQueryManager.getAll();
+  }
+
+  async executeAddFixedExpense(fixedExpense: FixedExpense): Promise<void> {
+    return this.fixedExpenseQueryManager.add(fixedExpense);
+  }
+
+  async executeUpdateFixedExpense(fixedExpense: FixedExpense): Promise<void> {
+    return this.fixedExpenseQueryManager.update(fixedExpense);
+  }
+
+  async executeDeleteFixedExpense(id: string): Promise<void> {
+    return this.fixedExpenseQueryManager.delete(id);
+  }
+  
+  async executeDeleteFixedExpenseIfExists(id: string): Promise<void> {
+    return this.fixedExpenseQueryManager.deleteIfExists(id);
+  }
+  
+  async executeUpdateFixedExpensesDates(newDate: string): Promise<void> {
+    return this.fixedExpenseQueryManager.updateDates(newDate);
   }
 }

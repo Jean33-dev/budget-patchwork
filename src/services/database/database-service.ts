@@ -1,11 +1,16 @@
+
 import { Income } from './models/income';
 import { Expense } from './models/expense';
 import { Budget } from './models/budget';
 import { Category } from './models/category';
+import { FixedExpense } from './models/fixedExpense';
+import { FixedIncome } from './models/fixedIncome';
 import { IncomeService } from './services/income-service';
 import { ExpenseService } from './services/expense-service';
 import { BudgetService } from './services/budget-service';
 import { CategoryService } from './services/category-service';
+import { FixedIncomeService } from './services/fixed-income-service';
+import { FixedExpenseService } from './services/fixed-expense-service';
 
 /**
  * Main database service that uses specialized service classes for each entity
@@ -15,12 +20,16 @@ class DatabaseService {
   private expenseService: ExpenseService;
   private budgetService: BudgetService;
   private categoryService: CategoryService;
+  private fixedIncomeService: FixedIncomeService;
+  private fixedExpenseService: FixedExpenseService;
 
   constructor() {
     this.incomeService = new IncomeService();
     this.expenseService = new ExpenseService();
     this.budgetService = new BudgetService();
     this.categoryService = new CategoryService();
+    this.fixedIncomeService = new FixedIncomeService();
+    this.fixedExpenseService = new FixedExpenseService();
   }
 
   /**
@@ -106,6 +115,56 @@ class DatabaseService {
 
   async deleteCategory(id: string): Promise<void> {
     return this.categoryService.deleteCategory(id);
+  }
+  
+  // Fixed Income methods delegated to FixedIncomeService
+  async getFixedIncomes(): Promise<FixedIncome[]> {
+    return this.fixedIncomeService.getFixedIncomes();
+  }
+
+  async addFixedIncome(fixedIncome: FixedIncome): Promise<void> {
+    return this.fixedIncomeService.addFixedIncome(fixedIncome);
+  }
+
+  async updateFixedIncome(fixedIncome: FixedIncome): Promise<void> {
+    return this.fixedIncomeService.updateFixedIncome(fixedIncome);
+  }
+
+  async deleteFixedIncome(id: string): Promise<void> {
+    return this.fixedIncomeService.deleteFixedIncome(id);
+  }
+  
+  async deleteFixedIncomeIfExists(id: string): Promise<void> {
+    return this.fixedIncomeService.deleteFixedIncomeIfExists(id);
+  }
+  
+  async updateFixedIncomesDates(newDate: string): Promise<void> {
+    return this.fixedIncomeService.updateFixedIncomesDates(newDate);
+  }
+  
+  // Fixed Expense methods delegated to FixedExpenseService
+  async getFixedExpenses(): Promise<FixedExpense[]> {
+    return this.fixedExpenseService.getFixedExpenses();
+  }
+
+  async addFixedExpense(fixedExpense: FixedExpense): Promise<void> {
+    return this.fixedExpenseService.addFixedExpense(fixedExpense);
+  }
+
+  async updateFixedExpense(fixedExpense: FixedExpense): Promise<void> {
+    return this.fixedExpenseService.updateFixedExpense(fixedExpense);
+  }
+
+  async deleteFixedExpense(id: string): Promise<void> {
+    return this.fixedExpenseService.deleteFixedExpense(id);
+  }
+  
+  async deleteFixedExpenseIfExists(id: string): Promise<void> {
+    return this.fixedExpenseService.deleteFixedExpenseIfExists(id);
+  }
+  
+  async updateFixedExpensesDates(newDate: string): Promise<void> {
+    return this.fixedExpenseService.updateFixedExpensesDates(newDate);
   }
 
   /**
