@@ -1,7 +1,7 @@
 
 import { useToast } from "@/hooks/use-toast";
 import { TransitionEnvelope } from "@/types/transition";
-import { db } from "@/services/database";
+import { dbManager } from "@/services/database";
 import { useTransitionPreferences } from "./useTransitionPreferences";
 import { fixedTransactionOperations } from "@/utils/fixed-transaction-operations";
 
@@ -17,8 +17,8 @@ export const useTransitionProcessor = (categories: any[], setCategories: (catego
       saveTransitionPreferences(envelopes);
       
       // Récupérer toutes les dépenses et revenus
-      const expenses = await db.getExpenses();
-      const incomes = await db.getIncomes();
+      const expenses = await dbManager.getExpenses();
+      const incomes = await dbManager.getIncomes();
       
       console.log(`Total de ${expenses.length} dépenses et ${incomes.length} revenus à traiter`);
       
@@ -35,26 +35,26 @@ export const useTransitionProcessor = (categories: any[], setCategories: (catego
       // Suppression de TOUTES les dépenses
       console.log(`Suppression de toutes les ${expenses.length} dépenses`);
       await Promise.all(
-        expenses.map(expense => db.deleteExpense(expense.id))
+        expenses.map(expense => dbManager.deleteExpense(expense.id))
       );
       
       // Suppression de TOUS les revenus
       console.log(`Suppression de tous les ${incomes.length} revenus`);
       await Promise.all(
-        incomes.map(income => db.deleteIncome(income.id))
+        incomes.map(income => dbManager.deleteIncome(income.id))
       );
       
       // Ajouter les nouvelles dépenses fixes pour le mois suivant
       console.log(`Ajout de ${nextFixedExpenses.length} dépenses fixes pour le mois suivant`);
       for (const expense of nextFixedExpenses) {
-        await db.addExpense(expense);
+        await dbManager.addExpense(expense);
         console.log(`Dépense fixe ajoutée: ${expense.title}, date: ${expense.date}`);
       }
       
       // Ajouter les nouveaux revenus fixes pour le mois suivant
       console.log(`Ajout de ${nextFixedIncomes.length} revenus fixes pour le mois suivant`);
       for (const income of nextFixedIncomes) {
-        await db.addIncome(income);
+        await dbManager.addIncome(income);
         console.log(`Revenu fixe ajouté: ${income.title}, date: ${income.date}`);
       }
       
@@ -62,8 +62,8 @@ export const useTransitionProcessor = (categories: any[], setCategories: (catego
       await fixedTransactionOperations.updateFixedTransactionsDates();
 
       console.log("Vérification après transition:");
-      const remainingExpenses = await db.getExpenses();
-      const remainingIncomes = await db.getIncomes();
+      const remainingExpenses = await dbManager.getExpenses();
+      const remainingIncomes = await dbManager.getIncomes();
       console.log(`Dépenses restantes: ${remainingExpenses.length}`);
       console.log(`Revenus restants: ${remainingIncomes.length}`);
       
@@ -74,7 +74,7 @@ export const useTransitionProcessor = (categories: any[], setCategories: (catego
       for (let category of updatedCategories) {
         // Réinitialiser le montant dépensé à 0 puisque toutes les dépenses ont été supprimées
         category.spent = 0;
-        await db.updateCategory(category);
+        await dbManager.updateCategory(category);
         console.log(`Catégorie ${category.name} mise à jour, dépenses réinitialisées à 0`);
       }
       

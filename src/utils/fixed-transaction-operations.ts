@@ -1,5 +1,5 @@
 
-import { db } from "@/services/database";
+import { dbManager } from "@/services/database";
 import { Expense } from "@/services/database/models/expense";
 import { Income } from "@/services/database/models/income";
 import { FixedExpense } from "@/services/database/models/fixedExpense";
@@ -24,7 +24,7 @@ export const fixedTransactionOperations = {
       };
       
       // Ajouter à la table des dépenses fixes
-      await db.addFixedExpense(fixedExpense);
+      await dbManager.addFixedExpense(fixedExpense);
       console.log("Dépense fixe enregistrée avec succès");
       
       return true;
@@ -51,7 +51,7 @@ export const fixedTransactionOperations = {
       };
       
       // Ajouter à la table des revenus fixes
-      await db.addFixedIncome(fixedIncome);
+      await dbManager.addFixedIncome(fixedIncome);
       console.log("Revenu fixe enregistré avec succès");
       
       return true;
@@ -66,7 +66,7 @@ export const fixedTransactionOperations = {
    */
   async deleteFixedExpense(id: string): Promise<boolean> {
     try {
-      await db.deleteFixedExpense(id);
+      await dbManager.deleteFixedExpense(id);
       console.log("Dépense fixe supprimée avec succès:", id);
       return true;
     } catch (error) {
@@ -80,7 +80,7 @@ export const fixedTransactionOperations = {
    */
   async deleteFixedIncome(id: string): Promise<boolean> {
     try {
-      await db.deleteFixedIncome(id);
+      await dbManager.deleteFixedIncome(id);
       console.log("Revenu fixe supprimé avec succès:", id);
       return true;
     } catch (error) {
@@ -103,8 +103,8 @@ export const fixedTransactionOperations = {
       console.log(`Mise à jour des dates des transactions fixes vers: ${nextMonthDateString}`);
       
       // Mettre à jour les dates
-      await db.updateFixedExpensesDates(nextMonthDateString);
-      await db.updateFixedIncomesDates(nextMonthDateString);
+      await dbManager.updateFixedExpensesDates(nextMonthDateString);
+      await dbManager.updateFixedIncomesDates(nextMonthDateString);
       
       return true;
     } catch (error) {
@@ -118,7 +118,7 @@ export const fixedTransactionOperations = {
    */
   async getFixedExpensesForImport(): Promise<Expense[]> {
     try {
-      const fixedExpenses = await db.getFixedExpenses();
+      const fixedExpenses = await dbManager.getFixedExpenses();
       
       // Convertir les dépenses fixes en dépenses standard
       return fixedExpenses.map(fixedExp => ({
@@ -142,7 +142,7 @@ export const fixedTransactionOperations = {
    */
   async getFixedIncomesForImport(): Promise<Income[]> {
     try {
-      const fixedIncomes = await db.getFixedIncomes();
+      const fixedIncomes = await dbManager.getFixedIncomes();
       
       // Convertir les revenus fixes en revenus standard
       return fixedIncomes.map(fixedInc => ({

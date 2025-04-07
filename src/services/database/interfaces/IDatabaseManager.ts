@@ -3,6 +3,8 @@ import { Budget } from '../models/budget';
 import { Expense } from '../models/expense';
 import { Income } from '../models/income';
 import { Category } from '../models/category';
+import { FixedExpense } from '../models/fixedExpense';
+import { FixedIncome } from '../models/fixedIncome';
 
 /**
  * Interface defining all database operations
@@ -38,4 +40,20 @@ export interface IDatabaseManager {
   updateCategory(category: Category): Promise<void>;
   deleteCategory(id: string): Promise<void>;
   resetCategoryExpenses(categoryId: string): Promise<void>;
+  
+  // Fixed Expense operations
+  getFixedExpenses(): Promise<FixedExpense[]>;
+  addFixedExpense(fixedExpense: FixedExpense): Promise<void>;
+  updateFixedExpense(fixedExpense: FixedExpense): Promise<void>;
+  deleteFixedExpense(id: string): Promise<void>;
+  deleteFixedExpenseIfExists(id: string): Promise<void>;
+  updateFixedExpensesDates(newDate: string): Promise<void>;
+  
+  // Fixed Income operations
+  getFixedIncomes(): Promise<FixedIncome[]>;
+  addFixedIncome(fixedIncome: FixedIncome): Promise<void>;
+  updateFixedIncome(fixedIncome: FixedIncome): Promise<void>;
+  deleteFixedIncome(id: string): Promise<void>;
+  deleteFixedIncomeIfExists(id: string): Promise<void>;
+  updateFixedIncomesDates(newDate: string): Promise<void>;
 }
