@@ -59,20 +59,59 @@ export const useTransitionProcess = (
   const [progress, setProgress] = useState<{ step: string; percentage: number } | null>(null);
 
   /**
+   * Nettoie les données et supprime les objets undefined mal formés
+   */
+  const cleanUndefinedValues = (value: any): any => {
+    if (value === null || value === undefined) {
+      return undefined;
+    }
+    
+    // Détecte et nettoie les objets qui représentent des valeurs undefined
+    if (typeof value === 'object' && value._type === 'undefined') {
+      return undefined;
+    }
+    
+    // Traite les tableaux récursivement
+    if (Array.isArray(value)) {
+      return value.map(item => cleanUndefinedValues(item));
+    }
+    
+    // Traite les objets récursivement
+    if (typeof value === 'object' && value !== null) {
+      const cleanedObj: any = {};
+      Object.keys(value).forEach(key => {
+        const cleanedValue = cleanUndefinedValues(value[key]);
+        if (cleanedValue !== undefined) {
+          cleanedObj[key] = cleanedValue;
+        }
+      });
+      return cleanedObj;
+    }
+    
+    return value;
+  };
+
+  /**
    * Prepares transition data from envelopes
    */
   const prepareTransitionData = (envelopes: any[]): TransitionEnvelope[] => {
-    return envelopes.map(env => ({
-      id: env.id,
-      title: env.title,
-      transitionOption: env.transitionOption,
-      partialAmount: env.partialAmount,
-      transferTargetId: env.transferTargetId,
-      multiTransfers: env.multiTransfers?.map(t => ({
-        targetId: t.targetId,
-        amount: t.amount
-      }))
-    }));
+    return envelopes.map(env => {
+      // Clean up the envelope data
+      const cleanedEnv = cleanUndefinedValues(env);
+      
+      return {
+        id: cleanedEnv.id,
+        title: cleanedEnv.title,
+        transitionOption: cleanedEnv.transitionOption,
+        partialAmount: cleanedEnv.partialAmount,
+        transferTargetId: cleanedEnv.transferTargetId,
+        multiTransfers: Array.isArray(cleanedEnv.multiTransfers) ? 
+          cleanedEnv.multiTransfers.map(t => ({
+            targetId: t.targetId,
+            amount: t.amount
+          })) : undefined
+      };
+    });
   };
 
   /**
@@ -102,8 +141,11 @@ export const useTransitionProcess = (
     setProgress({ step: "Démarrage", percentage: 5 });
     
     try {
-      // Prepare transition data
+      // Prepare transition data with proper cleaning of undefined values
       const transitionData = prepareTransitionData(envelopes);
+      
+      // Log the cleaned data for debugging
+      console.log('Données de transition nettoyées:', transitionData);
       
       // Validate transition requirements
       const validation = validateTransition(transitionData);
@@ -114,8 +156,14 @@ export const useTransitionProcess = (
         return;
       }
       
-      console.log('Sending transition data:', transitionData);
+      // Add progressive updates for better user feedback
+      setProgress({ step: "Validation des données", percentage: 15 });
+      await new Promise(resolve => setTimeout(resolve, 100)); // Allow UI to update
       
+      setProgress({ step: "Préparation de la transition", percentage: 30 });
+      console.log('Envoi des données de transition:', transitionData);
+      
+      // Execute the transition with more detailed progress steps
       const success = await handleMonthTransition(transitionData);
       
       if (success) {
@@ -129,8 +177,9 @@ export const useTransitionProcess = (
         setProgress(null);
       }
     } catch (error) {
-      console.error("Erreur lors de la transition:", error);
-      toast.error("Une erreur est survenue");
+      console.error("Erreur détaillée lors de la transition:", error);
+      toast.error("Une erreur est survenue lors de la transition");
+      setProgress(null);
     } finally {
       setIsProcessing(false);
     }
