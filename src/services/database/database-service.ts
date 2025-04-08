@@ -1,3 +1,4 @@
+
 import { Income } from './models/income';
 import { Expense } from './models/expense';
 import { Budget } from './models/budget';
@@ -45,6 +46,10 @@ class DatabaseService {
     return this.incomeService.getIncomes();
   }
 
+  async getRecurringIncomes(): Promise<Income[]> {
+    return this.incomeService.getRecurringIncomes();
+  }
+
   async addIncome(income: Income): Promise<void> {
     return this.incomeService.addIncome(income);
   }
@@ -57,9 +62,17 @@ class DatabaseService {
     return this.incomeService.deleteIncome(id);
   }
 
+  async copyRecurringIncomeToMonth(incomeId: string, targetDate: string): Promise<void> {
+    return this.incomeService.copyRecurringIncomeToMonth(incomeId, targetDate);
+  }
+
   // Expense methods delegated to ExpenseService
   async getExpenses(): Promise<Expense[]> {
     return this.expenseService.getExpenses();
+  }
+
+  async getRecurringExpenses(): Promise<Expense[]> {
+    return this.expenseService.getRecurringExpenses();
   }
 
   async addExpense(expense: Expense): Promise<void> {
@@ -72,6 +85,10 @@ class DatabaseService {
 
   async deleteExpense(id: string): Promise<void> {
     return this.expenseService.deleteExpense(id);
+  }
+
+  async copyRecurringExpenseToMonth(expenseId: string, targetDate: string): Promise<void> {
+    return this.expenseService.copyRecurringExpenseToMonth(expenseId, targetDate);
   }
 
   // Budget methods delegated to BudgetService

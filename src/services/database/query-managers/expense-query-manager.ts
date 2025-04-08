@@ -31,6 +31,28 @@ export class ExpenseQueryManager extends BaseQueryManager {
     }
   }
 
+  async getRecurring(): Promise<Expense[]> {
+    try {
+      console.log("ExpenseQueryManager.getRecurring: Starting...");
+      const success = await this.ensureParentInitialized();
+      if (!success) {
+        console.error("ExpenseQueryManager.getRecurring: Parent not initialized");
+        return [];
+      }
+      const db = this.getDb();
+      if (!db) {
+        console.error("ExpenseQueryManager.getRecurring: Database is null");
+        return [];
+      }
+      const result = expenseQueries.getRecurring(db);
+      console.log(`ExpenseQueryManager.getRecurring: Got ${result.length} recurring expenses`);
+      return result;
+    } catch (error) {
+      console.error("Error getting recurring expenses:", error);
+      return [];
+    }
+  }
+
   async add(expense: Expense): Promise<void> {
     try {
       console.log("ExpenseQueryManager.add: Starting...", expense);
