@@ -163,17 +163,30 @@ export const useTransitionProcess = (
       setProgress({ step: "Préparation de la transition", percentage: 30 });
       console.log('Envoi des données de transition:', transitionData);
       
-      // Execute the transition with more detailed progress steps
-      const success = await handleMonthTransition(transitionData);
-      
-      if (success) {
-        setProgress({ step: "Terminé", percentage: 100 });
-        toast.success("Transition effectuée avec succès");
-        setTimeout(() => {
-          onComplete();
-        }, 1000);
-      } else {
-        toast.error("Échec de la transition");
+      try {
+        // Execute the transition with timeout protection
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error("La transition a pris trop de temps")), 30000);
+        });
+        
+        const transitionPromise = handleMonthTransition(transitionData);
+        
+        // Race between the actual operation and the timeout
+        const success = await Promise.race([transitionPromise, timeoutPromise]) as boolean;
+        
+        if (success) {
+          setProgress({ step: "Terminé", percentage: 100 });
+          toast.success("Transition effectuée avec succès");
+          setTimeout(() => {
+            onComplete();
+          }, 1000);
+        } else {
+          toast.error("Échec de la transition");
+          setProgress(null);
+        }
+      } catch (transitionError) {
+        console.error("Erreur pendant l'exécution de la transition:", transitionError);
+        toast.error(`Erreur pendant la transition: ${transitionError instanceof Error ? transitionError.message : 'Erreur inconnue'}`);
         setProgress(null);
       }
     } catch (error) {
