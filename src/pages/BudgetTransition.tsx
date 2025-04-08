@@ -5,7 +5,7 @@ import { TransitionPageHeader } from "@/components/budget-transition/TransitionP
 import { TransitionInfoBox } from "@/components/budget-transition/TransitionInfoBox";
 import { TransitionEnvelopeGrid } from "@/components/budget-transition/TransitionEnvelopeGrid";
 import { TransitionActionButtons } from "@/components/budget-transition/TransitionActionButtons";
-import { useTransition } from "@/hooks/useTransition";
+import { useTransition } from "@/hooks/transition";
 import { 
   AlertDialog,
   AlertDialogAction,
