@@ -15,11 +15,13 @@ export interface IQueryManager {
   
   // Query execution methods
   executeGetIncomes(): Promise<Income[]>;
+  executeGetRecurringIncomes(): Promise<Income[]>;
   executeAddIncome(income: Income): Promise<void>;
   executeUpdateIncome(income: Income): Promise<void>;
   executeDeleteIncome(id: string): Promise<void>;
   
   executeGetExpenses(): Promise<Expense[]>;
+  executeGetRecurringExpenses(): Promise<Expense[]>;
   executeAddExpense(expense: Expense): Promise<void>;
   executeUpdateExpense(expense: Expense): Promise<void>;
   executeDeleteExpense(id: string): Promise<void>;

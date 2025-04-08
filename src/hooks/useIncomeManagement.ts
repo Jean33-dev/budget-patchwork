@@ -13,6 +13,7 @@ export const useIncomeManagement = () => {
     budget: number;
     type: "income";
     date: string;
+    isRecurring?: boolean;
   } | null>(null);
   const [envelopes, setEnvelopes] = useState<Income[]>([]);
 
@@ -21,7 +22,8 @@ export const useIncomeManagement = () => {
     const initializeData = async () => {
       await db.init();
       const incomes = await db.getIncomes();
-      setEnvelopes(incomes);
+      // Filtrer seulement les revenus non récurrents pour la page principale
+      setEnvelopes(incomes.filter(income => !income.isRecurring));
     };
     
     initializeData();
@@ -32,6 +34,7 @@ export const useIncomeManagement = () => {
       id: Date.now().toString(),
       ...newIncome,
       spent: newIncome.budget,
+      isRecurring: false // Non récurrent par défaut
     };
     
     await db.addIncome(income);
@@ -87,6 +90,7 @@ export const useIncomeManagement = () => {
       budget: envelope.budget,
       type: envelope.type,
       date: envelope.date,
+      isRecurring: envelope.isRecurring
     });
     setEditDialogOpen(true);
   };

@@ -6,4 +6,5 @@ export interface Income {
   spent: number;
   type: 'income';
   date: string;
+  isRecurring?: boolean;
 }

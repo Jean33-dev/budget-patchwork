@@ -7,7 +7,8 @@ import { BudgetLoadingState } from "@/components/budget/BudgetLoadingState";
 import { ExpenseErrorState } from "@/components/budget/ExpenseErrorState";
 import { useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
-import { Loader2 } from "lucide-react";
+import { Loader2, Clock } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const Expenses = () => {
   const navigate = useNavigate();
@@ -49,7 +50,17 @@ const Expenses = () => {
 
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
-      <ExpensesHeader onNavigate={navigate} />
+      <div className="flex justify-between items-center">
+        <ExpensesHeader onNavigate={navigate} />
+        <Button 
+          variant="outline" 
+          onClick={() => navigate('/dashboard/budget/recurring-expenses')}
+          className="flex items-center gap-2"
+        >
+          <Clock className="h-4 w-4" />
+          Dépenses récurrentes
+        </Button>
+      </div>
       
       {isLoading && (
         <BudgetLoadingState attempt={1} maxAttempts={1} />

@@ -39,6 +39,10 @@ export class QueryManager extends BaseDatabaseManager implements IQueryManager {
     return this.incomeQueryManager.getAll();
   }
 
+  async executeGetRecurringIncomes(): Promise<Income[]> {
+    return this.incomeQueryManager.getRecurring();
+  }
+
   async executeAddIncome(income: Income): Promise<void> {
     return this.incomeQueryManager.add(income);
   }
@@ -54,6 +58,10 @@ export class QueryManager extends BaseDatabaseManager implements IQueryManager {
   // Expense operations
   async executeGetExpenses(): Promise<Expense[]> {
     return this.expenseQueryManager.getAll();
+  }
+
+  async executeGetRecurringExpenses(): Promise<Expense[]> {
+    return this.expenseQueryManager.getRecurring();
   }
 
   async executeAddExpense(expense: Expense): Promise<void> {

@@ -82,6 +82,20 @@ export class DatabaseManager extends DatabaseManagerImpl implements IDatabaseMan
     }
   }
 
+  async getRecurringExpenses(): Promise<Expense[]> {
+    try {
+      const initialized = await this.ensureInitialized();
+      if (!initialized) {
+        console.error("Database not initialized in getRecurringExpenses");
+        return [];
+      }
+      return this.managerFactory.getExpenseManager().getRecurringExpenses();
+    } catch (error) {
+      console.error("Error in getRecurringExpenses:", error);
+      return [];
+    }
+  }
+
   async addExpense(expense: Expense): Promise<void> {
     const initialized = await this.ensureInitialized();
     if (!initialized) {
@@ -107,6 +121,14 @@ export class DatabaseManager extends DatabaseManagerImpl implements IDatabaseMan
     await this.managerFactory.getExpenseManager().deleteExpense(id);
   }
 
+  async copyRecurringExpenseToMonth(expenseId: string, targetDate: string): Promise<void> {
+    const initialized = await this.ensureInitialized();
+    if (!initialized) {
+      throw new Error("Database not initialized in copyRecurringExpenseToMonth");
+    }
+    await this.managerFactory.getExpenseManager().copyRecurringExpenseToMonth(expenseId, targetDate);
+  }
+
   // Income methods
   async getIncomes(): Promise<Income[]> {
     try {
@@ -118,6 +140,20 @@ export class DatabaseManager extends DatabaseManagerImpl implements IDatabaseMan
       return this.managerFactory.getIncomeManager().getIncomes();
     } catch (error) {
       console.error("Error in getIncomes:", error);
+      return [];
+    }
+  }
+
+  async getRecurringIncomes(): Promise<Income[]> {
+    try {
+      const initialized = await this.ensureInitialized();
+      if (!initialized) {
+        console.error("Database not initialized in getRecurringIncomes");
+        return [];
+      }
+      return this.managerFactory.getIncomeManager().getRecurringIncomes();
+    } catch (error) {
+      console.error("Error in getRecurringIncomes:", error);
       return [];
     }
   }
@@ -144,6 +180,14 @@ export class DatabaseManager extends DatabaseManagerImpl implements IDatabaseMan
       throw new Error("Database not initialized in deleteIncome");
     }
     await this.managerFactory.getIncomeManager().deleteIncome(id);
+  }
+
+  async copyRecurringIncomeToMonth(incomeId: string, targetDate: string): Promise<void> {
+    const initialized = await this.ensureInitialized();
+    if (!initialized) {
+      throw new Error("Database not initialized in copyRecurringIncomeToMonth");
+    }
+    await this.managerFactory.getIncomeManager().copyRecurringIncomeToMonth(incomeId, targetDate);
   }
 
   // Category methods

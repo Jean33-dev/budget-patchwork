@@ -27,6 +27,23 @@ export class IncomeQueryManager extends BaseQueryManager {
     }
   }
 
+  async getRecurring(): Promise<Income[]> {
+    try {
+      const success = await this.ensureParentInitialized();
+      if (!success) return [];
+      const db = this.getDb();
+      return incomeQueries.getRecurring(db);
+    } catch (error) {
+      console.error("Error getting recurring incomes:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible de récupérer les revenus récurrents"
+      });
+      return [];
+    }
+  }
+
   async add(income: Income): Promise<void> {
     try {
       const success = await this.ensureParentInitialized();

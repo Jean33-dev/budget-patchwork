@@ -22,15 +22,19 @@ export interface IDatabaseManager {
   
   // Expense operations
   getExpenses(): Promise<Expense[]>;
+  getRecurringExpenses(): Promise<Expense[]>;
   addExpense(expense: Expense): Promise<void>;
   updateExpense(expense: Expense): Promise<void>;
   deleteExpense(id: string): Promise<void>;
+  copyRecurringExpenseToMonth(expenseId: string, targetDate: string): Promise<void>;
   
   // Income operations
   getIncomes(): Promise<Income[]>;
+  getRecurringIncomes(): Promise<Income[]>;
   addIncome(income: Income): Promise<void>;
   updateIncome(income: Income): Promise<void>;
   deleteIncome(id: string): Promise<void>;
+  copyRecurringIncomeToMonth(incomeId: string, targetDate: string): Promise<void>;
   
   // Category operations
   getCategories(): Promise<Category[]>;
