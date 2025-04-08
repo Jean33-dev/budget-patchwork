@@ -22,6 +22,8 @@ export const useTransitionProcessor = (categories: any[], setCategories: (catego
       saveTransitionPreferences(envelopes);
       console.log("Transition preferences saved:", envelopes);
       
+      // Delay slightly to ensure UI updates with the first progress state
+      await new Promise(resolve => setTimeout(resolve, 100));
       setProgress({ step: "Traitement des budgets", percentage: 20 });
       
       // Process budget transitions first (this is faster and doesn't require loading all expenses)

@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress"; 
 
@@ -16,15 +16,20 @@ export const TransitionActionButtons = ({
   isProcessing,
   progress
 }: TransitionActionButtonsProps) => {
-  console.log("TransitionActionButtons progress:", progress);
+  // Log progress updates for debugging
+  useEffect(() => {
+    if (progress) {
+      console.log("TransitionActionButtons received progress:", progress);
+    }
+  }, [progress]);
 
   return (
     <div className="space-y-4">
-      {isProcessing && progress && (
+      {isProcessing && (
         <div className="space-y-2">
-          <Progress value={progress.percentage} className="h-2" />
+          <Progress value={progress?.percentage || 0} className="h-2" />
           <p className="text-sm text-center text-muted-foreground">
-            {progress.step} ({progress.percentage}%)
+            {progress?.step || "Initialisation..."} ({progress?.percentage || 0}%)
           </p>
         </div>
       )}

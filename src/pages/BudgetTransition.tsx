@@ -44,11 +44,10 @@ export const BudgetTransition = () => {
     handleTransitionConfirm
   } = useTransition(() => navigate("/dashboard/budget"));
 
-  // Add debug logs
+  // Debug logs to track progress updates
   useEffect(() => {
-    console.log("BudgetTransition rendering with envelopes:", envelopes);
-    console.log("Processing status:", isProcessing, "Progress:", progress);
-  }, [envelopes, isProcessing, progress]);
+    console.log("BudgetTransition rendering with progress:", progress);
+  }, [progress]);
 
   const handleBack = () => navigate("/dashboard/budget");
   
@@ -59,8 +58,11 @@ export const BudgetTransition = () => {
   
   // Procéder à la transition une fois confirmé
   const handleFinalConfirm = () => {
-    handleTransitionConfirm();
     setShowConfirmDialog(false);
+    // Add a small delay to ensure the dialog closes before starting processing
+    setTimeout(() => {
+      handleTransitionConfirm();
+    }, 100);
   };
   
   // Génération du nom du fichier PDF
