@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { TransitionPageHeader } from "@/components/budget-transition/TransitionPageHeader";
 import { TransitionInfoBox } from "@/components/budget-transition/TransitionInfoBox";
@@ -44,6 +44,12 @@ export const BudgetTransition = () => {
     handleTransitionConfirm
   } = useTransition(() => navigate("/dashboard/budget"));
 
+  // Add debug logs
+  useEffect(() => {
+    console.log("BudgetTransition rendering with envelopes:", envelopes);
+    console.log("Processing status:", isProcessing, "Progress:", progress);
+  }, [envelopes, isProcessing, progress]);
+
   const handleBack = () => navigate("/dashboard/budget");
   
   // Afficher la boîte de dialogue de confirmation au lieu de procéder immédiatement
@@ -64,10 +70,6 @@ export const BudgetTransition = () => {
   const handlePDFExported = () => {
     setPdfExported(true);
   };
-
-  // Add debug logs
-  console.log("BudgetTransition rendering with envelopes:", envelopes);
-  console.log("Processing status:", isProcessing, "Progress:", progress);
 
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">

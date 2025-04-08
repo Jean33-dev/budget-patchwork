@@ -16,12 +16,16 @@ export const TransitionActionButtons = ({
   isProcessing,
   progress
 }: TransitionActionButtonsProps) => {
+  console.log("TransitionActionButtons progress:", progress);
+
   return (
     <div className="space-y-4">
       {isProcessing && progress && (
         <div className="space-y-2">
           <Progress value={progress.percentage} className="h-2" />
-          <p className="text-sm text-center text-muted-foreground">{progress.step} ({progress.percentage}%)</p>
+          <p className="text-sm text-center text-muted-foreground">
+            {progress.step} ({progress.percentage}%)
+          </p>
         </div>
       )}
       
