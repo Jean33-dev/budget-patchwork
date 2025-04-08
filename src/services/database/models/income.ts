@@ -6,5 +6,4 @@ export interface Income {
   spent: number;
   type: 'income';
   date: string;
-  isFixed?: boolean;
 }

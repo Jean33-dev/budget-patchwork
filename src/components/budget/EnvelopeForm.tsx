@@ -5,7 +5,6 @@ import { MoneyInput } from "../shared/MoneyInput";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { DialogFooter } from "@/components/ui/dialog";
-import { Checkbox } from "@/components/ui/checkbox";
 
 interface EnvelopeFormProps {
   type: "income" | "expense" | "budget";
@@ -17,8 +16,6 @@ interface EnvelopeFormProps {
   setLinkedBudgetId: (id: string) => void;
   date: string;
   setDate: (date: string) => void;
-  isFixed?: boolean;
-  setIsFixed?: (isFixed: boolean) => void;
   onSubmit: (e: React.FormEvent) => void;
   availableBudgets?: Array<{ id: string; title: string }>;
 }
@@ -33,8 +30,6 @@ export const EnvelopeForm = ({
   setLinkedBudgetId,
   date,
   setDate,
-  isFixed = false,
-  setIsFixed,
   onSubmit,
   availableBudgets = []
 }: EnvelopeFormProps) => {
@@ -109,20 +104,6 @@ export const EnvelopeForm = ({
           required
         />
       </div>
-
-      {(type === "expense" || type === "income") && setIsFixed && (
-        <div className="flex items-center space-x-2 mt-2">
-          <Checkbox 
-            id="isFixed" 
-            checked={isFixed} 
-            onCheckedChange={(checked) => setIsFixed(checked as boolean)}
-          />
-          <Label htmlFor="isFixed" className="cursor-pointer">
-            {type === "expense" ? "Dépense fixe" : "Revenu fixe"}
-          </Label>
-        </div>
-      )}
-
       <DialogFooter>
         <Button type="submit">Ajouter {getTypeLabel(type)}</Button>
       </DialogFooter>

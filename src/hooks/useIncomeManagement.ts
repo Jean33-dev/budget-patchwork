@@ -13,7 +13,6 @@ export const useIncomeManagement = () => {
     budget: number;
     type: "income";
     date: string;
-    isFixed?: boolean;
   } | null>(null);
   const [envelopes, setEnvelopes] = useState<Income[]>([]);
 
@@ -28,13 +27,7 @@ export const useIncomeManagement = () => {
     initializeData();
   }, []);
 
-  const handleAddIncome = async (newIncome: { 
-    title: string; 
-    budget: number; 
-    type: "income"; 
-    date: string;
-    isFixed?: boolean; 
-  }) => {
+  const handleAddIncome = async (newIncome: { title: string; budget: number; type: "income"; date: string }) => {
     const income = {
       id: Date.now().toString(),
       ...newIncome,
@@ -50,13 +43,7 @@ export const useIncomeManagement = () => {
     });
   };
 
-  const handleEditIncome = async (editedIncome: { 
-    title: string; 
-    budget: number; 
-    type: "income"; 
-    date: string;
-    isFixed?: boolean;
-  }) => {
+  const handleEditIncome = async (editedIncome: { title: string; budget: number; type: "income"; date: string }) => {
     if (!selectedIncome) return;
 
     const updatedIncome = {
@@ -65,7 +52,6 @@ export const useIncomeManagement = () => {
       budget: editedIncome.budget,
       spent: editedIncome.budget,
       date: editedIncome.date,
-      isFixed: editedIncome.isFixed
     };
 
     await db.updateIncome(updatedIncome);
@@ -101,7 +87,6 @@ export const useIncomeManagement = () => {
       budget: envelope.budget,
       type: envelope.type,
       date: envelope.date,
-      isFixed: envelope.isFixed
     });
     setEditDialogOpen(true);
   };

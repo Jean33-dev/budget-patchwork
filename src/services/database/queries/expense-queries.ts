@@ -10,8 +10,7 @@ export const expenseQueries = {
       spent REAL DEFAULT 0,
       type TEXT,
       linkedBudgetId TEXT,
-      date TEXT,
-      isFixed INTEGER DEFAULT 0
+      date TEXT
     )
   `,
   
@@ -36,8 +35,7 @@ export const expenseQueries = {
           spent: Number(row[3] || 0),
           type: 'expense' as const,
           linkedBudgetId: row[5] ? String(row[5]) : null,
-          date: String(row[6] || new Date().toISOString().split('T')[0]),
-          isFixed: Boolean(row[7] || false)
+          date: String(row[6] || new Date().toISOString().split('T')[0])
         };
       });
       
@@ -56,7 +54,7 @@ export const expenseQueries = {
     
     try {
       const stmt = db.prepare(
-        'INSERT INTO expenses (id, title, budget, spent, type, linkedBudgetId, date, isFixed) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+        'INSERT INTO expenses (id, title, budget, spent, type, linkedBudgetId, date) VALUES (?, ?, ?, ?, ?, ?, ?)'
       );
       
       stmt.run([
@@ -66,8 +64,7 @@ export const expenseQueries = {
         Number(expense.spent || 0), 
         'expense', 
         expense.linkedBudgetId ? String(expense.linkedBudgetId) : null, 
-        String(expense.date || new Date().toISOString().split('T')[0]),
-        expense.isFixed ? 1 : 0
+        String(expense.date || new Date().toISOString().split('T')[0])
       ]);
       
       stmt.free();
@@ -84,7 +81,7 @@ export const expenseQueries = {
     
     try {
       const stmt = db.prepare(
-        'UPDATE expenses SET title = ?, budget = ?, spent = ?, linkedBudgetId = ?, date = ?, isFixed = ? WHERE id = ?'
+        'UPDATE expenses SET title = ?, budget = ?, spent = ?, linkedBudgetId = ?, date = ? WHERE id = ?'
       );
       
       stmt.run([
@@ -93,7 +90,6 @@ export const expenseQueries = {
         Number(expense.spent || expense.budget || 0),
         expense.linkedBudgetId ? String(expense.linkedBudgetId) : null, 
         String(expense.date || new Date().toISOString().split('T')[0]),
-        expense.isFixed ? 1 : 0,
         String(expense.id)
       ]);
       

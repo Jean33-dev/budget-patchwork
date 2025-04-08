@@ -18,7 +18,6 @@ export const useExpenseOperationHandlers = (
     type: "income" | "expense" | "budget";
     linkedBudgetId?: string;
     date: string;
-    isFixed?: boolean;
   }) => {
     if (isProcessing) {
       toast({
@@ -39,8 +38,7 @@ export const useExpenseOperationHandlers = (
         spent: Number(envelopeData.budget) || 0,
         type: "expense",
         linkedBudgetId: budgetId ? String(budgetId) : envelopeData.linkedBudgetId ? String(envelopeData.linkedBudgetId) : null,
-        date: String(envelopeData.date || new Date().toISOString().split('T')[0]),
-        isFixed: envelopeData.isFixed || false
+        date: String(envelopeData.date || new Date().toISOString().split('T')[0])
       };
 
       console.log("handleAddEnvelope: Created expense object:", newExpense);
@@ -127,8 +125,7 @@ export const useExpenseOperationHandlers = (
         spent: Number(expense.spent || expense.budget) || 0,
         type: "expense",
         linkedBudgetId: expense.linkedBudgetId ? String(expense.linkedBudgetId) : null,
-        date: String(expense.date || new Date().toISOString().split('T')[0]),
-        isFixed: expense.isFixed || false
+        date: String(expense.date || new Date().toISOString().split('T')[0])
       };
       
       await db.updateExpense(validatedExpense);

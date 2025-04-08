@@ -1,11 +1,11 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { TransitionPageHeader } from "@/components/budget-transition/TransitionPageHeader";
 import { TransitionInfoBox } from "@/components/budget-transition/TransitionInfoBox";
 import { TransitionEnvelopeGrid } from "@/components/budget-transition/TransitionEnvelopeGrid";
 import { TransitionActionButtons } from "@/components/budget-transition/TransitionActionButtons";
-import { useTransition } from "@/hooks/transition";
+import { useTransition } from "@/hooks/useTransition";
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -20,6 +20,7 @@ import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { AlertTriangle, FileText } from "lucide-react";
 import { BudgetPDFDownload } from "@/components/pdf/BudgetPDF";
 import { useBudgets } from "@/hooks/useBudgets";
+import { Button } from "@/components/ui/button";
 
 export const BudgetTransition = () => {
   const navigate = useNavigate();
@@ -33,7 +34,6 @@ export const BudgetTransition = () => {
     showPartialDialog,
     showTransferDialog,
     isProcessing,
-    progress,
     setSelectedEnvelope,
     setShowPartialDialog,
     setShowTransferDialog,
@@ -44,11 +44,6 @@ export const BudgetTransition = () => {
     handleTransitionConfirm
   } = useTransition(() => navigate("/dashboard/budget"));
 
-  // Debug logs to track progress updates
-  useEffect(() => {
-    console.log("BudgetTransition rendering with progress:", progress);
-  }, [progress]);
-
   const handleBack = () => navigate("/dashboard/budget");
   
   // Afficher la boîte de dialogue de confirmation au lieu de procéder immédiatement
@@ -58,11 +53,8 @@ export const BudgetTransition = () => {
   
   // Procéder à la transition une fois confirmé
   const handleFinalConfirm = () => {
+    handleTransitionConfirm();
     setShowConfirmDialog(false);
-    // Add a small delay to ensure the dialog closes before starting processing
-    setTimeout(() => {
-      handleTransitionConfirm();
-    }, 100);
   };
   
   // Génération du nom du fichier PDF
@@ -72,6 +64,9 @@ export const BudgetTransition = () => {
   const handlePDFExported = () => {
     setPdfExported(true);
   };
+
+  // Add debug logs
+  console.log("BudgetTransition rendering with envelopes:", envelopes);
 
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
@@ -92,7 +87,6 @@ export const BudgetTransition = () => {
           onCancel={handleBack}
           onConfirm={handleConfirmClick}
           isProcessing={isProcessing}
-          progress={progress}
         />
       </div>
       
