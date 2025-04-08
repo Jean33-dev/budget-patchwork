@@ -1,7 +1,7 @@
 
 import React from "react";
 import { BudgetEnvelope, TransitionOption } from "@/types/transition";
-import { TransitionEnvelopeCard } from "./TransitionEnvelopeCard";
+import { TransitionEnvelopeCard } from "./envelope-card";
 
 interface TransitionEnvelopeGridProps {
   envelopes: BudgetEnvelope[];
