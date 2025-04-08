@@ -12,15 +12,26 @@ export const budgetTransitionOperations = {
   async processEnvelopeTransitions(envelopes: TransitionEnvelope[]): Promise<void> {
     // Get all budgets at once rather than querying for each envelope
     const allBudgets = await dbManager.getBudgets();
+    if (!allBudgets || allBudgets.length === 0) {
+      console.error("Aucun budget trouvé pour la transition");
+      throw new Error("Aucun budget trouvé pour la transition");
+    }
+    
+    console.log(`${allBudgets.length} budgets récupérés, préparation des mises à jour...`);
+    
     const budgetUpdates = [];
     
     // Process all envelopes and collect updates
     for (const envelope of envelopes) {
       const budget = allBudgets.find(b => b.id === envelope.id);
-      if (!budget) continue;
+      if (!budget) {
+        console.warn(`Budget non trouvé pour l'enveloppe ${envelope.id}`);
+        continue;
+      }
 
       // Calcul du montant restant : budget initial + report précédent - dépenses
       const currentRemaining = budget.budget + (budget.carriedOver || 0) - budget.spent;
+      console.log(`Traitement de l'enveloppe ${budget.title}: ${envelope.transitionOption}, restant: ${currentRemaining}`);
       
       switch (envelope.transitionOption) {
         case "reset":
@@ -101,11 +112,27 @@ export const budgetTransitionOperations = {
       }
     }
     
+    console.log(`${budgetUpdates.length} mises à jour de budgets préparées`);
+    
+    if (budgetUpdates.length === 0) {
+      console.warn("Aucune mise à jour de budget à effectuer");
+      return;
+    }
+    
     // Apply all budget updates in chunks for better performance
-    const CHUNK_SIZE = 20;
+    const CHUNK_SIZE = 10;
     for (let i = 0; i < budgetUpdates.length; i += CHUNK_SIZE) {
       const chunk = budgetUpdates.slice(i, i + CHUNK_SIZE);
-      await Promise.all(chunk.map(budget => dbManager.updateBudget(budget)));
+      console.log(`Mise à jour des budgets: ${i+1}-${Math.min(i+CHUNK_SIZE, budgetUpdates.length)} sur ${budgetUpdates.length}`);
+      
+      try {
+        await Promise.all(chunk.map(budget => dbManager.updateBudget(budget)));
+      } catch (error) {
+        console.error(`Erreur lors de la mise à jour des budgets (chunk ${i}):`, error);
+        throw error;
+      }
     }
+    
+    console.log("Toutes les mises à jour de budgets ont été effectuées avec succès");
   }
 };

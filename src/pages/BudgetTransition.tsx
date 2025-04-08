@@ -20,7 +20,6 @@ import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { AlertTriangle, FileText } from "lucide-react";
 import { BudgetPDFDownload } from "@/components/pdf/BudgetPDF";
 import { useBudgets } from "@/hooks/useBudgets";
-import { Button } from "@/components/ui/button";
 
 export const BudgetTransition = () => {
   const navigate = useNavigate();
@@ -34,6 +33,7 @@ export const BudgetTransition = () => {
     showPartialDialog,
     showTransferDialog,
     isProcessing,
+    progress,
     setSelectedEnvelope,
     setShowPartialDialog,
     setShowTransferDialog,
@@ -67,6 +67,7 @@ export const BudgetTransition = () => {
 
   // Add debug logs
   console.log("BudgetTransition rendering with envelopes:", envelopes);
+  console.log("Processing status:", isProcessing, "Progress:", progress);
 
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
@@ -87,6 +88,7 @@ export const BudgetTransition = () => {
           onCancel={handleBack}
           onConfirm={handleConfirmClick}
           isProcessing={isProcessing}
+          progress={progress}
         />
       </div>
       

@@ -15,6 +15,7 @@ export const useTransition = (onComplete: () => void) => {
   const [showTransferDialog, setShowTransferDialog] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [preferencesLoaded, setPreferencesLoaded] = useState(false);
+  const [progress, setProgress] = useState<{ step: string; percentage: number } | null>(null);
 
   useEffect(() => {
     // Map budgets to envelopes format
@@ -181,6 +182,7 @@ export const useTransition = (onComplete: () => void) => {
 
   const handleTransitionConfirm = async () => {
     setIsProcessing(true);
+    setProgress({ step: "Démarrage", percentage: 5 });
     
     try {
       // Verify all transfer options have a target
@@ -191,6 +193,7 @@ export const useTransition = (onComplete: () => void) => {
       if (missingTargets.length > 0) {
         toast.error("Certains transferts n'ont pas de budget cible");
         setIsProcessing(false);
+        setProgress(null);
         return;
       }
       
@@ -202,6 +205,7 @@ export const useTransition = (onComplete: () => void) => {
       if (missingMultiTargets.length > 0) {
         toast.error("Certains transferts multiples n'ont pas de cibles");
         setIsProcessing(false);
+        setProgress(null);
         return;
       }
       
@@ -220,13 +224,24 @@ export const useTransition = (onComplete: () => void) => {
       
       console.log('Sending transition data:', transitionData);
       
+      // Monitor progress updates from the useTransitionProcessor
+      const progressInterval = setInterval(() => {
+        // This will be updated by the child hook
+      }, 500);
+      
       const success = await handleMonthTransition(transitionData);
       
+      clearInterval(progressInterval);
+      
       if (success) {
+        setProgress({ step: "Terminé", percentage: 100 });
         toast.success("Transition effectuée avec succès");
-        onComplete();
+        setTimeout(() => {
+          onComplete();
+        }, 1000);
       } else {
         toast.error("Échec de la transition");
+        setProgress(null);
       }
     } catch (error) {
       console.error("Erreur lors de la transition:", error);
@@ -242,6 +257,7 @@ export const useTransition = (onComplete: () => void) => {
     showPartialDialog,
     showTransferDialog,
     isProcessing,
+    progress,
     setSelectedEnvelope,
     setShowPartialDialog,
     setShowTransferDialog,

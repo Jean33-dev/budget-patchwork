@@ -4,10 +4,11 @@ import { useTransitionProcessor } from "./useTransitionProcessor";
 
 export const useTransitionHandling = (categories: any[], setCategories: (categories: any[]) => void) => {
   const { getTransitionPreferences } = useTransitionPreferences();
-  const { handleMonthTransition } = useTransitionProcessor(categories, setCategories);
+  const { handleMonthTransition, progress } = useTransitionProcessor(categories, setCategories);
 
   return {
     handleMonthTransition,
-    getTransitionPreferences
+    getTransitionPreferences,
+    progress
   };
 };
