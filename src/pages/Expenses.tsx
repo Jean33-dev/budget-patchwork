@@ -1,3 +1,4 @@
+
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ExpensesHeader } from "@/components/budget/ExpensesHeader";
 import { useExpenseManagement } from "@/hooks/useExpenseManagement";
@@ -6,7 +7,7 @@ import { ExpenseList } from "@/components/budget/ExpenseList";
 import { BudgetLoadingState } from "@/components/budget/BudgetLoadingState";
 import { ExpenseErrorState } from "@/components/budget/ExpenseErrorState";
 import { useEffect, useState } from "react";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RecurringExpenseGrid } from "@/components/recurring/RecurringExpenseGrid";
@@ -41,7 +42,9 @@ const Expenses = () => {
     isLoading: isRecurringLoading,
     handleAddExpense: handleAddRecurringExpense,
     handleDeleteExpense: handleDeleteRecurringExpense,
+    handleAddToCurrentMonth,
     getBudgetName,
+    currentDate,
   } = useRecurringExpenses();
   
   const [addRecurringDialogOpen, setAddRecurringDialogOpen] = useState(false);
@@ -130,6 +133,8 @@ const Expenses = () => {
               expenses={recurringExpenses}
               getBudgetName={getBudgetName}
               onDelete={handleDeleteRecurringExpense}
+              onAddToCurrentMonth={handleAddToCurrentMonth}
+              currentDate={currentDate}
             />
           )}
 

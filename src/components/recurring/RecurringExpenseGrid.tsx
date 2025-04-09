@@ -6,12 +6,16 @@ interface RecurringExpenseGridProps {
   expenses: Expense[];
   getBudgetName: (budgetId?: string) => string;
   onDelete: (id: string) => void;
+  onAddToCurrentMonth: (id: string) => void;
+  currentDate: string;
 }
 
 export const RecurringExpenseGrid = ({ 
   expenses,
   getBudgetName,
-  onDelete
+  onDelete,
+  onAddToCurrentMonth,
+  currentDate
 }: RecurringExpenseGridProps) => {
   return (
     <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
@@ -21,6 +25,8 @@ export const RecurringExpenseGrid = ({
           expense={expense}
           getBudgetName={getBudgetName}
           onDelete={onDelete}
+          onAddToCurrentMonth={onAddToCurrentMonth}
+          currentDate={currentDate}
         />
       ))}
     </div>

@@ -13,7 +13,9 @@ const RecurringExpenses = () => {
     isLoading,
     handleAddExpense,
     handleDeleteExpense,
+    handleAddToCurrentMonth,
     getBudgetName,
+    currentDate,
   } = useRecurringExpenses();
   
   const [addDialogOpen, setAddDialogOpen] = useState(false);
@@ -33,6 +35,8 @@ const RecurringExpenses = () => {
           expenses={recurringExpenses}
           getBudgetName={getBudgetName}
           onDelete={handleDeleteExpense}
+          onAddToCurrentMonth={handleAddToCurrentMonth}
+          currentDate={currentDate}
         />
       )}
 
