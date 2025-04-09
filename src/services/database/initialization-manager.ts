@@ -95,13 +95,24 @@ export class InitializationManager {
         
         // Ajouter des dépenses d'exemple liées aux budgets
         await this.adapter.run(
-          `INSERT OR IGNORE INTO expenses (id, title, budget, spent, type, linkedBudgetId, date)
+          `INSERT OR IGNORE INTO expenses (id, title, budget, spent, type, linkedBudgetId, date, isRecurring)
           VALUES 
-          ('exp_1', 'Courses Carrefour', 350.00, 0, 'expense', 'bud_1', ?),
-          ('exp_2', 'Courses Lidl', 250.00, 0, 'expense', 'bud_1', ?),
-          ('exp_3', 'Restaurant italien', 150.00, 0, 'expense', 'bud_4', ?),
-          ('exp_4', 'Vêtements', 100.00, 0, 'expense', 'bud_5', ?)`,
-          [currentDate, currentDate, currentDate, currentDate]
+          ('exp_1', 'Courses Carrefour', 350.00, 0, 'expense', 'bud_1', ?, 0),
+          ('exp_2', 'Courses Lidl', 250.00, 0, 'expense', 'bud_1', ?, 0),
+          ('exp_3', 'Restaurant italien', 150.00, 0, 'expense', 'bud_4', ?, 0),
+          ('exp_4', 'Vêtements', 100.00, 0, 'expense', 'bud_5', ?, 0),
+          ('exp_5', 'Loyer', 500.00, 0, 'expense', 'bud_1', ?, 1),
+          ('exp_6', 'Abonnement Transport', 75.00, 0, 'expense', 'bud_2', ?, 1)`,
+          [currentDate, currentDate, currentDate, currentDate, currentDate, currentDate]
+        );
+        
+        // Ajouter des revenus d'exemple
+        await this.adapter.run(
+          `INSERT OR IGNORE INTO incomes (id, title, budget, spent, type, date, isRecurring)
+          VALUES 
+          ('inc_1', 'Salaire', 2000.00, 2000.00, 'income', ?, 1),
+          ('inc_2', 'Prime', 500.00, 500.00, 'income', ?, 0)`,
+          [currentDate, currentDate]
         );
         
         console.log("Données d'exemple ajoutées avec succès");

@@ -15,29 +15,37 @@ export const useTransitionProcessor = (categories: any[], setCategories: (catego
       // Save preferences for next time
       saveTransitionPreferences(envelopes);
       
-      // Suppression de toutes les dépenses
+      // Récupérer toutes les dépenses et filtrer pour ne pas supprimer les récurrentes
       const expenses = await db.getExpenses();
-      console.log(`Suppression de ${expenses.length} dépenses`);
+      console.log(`Traitement de ${expenses.length} dépenses pour la transition`);
       
-      // Utiliser Promise.all pour supprimer toutes les dépenses en parallèle
+      // Filtrer pour ne garder que les dépenses non récurrentes à supprimer
+      const nonRecurringExpenses = expenses.filter(expense => !expense.isRecurring);
+      console.log(`Suppression de ${nonRecurringExpenses.length} dépenses non récurrentes`);
+      
+      // Supprimer uniquement les dépenses non récurrentes
       await Promise.all(
-        expenses.map(expense => db.deleteExpense(expense.id))
+        nonRecurringExpenses.map(expense => db.deleteExpense(expense.id))
       );
       
-      // Suppression de tous les revenus
+      // Récupérer tous les revenus et filtrer pour ne pas supprimer les récurrents
       const incomes = await db.getIncomes();
-      console.log(`Suppression de ${incomes.length} revenus`);
+      console.log(`Traitement de ${incomes.length} revenus pour la transition`);
       
-      // Utiliser Promise.all pour supprimer tous les revenus en parallèle
+      // Filtrer pour ne garder que les revenus non récurrents à supprimer
+      const nonRecurringIncomes = incomes.filter(income => !income.isRecurring);
+      console.log(`Suppression de ${nonRecurringIncomes.length} revenus non récurrents`);
+      
+      // Supprimer uniquement les revenus non récurrents
       await Promise.all(
-        incomes.map(income => db.deleteIncome(income.id))
+        nonRecurringIncomes.map(income => db.deleteIncome(income.id))
       );
       
-      console.log("Vérification après suppression:");
+      console.log("Vérification après suppression sélective:");
       const remainingExpenses = await db.getExpenses();
       const remainingIncomes = await db.getIncomes();
-      console.log(`Dépenses restantes: ${remainingExpenses.length}`);
-      console.log(`Revenus restants: ${remainingIncomes.length}`);
+      console.log(`Dépenses restantes: ${remainingExpenses.length} (dont récurrentes: ${remainingExpenses.filter(e => e.isRecurring).length})`);
+      console.log(`Revenus restants: ${remainingIncomes.length} (dont récurrents: ${remainingIncomes.filter(i => i.isRecurring).length})`);
       
       // Traitement des budgets pour la transition
       await processEnvelopeTransitions(envelopes);
@@ -47,7 +55,7 @@ export const useTransitionProcessor = (categories: any[], setCategories: (catego
       const updatedCategories = [...categories];
       
       for (let category of updatedCategories) {
-        // Réinitialiser le montant dépensé à 0 puisque toutes les dépenses ont été supprimées
+        // Réinitialiser le montant dépensé à 0 puisque toutes les dépenses non récurrentes ont été supprimées
         category.spent = 0;
         await db.updateCategory(category);
         console.log(`Catégorie ${category.name} mise à jour, dépenses réinitialisées à 0`);
@@ -58,7 +66,7 @@ export const useTransitionProcessor = (categories: any[], setCategories: (catego
 
       toast({
         title: "Transition effectuée",
-        description: "Les budgets ont été mis à jour pour le nouveau mois."
+        description: "Les budgets ont été mis à jour pour le nouveau mois. Les dépenses et revenus récurrents ont été préservés."
       });
     } catch (error) {
       console.error("Erreur lors de la transition:", error);
