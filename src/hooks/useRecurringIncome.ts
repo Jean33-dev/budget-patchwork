@@ -44,13 +44,19 @@ export const useRecurringIncome = () => {
   const handleAddIncome = async (newIncome: { 
     title: string; 
     budget: number; 
-    type: "income"; 
-    date: string 
+    type: "income" | "expense" | "budget"; 
+    date: string;
+    isRecurring?: boolean;
   }) => {
     try {
+      if (newIncome.type !== "income") {
+        throw new Error("Type must be 'income'");
+      }
+      
       const income = {
         id: Date.now().toString(),
         ...newIncome,
+        type: "income" as const,
         spent: newIncome.budget,
         isRecurring: true
       };
