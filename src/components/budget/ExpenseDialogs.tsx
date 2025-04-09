@@ -109,18 +109,23 @@ export const useExpenseDialogState = (
       return;
     }
     
-    const updatedExpense = {
-      ...selectedExpense,
-      title: String(editableTitle || "Sans titre"),
-      budget: Number(editableBudget) || 0,
-      spent: Number(editableBudget) || 0, // Pour une dépense, spent == budget
-      date: String(editableDate || new Date().toISOString().split('T')[0])
-    };
-    
-    console.log("handleConfirmEdit: Updated expense:", updatedExpense);
-    
-    onUpdateExpense(updatedExpense);
-    setIsEditDialogOpen(false);
+    try {
+      const updatedExpense = {
+        ...selectedExpense,
+        title: String(editableTitle || "Sans titre"),
+        budget: Number(editableBudget) || 0,
+        spent: Number(editableBudget) || 0, // Pour une dépense, spent == budget
+        date: String(editableDate || new Date().toISOString().split('T')[0])
+      };
+      
+      console.log("handleConfirmEdit: Updated expense:", updatedExpense);
+      
+      onUpdateExpense(updatedExpense);
+    } catch (error) {
+      console.error("Error updating expense:", error);
+    } finally {
+      setIsEditDialogOpen(false);
+    }
   }, [selectedExpense, editableTitle, editableBudget, editableDate, onUpdateExpense]);
 
   const handleConfirmDelete = useCallback(() => {
@@ -130,10 +135,15 @@ export const useExpenseDialogState = (
       return;
     }
     
-    console.log("handleConfirmDelete: Deleting expense:", selectedExpense.id);
-    
-    onDeleteExpense(String(selectedExpense.id));
-    setIsDeleteDialogOpen(false);
+    try {
+      console.log("handleConfirmDelete: Deleting expense:", selectedExpense.id);
+      
+      onDeleteExpense(String(selectedExpense.id));
+    } catch (error) {
+      console.error("Error deleting expense:", error);
+    } finally {
+      setIsDeleteDialogOpen(false);
+    }
   }, [selectedExpense, onDeleteExpense]);
 
   return {

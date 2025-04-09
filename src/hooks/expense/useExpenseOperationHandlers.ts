@@ -80,6 +80,7 @@ export const useExpenseOperationHandlers = (
         throw new Error("ID invalide pour la suppression");
       }
       
+      // Effectuer la suppression
       await db.deleteExpense(String(id));
       
       toast({
@@ -87,7 +88,12 @@ export const useExpenseOperationHandlers = (
         description: "Dépense supprimée avec succès"
       });
       
-      await loadData();
+      // Recharger les données - avec un petit délai pour s'assurer que la DB a terminé
+      setTimeout(async () => {
+        await loadData();
+        setIsProcessing(false);
+      }, 300);
+      
     } catch (error) {
       console.error("Error deleting expense:", error);
       toast({
@@ -95,7 +101,6 @@ export const useExpenseOperationHandlers = (
         title: "Erreur",
         description: "Impossible de supprimer la dépense"
       });
-    } finally {
       setIsProcessing(false);
     }
   }, [isProcessing, loadData, toast]);
@@ -135,7 +140,12 @@ export const useExpenseOperationHandlers = (
         description: "Dépense mise à jour avec succès"
       });
       
-      await loadData();
+      // Recharger les données - avec un petit délai pour s'assurer que la DB a terminé
+      setTimeout(async () => {
+        await loadData();
+        setIsProcessing(false);
+      }, 300);
+      
     } catch (error) {
       console.error("Error updating expense:", error);
       toast({
@@ -143,7 +153,6 @@ export const useExpenseOperationHandlers = (
         title: "Erreur",
         description: "Impossible de mettre à jour la dépense"
       });
-    } finally {
       setIsProcessing(false);
     }
   }, [isProcessing, loadData, toast]);
