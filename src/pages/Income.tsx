@@ -1,4 +1,3 @@
-
 import { AddEnvelopeDialog } from "@/components/budget/AddEnvelopeDialog";
 import { EditIncomeDialog } from "@/components/income/EditIncomeDialog";
 import { IncomeHeader } from "@/components/income/IncomeHeader";
@@ -10,11 +9,12 @@ import { RecurringIncomeGrid } from "@/components/recurring/RecurringIncomeGrid"
 import { RecurringIncomeEmptyState } from "@/components/recurring/RecurringIncomeEmptyState";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState } from "react";
+import { useToast } from "@/components/ui/use-toast";
 
 const Income = () => {
   const [activeTab, setActiveTab] = useState("ponctuel");
+  const { toast } = useToast();
   
-  // Gestion des revenus ponctuels
   const {
     envelopes: nonRecurringIncomes,
     addDialogOpen: addNonRecurringDialogOpen,
@@ -30,7 +30,6 @@ const Income = () => {
     isLoading: isNonRecurringLoading
   } = useIncomeManagement();
 
-  // Gestion des revenus récurrents
   const {
     recurringIncomes,
     isLoading: isRecurringLoading,
@@ -46,7 +45,24 @@ const Income = () => {
     handleIncomeClick: handleRecurringIncomeClick,
   } = useRecurringIncome();
 
-  // Filtrer seulement les revenus non récurrents
+  const handleAddRecurringIncomeWrapper = (income: {
+    title: string;
+    budget: number;
+    type: "income" | "expense" | "budget";
+    date: string;
+    isRecurring?: boolean;
+  }) => {
+    if (income.type === "income") {
+      handleAddRecurringIncome(income);
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Le type doit être 'income'"
+      });
+    }
+  };
+
   const filteredNonRecurringIncomes = nonRecurringIncomes.filter(income => !income.isRecurring);
 
   return (
@@ -59,7 +75,6 @@ const Income = () => {
           <TabsTrigger value="recurrent">Revenus récurrents</TabsTrigger>
         </TabsList>
 
-        {/* Onglet revenus ponctuels */}
         <TabsContent value="ponctuel" className="mt-4">
           {isNonRecurringLoading ? (
             <div className="text-center py-8">Chargement des revenus...</div>
@@ -89,7 +104,6 @@ const Income = () => {
           />
         </TabsContent>
 
-        {/* Onglet revenus récurrents */}
         <TabsContent value="recurrent" className="mt-4">
           {isRecurringLoading ? (
             <div className="text-center py-8">Chargement des revenus récurrents...</div>
@@ -107,7 +121,7 @@ const Income = () => {
             type="income"
             open={addRecurringDialogOpen}
             onOpenChange={setAddRecurringDialogOpen}
-            onAdd={handleAddRecurringIncome}
+            onAdd={handleAddRecurringIncomeWrapper}
             isRecurring={true}
           />
 

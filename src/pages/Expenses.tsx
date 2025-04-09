@@ -1,4 +1,3 @@
-
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ExpensesHeader } from "@/components/budget/ExpensesHeader";
 import { useExpenseManagement } from "@/hooks/useExpenseManagement";
@@ -62,6 +61,25 @@ const Expenses = () => {
     forceReload();
   };
 
+  const handleAddRecurringExpenseWrapper = (expense: { 
+    title: string; 
+    budget: number; 
+    type: "income" | "expense" | "budget";
+    linkedBudgetId?: string;
+    date: string;
+    isRecurring?: boolean;
+  }) => {
+    if (expense.type === "expense") {
+      handleAddRecurringExpense(expense);
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Le type doit être 'expense'"
+      });
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
       <ExpensesHeader onNavigate={navigate} />
@@ -119,7 +137,7 @@ const Expenses = () => {
             type="expense"
             open={addRecurringDialogOpen}
             onOpenChange={setAddRecurringDialogOpen}
-            onAdd={(expense) => handleAddRecurringExpense(expense)}
+            onAdd={handleAddRecurringExpenseWrapper}
             availableBudgets={recurringAvailableBudgets.map(budget => ({
               id: budget.id,
               title: budget.title,

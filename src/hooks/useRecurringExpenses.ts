@@ -40,14 +40,20 @@ export const useRecurringExpenses = () => {
   const handleAddExpense = async (newExpense: { 
     title: string; 
     budget: number; 
-    type: "expense";
+    type: "income" | "expense" | "budget";
     linkedBudgetId?: string;
     date: string;
+    isRecurring?: boolean;
   }) => {
     try {
+      if (newExpense.type !== "expense") {
+        throw new Error("Type must be 'expense'");
+      }
+      
       const expense = {
         id: Date.now().toString(),
         ...newExpense,
+        type: "expense" as const,
         spent: 0,
         isRecurring: true
       };
