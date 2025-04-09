@@ -43,11 +43,13 @@ const Expenses = () => {
     handleAddExpense: handleAddRecurringExpense,
     handleDeleteExpense: handleDeleteRecurringExpense,
     handleAddToCurrentMonth,
+    handleUpdateExpense: handleUpdateRecurringExpense,
     getBudgetName,
     currentDate,
   } = useRecurringExpenses();
   
   const [addRecurringDialogOpen, setAddRecurringDialogOpen] = useState(false);
+  const [editRecurringExpense, setEditRecurringExpense] = useState<any>(null);
 
   useEffect(() => {
     if (error && !isLoading && !isProcessing) {
@@ -83,13 +85,24 @@ const Expenses = () => {
     }
   };
 
+  const handleEditRecurringExpense = (expense: any) => {
+    setEditRecurringExpense(expense);
+    setAddRecurringDialogOpen(true);
+  };
+
+  useEffect(() => {
+    if (!addRecurringDialogOpen) {
+      setEditRecurringExpense(null);
+    }
+  }, [addRecurringDialogOpen]);
+
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
       <ExpensesHeader onNavigate={navigate} />
       
       <Tabs defaultValue="ponctuel" value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="ponctuel">Dépenses ponctuelles</TabsTrigger>
+          <TabsTrigger value="ponctuel">Dépenses du mois</TabsTrigger>
           <TabsTrigger value="recurrent">Dépenses récurrentes</TabsTrigger>
         </TabsList>
 
@@ -134,6 +147,7 @@ const Expenses = () => {
               getBudgetName={getBudgetName}
               onDelete={handleDeleteRecurringExpense}
               onAddToCurrentMonth={handleAddToCurrentMonth}
+              onEdit={handleEditRecurringExpense}
               currentDate={currentDate}
             />
           )}
@@ -142,12 +156,21 @@ const Expenses = () => {
             type="expense"
             open={addRecurringDialogOpen}
             onOpenChange={setAddRecurringDialogOpen}
-            onAdd={handleAddRecurringExpenseWrapper}
+            onAdd={editRecurringExpense ? 
+              (data) => handleUpdateRecurringExpense({...editRecurringExpense, ...data}) : 
+              handleAddRecurringExpenseWrapper}
             availableBudgets={recurringAvailableBudgets.map(budget => ({
               id: budget.id,
               title: budget.title,
             }))}
             isRecurring={true}
+            defaultValues={editRecurringExpense ? {
+              title: editRecurringExpense.title,
+              budget: editRecurringExpense.budget,
+              linkedBudgetId: editRecurringExpense.linkedBudgetId,
+              date: editRecurringExpense.date,
+            } : undefined}
+            dialogTitle={editRecurringExpense ? "Modifier la dépense récurrente" : "Ajouter une dépense récurrente"}
           />
         </TabsContent>
       </Tabs>

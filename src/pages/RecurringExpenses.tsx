@@ -5,6 +5,7 @@ import { AddEnvelopeDialog } from "@/components/budget/AddEnvelopeDialog";
 import { RecurringExpenseHeader } from "@/components/recurring/RecurringExpenseHeader";
 import { RecurringExpenseGrid } from "@/components/recurring/RecurringExpenseGrid";
 import { RecurringExpenseEmptyState } from "@/components/recurring/RecurringExpenseEmptyState";
+import { Expense } from "@/services/database/models/expense";
 
 const RecurringExpenses = () => {
   const {
@@ -12,6 +13,7 @@ const RecurringExpenses = () => {
     availableBudgets,
     isLoading,
     handleAddExpense,
+    handleUpdateExpense,
     handleDeleteExpense,
     handleAddToCurrentMonth,
     getBudgetName,
@@ -19,23 +21,36 @@ const RecurringExpenses = () => {
   } = useRecurringExpenses();
   
   const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [editExpense, setEditExpense] = useState<Expense | null>(null);
+
+  const handleEdit = (expense: Expense) => {
+    setEditExpense(expense);
+    setAddDialogOpen(true);
+  };
 
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
       <RecurringExpenseHeader
-        onAdd={() => setAddDialogOpen(true)}
+        onAdd={() => {
+          setEditExpense(null);
+          setAddDialogOpen(true);
+        }}
       />
 
       {isLoading ? (
         <div className="text-center py-8">Chargement des dépenses récurrentes...</div>
       ) : recurringExpenses.length === 0 ? (
-        <RecurringExpenseEmptyState onAddClick={() => setAddDialogOpen(true)} />
+        <RecurringExpenseEmptyState onAddClick={() => {
+          setEditExpense(null);
+          setAddDialogOpen(true);
+        }} />
       ) : (
         <RecurringExpenseGrid
           expenses={recurringExpenses}
           getBudgetName={getBudgetName}
           onDelete={handleDeleteExpense}
           onAddToCurrentMonth={handleAddToCurrentMonth}
+          onEdit={handleEdit}
           currentDate={currentDate}
         />
       )}
@@ -43,12 +58,25 @@ const RecurringExpenses = () => {
       <AddEnvelopeDialog
         type="expense"
         open={addDialogOpen}
-        onOpenChange={setAddDialogOpen}
-        onAdd={handleAddExpense}
+        onOpenChange={(open) => {
+          setAddDialogOpen(open);
+          if (!open) setEditExpense(null);
+        }}
+        onAdd={editExpense ? 
+          (data) => handleUpdateExpense({...editExpense, ...data}) : 
+          handleAddExpense}
         availableBudgets={availableBudgets.map(budget => ({
           id: budget.id,
           title: budget.title,
         }))}
+        isRecurring={true}
+        defaultValues={editExpense ? {
+          title: editExpense.title,
+          budget: editExpense.budget,
+          linkedBudgetId: editExpense.linkedBudgetId,
+          date: editExpense.date,
+        } : undefined}
+        dialogTitle={editExpense ? "Modifier la dépense récurrente" : "Ajouter une dépense récurrente"}
       />
     </div>
   );

@@ -78,6 +78,38 @@ export const useRecurringExpenses = () => {
     }
   };
 
+  const handleUpdateExpense = async (updatedExpense: Expense) => {
+    try {
+      // Ensure the expense is still recurring
+      const expense = {
+        ...updatedExpense,
+        isRecurring: true
+      };
+      
+      await db.updateExpense(expense);
+      
+      // Update the local state
+      setRecurringExpenses(prev => 
+        prev.map(item => item.id === expense.id ? expense : item)
+      );
+      
+      toast({
+        title: "Succès",
+        description: "Dépense récurrente mise à jour"
+      });
+      
+      return true;
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour de la dépense récurrente:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible de mettre à jour la dépense récurrente"
+      });
+      return false;
+    }
+  };
+
   const handleDeleteExpense = async (id: string) => {
     try {
       await db.deleteExpense(id);
@@ -131,6 +163,7 @@ export const useRecurringExpenses = () => {
     isLoading,
     loadData,
     handleAddExpense,
+    handleUpdateExpense,
     handleDeleteExpense,
     handleAddToCurrentMonth,
     getBudgetName,

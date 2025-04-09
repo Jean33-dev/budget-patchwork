@@ -9,6 +9,7 @@ interface RecurringExpenseCardProps {
   getBudgetName: (budgetId?: string) => string;
   onDelete: (id: string) => void;
   onAddToCurrentMonth: (id: string) => void;
+  onEdit: (expense: Expense) => void;
   currentDate: string;
 }
 
@@ -17,10 +18,15 @@ export const RecurringExpenseCard = ({
   getBudgetName,
   onDelete,
   onAddToCurrentMonth,
+  onEdit,
   currentDate,
 }: RecurringExpenseCardProps) => {
   return (
-    <Card key={expense.id} className="overflow-hidden">
+    <Card 
+      key={expense.id} 
+      className="overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
+      onClick={() => onEdit(expense)}
+    >
       <CardHeader className="bg-destructive/5 pb-2">
         <CardTitle className="flex justify-between items-center">
           <span className="truncate">{expense.title}</span>
@@ -44,14 +50,20 @@ export const RecurringExpenseCard = ({
         <Button 
           variant="destructive" 
           size="sm" 
-          onClick={() => onDelete(expense.id)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete(expense.id);
+          }}
         >
           Supprimer
         </Button>
         <Button
           variant="outline"
           size="sm"
-          onClick={() => onAddToCurrentMonth(expense.id)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onAddToCurrentMonth(expense.id);
+          }}
         >
           <Plus className="h-4 w-4 mr-1" /> Ajouter au mois
         </Button>
