@@ -3,72 +3,122 @@ import { AddEnvelopeDialog } from "@/components/budget/AddEnvelopeDialog";
 import { EditIncomeDialog } from "@/components/income/EditIncomeDialog";
 import { IncomeHeader } from "@/components/income/IncomeHeader";
 import { useIncomeManagement } from "@/hooks/useIncomeManagement";
-import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
-import { Clock } from "lucide-react";
+import { useRecurringIncome } from "@/hooks/useRecurringIncome";
 import { IncomeGrid } from "@/components/income/IncomeGrid";
 import { IncomeEmptyState } from "@/components/income/IncomeEmptyState";
+import { RecurringIncomeGrid } from "@/components/recurring/RecurringIncomeGrid";
+import { RecurringIncomeEmptyState } from "@/components/recurring/RecurringIncomeEmptyState";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useState } from "react";
 
 const Income = () => {
-  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState("ponctuel");
+  
+  // Gestion des revenus ponctuels
   const {
-    envelopes,
-    addDialogOpen,
-    setAddDialogOpen,
-    editDialogOpen,
-    setEditDialogOpen,
-    selectedIncome,
-    setSelectedIncome,
-    handleAddIncome,
-    handleEditIncome,
-    handleDeleteIncome,
-    handleIncomeClick,
-    isLoading
+    envelopes: nonRecurringIncomes,
+    addDialogOpen: addNonRecurringDialogOpen,
+    setAddDialogOpen: setAddNonRecurringDialogOpen,
+    editDialogOpen: editNonRecurringDialogOpen,
+    setEditDialogOpen: setEditNonRecurringDialogOpen,
+    selectedIncome: selectedNonRecurringIncome,
+    setSelectedIncome: setSelectedNonRecurringIncome,
+    handleAddIncome: handleAddNonRecurringIncome,
+    handleEditIncome: handleEditNonRecurringIncome,
+    handleDeleteIncome: handleDeleteNonRecurringIncome,
+    handleIncomeClick: handleNonRecurringIncomeClick,
+    isLoading: isNonRecurringLoading
   } = useIncomeManagement();
 
+  // Gestion des revenus récurrents
+  const {
+    recurringIncomes,
+    isLoading: isRecurringLoading,
+    addDialogOpen: addRecurringDialogOpen,
+    setAddDialogOpen: setAddRecurringDialogOpen,
+    editDialogOpen: editRecurringDialogOpen,
+    setEditDialogOpen: setEditRecurringDialogOpen,
+    selectedIncome: selectedRecurringIncome,
+    setSelectedIncome: setSelectedRecurringIncome,
+    handleAddIncome: handleAddRecurringIncome,
+    handleEditIncome: handleEditRecurringIncome,
+    handleDeleteIncome: handleDeleteRecurringIncome,
+    handleIncomeClick: handleRecurringIncomeClick,
+  } = useRecurringIncome();
+
   // Filtrer seulement les revenus non récurrents
-  const nonRecurringIncomes = envelopes.filter(income => !income.isRecurring);
+  const filteredNonRecurringIncomes = nonRecurringIncomes.filter(income => !income.isRecurring);
 
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <IncomeHeader title="Gestion des Revenus" />
-        <Button 
-          variant="outline" 
-          onClick={() => navigate('/dashboard/budget/recurring-income')}
-          className="flex items-center gap-2"
-        >
-          <Clock className="h-4 w-4" />
-          Revenus récurrents
-        </Button>
-      </div>
+      <IncomeHeader title="Gestion des Revenus" />
+      
+      <Tabs defaultValue="ponctuel" value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="ponctuel">Revenus ponctuels</TabsTrigger>
+          <TabsTrigger value="recurrent">Revenus récurrents</TabsTrigger>
+        </TabsList>
 
-      {isLoading ? (
-        <div className="text-center py-8">Chargement des revenus...</div>
-      ) : nonRecurringIncomes.length === 0 ? (
-        <IncomeEmptyState onAddClick={() => setAddDialogOpen(true)} />
-      ) : (
-        <IncomeGrid
-          incomes={nonRecurringIncomes}
-          onDelete={handleDeleteIncome}
-          onIncomeClick={handleIncomeClick}
-        />
-      )}
+        {/* Onglet revenus ponctuels */}
+        <TabsContent value="ponctuel" className="mt-4">
+          {isNonRecurringLoading ? (
+            <div className="text-center py-8">Chargement des revenus...</div>
+          ) : filteredNonRecurringIncomes.length === 0 ? (
+            <IncomeEmptyState onAddClick={() => setAddNonRecurringDialogOpen(true)} />
+          ) : (
+            <IncomeGrid
+              incomes={filteredNonRecurringIncomes}
+              onDelete={handleDeleteNonRecurringIncome}
+              onIncomeClick={handleNonRecurringIncomeClick}
+            />
+          )}
 
-      <AddEnvelopeDialog
-        type="income"
-        open={addDialogOpen}
-        onOpenChange={setAddDialogOpen}
-        onAdd={handleAddIncome}
-      />
+          <AddEnvelopeDialog
+            type="income"
+            open={addNonRecurringDialogOpen}
+            onOpenChange={setAddNonRecurringDialogOpen}
+            onAdd={handleAddNonRecurringIncome}
+          />
 
-      <EditIncomeDialog
-        open={editDialogOpen}
-        onOpenChange={setEditDialogOpen}
-        selectedIncome={selectedIncome}
-        setSelectedIncome={setSelectedIncome}
-        onEditIncome={handleEditIncome}
-      />
+          <EditIncomeDialog
+            open={editNonRecurringDialogOpen}
+            onOpenChange={setEditNonRecurringDialogOpen}
+            selectedIncome={selectedNonRecurringIncome}
+            setSelectedIncome={setSelectedNonRecurringIncome}
+            onEditIncome={handleEditNonRecurringIncome}
+          />
+        </TabsContent>
+
+        {/* Onglet revenus récurrents */}
+        <TabsContent value="recurrent" className="mt-4">
+          {isRecurringLoading ? (
+            <div className="text-center py-8">Chargement des revenus récurrents...</div>
+          ) : recurringIncomes.length === 0 ? (
+            <RecurringIncomeEmptyState onAddClick={() => setAddRecurringDialogOpen(true)} />
+          ) : (
+            <RecurringIncomeGrid
+              incomes={recurringIncomes}
+              onDelete={handleDeleteRecurringIncome}
+              onIncomeClick={handleRecurringIncomeClick}
+            />
+          )}
+
+          <AddEnvelopeDialog
+            type="income"
+            open={addRecurringDialogOpen}
+            onOpenChange={setAddRecurringDialogOpen}
+            onAdd={(income) => handleAddRecurringIncome({ ...income, isRecurring: true })}
+          />
+
+          <EditIncomeDialog
+            open={editRecurringDialogOpen}
+            onOpenChange={setEditRecurringDialogOpen}
+            selectedIncome={selectedRecurringIncome}
+            setSelectedIncome={setSelectedRecurringIncome}
+            onEditIncome={handleEditRecurringIncome}
+          />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

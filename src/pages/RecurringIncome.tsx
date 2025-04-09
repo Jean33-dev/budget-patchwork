@@ -1,4 +1,7 @@
 
+// Ce composant est maintenant intégré à la page Income.tsx
+// Il est conservé pour référence mais n'est plus utilisé directement
+
 import { useRecurringIncome } from "@/hooks/useRecurringIncome";
 import { RecurringIncomeHeader } from "@/components/recurring/RecurringIncomeHeader";
 import { RecurringIncomeEmptyState } from "@/components/recurring/RecurringIncomeEmptyState";
