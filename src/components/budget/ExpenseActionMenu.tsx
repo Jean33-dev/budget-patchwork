@@ -1,53 +1,24 @@
 
-import { 
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 
 interface ExpenseActionMenuProps {
-  onEditClick: (e: React.MouseEvent) => void;
   onDeleteClick: (e: React.MouseEvent) => void;
 }
 
-export const ExpenseActionMenu = ({ onEditClick, onDeleteClick }: ExpenseActionMenuProps) => {
+export const ExpenseActionMenu = ({ onDeleteClick }: ExpenseActionMenuProps) => {
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          className="h-8 w-8 p-0"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <span className="sr-only">Ouvrir le menu</span>
-          <MoreHorizontal className="h-4 w-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem 
-          onClick={(e) => {
-            e.stopPropagation();
-            onEditClick(e);
-          }}
-        >
-          <Pencil className="mr-2 h-4 w-4" />
-          <span>Modifier</span>
-        </DropdownMenuItem>
-        <DropdownMenuItem 
-          onClick={(e) => {
-            e.stopPropagation();
-            onDeleteClick(e);
-          }}
-          className="text-red-600"
-        >
-          <Trash2 className="mr-2 h-4 w-4" />
-          <span>Supprimer</span>
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <Button 
+      variant="ghost" 
+      size="sm" 
+      className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+      onClick={(e) => {
+        e.stopPropagation();
+        onDeleteClick(e);
+      }}
+    >
+      <span className="sr-only">Supprimer</span>
+      <Trash2 className="h-4 w-4" />
+    </Button>
   );
 };

@@ -67,7 +67,7 @@ export const ExpenseTable = ({
                 <TableHead className="hidden sm:table-cell">Date</TableHead>
                 <TableHead className="hidden sm:table-cell">Budget associé</TableHead>
                 <TableHead className="text-right">Montant</TableHead>
-                <TableHead className="w-[80px]">Actions</TableHead>
+                <TableHead className="w-[80px]"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

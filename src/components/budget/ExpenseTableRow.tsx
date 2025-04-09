@@ -44,12 +44,6 @@ export const ExpenseTableRow = ({
     onEditClick(envelope);
   };
 
-  const handleEditButtonClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    console.log("Edit button clicked for expense:", envelope);
-    onEditClick(envelope);
-  };
-
   const handleDeleteButtonClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     console.log("Delete button clicked for expense:", envelope);
@@ -95,7 +89,6 @@ export const ExpenseTableRow = ({
       </TableCell>
       <TableCell>
         <ExpenseActionMenu
-          onEditClick={handleEditButtonClick}
           onDeleteClick={handleDeleteButtonClick}
         />
       </TableCell>
