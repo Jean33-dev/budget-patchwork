@@ -5,11 +5,13 @@ import { RecurringIncomeCard } from "./RecurringIncomeCard";
 interface RecurringIncomeGridProps {
   incomes: Income[];
   onDelete: (id: string) => void;
+  onIncomeClick?: (income: Income) => void;
 }
 
 export const RecurringIncomeGrid = ({ 
   incomes,
-  onDelete
+  onDelete,
+  onIncomeClick
 }: RecurringIncomeGridProps) => {
   return (
     <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
@@ -18,6 +20,7 @@ export const RecurringIncomeGrid = ({
           key={income.id}
           income={income}
           onDelete={onDelete}
+          onClick={onIncomeClick ? () => onIncomeClick(income) : undefined}
         />
       ))}
     </div>

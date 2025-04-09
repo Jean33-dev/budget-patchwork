@@ -9,6 +9,15 @@ export const useRecurringIncome = () => {
   const [recurringIncomes, setRecurringIncomes] = useState<Income[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [selectedIncome, setSelectedIncome] = useState<{
+    id: string;
+    title: string;
+    budget: number;
+    type: "income";
+    date: string;
+    isRecurring?: boolean;
+  } | null>(null);
 
   useEffect(() => {
     loadRecurringIncomes();
@@ -65,6 +74,48 @@ export const useRecurringIncome = () => {
     }
   };
 
+  const handleEditIncome = async (editedIncome: { 
+    title: string; 
+    budget: number; 
+    type: "income"; 
+    date: string 
+  }) => {
+    if (!selectedIncome) return;
+
+    try {
+      const updatedIncome = {
+        ...selectedIncome,
+        title: editedIncome.title,
+        budget: editedIncome.budget,
+        spent: editedIncome.budget,
+        date: editedIncome.date,
+        isRecurring: true
+      };
+
+      await db.updateIncome(updatedIncome);
+      setRecurringIncomes(prev => prev.map(income => 
+        income.id === selectedIncome.id 
+          ? { ...income, ...updatedIncome }
+          : income
+      ));
+
+      setEditDialogOpen(false);
+      setSelectedIncome(null);
+      
+      toast({
+        title: "Succès",
+        description: "Revenu récurrent modifié"
+      });
+    } catch (error) {
+      console.error("Erreur lors de la modification du revenu récurrent:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible de modifier le revenu récurrent"
+      });
+    }
+  };
+
   const handleDeleteIncome = async (id: string) => {
     try {
       await db.deleteIncome(id);
@@ -84,13 +135,31 @@ export const useRecurringIncome = () => {
     }
   };
 
+  const handleIncomeClick = (income: Income) => {
+    setSelectedIncome({
+      id: income.id,
+      title: income.title,
+      budget: income.budget,
+      type: income.type,
+      date: income.date,
+      isRecurring: income.isRecurring
+    });
+    setEditDialogOpen(true);
+  };
+
   return {
     recurringIncomes,
     isLoading,
     addDialogOpen,
     setAddDialogOpen,
+    editDialogOpen,
+    setEditDialogOpen,
+    selectedIncome,
+    setSelectedIncome,
     loadRecurringIncomes,
     handleAddIncome,
-    handleDeleteIncome
+    handleEditIncome,
+    handleDeleteIncome,
+    handleIncomeClick
   };
 };

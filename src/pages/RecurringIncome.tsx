@@ -4,6 +4,7 @@ import { RecurringIncomeHeader } from "@/components/recurring/RecurringIncomeHea
 import { RecurringIncomeEmptyState } from "@/components/recurring/RecurringIncomeEmptyState";
 import { RecurringIncomeGrid } from "@/components/recurring/RecurringIncomeGrid";
 import { AddEnvelopeDialog } from "@/components/budget/AddEnvelopeDialog";
+import { EditIncomeDialog } from "@/components/income/EditIncomeDialog";
 
 const RecurringIncome = () => {
   const {
@@ -11,8 +12,14 @@ const RecurringIncome = () => {
     isLoading,
     addDialogOpen,
     setAddDialogOpen,
+    editDialogOpen,
+    setEditDialogOpen,
+    selectedIncome,
+    setSelectedIncome,
     handleAddIncome,
-    handleDeleteIncome
+    handleEditIncome,
+    handleDeleteIncome,
+    handleIncomeClick
   } = useRecurringIncome();
 
   return (
@@ -29,6 +36,7 @@ const RecurringIncome = () => {
         <RecurringIncomeGrid 
           incomes={recurringIncomes}
           onDelete={handleDeleteIncome}
+          onIncomeClick={handleIncomeClick}
         />
       )}
 
@@ -37,6 +45,14 @@ const RecurringIncome = () => {
         open={addDialogOpen}
         onOpenChange={setAddDialogOpen}
         onAdd={handleAddIncome}
+      />
+
+      <EditIncomeDialog
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        selectedIncome={selectedIncome}
+        setSelectedIncome={setSelectedIncome}
+        onEditIncome={handleEditIncome}
       />
     </div>
   );

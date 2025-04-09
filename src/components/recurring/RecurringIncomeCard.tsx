@@ -7,11 +7,12 @@ import { Income } from "@/services/database/models/income";
 interface RecurringIncomeCardProps {
   income: Income;
   onDelete: (id: string) => void;
+  onClick?: () => void;
 }
 
-export const RecurringIncomeCard = ({ income, onDelete }: RecurringIncomeCardProps) => {
+export const RecurringIncomeCard = ({ income, onDelete, onClick }: RecurringIncomeCardProps) => {
   return (
-    <Card className="overflow-hidden">
+    <Card className="overflow-hidden hover:shadow-md transition-all" onClick={onClick}>
       <CardHeader className="bg-primary/5 pb-2">
         <CardTitle className="flex justify-between items-center">
           <span className="truncate">{income.title}</span>
@@ -31,7 +32,10 @@ export const RecurringIncomeCard = ({ income, onDelete }: RecurringIncomeCardPro
         <Button 
           variant="destructive" 
           size="sm" 
-          onClick={() => onDelete(income.id)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete(income.id);
+          }}
         >
           Supprimer
         </Button>
