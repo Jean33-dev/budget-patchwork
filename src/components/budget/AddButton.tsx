@@ -9,13 +9,15 @@ interface AddButtonProps {
 
 export const AddButton = ({ onClick, label }: AddButtonProps) => {
   return (
-    <Button
-      onClick={onClick}
-      variant="ghost"
-      className="w-full justify-start py-6 border-b rounded-none hover:bg-slate-50"
-    >
-      <PlusCircle className="h-5 w-5 mr-2" />
-      {label}
-    </Button>
+    <div className="flex justify-center mb-4">
+      <Button
+        onClick={onClick}
+        variant="outline"
+        className="w-full max-w-md flex justify-center items-center py-2 border rounded"
+      >
+        <PlusCircle className="h-5 w-5 mr-2" />
+        {label}
+      </Button>
+    </div>
   );
 };
