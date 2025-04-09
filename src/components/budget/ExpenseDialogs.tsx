@@ -1,6 +1,5 @@
 
 import { useState, useCallback } from "react";
-import { DeleteExpenseDialog } from "./DeleteExpenseDialog";
 import { EditExpenseDialog } from "./EditExpenseDialog";
 
 interface Envelope {
@@ -30,11 +29,8 @@ interface ExpenseDialogsProps {
 }
 
 export const ExpenseDialogs = ({
-  isDeleteDialogOpen,
-  setIsDeleteDialogOpen,
   isEditDialogOpen,
   setIsEditDialogOpen,
-  onConfirmDelete,
   editableTitle,
   setEditableTitle,
   editableBudget,
@@ -45,12 +41,6 @@ export const ExpenseDialogs = ({
 }: ExpenseDialogsProps) => {
   return (
     <>
-      <DeleteExpenseDialog 
-        open={isDeleteDialogOpen}
-        onOpenChange={setIsDeleteDialogOpen}
-        onConfirm={onConfirmDelete}
-      />
-
       <EditExpenseDialog
         open={isEditDialogOpen}
         onOpenChange={setIsEditDialogOpen}
@@ -92,15 +82,15 @@ export const useExpenseDialogState = (
   }, []);
 
   const handleDeleteClick = useCallback((envelope: Envelope) => {
-    if (!envelope || !envelope.id) {
+    if (!envelope || !envelope.id || !onDeleteExpense) {
       console.error("Invalid expense data for delete");
       return;
     }
     
-    console.log("handleDeleteClick: Setting selected expense:", envelope);
-    setSelectedExpense(envelope);
-    setIsDeleteDialogOpen(true);
-  }, []);
+    console.log("handleDeleteClick: Deleting expense directly without confirmation:", envelope);
+    // Supprimer l'expense directement sans boîte de dialogue de confirmation
+    onDeleteExpense(String(envelope.id));
+  }, [onDeleteExpense]);
 
   const handleConfirmEdit = useCallback(() => {
     if (!selectedExpense || !selectedExpense.id || !onUpdateExpense) {

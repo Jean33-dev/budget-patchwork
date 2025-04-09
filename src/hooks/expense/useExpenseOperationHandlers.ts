@@ -86,7 +86,7 @@ export const useExpenseOperationHandlers = (
     }
     
     try {
-      // Effectuer la suppression
+      // Effectuer la suppression sans demander de confirmation
       await db.deleteExpense(String(id));
       
       toast({
@@ -103,7 +103,7 @@ export const useExpenseOperationHandlers = (
         } finally {
           setIsProcessing(false);
         }
-      }, 500);
+      }, 1000); // Augmenté à 1000ms pour s'assurer que l'opération soit bien terminée
       
     } catch (error) {
       console.error("Error deleting expense:", error);
@@ -166,7 +166,7 @@ export const useExpenseOperationHandlers = (
         } finally {
           setIsProcessing(false);
         }
-      }, 500);
+      }, 1000); // Augmenté à 1000ms pour s'assurer que l'opération soit bien terminée
       
     } catch (error) {
       console.error("Error updating expense:", error);
