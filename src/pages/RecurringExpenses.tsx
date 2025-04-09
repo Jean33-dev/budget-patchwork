@@ -97,23 +97,6 @@ const RecurringExpenses = () => {
     }
   };
 
-  const handleAddToCurrentMonth = async (expenseId: string) => {
-    try {
-      await db.copyRecurringExpenseToMonth(expenseId, currentDate);
-      toast({
-        title: "Succès",
-        description: "Dépense ajoutée au mois courant"
-      });
-    } catch (error) {
-      console.error("Erreur lors de l'ajout de la dépense au mois courant:", error);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Impossible d'ajouter la dépense au mois courant"
-      });
-    }
-  };
-
   const getBudgetName = (budgetId?: string) => {
     if (!budgetId) return "Aucun budget";
     const budget = availableBudgets.find(b => b.id === budgetId);
@@ -181,13 +164,6 @@ const RecurringExpenses = () => {
                   onClick={() => handleDeleteExpense(expense.id)}
                 >
                   Supprimer
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => handleAddToCurrentMonth(expense.id)}
-                >
-                  Ajouter au mois courant
                 </Button>
               </CardFooter>
             </Card>

@@ -92,23 +92,6 @@ const RecurringIncome = () => {
     }
   };
 
-  const handleAddToCurrentMonth = async (incomeId: string) => {
-    try {
-      await db.copyRecurringIncomeToMonth(incomeId, currentDate);
-      toast({
-        title: "Succès",
-        description: "Revenu ajouté au mois courant"
-      });
-    } catch (error) {
-      console.error("Erreur lors de l'ajout du revenu au mois courant:", error);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Impossible d'ajouter le revenu au mois courant"
-      });
-    }
-  };
-
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -166,13 +149,6 @@ const RecurringIncome = () => {
                   onClick={() => handleDeleteIncome(income.id)}
                 >
                   Supprimer
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => handleAddToCurrentMonth(income.id)}
-                >
-                  Ajouter au mois courant
                 </Button>
               </CardFooter>
             </Card>
