@@ -72,14 +72,20 @@ export const useExpenseOperationHandlers = (
       return;
     }
 
+    setIsProcessing(true);
+    console.log(`handleDeleteExpense: Starting with ID: ${id}`);
+    
+    if (!id) {
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "ID invalide pour la suppression"
+      });
+      setIsProcessing(false);
+      return;
+    }
+    
     try {
-      setIsProcessing(true);
-      console.log(`handleDeleteExpense: Starting with ID: ${id}`);
-      
-      if (!id) {
-        throw new Error("ID invalide pour la suppression");
-      }
-      
       // Effectuer la suppression
       await db.deleteExpense(String(id));
       
@@ -88,11 +94,16 @@ export const useExpenseOperationHandlers = (
         description: "Dépense supprimée avec succès"
       });
       
-      // Recharger les données - avec un petit délai pour s'assurer que la DB a terminé
+      // Attendre un court instant avant de recharger les données
       setTimeout(async () => {
-        await loadData();
-        setIsProcessing(false);
-      }, 300);
+        try {
+          await loadData();
+        } catch (reloadError) {
+          console.error("Error reloading data after delete:", reloadError);
+        } finally {
+          setIsProcessing(false);
+        }
+      }, 500);
       
     } catch (error) {
       console.error("Error deleting expense:", error);
@@ -115,14 +126,20 @@ export const useExpenseOperationHandlers = (
       return;
     }
 
+    setIsProcessing(true);
+    console.log("handleUpdateExpense: Starting with data:", expense);
+    
+    if (!expense || !expense.id) {
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Données de dépense invalides"
+      });
+      setIsProcessing(false);
+      return;
+    }
+    
     try {
-      setIsProcessing(true);
-      console.log("handleUpdateExpense: Starting with data:", expense);
-      
-      if (!expense || !expense.id) {
-        throw new Error("Données de dépense invalides pour la mise à jour");
-      }
-      
       const validatedExpense: Expense = {
         id: String(expense.id),
         title: String(expense.title || "Sans titre"),
@@ -140,11 +157,16 @@ export const useExpenseOperationHandlers = (
         description: "Dépense mise à jour avec succès"
       });
       
-      // Recharger les données - avec un petit délai pour s'assurer que la DB a terminé
+      // Attendre un court instant avant de recharger les données
       setTimeout(async () => {
-        await loadData();
-        setIsProcessing(false);
-      }, 300);
+        try {
+          await loadData();
+        } catch (reloadError) {
+          console.error("Error reloading data after update:", reloadError);
+        } finally {
+          setIsProcessing(false);
+        }
+      }, 500);
       
     } catch (error) {
       console.error("Error updating expense:", error);
