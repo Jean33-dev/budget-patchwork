@@ -1,4 +1,3 @@
-
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ExpensesHeader } from "@/components/budget/ExpensesHeader";
 import { useExpenseManagement } from "@/hooks/useExpenseManagement";
@@ -21,7 +20,6 @@ const Expenses = () => {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("ponctuel");
   
-  // Dépenses ponctuelles
   const {
     expenses,
     availableBudgets,
@@ -37,7 +35,6 @@ const Expenses = () => {
     initAttempted
   } = useExpenseManagement(budgetId);
 
-  // Dépenses récurrentes
   const {
     recurringExpenses,
     availableBudgets: recurringAvailableBudgets,
@@ -49,7 +46,6 @@ const Expenses = () => {
   
   const [addRecurringDialogOpen, setAddRecurringDialogOpen] = useState(false);
 
-  // Effet pour surveiller les erreurs
   useEffect(() => {
     if (error && !isLoading && !isProcessing) {
       console.error("Erreur détectée dans la page Expenses:", error);
@@ -61,7 +57,6 @@ const Expenses = () => {
     }
   }, [error, isLoading, isProcessing, toast]);
 
-  // Fonction de retry simplifiée
   const handleRetry = async () => {
     forceReload();
   };
@@ -76,7 +71,6 @@ const Expenses = () => {
           <TabsTrigger value="recurrent">Dépenses récurrentes</TabsTrigger>
         </TabsList>
 
-        {/* Onglet dépenses ponctuelles */}
         <TabsContent value="ponctuel" className="mt-4">
           {isLoading && (
             <BudgetLoadingState attempt={1} maxAttempts={1} />
@@ -107,7 +101,6 @@ const Expenses = () => {
           )}
         </TabsContent>
 
-        {/* Onglet dépenses récurrentes */}
         <TabsContent value="recurrent" className="mt-4">
           {isRecurringLoading ? (
             <div className="text-center py-8">Chargement des dépenses récurrentes...</div>

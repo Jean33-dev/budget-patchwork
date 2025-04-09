@@ -13,6 +13,7 @@ interface AddEnvelopeDialogProps {
     type: "income" | "expense" | "budget";
     linkedBudgetId?: string;
     date: string;
+    isRecurring?: boolean;
   }) => void;
   availableBudgets?: Array<{ id: string; title: string }>;
   defaultBudgetId?: string;
