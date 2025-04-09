@@ -14,6 +14,7 @@ import { RecurringExpenseGrid } from "@/components/recurring/RecurringExpenseGri
 import { RecurringExpenseEmptyState } from "@/components/recurring/RecurringExpenseEmptyState";
 import { AddEnvelopeDialog } from "@/components/budget/AddEnvelopeDialog";
 import { Expense } from "@/services/database/models/expense";
+import { AddButton } from "@/components/budget/AddButton";
 
 const Expenses = () => {
   const navigate = useNavigate();
@@ -106,6 +107,11 @@ const Expenses = () => {
     }
   }, [addRecurringDialogOpen]);
 
+  const openAddRecurringDialog = () => {
+    setEditRecurringExpense(null);
+    setAddRecurringDialogOpen(true);
+  };
+
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
       <ExpensesHeader onNavigate={navigate} />
@@ -147,10 +153,15 @@ const Expenses = () => {
         </TabsContent>
 
         <TabsContent value="recurrent" className="mt-4">
+          <AddButton
+            onClick={openAddRecurringDialog}
+            label="Ajouter une dépense récurrente"
+          />
+
           {isRecurringLoading ? (
             <div className="text-center py-8">Chargement des dépenses récurrentes...</div>
           ) : recurringExpenses.length === 0 ? (
-            <RecurringExpenseEmptyState onAddClick={() => setAddRecurringDialogOpen(true)} />
+            <RecurringExpenseEmptyState onAddClick={openAddRecurringDialog} />
           ) : (
             <RecurringExpenseGrid
               expenses={recurringExpenses}

@@ -1,3 +1,4 @@
+
 import { AddEnvelopeDialog } from "@/components/budget/AddEnvelopeDialog";
 import { EditIncomeDialog } from "@/components/income/EditIncomeDialog";
 import { IncomeHeader } from "@/components/income/IncomeHeader";
@@ -10,6 +11,7 @@ import { RecurringIncomeEmptyState } from "@/components/recurring/RecurringIncom
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
+import { AddButton } from "@/components/budget/AddButton";
 
 const Income = () => {
   const [activeTab, setActiveTab] = useState("ponctuel");
@@ -76,6 +78,11 @@ const Income = () => {
         </TabsList>
 
         <TabsContent value="ponctuel" className="mt-4">
+          <AddButton
+            onClick={() => setAddNonRecurringDialogOpen(true)}
+            label="Ajouter un revenu ponctuel"
+          />
+
           {isNonRecurringLoading ? (
             <div className="text-center py-8">Chargement des revenus...</div>
           ) : filteredNonRecurringIncomes.length === 0 ? (
@@ -105,6 +112,11 @@ const Income = () => {
         </TabsContent>
 
         <TabsContent value="recurrent" className="mt-4">
+          <AddButton
+            onClick={() => setAddRecurringDialogOpen(true)}
+            label="Ajouter un revenu récurrent"
+          />
+
           {isRecurringLoading ? (
             <div className="text-center py-8">Chargement des revenus récurrents...</div>
           ) : recurringIncomes.length === 0 ? (
