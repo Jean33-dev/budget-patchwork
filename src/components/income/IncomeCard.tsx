@@ -14,15 +14,15 @@ export const IncomeCard = ({ income, onDelete, onClick }: IncomeCardProps) => {
   return (
     <Card className="overflow-hidden hover:shadow-md transition-all" onClick={onClick}>
       <CardHeader className="bg-primary/5 pb-2">
-        <CardTitle className="flex justify-between items-center">
-          <span className="truncate">{income.title}</span>
-          <span className="text-lg font-semibold">{income.budget.toFixed(2)} €</span>
+        <CardTitle className="flex justify-between items-start gap-2">
+          <span className="text-base leading-tight break-words line-clamp-2">{income.title}</span>
+          <span className="text-lg font-semibold whitespace-nowrap shrink-0">{income.budget.toFixed(2)} €</span>
         </CardTitle>
       </CardHeader>
       <CardContent className="pt-4">
         <div className="flex items-center justify-between text-sm text-muted-foreground">
           <div className="flex items-center">
-            <Calendar className="h-4 w-4 mr-1" />
+            <Calendar className="h-4 w-4 mr-1 shrink-0" />
             {income.date}
           </div>
           <div>{income.isRecurring ? "Revenu récurrent" : "Revenu ponctuel"}</div>
