@@ -13,7 +13,7 @@ export const AddButton = ({ onClick, label }: AddButtonProps) => {
       <Button
         onClick={onClick}
         variant="outline"
-        className="w-full max-w-md flex justify-center items-center py-2 border rounded"
+        className="w-full flex justify-center items-center py-2 border rounded"
       >
         <PlusCircle className="h-5 w-5 mr-2" />
         {label}
