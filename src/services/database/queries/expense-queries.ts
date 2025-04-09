@@ -22,6 +22,23 @@ export const expenseQueries = {
         return [];
       }
       
+      // Check if isRecurring column exists
+      let hasIsRecurringColumn = false;
+      try {
+        // Try to query for the column in the table info
+        const tableInfo = db.exec("PRAGMA table_info(expenses)");
+        if (tableInfo && tableInfo.length > 0 && tableInfo[0].values) {
+          hasIsRecurringColumn = tableInfo[0].values.some((col: any) => col[1] === 'isRecurring');
+        }
+        
+        if (!hasIsRecurringColumn) {
+          console.log("Adding isRecurring column to expenses table");
+          db.exec("ALTER TABLE expenses ADD COLUMN isRecurring INTEGER DEFAULT 0");
+        }
+      } catch (e) {
+        console.error("Error checking or adding isRecurring column:", e);
+      }
+      
       const result = db.exec('SELECT * FROM expenses');
       if (!result || result.length === 0 || !result[0]?.values) {
         return [];
@@ -37,7 +54,7 @@ export const expenseQueries = {
           type: 'expense' as const,
           linkedBudgetId: row[5] ? String(row[5]) : null,
           date: String(row[6] || new Date().toISOString().split('T')[0]),
-          isRecurring: Boolean(row[7])
+          isRecurring: hasIsRecurringColumn ? Boolean(row[7]) : false
         };
       });
       
@@ -53,6 +70,25 @@ export const expenseQueries = {
       if (!db) {
         console.error("Database is null in expenseQueries.getRecurring");
         return [];
+      }
+      
+      // Check if isRecurring column exists
+      let hasIsRecurringColumn = false;
+      try {
+        // Try to query for the column in the table info
+        const tableInfo = db.exec("PRAGMA table_info(expenses)");
+        if (tableInfo && tableInfo.length > 0 && tableInfo[0].values) {
+          hasIsRecurringColumn = tableInfo[0].values.some((col: any) => col[1] === 'isRecurring');
+        }
+        
+        if (!hasIsRecurringColumn) {
+          console.log("Adding isRecurring column to expenses table");
+          db.exec("ALTER TABLE expenses ADD COLUMN isRecurring INTEGER DEFAULT 0");
+          return []; // Return empty list since we just created the column
+        }
+      } catch (e) {
+        console.error("Error checking or adding isRecurring column:", e);
+        throw e; // Rethrow to handle in the outer catch
       }
       
       const result = db.exec('SELECT * FROM expenses WHERE isRecurring = 1');
@@ -76,7 +112,7 @@ export const expenseQueries = {
       return expenses;
     } catch (error) {
       console.error("Erreur lors de la récupération des dépenses récurrentes:", error);
-      return [];
+      throw error; // Rethrow to handle in the outer try/catch
     }
   },
   

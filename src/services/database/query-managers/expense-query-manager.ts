@@ -44,9 +44,24 @@ export class ExpenseQueryManager extends BaseQueryManager {
         console.error("ExpenseQueryManager.getRecurring: Database is null");
         return [];
       }
-      const result = expenseQueries.getRecurring(db);
-      console.log(`ExpenseQueryManager.getRecurring: Got ${result.length} recurring expenses`);
-      return result;
+      
+      // First try to get recurring expenses using the isRecurring column
+      try {
+        const result = expenseQueries.getRecurring(db);
+        console.log(`ExpenseQueryManager.getRecurring: Got ${result.length} recurring expenses`);
+        return result;
+      } catch (error) {
+        // If the column doesn't exist, try to create it and return an empty array for now
+        console.log("ExpenseQueryManager.getRecurring: Adding isRecurring column to expenses table");
+        try {
+          db.exec("ALTER TABLE expenses ADD COLUMN isRecurring INTEGER DEFAULT 0");
+          console.log("ExpenseQueryManager.getRecurring: Column added successfully");
+          return [];
+        } catch (alterError) {
+          console.error("Error adding isRecurring column:", alterError);
+          return [];
+        }
+      }
     } catch (error) {
       console.error("Error getting recurring expenses:", error);
       return [];
