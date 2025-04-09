@@ -6,18 +6,18 @@ import { Calendar, Plus, Wallet } from "lucide-react";
 
 interface RecurringExpenseCardProps {
   expense: Expense;
-  getBudgetName: (budgetId?: string) => string;
-  onDelete: (id: string) => void;
-  onAddToCurrentMonth: (id: string) => void;
-  onEdit: (expense: Expense) => void;
+  budgetName: string;
+  onDelete: () => void;
+  onAddToMonth: () => Promise<boolean>;
+  onEdit: () => void;
   currentDate: string;
 }
 
 export const RecurringExpenseCard = ({
   expense,
-  getBudgetName,
+  budgetName,
   onDelete,
-  onAddToCurrentMonth,
+  onAddToMonth,
   onEdit,
   currentDate,
 }: RecurringExpenseCardProps) => {
@@ -25,7 +25,7 @@ export const RecurringExpenseCard = ({
     <Card 
       key={expense.id} 
       className="overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
-      onClick={() => onEdit(expense)}
+      onClick={() => onEdit()}
     >
       <CardHeader className="bg-destructive/5 pb-2">
         <CardTitle className="flex justify-between items-center">
@@ -41,7 +41,7 @@ export const RecurringExpenseCard = ({
           </div>
           <div className="flex items-center">
             <Wallet className="h-4 w-4 mr-1" />
-            {getBudgetName(expense.linkedBudgetId)}
+            {budgetName}
           </div>
           <div>Dépense récurrente</div>
         </div>
@@ -52,7 +52,7 @@ export const RecurringExpenseCard = ({
           size="sm" 
           onClick={(e) => {
             e.stopPropagation();
-            onDelete(expense.id);
+            onDelete();
           }}
         >
           Supprimer
@@ -62,7 +62,7 @@ export const RecurringExpenseCard = ({
           size="sm"
           onClick={(e) => {
             e.stopPropagation();
-            onAddToCurrentMonth(expense.id);
+            onAddToMonth();
           }}
         >
           <Plus className="h-4 w-4 mr-1" /> Ajouter au mois
