@@ -26,7 +26,8 @@ export class InitializationManager {
         budget REAL DEFAULT 0,
         spent REAL DEFAULT 0,
         type TEXT,
-        date TEXT
+        date TEXT,
+        isRecurring INTEGER DEFAULT 0
       )`,
       
       // Table des dépenses
@@ -37,7 +38,8 @@ export class InitializationManager {
         spent REAL DEFAULT 0,
         type TEXT,
         linkedBudgetId TEXT,
-        date TEXT
+        date TEXT,
+        isRecurring INTEGER DEFAULT 0
       )`,
       
       // Table des budgets
