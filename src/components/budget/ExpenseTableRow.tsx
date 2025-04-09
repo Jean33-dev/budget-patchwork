@@ -40,7 +40,8 @@ export const ExpenseTableRow = ({
 
   const handleRowClick = () => {
     console.log("Row clicked for expense:", envelope);
-    onEnvelopeClick(envelope);
+    // Now when a row is clicked, we directly open the edit dialog
+    onEditClick(envelope);
   };
 
   const handleEditButtonClick = (e: React.MouseEvent) => {

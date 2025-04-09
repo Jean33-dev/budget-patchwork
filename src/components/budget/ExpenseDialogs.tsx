@@ -14,11 +14,8 @@ interface Envelope {
 
 interface ExpenseDialogsProps {
   selectedExpense: Envelope | null;
-  isDeleteDialogOpen: boolean;
-  setIsDeleteDialogOpen: (open: boolean) => void;
   isEditDialogOpen: boolean;
   setIsEditDialogOpen: (open: boolean) => void;
-  onConfirmDelete: () => void;
   editableTitle: string;
   setEditableTitle: (title: string) => void;
   editableBudget: number;
@@ -61,7 +58,6 @@ export const useExpenseDialogState = (
   onDeleteExpense: ((id: string) => void) | undefined
 ) => {
   const [selectedExpense, setSelectedExpense] = useState<Envelope | null>(null);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editableTitle, setEditableTitle] = useState("");
   const [editableBudget, setEditableBudget] = useState(0);
@@ -118,29 +114,9 @@ export const useExpenseDialogState = (
     }
   }, [selectedExpense, editableTitle, editableBudget, editableDate, onUpdateExpense]);
 
-  const handleConfirmDelete = useCallback(() => {
-    if (!selectedExpense || !selectedExpense.id || !onDeleteExpense) {
-      console.error("Cannot delete expense: missing data or delete handler");
-      setIsDeleteDialogOpen(false);
-      return;
-    }
-    
-    try {
-      console.log("handleConfirmDelete: Deleting expense:", selectedExpense.id);
-      
-      onDeleteExpense(String(selectedExpense.id));
-    } catch (error) {
-      console.error("Error deleting expense:", error);
-    } finally {
-      setIsDeleteDialogOpen(false);
-    }
-  }, [selectedExpense, onDeleteExpense]);
-
   return {
     selectedExpense,
     setSelectedExpense,
-    isDeleteDialogOpen,
-    setIsDeleteDialogOpen,
     isEditDialogOpen,
     setIsEditDialogOpen,
     editableTitle,
@@ -151,7 +127,6 @@ export const useExpenseDialogState = (
     setEditableDate,
     handleEditClick,
     handleDeleteClick,
-    handleConfirmEdit,
-    handleConfirmDelete
+    handleConfirmEdit
   };
 };
