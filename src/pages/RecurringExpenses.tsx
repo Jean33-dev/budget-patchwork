@@ -28,6 +28,27 @@ const RecurringExpenses = () => {
     setAddDialogOpen(true);
   };
 
+  // Wrapper function to handle updating expenses with proper type
+  const handleUpdateExpenseWrapper = (data: Expense) => {
+    if (data.type === "expense") {
+      handleUpdateExpense(data);
+    }
+  };
+
+  // Wrapper function to handle adding expenses with proper type
+  const handleAddExpenseWrapper = (data: { 
+    title: string; 
+    budget: number; 
+    type: "income" | "expense" | "budget";
+    linkedBudgetId?: string;
+    date: string;
+    isRecurring?: boolean;
+  }) => {
+    if (data.type === "expense") {
+      handleAddExpense(data);
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
       <RecurringExpenseHeader
@@ -63,8 +84,8 @@ const RecurringExpenses = () => {
           if (!open) setEditExpense(null);
         }}
         onAdd={editExpense ? 
-          (data) => handleUpdateExpense({...editExpense, ...data}) : 
-          handleAddExpense}
+          (data) => handleUpdateExpenseWrapper({...editExpense, ...data} as Expense) : 
+          handleAddExpenseWrapper}
         availableBudgets={availableBudgets.map(budget => ({
           id: budget.id,
           title: budget.title,

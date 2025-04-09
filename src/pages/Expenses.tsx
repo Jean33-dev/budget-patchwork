@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RecurringExpenseGrid } from "@/components/recurring/RecurringExpenseGrid";
 import { RecurringExpenseEmptyState } from "@/components/recurring/RecurringExpenseEmptyState";
 import { AddEnvelopeDialog } from "@/components/budget/AddEnvelopeDialog";
+import { Expense } from "@/services/database/models/expense";
 
 const Expenses = () => {
   const navigate = useNavigate();
@@ -49,7 +50,7 @@ const Expenses = () => {
   } = useRecurringExpenses();
   
   const [addRecurringDialogOpen, setAddRecurringDialogOpen] = useState(false);
-  const [editRecurringExpense, setEditRecurringExpense] = useState<any>(null);
+  const [editRecurringExpense, setEditRecurringExpense] = useState<Expense | null>(null);
 
   useEffect(() => {
     if (error && !isLoading && !isProcessing) {
@@ -66,6 +67,7 @@ const Expenses = () => {
     forceReload();
   };
 
+  // Wrapper function for type safety
   const handleAddRecurringExpenseWrapper = (expense: { 
     title: string; 
     budget: number; 
@@ -85,9 +87,17 @@ const Expenses = () => {
     }
   };
 
-  const handleEditRecurringExpense = (expense: any) => {
+  // Wrapper function for type safety
+  const handleEditRecurringExpense = (expense: Expense) => {
     setEditRecurringExpense(expense);
     setAddRecurringDialogOpen(true);
+  };
+
+  // Wrapper function for type safety
+  const handleUpdateRecurringExpenseWrapper = (data: Expense) => {
+    if (data.type === "expense") {
+      handleUpdateRecurringExpense(data);
+    }
   };
 
   useEffect(() => {
@@ -157,7 +167,7 @@ const Expenses = () => {
             open={addRecurringDialogOpen}
             onOpenChange={setAddRecurringDialogOpen}
             onAdd={editRecurringExpense ? 
-              (data) => handleUpdateRecurringExpense({...editRecurringExpense, ...data}) : 
+              (data) => handleUpdateRecurringExpenseWrapper({...editRecurringExpense, ...data} as Expense) : 
               handleAddRecurringExpenseWrapper}
             availableBudgets={recurringAvailableBudgets.map(budget => ({
               id: budget.id,

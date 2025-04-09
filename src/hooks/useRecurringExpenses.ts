@@ -50,10 +50,10 @@ export const useRecurringExpenses = () => {
         throw new Error("Type must be 'expense'");
       }
       
-      const expense = {
+      const expense: Expense = {
         id: Date.now().toString(),
         ...newExpense,
-        type: "expense" as const,
+        type: "expense",
         spent: 0,
         isRecurring: true
       };
@@ -81,8 +81,9 @@ export const useRecurringExpenses = () => {
   const handleUpdateExpense = async (updatedExpense: Expense) => {
     try {
       // Ensure the expense is still recurring
-      const expense = {
+      const expense: Expense = {
         ...updatedExpense,
+        type: "expense",
         isRecurring: true
       };
       

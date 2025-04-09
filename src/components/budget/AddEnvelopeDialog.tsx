@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { EnvelopeForm } from "./EnvelopeForm";
 
@@ -18,6 +18,13 @@ interface AddEnvelopeDialogProps {
   availableBudgets?: Array<{ id: string; title: string }>;
   defaultBudgetId?: string;
   isRecurring?: boolean;
+  dialogTitle?: string;
+  defaultValues?: {
+    title: string;
+    budget: number;
+    linkedBudgetId?: string;
+    date: string;
+  };
 }
 
 export const AddEnvelopeDialog = ({ 
@@ -27,12 +34,29 @@ export const AddEnvelopeDialog = ({
   onAdd,
   availableBudgets = [],
   defaultBudgetId,
-  isRecurring = false
+  isRecurring = false,
+  dialogTitle,
+  defaultValues
 }: AddEnvelopeDialogProps) => {
-  const [title, setTitle] = useState("");
-  const [budget, setBudget] = useState(0);
-  const [linkedBudgetId, setLinkedBudgetId] = useState(defaultBudgetId || "");
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [title, setTitle] = useState(defaultValues?.title || "");
+  const [budget, setBudget] = useState(defaultValues?.budget || 0);
+  const [linkedBudgetId, setLinkedBudgetId] = useState(defaultValues?.linkedBudgetId || defaultBudgetId || "");
+  const [date, setDate] = useState(defaultValues?.date || new Date().toISOString().split('T')[0]);
+
+  // Update form when defaultValues changes
+  useEffect(() => {
+    if (defaultValues) {
+      setTitle(defaultValues.title || "");
+      setBudget(defaultValues.budget || 0);
+      setLinkedBudgetId(defaultValues.linkedBudgetId || defaultBudgetId || "");
+      setDate(defaultValues.date || new Date().toISOString().split('T')[0]);
+    } else {
+      setTitle("");
+      setBudget(0);
+      setLinkedBudgetId(defaultBudgetId || "");
+      setDate(new Date().toISOString().split('T')[0]);
+    }
+  }, [defaultValues, defaultBudgetId, open]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,6 +75,7 @@ export const AddEnvelopeDialog = ({
       isRecurring
     });
     
+    // Reset form fields after submission
     setTitle("");
     setBudget(0);
     setLinkedBudgetId(defaultBudgetId || "");
@@ -71,13 +96,17 @@ export const AddEnvelopeDialog = ({
     }
   };
 
+  const getDialogTitle = () => {
+    if (dialogTitle) return dialogTitle;
+    return `Ajouter un nouveau ${getTypeLabel(type)}${isRecurring ? " récurrent" : ""}`;
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            Ajouter un nouveau {getTypeLabel(type)}
-            {isRecurring ? " récurrent" : ""}
+            {getDialogTitle()}
           </DialogTitle>
         </DialogHeader>
         <EnvelopeForm
