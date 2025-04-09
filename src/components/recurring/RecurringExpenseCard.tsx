@@ -28,20 +28,20 @@ export const RecurringExpenseCard = ({
       onClick={() => onEdit()}
     >
       <CardHeader className="bg-destructive/5 pb-2">
-        <CardTitle className="flex justify-between items-center">
-          <span className="truncate">{expense.title}</span>
-          <span className="text-lg font-semibold">{expense.budget.toFixed(2)} €</span>
+        <CardTitle className="flex justify-between items-start gap-2">
+          <span className="text-base leading-tight break-words line-clamp-2">{expense.title}</span>
+          <span className="text-lg font-semibold whitespace-nowrap shrink-0">{expense.budget.toFixed(2)} €</span>
         </CardTitle>
       </CardHeader>
       <CardContent className="pt-4">
         <div className="flex flex-col gap-2 text-sm text-muted-foreground">
           <div className="flex items-center">
-            <Calendar className="h-4 w-4 mr-1" />
+            <Calendar className="h-4 w-4 mr-1 shrink-0" />
             {expense.date}
           </div>
           <div className="flex items-center">
-            <Wallet className="h-4 w-4 mr-1" />
-            {budgetName}
+            <Wallet className="h-4 w-4 mr-1 shrink-0" />
+            <span className="truncate">{budgetName}</span>
           </div>
           <div>Dépense récurrente</div>
         </div>
