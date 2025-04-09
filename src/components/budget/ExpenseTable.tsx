@@ -37,8 +37,6 @@ export const ExpenseTable = ({
 }: ExpenseTableProps) => {
   const {
     selectedExpense,
-    isDeleteDialogOpen,
-    setIsDeleteDialogOpen,
     isEditDialogOpen,
     setIsEditDialogOpen,
     editableTitle,
@@ -49,8 +47,7 @@ export const ExpenseTable = ({
     setEditableDate,
     handleEditClick,
     handleDeleteClick,
-    handleConfirmEdit,
-    handleConfirmDelete
+    handleConfirmEdit
   } = useExpenseDialogState(onUpdateExpense, onDeleteExpense);
   
   const getBudgetTitle = (budgetId?: string) => {
@@ -99,11 +96,8 @@ export const ExpenseTable = ({
 
       <ExpenseDialogs 
         selectedExpense={selectedExpense}
-        isDeleteDialogOpen={isDeleteDialogOpen}
-        setIsDeleteDialogOpen={setIsDeleteDialogOpen}
         isEditDialogOpen={isEditDialogOpen}
         setIsEditDialogOpen={setIsEditDialogOpen}
-        onConfirmDelete={handleConfirmDelete}
         editableTitle={editableTitle}
         setEditableTitle={setEditableTitle}
         editableBudget={editableBudget}
