@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useRecurringExpenses } from "@/hooks/useRecurringExpenses";
 import { AddEnvelopeDialog } from "@/components/budget/AddEnvelopeDialog";
@@ -29,14 +28,12 @@ const RecurringExpenses = () => {
     setAddDialogOpen(true);
   };
 
-  // Wrapper function to handle updating expenses with proper type
   const handleUpdateExpenseWrapper = (data: Expense) => {
     if (data.type === "expense") {
       handleUpdateExpense(data);
     }
   };
 
-  // Wrapper function to handle adding expenses with proper type
   const handleAddExpenseWrapper = (data: { 
     title: string; 
     budget: number; 
