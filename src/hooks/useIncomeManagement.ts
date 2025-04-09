@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from "react";
-import { db, Income } from "@/services/database";
+import { db } from "@/services/database";
+import { Income } from "@/services/database/models/income";
 import { useToast } from "@/hooks/use-toast";
 
 export const useIncomeManagement = () => {
@@ -16,18 +17,30 @@ export const useIncomeManagement = () => {
     isRecurring?: boolean;
   } | null>(null);
   const [envelopes, setEnvelopes] = useState<Income[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Initialiser la base de données et charger les revenus
   useEffect(() => {
     const initializeData = async () => {
-      await db.init();
-      const incomes = await db.getIncomes();
-      // Filtrer seulement les revenus non récurrents pour la page principale
-      setEnvelopes(incomes.filter(income => !income.isRecurring));
+      setIsLoading(true);
+      try {
+        await db.init();
+        const incomes = await db.getIncomes();
+        setEnvelopes(incomes);
+      } catch (error) {
+        console.error("Erreur lors du chargement des revenus:", error);
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Impossible de charger les revenus"
+        });
+      } finally {
+        setIsLoading(false);
+      }
     };
     
     initializeData();
-  }, []);
+  }, [toast]);
 
   const handleAddIncome = async (newIncome: { title: string; budget: number; type: "income"; date: string }) => {
     const income = {
@@ -106,6 +119,7 @@ export const useIncomeManagement = () => {
     handleAddIncome,
     handleEditIncome,
     handleDeleteIncome,
-    handleIncomeClick
+    handleIncomeClick,
+    isLoading
   };
 };

@@ -1,12 +1,13 @@
 
 import { AddEnvelopeDialog } from "@/components/budget/AddEnvelopeDialog";
-import { EnvelopeList } from "@/components/budget/EnvelopeList";
 import { EditIncomeDialog } from "@/components/income/EditIncomeDialog";
 import { IncomeHeader } from "@/components/income/IncomeHeader";
 import { useIncomeManagement } from "@/hooks/useIncomeManagement";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Clock } from "lucide-react";
+import { IncomeGrid } from "@/components/income/IncomeGrid";
+import { IncomeEmptyState } from "@/components/income/IncomeEmptyState";
 
 const Income = () => {
   const navigate = useNavigate();
@@ -21,8 +22,12 @@ const Income = () => {
     handleAddIncome,
     handleEditIncome,
     handleDeleteIncome,
-    handleIncomeClick
+    handleIncomeClick,
+    isLoading
   } = useIncomeManagement();
+
+  // Filtrer seulement les revenus non récurrents
+  const nonRecurringIncomes = envelopes.filter(income => !income.isRecurring);
 
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
@@ -38,13 +43,17 @@ const Income = () => {
         </Button>
       </div>
 
-      <EnvelopeList
-        envelopes={envelopes}
-        type="income"
-        onAddClick={() => setAddDialogOpen(true)}
-        onEnvelopeClick={handleIncomeClick}
-        onDeleteEnvelope={handleDeleteIncome}
-      />
+      {isLoading ? (
+        <div className="text-center py-8">Chargement des revenus...</div>
+      ) : nonRecurringIncomes.length === 0 ? (
+        <IncomeEmptyState onAddClick={() => setAddDialogOpen(true)} />
+      ) : (
+        <IncomeGrid
+          incomes={nonRecurringIncomes}
+          onDelete={handleDeleteIncome}
+          onIncomeClick={handleIncomeClick}
+        />
+      )}
 
       <AddEnvelopeDialog
         type="income"
