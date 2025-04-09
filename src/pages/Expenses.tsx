@@ -1,3 +1,4 @@
+
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ExpensesHeader } from "@/components/budget/ExpensesHeader";
 import { useExpenseManagement } from "@/hooks/useExpenseManagement";
@@ -118,11 +119,12 @@ const Expenses = () => {
             type="expense"
             open={addRecurringDialogOpen}
             onOpenChange={setAddRecurringDialogOpen}
-            onAdd={(expense) => handleAddRecurringExpense({ ...expense, isRecurring: true })}
+            onAdd={(expense) => handleAddRecurringExpense(expense)}
             availableBudgets={recurringAvailableBudgets.map(budget => ({
               id: budget.id,
               title: budget.title,
             }))}
+            isRecurring={true}
           />
         </TabsContent>
       </Tabs>

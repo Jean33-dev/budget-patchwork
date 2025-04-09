@@ -107,7 +107,8 @@ const Income = () => {
             type="income"
             open={addRecurringDialogOpen}
             onOpenChange={setAddRecurringDialogOpen}
-            onAdd={(income) => handleAddRecurringIncome({ ...income, isRecurring: true })}
+            onAdd={handleAddRecurringIncome}
+            isRecurring={true}
           />
 
           <EditIncomeDialog

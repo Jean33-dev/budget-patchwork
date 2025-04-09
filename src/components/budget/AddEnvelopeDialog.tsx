@@ -17,6 +17,7 @@ interface AddEnvelopeDialogProps {
   }) => void;
   availableBudgets?: Array<{ id: string; title: string }>;
   defaultBudgetId?: string;
+  isRecurring?: boolean;
 }
 
 export const AddEnvelopeDialog = ({ 
@@ -25,7 +26,8 @@ export const AddEnvelopeDialog = ({
   onOpenChange, 
   onAdd,
   availableBudgets = [],
-  defaultBudgetId
+  defaultBudgetId,
+  isRecurring = false
 }: AddEnvelopeDialogProps) => {
   const [title, setTitle] = useState("");
   const [budget, setBudget] = useState(0);
@@ -45,7 +47,8 @@ export const AddEnvelopeDialog = ({
       budget, 
       type,
       linkedBudgetId: type === "expense" ? linkedBudgetId : undefined,
-      date
+      date,
+      isRecurring
     });
     
     setTitle("");
@@ -72,7 +75,10 @@ export const AddEnvelopeDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Ajouter un nouveau {getTypeLabel(type)}</DialogTitle>
+          <DialogTitle>
+            Ajouter un nouveau {getTypeLabel(type)}
+            {isRecurring ? " récurrent" : ""}
+          </DialogTitle>
         </DialogHeader>
         <EnvelopeForm
           type={type}
