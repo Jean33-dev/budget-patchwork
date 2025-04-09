@@ -11,7 +11,6 @@ const RecurringExpenses = () => {
     recurringExpenses,
     availableBudgets,
     isLoading,
-    loadData,
     handleAddExpense,
     handleDeleteExpense,
     getBudgetName,
@@ -22,7 +21,6 @@ const RecurringExpenses = () => {
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
       <RecurringExpenseHeader
-        onRefresh={loadData}
         onAdd={() => setAddDialogOpen(true)}
       />
 
