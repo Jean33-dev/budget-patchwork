@@ -1,20 +1,62 @@
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { PlusCircle, LineChart, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
 import { EditDashboardDialog } from "@/components/dashboard/EditDashboardDialog";
+import { db } from "@/services/database";
 
 const Home = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [dashboardTitle, setDashboardTitle] = useState(() => {
-    // Récupérer le nom du tableau de bord depuis localStorage ou utiliser la valeur par défaut
-    return localStorage.getItem("dashboardTitle") || "Budget Personnel";
-  });
+  const [dashboardTitle, setDashboardTitle] = useState("Budget Personnel");
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Charger le titre du tableau de bord depuis la base de données
+  useEffect(() => {
+    const loadDashboardTitle = async () => {
+      try {
+        await db.init();
+        const budgets = await db.getBudgets();
+        
+        // Chercher un budget avec le nom spécial "dashboard_title"
+        const dashboardTitleBudget = budgets.find(b => b.id === "dashboard_title");
+        
+        if (dashboardTitleBudget) {
+          setDashboardTitle(dashboardTitleBudget.name);
+        } else {
+          // Si le budget n'existe pas encore, le créer avec la valeur par défaut
+          const defaultTitle = localStorage.getItem("dashboardTitle") || "Budget Personnel";
+          await db.addBudget({
+            id: "dashboard_title",
+            name: defaultTitle,
+            amount: 0,
+            color: "",
+            date: new Date().toISOString(),
+            isDefault: false
+          });
+          setDashboardTitle(defaultTitle);
+          
+          // Supprimer l'ancienne valeur de localStorage après migration
+          localStorage.removeItem("dashboardTitle");
+        }
+      } catch (error) {
+        console.error("Erreur lors du chargement du titre:", error);
+        // Fallback sur localStorage en cas d'erreur
+        const localTitle = localStorage.getItem("dashboardTitle");
+        if (localTitle) {
+          setDashboardTitle(localTitle);
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadDashboardTitle();
+  }, []);
 
   const handleCreateDashboard = () => {
     toast({
@@ -27,15 +69,42 @@ const Home = () => {
     setIsEditDialogOpen(true);
   };
 
-  const handleSaveDashboardName = (newName: string) => {
-    setDashboardTitle(newName);
-    // Sauvegarder le nouveau nom dans localStorage
-    localStorage.setItem("dashboardTitle", newName);
-    setIsEditDialogOpen(false);
-    toast({
-      title: "Nom modifié",
-      description: "Le nom du tableau de bord a été mis à jour.",
-    });
+  const handleSaveDashboardName = async (newName: string) => {
+    try {
+      // Mettre à jour le titre dans la base de données
+      const budgets = await db.getBudgets();
+      const dashboardTitleBudget = budgets.find(b => b.id === "dashboard_title");
+      
+      if (dashboardTitleBudget) {
+        await db.updateBudget({
+          ...dashboardTitleBudget,
+          name: newName
+        });
+      } else {
+        await db.addBudget({
+          id: "dashboard_title",
+          name: newName,
+          amount: 0,
+          color: "",
+          date: new Date().toISOString(),
+          isDefault: false
+        });
+      }
+      
+      setDashboardTitle(newName);
+      setIsEditDialogOpen(false);
+      toast({
+        title: "Nom modifié",
+        description: "Le nom du tableau de bord a été mis à jour.",
+      });
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour du titre:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible de mettre à jour le nom du tableau de bord."
+      });
+    }
   };
 
   return (
@@ -48,7 +117,7 @@ const Home = () => {
             <CardTitle className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <LineChart className="h-6 w-6" />
-                {dashboardTitle}
+                {isLoading ? "Chargement..." : dashboardTitle}
               </div>
               <Button 
                 variant="ghost" 
@@ -74,9 +143,6 @@ const Home = () => {
               <PlusCircle className="h-6 w-6" />
               Nouveau Tableau de Bord
             </CardTitle>
-            <CardDescription>
-              Créez un nouveau tableau de bord
-            </CardDescription>
           </CardHeader>
           <CardContent>
             <Button variant="outline" className="w-full" onClick={handleCreateDashboard}>
