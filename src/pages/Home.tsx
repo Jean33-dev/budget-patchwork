@@ -26,17 +26,17 @@ const Home = () => {
         const dashboardTitleBudget = budgets.find(b => b.id === "dashboard_title");
         
         if (dashboardTitleBudget) {
-          setDashboardTitle(dashboardTitleBudget.name);
+          setDashboardTitle(dashboardTitleBudget.title);
         } else {
           // Si le budget n'existe pas encore, le créer avec la valeur par défaut
           const defaultTitle = localStorage.getItem("dashboardTitle") || "Budget Personnel";
           await db.addBudget({
             id: "dashboard_title",
-            name: defaultTitle,
-            amount: 0,
-            color: "",
-            date: new Date().toISOString(),
-            isDefault: false
+            title: defaultTitle,
+            budget: 0,
+            spent: 0,
+            type: 'budget',
+            carriedOver: 0
           });
           setDashboardTitle(defaultTitle);
           
@@ -78,16 +78,16 @@ const Home = () => {
       if (dashboardTitleBudget) {
         await db.updateBudget({
           ...dashboardTitleBudget,
-          name: newName
+          title: newName
         });
       } else {
         await db.addBudget({
           id: "dashboard_title",
-          name: newName,
-          amount: 0,
-          color: "",
-          date: new Date().toISOString(),
-          isDefault: false
+          title: newName,
+          budget: 0,
+          spent: 0,
+          type: 'budget',
+          carriedOver: 0
         });
       }
       
