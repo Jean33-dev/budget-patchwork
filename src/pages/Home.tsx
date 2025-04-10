@@ -4,14 +4,17 @@ import { useNavigate } from "react-router-dom";
 import { PlusCircle, LineChart, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { EditDashboardDialog } from "@/components/dashboard/EditDashboardDialog";
 
 const Home = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [dashboardTitle, setDashboardTitle] = useState("Budget Personnel");
+  const [dashboardTitle, setDashboardTitle] = useState(() => {
+    // Récupérer le nom du tableau de bord depuis localStorage ou utiliser la valeur par défaut
+    return localStorage.getItem("dashboardTitle") || "Budget Personnel";
+  });
 
   const handleCreateDashboard = () => {
     toast({
@@ -26,6 +29,8 @@ const Home = () => {
 
   const handleSaveDashboardName = (newName: string) => {
     setDashboardTitle(newName);
+    // Sauvegarder le nouveau nom dans localStorage
+    localStorage.setItem("dashboardTitle", newName);
     setIsEditDialogOpen(false);
     toast({
       title: "Nom modifié",
@@ -57,14 +62,9 @@ const Home = () => {
                 <Settings className="h-4 w-4" />
               </Button>
             </CardTitle>
-            <CardDescription>
-              Gérez vos revenus et dépenses mensuels
-            </CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-muted-foreground">
-              Suivez vos dépenses, créez des enveloppes budgétaires et analysez vos habitudes financières.
-            </p>
+            {/* Contenu de la carte supprimé comme demandé */}
           </CardContent>
         </Card>
 
