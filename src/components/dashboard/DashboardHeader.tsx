@@ -8,6 +8,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { db } from "@/services/database";
 
 interface DashboardHeaderProps {
   currentDate: Date;
@@ -18,6 +20,25 @@ interface DashboardHeaderProps {
 
 export const DashboardHeader = ({ currentDate, onMonthChange, onBackClick, onExportPDF }: DashboardHeaderProps) => {
   const navigate = useNavigate();
+  const [dashboardTitle, setDashboardTitle] = useState("Tableau de Bord Budget");
+
+  // Récupérer le titre du tableau de bord depuis la base de données
+  useEffect(() => {
+    const loadDashboardTitle = async () => {
+      try {
+        const budgets = await db.getBudgets();
+        const dashboardTitleBudget = budgets.find(b => b.id === "dashboard_title");
+        
+        if (dashboardTitleBudget) {
+          setDashboardTitle(dashboardTitleBudget.title);
+        }
+      } catch (error) {
+        console.error("Erreur lors du chargement du titre:", error);
+      }
+    };
+
+    loadDashboardTitle();
+  }, []);
 
   return (
     <div className="space-y-4">
@@ -61,7 +82,7 @@ export const DashboardHeader = ({ currentDate, onMonthChange, onBackClick, onExp
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <h1 className="text-xl font-semibold">Tableau de Bord Budget</h1>
+        <h1 className="text-xl font-semibold">{dashboardTitle}</h1>
       </div>
       
       <div className="flex justify-end mb-4">
@@ -77,4 +98,3 @@ export const DashboardHeader = ({ currentDate, onMonthChange, onBackClick, onExp
     </div>
   );
 };
-
