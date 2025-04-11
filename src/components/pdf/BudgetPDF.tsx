@@ -1,7 +1,7 @@
 
 import React from "react";
 import { PDFDownloadLink, Document, Page } from "@react-pdf/renderer";
-import type { BlobProviderParams, PDFDownloadLinkProps } from "@react-pdf/renderer";
+import type { BlobProviderProps } from "@react-pdf/renderer";
 import { Button } from "@/components/ui/button";
 import { FileDown } from "lucide-react";
 import { BudgetPDFDocument } from "./components/BudgetPDFDocument";
@@ -32,15 +32,15 @@ export const BudgetPDFDownload = ({
       className={className}
       onClick={onClick}
     >
-      {(props: BlobProviderParams) => (
+      {({ loading }: { loading: boolean }) => (
         <Button 
           variant="outline" 
           size="sm" 
           className="w-full flex items-center justify-center gap-2"
-          disabled={props.loading}
+          disabled={loading}
         >
           <FileDown className="h-4 w-4" />
-          {props.loading ? "Génération..." : "Télécharger PDF"}
+          {loading ? "Génération..." : "Télécharger PDF"}
         </Button>
       )}
     </PDFDownloadLink>

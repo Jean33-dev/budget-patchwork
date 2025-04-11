@@ -1,6 +1,5 @@
 
 import { ReactNode } from "react";
-import { BlobProviderParams } from "@react-pdf/renderer";
 
 export interface BudgetPDFProps {
   totalIncome: number;
