@@ -53,5 +53,5 @@ export interface BudgetPDFDownloadProps {
   }>;
   className?: string;
   onClick?: () => void;
-  children?: ReactNode | ((props: BlobProviderParams) => ReactNode);
+  children?: ReactNode;
 }

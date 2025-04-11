@@ -32,7 +32,7 @@ export const BudgetPDFDownload = ({
       className={className}
       onClick={onClick}
     >
-      {({ loading }: BlobProviderParams) => (
+      {({ loading }) => (
         <Button 
           variant="outline" 
           size="sm" 
