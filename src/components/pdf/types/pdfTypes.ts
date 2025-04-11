@@ -1,5 +1,6 @@
 
 import { ReactNode } from "react";
+import { BlobProviderParams } from "@react-pdf/renderer";
 
 export interface BudgetPDFProps {
   totalIncome: number;
@@ -52,5 +53,5 @@ export interface BudgetPDFDownloadProps {
   }>;
   className?: string;
   onClick?: () => void;
-  children?: ReactNode | ((props: { loading: boolean }) => ReactNode);
+  children?: ReactNode | ((props: BlobProviderParams) => ReactNode);
 }
