@@ -130,7 +130,7 @@ const Categories = () => {
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <h1 className="text-xl font-semibold">Gestion des Catégories</h1>
+        <h1 className="text-xl">Gestion des Catégories</h1>
       </div>
 
       <Tabs defaultValue="categories" className="w-full">

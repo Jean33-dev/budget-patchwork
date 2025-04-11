@@ -20,7 +20,7 @@ interface DashboardHeaderProps {
 
 export const DashboardHeader = ({ currentDate, onMonthChange, onBackClick, onExportPDF }: DashboardHeaderProps) => {
   const navigate = useNavigate();
-  const [dashboardTitle, setDashboardTitle] = useState("Tableau de Bord Budget");
+  const [dashboardTitle, setDashboardTitle] = useState("Budget");
 
   // Récupérer le titre du tableau de bord depuis la base de données
   useEffect(() => {
@@ -82,7 +82,7 @@ export const DashboardHeader = ({ currentDate, onMonthChange, onBackClick, onExp
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <h1 className="text-xl font-semibold">{dashboardTitle}</h1>
+        <h1 className="text-xl">Tableau de bord {dashboardTitle}</h1>
       </div>
       
       <div className="flex justify-end mb-4">
