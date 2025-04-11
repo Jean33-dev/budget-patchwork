@@ -38,7 +38,8 @@ export const BudgetPDFDownload = ({
       onClick={handleClick}
       onComplete={onComplete}
     >
-      {({ loading }) => (
+      {/* Using the render prop pattern as per @react-pdf/renderer's API */}
+      {({ blob, url, loading, error }) => (
         <Button 
           variant="outline" 
           size="sm" 
