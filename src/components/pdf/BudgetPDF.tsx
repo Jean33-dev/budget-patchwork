@@ -38,7 +38,7 @@ export const BudgetPDFDownload = ({
       onClick={handleClick}
       onComplete={onComplete}
     >
-      {({ loading }: { loading: boolean }) => (
+      {({ loading }) => (
         <Button 
           variant="outline" 
           size="sm" 
