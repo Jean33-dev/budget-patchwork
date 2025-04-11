@@ -73,11 +73,6 @@ const Dashboard = () => {
     setPdfExported(true);
   };
 
-  // Fermer la boîte de dialogue après le téléchargement
-  const handlePDFCompleted = () => {
-    setShowPDFDialog(false);
-  };
-
   // Créer la liste des enveloppes à partir des budgets
   const envelopes = budgets.map(budget => ({
     id: budget.id,
@@ -131,13 +126,12 @@ const Dashboard = () => {
                     <span className="text-xs font-medium">Nous vous recommandons d'exporter vos données en PDF avant de continuer.</span>
                   </div>
                   
-                  <div className="mt-2">
+                  <div className="mt-2" onClick={handlePDFExported}>
                     <BudgetPDFDownload
                       fileName={`rapport-budget-${currentDate.toISOString().slice(0, 7)}.pdf`}
                       totalIncome={totalRevenues}
                       totalExpenses={totalExpenses}
                       budgets={envelopes}
-                      onClick={handlePDFExported}
                     />
                   </div>
                   
@@ -173,8 +167,6 @@ const Dashboard = () => {
               totalIncome={totalRevenues}
               totalExpenses={totalExpenses}
               budgets={envelopes}
-              onClick={handlePDFExported}
-              onComplete={handlePDFCompleted}
             />
           </div>
         </DialogContent>

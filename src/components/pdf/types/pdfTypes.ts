@@ -50,5 +50,4 @@ export interface BudgetPDFDownloadProps {
   }>;
   className?: string;
   onClick?: () => void;
-  onComplete?: () => void;
 }

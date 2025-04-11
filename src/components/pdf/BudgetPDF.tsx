@@ -14,14 +14,8 @@ export const BudgetPDFDownload = ({
   incomes,
   expenses,
   className,
-  onClick,
-  onComplete
+  onClick
 }: BudgetPDFDownloadProps) => {
-  // Fonction qui gère à la fois le onClick et onComplete
-  const handleClick = () => {
-    if (onClick) onClick();
-  };
-
   return (
     <PDFDownloadLink
       document={
@@ -35,21 +29,16 @@ export const BudgetPDFDownload = ({
       }
       fileName={fileName}
       className={className}
-      onClick={handleClick}
-      onComplete={onComplete}
+      onClick={onClick}
     >
-      {/* Using the render prop pattern as per @react-pdf/renderer's API */}
-      {({ blob, url, loading, error }) => (
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="w-full flex items-center justify-center gap-2"
-          disabled={loading}
-        >
-          <FileDown className="h-4 w-4" />
-          {loading ? "Préparation du PDF..." : "Télécharger PDF"}
-        </Button>
-      )}
+      <Button 
+        variant="outline" 
+        size="sm" 
+        className="w-full flex items-center justify-center gap-2"
+      >
+        <FileDown className="h-4 w-4" />
+        Télécharger PDF
+      </Button>
     </PDFDownloadLink>
   );
 };
