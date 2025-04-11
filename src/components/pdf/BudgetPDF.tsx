@@ -1,7 +1,6 @@
 
 import React from "react";
 import { PDFDownloadLink, Document, Page } from "@react-pdf/renderer";
-import type { BlobProviderProps } from "@react-pdf/renderer";
 import { Button } from "@/components/ui/button";
 import { FileDown } from "lucide-react";
 import { BudgetPDFDocument } from "./components/BudgetPDFDocument";

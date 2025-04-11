@@ -30,5 +30,4 @@ export interface BudgetPDFDownloadProps extends BudgetPDFProps {
   fileName?: string;
   className?: string;
   onClick?: () => void;
-  children?: ReactNode;
 }
