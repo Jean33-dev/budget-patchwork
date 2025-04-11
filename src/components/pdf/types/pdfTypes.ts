@@ -1,4 +1,6 @@
 
+import { ReactNode } from "react";
+
 export interface BudgetPDFProps {
   totalIncome: number;
   totalExpenses: number;
@@ -50,4 +52,5 @@ export interface BudgetPDFDownloadProps {
   }>;
   className?: string;
   onClick?: () => void;
+  children?: ReactNode | ((props: { loading: boolean }) => ReactNode);
 }
