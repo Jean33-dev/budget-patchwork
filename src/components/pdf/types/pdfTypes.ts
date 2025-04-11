@@ -26,30 +26,8 @@ export interface BudgetPDFProps {
   }>;
 }
 
-export interface BudgetPDFDownloadProps {
+export interface BudgetPDFDownloadProps extends BudgetPDFProps {
   fileName?: string;
-  totalIncome: number;
-  totalExpenses: number;
-  budgets: Array<{
-    id: string;
-    title: string;
-    budget: number;
-    spent: number;
-    type: "income" | "expense" | "budget";
-  }>;
-  incomes?: Array<{
-    id: string;
-    title: string;
-    budget: number;
-    type: "income";
-  }>;
-  expenses?: Array<{
-    id: string;
-    title: string;
-    budget: number;
-    type: "expense";
-    date?: string;
-  }>;
   className?: string;
   onClick?: () => void;
   children?: ReactNode;
