@@ -1,6 +1,6 @@
 
 import React from "react";
-import { PDFDownloadLink } from "@react-pdf/renderer";
+import { PDFDownloadLink, PDFDownloadLinkProps } from "@react-pdf/renderer";
 import { Button } from "@/components/ui/button";
 import { FileDown } from "lucide-react";
 import { BudgetPDFDocument } from "./components/BudgetPDFDocument";
@@ -38,7 +38,7 @@ export const BudgetPDFDownload = ({
       onClick={handleClick}
       onComplete={onComplete}
     >
-      {({ loading }) => (
+      {({ loading }: { loading: boolean }) => (
         <Button 
           variant="outline" 
           size="sm" 
