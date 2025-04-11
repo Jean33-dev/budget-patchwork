@@ -38,15 +38,16 @@ export const BudgetPDFDownload = ({
       onClick={handleClick}
       onComplete={onComplete}
     >
-      {({ loading }) => (
+      {/* Utilisation d'une syntaxe sans déstructuration explicite du type */}
+      {(props) => (
         <Button 
           variant="outline" 
           size="sm" 
           className="w-full flex items-center justify-center gap-2"
-          disabled={loading}
+          disabled={props.loading}
         >
           <FileDown className="h-4 w-4" />
-          {loading ? "Préparation du PDF..." : "Télécharger PDF"}
+          {props.loading ? "Préparation du PDF..." : "Télécharger PDF"}
         </Button>
       )}
     </PDFDownloadLink>
