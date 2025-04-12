@@ -134,12 +134,12 @@ const Categories = () => {
       </div>
 
       <Tabs defaultValue="categories" className="w-full">
-        <TabsList className="w-full justify-start">
+        <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="categories">Catégories</TabsTrigger>
           <TabsTrigger value="assignments">Assignations</TabsTrigger>
         </TabsList>
         
-        <TabsContent value="categories" className="space-y-4">
+        <TabsContent value="categories" className="space-y-4 mt-4">
           {categories.map((category) => (
             <CategoryCard
               key={category.id}
@@ -149,7 +149,7 @@ const Categories = () => {
           ))}
         </TabsContent>
 
-        <TabsContent value="assignments" className="space-y-4">
+        <TabsContent value="assignments" className="space-y-4 mt-4">
           {categories.map((category) => (
             <AssignmentCard
               key={category.id}
