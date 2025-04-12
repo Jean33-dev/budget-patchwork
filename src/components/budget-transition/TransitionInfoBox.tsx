@@ -49,7 +49,7 @@ export const TransitionInfoBox = () => {
         </div>
       </div>
       
-      <Alert variant="warning" className="border-amber-500/50 bg-amber-500/10">
+      <Alert variant="destructive" className="border-amber-500/50 bg-amber-500/10">
         <AlertTriangle className="h-4 w-4 text-amber-500" />
         <AlertDescription className="text-sm">
           Cette opération est irréversible. Exportez vos données en PDF avant de confirmer la transition.
