@@ -1,5 +1,5 @@
 
-import { Card, CardContent, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface OverviewStatsProps {
   totalIncome: number;
@@ -12,26 +12,32 @@ export const OverviewStats = ({
   totalExpenses,
   balance
 }: OverviewStatsProps) => {
-  return <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-      <Card className="p-2">
-        <CardContent className="flex items-center justify-between p-2">
-          <CardTitle className="text-sm font-medium">Revenus Totaux</CardTitle>
-          <div className="text-lg font-bold text-budget-income">{totalIncome.toFixed(2)} €</div>
-        </CardContent>
-      </Card>
-      <Card className="p-2">
-        <CardContent className="flex items-center justify-between p-2">
-          <CardTitle className="text-sm font-medium">Dépenses Totales</CardTitle>
-          <div className="text-lg font-bold text-budget-expense">{totalExpenses.toFixed(2)} €</div>
-        </CardContent>
-      </Card>
-      <Card className="p-2 sm:col-span-2 lg:col-span-1">
-        <CardContent className="flex items-center justify-between p-2">
-          <CardTitle className="text-sm font-medium">Solde</CardTitle>
-          <div className={`text-lg font-bold ${balance >= 0 ? "text-budget-income" : "text-budget-expense"}`}>
-            {balance >= 0 ? Math.abs(balance).toFixed(2) : `-${Math.abs(balance).toFixed(2)}`} €
+  return (
+    <Card className="shadow-sm">
+      <CardContent className="p-0">
+        <div className="divide-y">
+          <div className="flex items-center justify-between p-4">
+            <h3 className="text-base font-medium">Revenus Totaux</h3>
+            <div className="text-lg font-semibold text-budget-income">
+              {totalIncome.toFixed(2)} €
+            </div>
           </div>
-        </CardContent>
-      </Card>
-    </div>;
+          
+          <div className="flex items-center justify-between p-4">
+            <h3 className="text-base font-medium">Dépenses Totales</h3>
+            <div className="text-lg font-semibold text-budget-expense">
+              {totalExpenses.toFixed(2)} €
+            </div>
+          </div>
+          
+          <div className="flex items-center justify-between p-4">
+            <h3 className="text-base font-medium">Solde</h3>
+            <div className={`text-lg font-semibold ${balance >= 0 ? "text-budget-income" : "text-budget-expense"}`}>
+              {balance >= 0 ? balance.toFixed(2) : `-${Math.abs(balance).toFixed(2)}`} €
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
 };
