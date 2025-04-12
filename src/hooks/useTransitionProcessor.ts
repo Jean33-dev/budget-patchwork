@@ -1,12 +1,19 @@
 
 import { useToast } from "@/hooks/use-toast";
 import { TransitionEnvelope } from "@/types/transition";
-import { db } from "@/services/database";
 import { useTransitionPreferences } from "./useTransitionPreferences";
+import { useBudgetTransitioner } from "./transition/useBudgetTransitioner";
+import { useExpenseIncomeReset } from "./transition/useExpenseIncomeReset";
 
 export const useTransitionProcessor = (categories: any[], setCategories: (categories: any[]) => void) => {
   const { toast } = useToast();
   const { saveTransitionPreferences } = useTransitionPreferences();
+  const { processEnvelopeTransitions } = useBudgetTransitioner();
+  const { 
+    resetNonRecurringExpenses, 
+    resetNonRecurringIncomes,
+    resetCategorySpent 
+  } = useExpenseIncomeReset();
 
   const handleMonthTransition = async (envelopes: TransitionEnvelope[]) => {
     let success = true;
@@ -15,51 +22,22 @@ export const useTransitionProcessor = (categories: any[], setCategories: (catego
       // Save preferences for next time
       saveTransitionPreferences(envelopes);
       
-      // Récupérer toutes les dépenses et filtrer pour ne pas supprimer les récurrentes
-      const expenses = await db.getExpenses();
-      console.log(`Traitement de ${expenses.length} dépenses pour la transition`);
+      // Réinitialiser les dépenses non récurrentes
+      const expensesResult = await resetNonRecurringExpenses();
       
-      // Filtrer pour ne garder que les dépenses non récurrentes à supprimer
-      const nonRecurringExpenses = expenses.filter(expense => !expense.isRecurring);
-      console.log(`Suppression de ${nonRecurringExpenses.length} dépenses non récurrentes`);
-      
-      // Supprimer uniquement les dépenses non récurrentes
-      await Promise.all(
-        nonRecurringExpenses.map(expense => db.deleteExpense(expense.id))
-      );
-      
-      // Récupérer tous les revenus et filtrer pour ne pas supprimer les récurrents
-      const incomes = await db.getIncomes();
-      console.log(`Traitement de ${incomes.length} revenus pour la transition`);
-      
-      // Filtrer pour ne garder que les revenus non récurrents à supprimer
-      const nonRecurringIncomes = incomes.filter(income => !income.isRecurring);
-      console.log(`Suppression de ${nonRecurringIncomes.length} revenus non récurrents`);
-      
-      // Supprimer uniquement les revenus non récurrents
-      await Promise.all(
-        nonRecurringIncomes.map(income => db.deleteIncome(income.id))
-      );
+      // Réinitialiser les revenus non récurrents
+      const incomesResult = await resetNonRecurringIncomes();
       
       console.log("Vérification après suppression sélective:");
-      const remainingExpenses = await db.getExpenses();
-      const remainingIncomes = await db.getIncomes();
-      console.log(`Dépenses restantes: ${remainingExpenses.length} (dont récurrentes: ${remainingExpenses.filter(e => e.isRecurring).length})`);
-      console.log(`Revenus restants: ${remainingIncomes.length} (dont récurrents: ${remainingIncomes.filter(i => i.isRecurring).length})`);
+      console.log(`Dépenses restantes: ${expensesResult.remaining} sur ${expensesResult.total}`);
+      console.log(`Revenus restants: ${incomesResult.remaining} sur ${incomesResult.total}`);
       
       // Traitement des budgets pour la transition
       await processEnvelopeTransitions(envelopes);
 
       // Maintenant, mettons à jour les spent des catégories
       console.log("Mise à jour des catégories après transition");
-      const updatedCategories = [...categories];
-      
-      for (let category of updatedCategories) {
-        // Réinitialiser le montant dépensé à 0 puisque toutes les dépenses non récurrentes ont été supprimées
-        category.spent = 0;
-        await db.updateCategory(category);
-        console.log(`Catégorie ${category.name} mise à jour, dépenses réinitialisées à 0`);
-      }
+      const updatedCategories = await resetCategorySpent(categories);
       
       // Mettre à jour l'état local des catégories
       setCategories(updatedCategories);
@@ -79,162 +57,6 @@ export const useTransitionProcessor = (categories: any[], setCategories: (catego
     }
 
     return success;
-  };
-
-  const processEnvelopeTransitions = async (envelopes: TransitionEnvelope[]) => {
-    // Traitement des budgets pour la transition
-    for (const envelope of envelopes) {
-      const budget = await db.getBudgets().then(budgets => 
-        budgets.find(b => b.id === envelope.id)
-      );
-
-      if (!budget) continue;
-
-      // Calcul du montant restant : budget initial + report précédent - dépenses
-      const currentRemaining = budget.budget + (budget.carriedOver || 0) - budget.spent;
-      console.log(`Transition du budget ${budget.title}:`, {
-        budgetInitial: budget.budget,
-        carriedOver: budget.carriedOver || 0,
-        spent: budget.spent,
-        remaining: currentRemaining,
-        transitionOption: envelope.transitionOption
-      });
-      
-      switch (envelope.transitionOption) {
-        case "reset":
-          // Réinitialise les dépenses et le report, garde le budget initial
-          await db.updateBudget({
-            ...budget,
-            spent: 0,
-            carriedOver: 0
-          });
-          console.log(`Reset - Nouveau budget état:`, {
-            title: budget.title,
-            spent: 0,
-            carriedOver: 0
-          });
-          break;
-        
-        case "carry":
-          // Garde le même budget mais ajoute le solde restant au report
-          await db.updateBudget({
-            ...budget,
-            spent: 0,
-            carriedOver: currentRemaining
-          });
-          console.log(`Report total - Nouveau budget état:`, {
-            title: budget.title,
-            spent: 0,
-            carriedOver: currentRemaining
-          });
-          break;
-        
-        case "partial":
-          // Garde le même budget mais ajoute le montant spécifié au report
-          if (envelope.partialAmount !== undefined) {
-            await db.updateBudget({
-              ...budget,
-              spent: 0,
-              carriedOver: envelope.partialAmount
-            });
-            console.log(`Report partiel - Nouveau budget état:`, {
-              title: budget.title,
-              spent: 0,
-              carriedOver: envelope.partialAmount
-            });
-          }
-          break;
-        
-        case "transfer":
-          if (envelope.transferTargetId) {
-            // Récupérer le budget cible
-            const targetBudget = await db.getBudgets().then(budgets => 
-              budgets.find(b => b.id === envelope.transferTargetId)
-            );
-
-            if (targetBudget) {
-              // Réinitialise le budget source
-              await db.updateBudget({
-                ...budget,
-                spent: 0,
-                carriedOver: 0
-              });
-
-              // Ajoute le montant restant au report du budget cible
-              await db.updateBudget({
-                ...targetBudget,
-                carriedOver: (targetBudget.carriedOver || 0) + currentRemaining
-              });
-
-              console.log(`Transfert - Nouveau état:`, {
-                sourceBudget: {
-                  title: budget.title,
-                  spent: 0,
-                  carriedOver: 0
-                },
-                targetBudget: {
-                  title: targetBudget.title,
-                  carriedOver: (targetBudget.carriedOver || 0) + currentRemaining
-                }
-              });
-            }
-          }
-          break;
-          
-        case "multi-transfer":
-          if (envelope.multiTransfers && envelope.multiTransfers.length > 0) {
-            console.log(`Transferts multiples pour ${budget.title}:`, envelope.multiTransfers);
-            
-            // Calculer le montant total à transférer
-            const totalTransferAmount = envelope.multiTransfers.reduce(
-              (sum, transfer) => sum + transfer.amount, 0
-            );
-            
-            // S'assurer que le montant total n'excède pas le montant disponible
-            if (totalTransferAmount <= currentRemaining) {
-              // Réinitialiser le budget source avec le montant restant non transféré
-              const remainingAfterTransfers = currentRemaining - totalTransferAmount;
-              
-              await db.updateBudget({
-                ...budget,
-                spent: 0,
-                carriedOver: remainingAfterTransfers
-              });
-              
-              console.log(`Multi-transfert - Budget source mis à jour:`, {
-                title: budget.title,
-                spent: 0,
-                carriedOver: remainingAfterTransfers
-              });
-              
-              // Distribuer les montants aux budgets cibles
-              for (const transfer of envelope.multiTransfers) {
-                // Récupérer le budget cible
-                const targetBudget = await db.getBudgets().then(budgets => 
-                  budgets.find(b => b.id === transfer.targetId)
-                );
-                
-                if (targetBudget) {
-                  // Ajouter le montant au report du budget cible
-                  await db.updateBudget({
-                    ...targetBudget,
-                    carriedOver: (targetBudget.carriedOver || 0) + transfer.amount
-                  });
-                  
-                  console.log(`Multi-transfert - Budget cible mis à jour:`, {
-                    title: targetBudget.title,
-                    amount: transfer.amount,
-                    newCarriedOver: (targetBudget.carriedOver || 0) + transfer.amount
-                  });
-                }
-              }
-            } else {
-              console.error(`Montant total de transfert (${totalTransferAmount}) supérieur au montant disponible (${currentRemaining})`);
-            }
-          }
-          break;
-      }
-    }
   };
 
   return {
