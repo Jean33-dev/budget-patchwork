@@ -13,18 +13,30 @@ interface BudgetChartProps {
   addUnallocated?: boolean;
 }
 
+// Palette de couleurs distinctes pour éviter les répétitions et les couleurs adjacentes similaires
 const COLORS = {
   income: ["#1A1F2C", "#221F26", "#2C2436"],
   expense: ["#ea384c", "#d41d31", "#b31929"],
   budget: [
-    "#8B5CF6", // Vivid Purple
-    "#D946EF", // Magenta Pink
-    "#F97316", // Bright Orange
-    "#0EA5E9", // Ocean Blue
-    "#10B981", // Emerald Green
-    "#EF4444", // Bright Red
+    "#8B5CF6", // Violet
+    "#F97316", // Orange
+    "#10B981", // Vert
+    "#0EA5E9", // Bleu
+    "#D946EF", // Rose
+    "#EF4444", // Rouge
+    "#F59E0B", // Jaune doré
+    "#06B6D4", // Cyan
+    "#6366F1", // Indigo
+    "#EC4899", // Rose vif
+    "#14B8A6", // Turquoise
+    "#6D28D9", // Violet foncé
+    "#84CC16", // Vert lime
+    "#3B82F6", // Bleu ciel
   ],
 };
+
+// Couleur distincte pour le budget non alloué
+const UNALLOCATED_COLOR = "#64748B"; // Gris bleuté
 
 export const BudgetChart = ({ data, totalIncome = 0, addUnallocated = false }: BudgetChartProps) => {
   let chartData = [...data];
@@ -51,12 +63,9 @@ export const BudgetChart = ({ data, totalIncome = 0, addUnallocated = false }: B
     return ((value / totalIncome) * 100).toFixed(1);
   };
 
-  // Calculate the new thickness by increasing the original thickness by 35%
-  // Original: innerRadius=60, outerRadius=80, difference=20
-  // 20 * 1.35 = 27, so new thickness should be 27
-  // Keep innerRadius at 60 and increase outerRadius to 87
+  // Dimensions ajustées pour un anneau plus épais et plus lisible
   const innerRadius = 60;
-  const outerRadius = 87;  // Increased from 80 to 87 (35% thicker)
+  const outerRadius = 87;
 
   return (
     <div className="relative w-full h-[300px]">
@@ -71,13 +80,22 @@ export const BudgetChart = ({ data, totalIncome = 0, addUnallocated = false }: B
             outerRadius={outerRadius}
             fill="#8884d8"
             dataKey="value"
+            paddingAngle={1} // Léger espacement entre les segments
           >
-            {chartData.map((entry, index) => (
-              <Cell
-                key={`cell-${index}`}
-                fill={COLORS[entry.type][index % COLORS[entry.type].length]}
-              />
-            ))}
+            {chartData.map((entry, index) => {
+              // Couleur spéciale pour le budget non alloué
+              if (entry.name === "Budget non alloué") {
+                return <Cell key={`cell-${index}`} fill={UNALLOCATED_COLOR} />;
+              }
+              
+              // Couleurs normales pour les autres éléments
+              return (
+                <Cell
+                  key={`cell-${index}`}
+                  fill={COLORS[entry.type][index % COLORS[entry.type].length]}
+                />
+              );
+            })}
           </Pie>
           <Tooltip
             formatter={(value: number, name: string) => [
