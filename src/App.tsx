@@ -11,7 +11,6 @@ import Expenses from "./pages/Expenses";
 import Income from "./pages/Income";
 import Categories from "./pages/Categories";
 import BudgetTransition from "./pages/BudgetTransition";
-import PDFExport from "./pages/PDFExport";
 
 const queryClient = new QueryClient();
 
@@ -30,7 +29,6 @@ function App() {
             <Route path="/dashboard/budget/income" element={<Income />} />
             <Route path="/dashboard/budget/categories" element={<Categories />} />
             <Route path="/dashboard/budget/transition" element={<BudgetTransition />} />
-            <Route path="/dashboard/budget/pdf-export" element={<PDFExport />} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>

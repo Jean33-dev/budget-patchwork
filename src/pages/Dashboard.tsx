@@ -18,11 +18,19 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [showTransitionDialog, setShowTransitionDialog] = useState(false);
+  const [showPDFDialog, setShowPDFDialog] = useState(false);
   const [nextDate, setNextDate] = useState<Date | null>(null);
   const [pdfExported, setPdfExported] = useState(false);
 
@@ -57,15 +65,7 @@ const Dashboard = () => {
   
   // Gérer l'export PDF
   const handleExportPDF = () => {
-    // Rediriger vers la page de personnalisation d'export PDF
-    navigate("/dashboard/budget/pdf-export", {
-      state: {
-        totalIncome: totalRevenues,
-        totalExpenses: totalExpenses,
-        budgets: envelopes,
-        currentDate: currentDate
-      }
-    });
+    setShowPDFDialog(true);
   };
 
   // Suivi de l'export PDF
@@ -152,6 +152,25 @@ const Dashboard = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      
+      <Dialog open={showPDFDialog} onOpenChange={setShowPDFDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Exporter en PDF</DialogTitle>
+            <DialogDescription>
+              Téléchargez un rapport budgétaire au format PDF.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-4 py-4">
+            <BudgetPDFDownload
+              fileName={`rapport-budget-${currentDate.toISOString().slice(0, 7)}.pdf`}
+              totalIncome={totalRevenues}
+              totalExpenses={totalExpenses}
+              budgets={envelopes}
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
