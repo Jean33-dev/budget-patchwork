@@ -1,33 +1,28 @@
-
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Menu, CalendarPlus, FileText } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { db } from "@/services/database";
-
 interface DashboardHeaderProps {
   currentDate: Date;
   onMonthChange: (date: Date) => void;
   onBackClick: () => void;
   onExportPDF?: () => void;
 }
-
-export const DashboardHeader = ({ currentDate, onMonthChange, onBackClick, onExportPDF }: DashboardHeaderProps) => {
+export const DashboardHeader = ({
+  currentDate,
+  onMonthChange,
+  onBackClick,
+  onExportPDF
+}: DashboardHeaderProps) => {
   const navigate = useNavigate();
   const [dashboardTitle, setDashboardTitle] = useState("Budget");
-
   useEffect(() => {
     const loadDashboardTitle = async () => {
       try {
         const budgets = await db.getBudgets();
         const dashboardTitleBudget = budgets.find(b => b.id === "dashboard_title");
-        
         if (dashboardTitleBudget) {
           setDashboardTitle(dashboardTitleBudget.title);
         }
@@ -35,19 +30,11 @@ export const DashboardHeader = ({ currentDate, onMonthChange, onBackClick, onExp
         console.error("Erreur lors du chargement du titre:", error);
       }
     };
-
     loadDashboardTitle();
   }, []);
-
-  return (
-    <div className="space-y-4">
+  return <div className="space-y-4">
       <div className="flex items-center gap-4 sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-10 pb-4 border-b">
-        <Button 
-          variant="outline" 
-          size="icon"
-          onClick={onBackClick}
-          className="shrink-0 h-8 w-8 sm:h-9 sm:w-9"
-        >
+        <Button variant="outline" size="icon" onClick={onBackClick} className="shrink-0 h-8 w-8 sm:h-9 sm:w-9">
           <ArrowLeft className="h-4 w-4" />
         </Button>
 
@@ -80,26 +67,12 @@ export const DashboardHeader = ({ currentDate, onMonthChange, onBackClick, onExp
       </div>
       
       <div className="flex justify-end mb-4 gap-2">
-        {onExportPDF && (
-          <Button 
-            variant="outline"
-            onClick={onExportPDF}
-            className="flex items-center gap-2"
-          >
-            <FileText className="h-4 w-4" />
-            Exporter PDF
-          </Button>
-        )}
+        {onExportPDF}
         
-        <Button 
-          variant="outline"
-          onClick={() => navigate("/dashboard/budget/transition")}
-          className="flex items-center gap-2"
-        >
+        <Button variant="outline" onClick={() => navigate("/dashboard/budget/transition")} className="flex items-center gap-2">
           <CalendarPlus className="h-4 w-4" />
           Nouveau mois
         </Button>
       </div>
-    </div>
-  );
+    </div>;
 };
