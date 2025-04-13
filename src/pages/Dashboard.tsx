@@ -167,6 +167,7 @@ const Dashboard = () => {
               totalIncome={totalRevenues}
               totalExpenses={totalExpenses}
               budgets={envelopes}
+              onClick={handlePDFExported}
             />
           </div>
         </DialogContent>
