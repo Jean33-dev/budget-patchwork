@@ -38,9 +38,25 @@ const PDFExport = () => {
   const [includeIncomes, setIncludeIncomes] = useState(true);
   const [includeExpenses, setIncludeExpenses] = useState(true);
   
-  // Filtrer les listes selon les types
-  const incomesList = budgets.filter(budget => budget.type === "income");
-  const expensesList = budgets.filter(budget => budget.type === "expense");
+  // Filtrer les listes selon les types et les mapper aux bons types
+  const incomesList = budgets
+    .filter(budget => budget.type === "income")
+    .map(income => ({
+      id: income.id,
+      title: income.title,
+      budget: income.budget,
+      type: "income" as const
+    }));
+    
+  const expensesList = budgets
+    .filter(budget => budget.type === "expense")
+    .map(expense => ({
+      id: expense.id,
+      title: expense.title,
+      budget: expense.budget,
+      type: "expense" as const,
+      date: undefined
+    }));
   
   // Nom du fichier avec le mois et l'année
   const fileName = `rapport-budget-${currentDate.toISOString().slice(0, 7)}.pdf`;
