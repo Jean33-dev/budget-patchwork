@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Menu, CalendarPlus, FileText } from "lucide-react";
 import {
@@ -22,7 +21,6 @@ export const DashboardHeader = ({ currentDate, onMonthChange, onBackClick, onExp
   const navigate = useNavigate();
   const [dashboardTitle, setDashboardTitle] = useState("Budget");
 
-  // Récupérer le titre du tableau de bord depuis la base de données
   useEffect(() => {
     const loadDashboardTitle = async () => {
       try {
@@ -84,7 +82,6 @@ export const DashboardHeader = ({ currentDate, onMonthChange, onBackClick, onExp
 
         <h1 className="text-xl">Tableau de bord {dashboardTitle}</h1>
         
-        {/* Ajout du bouton d'exportation PDF ici */}
         {onExportPDF && (
           <div className="ml-auto mr-2">
             <Button 
@@ -99,7 +96,18 @@ export const DashboardHeader = ({ currentDate, onMonthChange, onBackClick, onExp
         )}
       </div>
       
-      <div className="flex justify-end mb-4">
+      <div className="flex justify-end mb-4 gap-2">
+        {onExportPDF && (
+          <Button 
+            variant="outline"
+            onClick={onExportPDF}
+            className="flex items-center gap-2"
+          >
+            <FileText className="h-4 w-4" />
+            Exporter PDF
+          </Button>
+        )}
+        
         <Button 
           variant="outline"
           onClick={() => navigate("/dashboard/budget/transition")}
