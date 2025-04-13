@@ -22,11 +22,16 @@ export const BudgetPDFDocument: React.FC<BudgetPDFProps> = ({
     day: "numeric",
   }).format(date);
 
+  // Récupérer le nom du budget à partir des budgets
+  // Si on trouve un budget avec l'ID "dashboard_title", on utilise son titre
+  const dashboardTitleBudget = budgets.find(budget => budget.id === "dashboard_title");
+  const budgetName = dashboardTitleBudget ? dashboardTitleBudget.title : "Budget";
+
   return (
     <Document>
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
-          <Text style={styles.title}>Rapport Budgétaire</Text>
+          <Text style={styles.title}>Rapport {budgetName}</Text>
           <Text style={styles.date}>{formattedDate}</Text>
         </View>
 

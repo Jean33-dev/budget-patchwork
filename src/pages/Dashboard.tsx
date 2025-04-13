@@ -18,6 +18,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -55,12 +56,6 @@ const Dashboard = () => {
     setShowTransitionDialog(false);
   };
   
-  // Télécharger directement le PDF
-  const handleExportPDF = () => {
-    // Cette fonction ne fait plus rien car le bouton est maintenant remplacé par le composant BudgetPDFDownload
-    console.log("Export PDF direct");
-  };
-
   // Suivi de l'export PDF
   const handlePDFExported = () => {
     setPdfExported(true);
@@ -81,10 +76,9 @@ const Dashboard = () => {
         currentDate={currentDate}
         onMonthChange={handleMonthChange}
         onBackClick={() => navigate("/")}
-        onExportPDF={handleExportPDF}
       />
       
-      <div className="flex justify-end mb-4">
+      <div className="flex justify-end mb-4 gap-2">
         <BudgetPDFDownload
           fileName={`rapport-budget-${currentDate.toISOString().slice(0, 7)}.pdf`}
           totalIncome={totalRevenues}
@@ -92,6 +86,11 @@ const Dashboard = () => {
           budgets={envelopes}
           className="mr-2"
         />
+        
+        <Button variant="outline" onClick={() => navigate("/dashboard/budget/transition")} className="flex items-center gap-2">
+          <CalendarPlus className="h-4 w-4" />
+          Nouveau mois
+        </Button>
       </div>
       
       <DashboardOverview

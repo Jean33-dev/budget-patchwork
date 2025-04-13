@@ -1,5 +1,6 @@
+
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Menu, CalendarPlus, FileText } from "lucide-react";
+import { ArrowLeft, Menu, CalendarPlus } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -8,13 +9,11 @@ interface DashboardHeaderProps {
   currentDate: Date;
   onMonthChange: (date: Date) => void;
   onBackClick: () => void;
-  onExportPDF?: () => void;
 }
 export const DashboardHeader = ({
   currentDate,
   onMonthChange,
-  onBackClick,
-  onExportPDF
+  onBackClick
 }: DashboardHeaderProps) => {
   const navigate = useNavigate();
   const [dashboardTitle, setDashboardTitle] = useState("Budget");
@@ -64,15 +63,6 @@ export const DashboardHeader = ({
         </DropdownMenu>
 
         <h1 className="text-xl">Tableau de bord {dashboardTitle}</h1>
-      </div>
-      
-      <div className="flex justify-end mb-4 gap-2">
-        {onExportPDF}
-        
-        <Button variant="outline" onClick={() => navigate("/dashboard/budget/transition")} className="flex items-center gap-2">
-          <CalendarPlus className="h-4 w-4" />
-          Nouveau mois
-        </Button>
       </div>
     </div>;
 };
