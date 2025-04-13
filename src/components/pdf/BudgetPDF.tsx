@@ -14,7 +14,8 @@ export const BudgetPDFDownload = ({
   incomes,
   expenses,
   className,
-  onClick
+  onClick,
+  children
 }: BudgetPDFDownloadProps) => {
   return (
     <PDFDownloadLink
@@ -32,15 +33,17 @@ export const BudgetPDFDownload = ({
       onClick={onClick}
     >
       {({ loading }) => (
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="w-full flex items-center justify-center gap-2"
-          disabled={loading}
-        >
-          <FileDown className="h-4 w-4" />
-          {loading ? "Génération..." : "Télécharger PDF"}
-        </Button>
+        children || (
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="w-full flex items-center justify-center gap-2"
+            disabled={loading}
+          >
+            <FileDown className="h-4 w-4" />
+            {loading ? "Génération..." : "Télécharger PDF"}
+          </Button>
+        )
       )}
     </PDFDownloadLink>
   );
