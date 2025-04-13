@@ -18,19 +18,11 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [showTransitionDialog, setShowTransitionDialog] = useState(false);
-  const [showPDFDialog, setShowPDFDialog] = useState(false);
   const [nextDate, setNextDate] = useState<Date | null>(null);
   const [pdfExported, setPdfExported] = useState(false);
 
@@ -63,9 +55,10 @@ const Dashboard = () => {
     setShowTransitionDialog(false);
   };
   
-  // Gérer l'export PDF
+  // Télécharger directement le PDF
   const handleExportPDF = () => {
-    setShowPDFDialog(true);
+    // Cette fonction ne fait plus rien car le bouton est maintenant remplacé par le composant BudgetPDFDownload
+    console.log("Export PDF direct");
   };
 
   // Suivi de l'export PDF
@@ -90,6 +83,16 @@ const Dashboard = () => {
         onBackClick={() => navigate("/")}
         onExportPDF={handleExportPDF}
       />
+      
+      <div className="flex justify-end mb-4">
+        <BudgetPDFDownload
+          fileName={`rapport-budget-${currentDate.toISOString().slice(0, 7)}.pdf`}
+          totalIncome={totalRevenues}
+          totalExpenses={totalExpenses}
+          budgets={envelopes}
+          className="mr-2"
+        />
+      </div>
       
       <DashboardOverview
         totalIncome={totalRevenues}
@@ -152,26 +155,6 @@ const Dashboard = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-      
-      <Dialog open={showPDFDialog} onOpenChange={setShowPDFDialog}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Exporter en PDF</DialogTitle>
-            <DialogDescription>
-              Téléchargez un rapport budgétaire au format PDF.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex flex-col gap-4 py-4">
-            <BudgetPDFDownload
-              fileName={`rapport-budget-${currentDate.toISOString().slice(0, 7)}.pdf`}
-              totalIncome={totalRevenues}
-              totalExpenses={totalExpenses}
-              budgets={envelopes}
-              onClick={handlePDFExported}
-            />
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };

@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Menu, CalendarPlus, FileText } from "lucide-react";
 import {
@@ -72,28 +73,10 @@ export const DashboardHeader = ({ currentDate, onMonthChange, onBackClick, onExp
             <DropdownMenuItem onClick={() => navigate("/dashboard/budget/expenses")}>
               Gérer les Dépenses
             </DropdownMenuItem>
-            {onExportPDF && (
-              <DropdownMenuItem onClick={onExportPDF}>
-                Exporter en PDF
-              </DropdownMenuItem>
-            )}
           </DropdownMenuContent>
         </DropdownMenu>
 
         <h1 className="text-xl">Tableau de bord {dashboardTitle}</h1>
-        
-        {onExportPDF && (
-          <div className="ml-auto mr-2">
-            <Button 
-              variant="outline"
-              onClick={onExportPDF}
-              className="flex items-center gap-2"
-            >
-              <FileText className="h-4 w-4" />
-              Exporter PDF
-            </Button>
-          </div>
-        )}
       </div>
       
       <div className="flex justify-end mb-4 gap-2">
