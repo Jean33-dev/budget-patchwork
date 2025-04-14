@@ -34,9 +34,7 @@ export const BudgetPDFDownload = ({
       {({ loading }) => (
         <Button 
           variant="outline" 
-          size="sm" 
-          className="w-full flex items-center justify-center gap-2"
-          disabled={loading}
+          className="flex items-center gap-2"
         >
           <FileDown className="h-4 w-4" />
           {loading ? "Génération..." : "Télécharger PDF"}
