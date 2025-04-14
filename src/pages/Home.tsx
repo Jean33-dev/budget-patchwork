@@ -1,110 +1,102 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
-import { PlusCircle, LineChart, Settings } from "lucide-react";
+import { PlusCircle, LineChart, Settings, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
 import { EditDashboardDialog } from "@/components/dashboard/EditDashboardDialog";
-import { db } from "@/services/database";
+import { useDashboards } from "@/hooks/useDashboards";
+import { Dashboard } from "@/services/database/models/dashboard";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Skeleton } from "@/components/ui/skeleton";
+import { CreateDashboardDialog } from "@/components/dashboard/CreateDashboardDialog";
 
 const Home = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [dashboardTitle, setDashboardTitle] = useState("Budget Personnel");
-  const [isLoading, setIsLoading] = useState(true);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [selectedDashboard, setSelectedDashboard] = useState<Dashboard | null>(null);
 
-  // Charger le titre du tableau de bord depuis la base de données
-  useEffect(() => {
-    const loadDashboardTitle = async () => {
-      try {
-        await db.init();
-        const budgets = await db.getBudgets();
-        
-        // Chercher un budget avec le nom spécial "dashboard_title"
-        const dashboardTitleBudget = budgets.find(b => b.id === "dashboard_title");
-        
-        if (dashboardTitleBudget) {
-          setDashboardTitle(dashboardTitleBudget.title);
-        } else {
-          // Si le budget n'existe pas encore, le créer avec la valeur par défaut
-          const defaultTitle = localStorage.getItem("dashboardTitle") || "Budget Personnel";
-          await db.addBudget({
-            id: "dashboard_title",
-            title: defaultTitle,
-            budget: 0,
-            spent: 0,
-            type: 'budget',
-            carriedOver: 0
-          });
-          setDashboardTitle(defaultTitle);
-          
-          // Supprimer l'ancienne valeur de localStorage après migration
-          localStorage.removeItem("dashboardTitle");
-        }
-      } catch (error) {
-        console.error("Erreur lors du chargement du titre:", error);
-        // Fallback sur localStorage en cas d'erreur
-        const localTitle = localStorage.getItem("dashboardTitle");
-        if (localTitle) {
-          setDashboardTitle(localTitle);
-        }
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadDashboardTitle();
-  }, []);
+  const {
+    dashboards,
+    isLoading,
+    addDashboard,
+    updateDashboard,
+    deleteDashboard
+  } = useDashboards();
 
   const handleCreateDashboard = () => {
-    toast({
-      title: "Bientôt disponible",
-      description: "La création de nouveaux tableaux de bord sera disponible prochainement.",
-    });
+    setIsCreateDialogOpen(true);
   };
 
-  const handleEditDashboard = () => {
+  const handleEditDashboard = (dashboard: Dashboard, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelectedDashboard(dashboard);
     setIsEditDialogOpen(true);
   };
 
+  const handleDeleteDashboard = (dashboard: Dashboard, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelectedDashboard(dashboard);
+    setIsDeleteDialogOpen(true);
+  };
+
   const handleSaveDashboardName = async (newName: string) => {
-    try {
-      // Mettre à jour le titre dans la base de données
-      const budgets = await db.getBudgets();
-      const dashboardTitleBudget = budgets.find(b => b.id === "dashboard_title");
+    if (selectedDashboard) {
+      const success = await updateDashboard({
+        ...selectedDashboard,
+        title: newName
+      });
       
-      if (dashboardTitleBudget) {
-        await db.updateBudget({
-          ...dashboardTitleBudget,
-          title: newName
-        });
-      } else {
-        await db.addBudget({
-          id: "dashboard_title",
-          title: newName,
-          budget: 0,
-          spent: 0,
-          type: 'budget',
-          carriedOver: 0
-        });
+      if (success) {
+        setIsEditDialogOpen(false);
+        setSelectedDashboard(null);
       }
-      
-      setDashboardTitle(newName);
-      setIsEditDialogOpen(false);
-      toast({
-        title: "Nom modifié",
-        description: "Le nom du tableau de bord a été mis à jour.",
-      });
-    } catch (error) {
-      console.error("Erreur lors de la mise à jour du titre:", error);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Impossible de mettre à jour le nom du tableau de bord."
-      });
     }
+  };
+
+  const handleCreateNewDashboard = async (name: string) => {
+    const dashboardId = await addDashboard(name);
+    setIsCreateDialogOpen(false);
+    
+    if (dashboardId) {
+      // Rediriger vers le nouveau tableau de bord
+      navigate(`/dashboard/${dashboardId}`);
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    if (selectedDashboard) {
+      const success = await deleteDashboard(selectedDashboard.id);
+      
+      if (success) {
+        setIsDeleteDialogOpen(false);
+        setSelectedDashboard(null);
+      }
+    }
+  };
+
+  const handleDashboardClick = (dashboard: Dashboard) => {
+    // Mettre à jour la date de dernier accès
+    updateDashboard({
+      ...dashboard,
+      lastAccessed: new Date().toISOString()
+    });
+    
+    // Naviguer vers le dashboard
+    navigate(`/dashboard/${dashboard.id}`);
   };
 
   return (
@@ -112,30 +104,63 @@ const Home = () => {
       <h1 className="text-4xl font-bold">Mes Tableaux de Bord</h1>
       
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate("/dashboard/budget")}>
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <LineChart className="h-6 w-6" />
-                {isLoading ? "Chargement..." : dashboardTitle}
-              </div>
-              <Button 
-                variant="ghost" 
-                size="icon"
-                className="h-8 w-8" 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleEditDashboard();
-                }}
-              >
-                <Settings className="h-4 w-4" />
-              </Button>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {/* Contenu de la carte supprimé comme demandé */}
-          </CardContent>
-        </Card>
+        {isLoading ? (
+          // Afficher des squelettes pendant le chargement
+          Array(3).fill(0).map((_, index) => (
+            <Card key={index} className="cursor-pointer hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <Skeleton className="h-8 w-3/4" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-6 w-full mb-2" />
+                <Skeleton className="h-6 w-2/3" />
+              </CardContent>
+            </Card>
+          ))
+        ) : (
+          // Afficher les tableaux de bord
+          dashboards.map(dashboard => (
+            <Card 
+              key={dashboard.id}
+              className="cursor-pointer hover:shadow-lg transition-shadow" 
+              onClick={() => handleDashboardClick(dashboard)}
+            >
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <LineChart className="h-6 w-6" />
+                    {dashboard.title}
+                  </div>
+                  <div className="flex gap-1">
+                    <Button 
+                      variant="ghost" 
+                      size="icon"
+                      className="h-8 w-8" 
+                      onClick={(e) => handleEditDashboard(dashboard, e)}
+                    >
+                      <Settings className="h-4 w-4" />
+                    </Button>
+                    {dashboards.length > 1 && (
+                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        className="h-8 w-8 text-destructive" 
+                        onClick={(e) => handleDeleteDashboard(dashboard, e)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-sm text-muted-foreground">
+                  Créé le {new Date(dashboard.createdAt).toLocaleDateString()}
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        )}
 
         <Card className="border-dashed">
           <CardHeader>
@@ -155,9 +180,32 @@ const Home = () => {
       <EditDashboardDialog 
         open={isEditDialogOpen}
         onOpenChange={setIsEditDialogOpen}
-        currentName={dashboardTitle}
+        currentName={selectedDashboard?.title || ""}
         onSave={handleSaveDashboardName}
       />
+
+      <CreateDashboardDialog
+        open={isCreateDialogOpen}
+        onOpenChange={setIsCreateDialogOpen}
+        onSave={handleCreateNewDashboard}
+      />
+
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Êtes-vous sûr de vouloir supprimer ce tableau de bord ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Cette action est irréversible. Toutes les données associées à ce tableau de bord seront perdues.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

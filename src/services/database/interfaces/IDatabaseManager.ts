@@ -3,6 +3,7 @@ import { Budget } from '../models/budget';
 import { Expense } from '../models/expense';
 import { Income } from '../models/income';
 import { Category } from '../models/category';
+import { Dashboard } from '../models/dashboard';
 
 /**
  * Interface defining all database operations
@@ -42,4 +43,10 @@ export interface IDatabaseManager {
   updateCategory(category: Category): Promise<void>;
   deleteCategory(id: string): Promise<void>;
   resetCategoryExpenses(categoryId: string): Promise<void>;
+  
+  // Dashboard operations
+  getDashboards(): Promise<Dashboard[]>;
+  addDashboard(dashboard: Dashboard): Promise<void>;
+  updateDashboard(dashboard: Dashboard): Promise<void>;
+  deleteDashboard(id: string): Promise<void>;
 }

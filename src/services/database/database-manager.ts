@@ -1,8 +1,8 @@
-
 import { Income } from './models/income';
 import { Expense } from './models/expense';
 import { Budget } from './models/budget';
 import { Category } from './models/category';
+import { Dashboard } from './models/dashboard';
 import { BaseDatabaseManager } from './base-database-manager';
 import { DatabaseManagerImpl } from './database-manager-impl';
 import { DatabaseManagerFactory } from './database-manager-factory';
@@ -235,5 +235,44 @@ export class DatabaseManager extends DatabaseManagerImpl implements IDatabaseMan
       throw new Error("Database not initialized in resetCategoryExpenses");
     }
     await this.managerFactory.getCategoryManager().resetCategoryExpenses(categoryId);
+  }
+
+  // Dashboard methods
+  async getDashboards(): Promise<Dashboard[]> {
+    try {
+      const initialized = await this.ensureInitialized();
+      if (!initialized) {
+        console.error("Database not initialized in getDashboards");
+        return [];
+      }
+      return this.managerFactory.getDashboardManager().getDashboards();
+    } catch (error) {
+      console.error("Error in getDashboards:", error);
+      return [];
+    }
+  }
+
+  async addDashboard(dashboard: Dashboard): Promise<void> {
+    const initialized = await this.ensureInitialized();
+    if (!initialized) {
+      throw new Error("Database not initialized in addDashboard");
+    }
+    await this.managerFactory.getDashboardManager().addDashboard(dashboard);
+  }
+
+  async updateDashboard(dashboard: Dashboard): Promise<void> {
+    const initialized = await this.ensureInitialized();
+    if (!initialized) {
+      throw new Error("Database not initialized in updateDashboard");
+    }
+    await this.managerFactory.getDashboardManager().updateDashboard(dashboard);
+  }
+
+  async deleteDashboard(id: string): Promise<void> {
+    const initialized = await this.ensureInitialized();
+    if (!initialized) {
+      throw new Error("Database not initialized in deleteDashboard");
+    }
+    await this.managerFactory.getDashboardManager().deleteDashboard(id);
   }
 }

@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+
+import { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { DashboardOverview } from "@/components/dashboard/DashboardOverview";
 import { BudgetStats } from "@/components/dashboard/BudgetStats";
@@ -18,13 +19,32 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { useDashboards } from "@/hooks/useDashboards";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const { dashboardId } = useParams<{ dashboardId: string }>();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [showTransitionDialog, setShowTransitionDialog] = useState(false);
   const [nextDate, setNextDate] = useState<Date | null>(null);
   const [pdfExported, setPdfExported] = useState(false);
+  const [dashboardTitle, setDashboardTitle] = useState("");
+
+  const { dashboards, isLoading: isDashboardsLoading } = useDashboards();
+
+  // Charger le titre du tableau de bord
+  useEffect(() => {
+    if (!isDashboardsLoading && dashboards.length > 0 && dashboardId) {
+      const dashboard = dashboards.find(d => d.id === dashboardId);
+      if (dashboard) {
+        setDashboardTitle(dashboard.title);
+      } else {
+        // Si le tableau de bord n'existe pas, rediriger vers la page d'accueil
+        navigate("/");
+      }
+    }
+  }, [dashboardId, dashboards, isDashboardsLoading, navigate]);
 
   const { 
     budgets, 
@@ -42,8 +62,8 @@ const Dashboard = () => {
   };
 
   const handleTransitionConfirm = () => {
-    if (nextDate) {
-      navigate("/dashboard/budget/transition");
+    if (nextDate && dashboardId) {
+      navigate(`/dashboard/${dashboardId}/transition`);
     }
     setShowTransitionDialog(false);
   };
@@ -65,17 +85,29 @@ const Dashboard = () => {
     type: budget.type
   }));
 
+  if (isDashboardsLoading) {
+    return (
+      <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-8 space-y-6 sm:space-y-8">
+        <Skeleton className="h-10 w-3/4 mb-6" />
+        <Skeleton className="h-6 w-full mb-4" />
+        <Skeleton className="h-40 w-full mb-6" />
+        <Skeleton className="h-20 w-full" />
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-8 space-y-6 sm:space-y-8">
       <DashboardHeader
         currentDate={currentDate}
         onMonthChange={handleMonthChange}
         onBackClick={() => navigate("/")}
+        title={dashboardTitle}
       />
       
       <div className="flex justify-end mb-4 gap-2">
         <BudgetPDFDownload
-          fileName={`rapport-budget-${currentDate.toISOString().slice(0, 7)}.pdf`}
+          fileName={`rapport-budget-${dashboardTitle}-${currentDate.toISOString().slice(0, 7)}.pdf`}
           totalIncome={totalRevenues}
           totalExpenses={totalExpenses}
           budgets={envelopes}
@@ -83,7 +115,7 @@ const Dashboard = () => {
           onClick={handlePDFExported}
         />
         
-        <Button variant="outline" onClick={() => navigate("/dashboard/budget/transition")} className="flex items-center gap-2">
+        <Button variant="outline" onClick={() => navigate(`/dashboard/${dashboardId}/transition`)} className="flex items-center gap-2">
           <CalendarPlus className="h-4 w-4" />
           Nouveau mois
         </Button>
@@ -126,7 +158,7 @@ const Dashboard = () => {
                   
                   <div className="mt-2" onClick={handlePDFExported}>
                     <BudgetPDFDownload
-                      fileName={`rapport-budget-${currentDate.toISOString().slice(0, 7)}.pdf`}
+                      fileName={`rapport-budget-${dashboardTitle}-${currentDate.toISOString().slice(0, 7)}.pdf`}
                       totalIncome={totalRevenues}
                       totalExpenses={totalExpenses}
                       budgets={envelopes}
