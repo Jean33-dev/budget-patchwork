@@ -25,6 +25,15 @@ export default {
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+        budget: {
+          income: "#10B981",
+          expense: "#EF4444",
+          neutral: "#3B82F6",
+          purple: "#8B5CF6",
+          pink: "#D946EF",
+          orange: "#F97316",
+          blue: "#0EA5E9",
+        },
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
