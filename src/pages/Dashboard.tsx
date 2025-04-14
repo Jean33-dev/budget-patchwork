@@ -6,7 +6,7 @@ import { DashboardOverview } from "@/components/dashboard/DashboardOverview";
 import { BudgetStats } from "@/components/dashboard/BudgetStats";
 import { useBudgets } from "@/hooks/useBudgets";
 import { BudgetPDFDownload } from "@/components/pdf/BudgetPDF";
-import { AlertTriangle, FileText } from "lucide-react";
+import { AlertTriangle, FileText, CalendarPlus } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
