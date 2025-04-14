@@ -9,10 +9,11 @@ import { DashboardManager } from '../managers/dashboard-manager';
  * Interface for database manager
  */
 export interface IDatabaseManager {
-  init(): Promise<void>;
+  init(): Promise<boolean>;
   getBudgetManager(): IBudgetManager;
   getCategoryManager(): ICategoryManager;
   getExpenseManager(): IExpenseManager;
   getIncomeManager(): IIncomeManager;
   getDashboardManager(): DashboardManager;
+  resetInitializationAttempts?(): void;
 }

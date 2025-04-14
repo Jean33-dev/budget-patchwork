@@ -1,5 +1,6 @@
+
 import { IDatabaseManager } from './interfaces/IDatabaseManager';
-import { isPlatform } from '@capacitor/core';
+import { Capacitor } from '@capacitor/core';
 
 /**
  * Factory for database manager
@@ -54,6 +55,6 @@ export class DatabaseManagerFactory {
    * @returns boolean
    */
   private static isNative(): boolean {
-    return isPlatform('ios') || isPlatform('android');
+    return Capacitor.isNativePlatform();
   }
 }

@@ -1,82 +1,40 @@
 
-import { Database } from 'sql.js';
+import { Database } from "sql.js";
+import { toast } from "@/components/ui/use-toast";
+import { budgetTableSchema } from "./queries/budget-queries";
+import { categoryTableSchema } from "./queries/category-queries";
+import { expenseTableSchema } from "./queries/expense-queries";
+import { incomeTableSchema } from "./queries/income-queries";
+import { dashboardTableSchema } from "./queries/dashboard-queries";
 
+/**
+ * Database initialization manager
+ */
 export class DatabaseInitManager {
-  async initializeDatabase(db: Database): Promise<void> {
-    // Create tables if they don't exist
-    this.createBudgetsTable(db);
-    this.createCategoriesTable(db);
-    this.createExpensesTable(db);
-    this.createIncomesTable(db);
-    this.createDashboardsTable(db);
-  }
-
-  private createBudgetsTable(db: Database): void {
-    db.exec(`
-      CREATE TABLE IF NOT EXISTS budgets (
-        id TEXT PRIMARY KEY,
-        title TEXT NOT NULL,
-        budget REAL NOT NULL,
-        spent REAL NOT NULL,
-        type TEXT NOT NULL,
-        categoryId TEXT,
-        createdAt TEXT NOT NULL,
-        dashboardId TEXT
-      )
-    `);
-  }
-
-  private createCategoriesTable(db: Database): void {
-    db.exec(`
-      CREATE TABLE IF NOT EXISTS categories (
-        id TEXT PRIMARY KEY,
-        name TEXT NOT NULL,
-        color TEXT,
-        dashboardId TEXT
-      )
-    `);
-  }
-
-  private createExpensesTable(db: Database): void {
-    db.exec(`
-      CREATE TABLE IF NOT EXISTS expenses (
-        id TEXT PRIMARY KEY,
-        title TEXT NOT NULL,
-        amount REAL NOT NULL,
-        date TEXT NOT NULL,
-        categoryId TEXT,
-        budgetId TEXT,
-        recurring INTEGER DEFAULT 0,
-        frequency TEXT,
-        notes TEXT,
-        dashboardId TEXT
-      )
-    `);
-  }
-
-  private createIncomesTable(db: Database): void {
-    db.exec(`
-      CREATE TABLE IF NOT EXISTS incomes (
-        id TEXT PRIMARY KEY,
-        title TEXT NOT NULL,
-        amount REAL NOT NULL,
-        date TEXT NOT NULL,
-        recurring INTEGER DEFAULT 0,
-        frequency TEXT,
-        notes TEXT,
-        dashboardId TEXT
-      )
-    `);
-  }
-
-  private createDashboardsTable(db: Database): void {
-    db.exec(`
-      CREATE TABLE IF NOT EXISTS dashboards (
-        id TEXT PRIMARY KEY,
-        title TEXT NOT NULL,
-        createdAt TEXT NOT NULL,
-        lastAccessed TEXT NOT NULL
-      )
-    `);
+  /**
+   * Initialize database tables
+   */
+  async initializeTables(db: Database): Promise<boolean> {
+    try {
+      console.log("Creating database tables...");
+      
+      // Create tables
+      db.exec(dashboardTableSchema);
+      db.exec(budgetTableSchema);
+      db.exec(categoryTableSchema);
+      db.exec(expenseTableSchema);
+      db.exec(incomeTableSchema);
+      
+      console.log("Database tables created successfully!");
+      return true;
+    } catch (error) {
+      console.error("Error initializing database tables:", error);
+      toast({
+        variant: "destructive",
+        title: "Error initializing database",
+        description: "Unable to create database tables. Please refresh the page."
+      });
+      return false;
+    }
   }
 }

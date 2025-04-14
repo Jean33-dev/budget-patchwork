@@ -6,6 +6,7 @@ import { Database } from "sql.js";
  */
 export interface IQueryManager {
   getDb(): Database;
+  setDb(db: Database): void;
   ensureInitialized(): Promise<boolean>;
   executeGetBudgets(): Promise<any[]>;
   executeAddBudget(budget: any): Promise<void>;

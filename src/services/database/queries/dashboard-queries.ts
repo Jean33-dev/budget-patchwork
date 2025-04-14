@@ -1,84 +1,34 @@
 
-import { Database } from 'sql.js';
-import { Dashboard } from '../models/dashboard';
+// SQL Schema for dashboard table
+export const dashboardTableSchema = `
+CREATE TABLE IF NOT EXISTS dashboards (
+  id TEXT PRIMARY KEY,
+  title TEXT NOT NULL,
+  createdAt TEXT NOT NULL,
+  lastAccessed TEXT NOT NULL
+);
+`;
 
-export const dashboardQueries = {
-  /**
-   * Get all dashboards
-   * @param db Database
-   * @returns Dashboards
-   */
-  getAll: (db: Database): Dashboard[] => {
-    try {
-      const result = db.exec('SELECT id, title, createdAt, lastAccessed FROM dashboards');
-      
-      if (result.length === 0 || result[0].values.length === 0) {
-        return [];
-      }
-      
-      const columns = result[0].columns;
-      return result[0].values.map(row => {
-        const dashboard: any = {};
-        columns.forEach((column, index) => {
-          dashboard[column] = row[index];
-        });
-        return dashboard as Dashboard;
-      });
-    } catch (error) {
-      console.error('Error getting dashboards:', error);
-      return [];
-    }
-  },
+// SQL query to get all dashboards
+export const getAllDashboardsQuery = `
+SELECT * FROM dashboards ORDER BY lastAccessed DESC;
+`;
 
-  /**
-   * Add a dashboard
-   * @param db Database
-   * @param dashboard Dashboard
-   */
-  add: (db: Database, dashboard: Dashboard): void => {
-    try {
-      const stmt = db.prepare(
-        'INSERT INTO dashboards (id, title, createdAt, lastAccessed) VALUES (?, ?, ?, ?)'
-      );
-      stmt.run([dashboard.id, dashboard.title, dashboard.createdAt, dashboard.lastAccessed]);
-      stmt.free();
-    } catch (error) {
-      console.error('Error adding dashboard:', error);
-      throw error;
-    }
-  },
+// SQL query to add a dashboard
+export const addDashboardQuery = `
+INSERT INTO dashboards (id, title, createdAt, lastAccessed)
+VALUES (?, ?, ?, ?);
+`;
 
-  /**
-   * Update a dashboard
-   * @param db Database
-   * @param dashboard Dashboard
-   */
-  update: (db: Database, dashboard: Dashboard): void => {
-    try {
-      const stmt = db.prepare(
-        'UPDATE dashboards SET title = ?, lastAccessed = ? WHERE id = ?'
-      );
-      stmt.run([dashboard.title, dashboard.lastAccessed, dashboard.id]);
-      stmt.free();
-    } catch (error) {
-      console.error('Error updating dashboard:', error);
-      throw error;
-    }
-  },
+// SQL query to update a dashboard
+export const updateDashboardQuery = `
+UPDATE dashboards
+SET title = ?, lastAccessed = ?
+WHERE id = ?;
+`;
 
-  /**
-   * Delete a dashboard
-   * @param db Database
-   * @param id Dashboard ID
-   */
-  delete: (db: Database, id: string): void => {
-    try {
-      const stmt = db.prepare('DELETE FROM dashboards WHERE id = ?');
-      stmt.run([id]);
-      stmt.free();
-    } catch (error) {
-      console.error('Error deleting dashboard:', error);
-      throw error;
-    }
-  }
-};
+// SQL query to delete a dashboard
+export const deleteDashboardQuery = `
+DELETE FROM dashboards
+WHERE id = ?;
+`;

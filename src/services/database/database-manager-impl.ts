@@ -3,6 +3,7 @@ import { toast } from "@/components/ui/use-toast";
 import { DatabaseManagerCore } from './database-manager-core';
 import { DatabaseInitManager } from './database-init-manager';
 import { BaseDatabaseManager } from './base-database-manager';
+import { Database } from "sql.js";
 
 /**
  * Implementation of the main database manager that coordinates all specialized managers
@@ -21,7 +22,7 @@ export class DatabaseManagerImpl extends DatabaseManagerCore {
       return true;
     }
     
-    // Use the parent class's method to check initialization status
+    // Check initialization status
     if (this.isInitializationInProgress()) {
       console.log("DatabaseManager initialization already in progress, waiting...");
       while (this.isInitializationInProgress()) {
@@ -33,47 +34,51 @@ export class DatabaseManagerImpl extends DatabaseManagerCore {
       }
     }
     
-    // Use the parent class's method to set initialization status
+    // Set initialization status
     this.setInitializationInProgress(true);
     
     try {
-      // First initialize the core
-      console.log("Initializing database core...");
-      const coreSuccess = await super.init();
-      if (!coreSuccess) {
-        console.error("Failed to initialize database core");
+      // Initialize the database
+      console.log("Initializing database...");
+      const dbInstance = await this.setupDatabase();
+      
+      if (!dbInstance) {
+        console.error("Failed to create database instance");
         return false;
       }
       
+      // Store the database instance
+      this.db = dbInstance;
+      
+      // Set up the query manager
+      this.queryManager.setDb(this.db);
+      
+      // Initialize database schema
       try {
-        // Initialize the database using the init manager
-        console.log("Initializing database using init manager...");
-        const success = await this.initManager.init();
+        console.log("Setting up database schema...");
+        await this.setupDatabaseSchema();
         
-        if (!success) {
-          console.error("Failed to initialize database with init manager");
-          return false;
-        }
-        
-        // Share the database instance with all managers
-        const dbInstance = this.initManager.getDb();
-        if (!dbInstance) {
-          console.error("Database instance is null after initialization");
-          return false;
-        }
-        
+        // Set as initialized
+        this.initialized = true;
         return true;
       } catch (err) {
-        console.error('Error initializing database managers:', err);
+        console.error('Error initializing database schema:', err);
         toast({
           variant: "destructive",
           title: "Erreur d'initialisation",
-          description: "Impossible d'initialiser la base de données. Veuillez rafraîchir la page."
+          description: "Impossible d'initialiser le schéma de base de données."
         });
         return false;
       }
+    } catch (error) {
+      console.error('Error initializing database:', error);
+      toast({
+        variant: "destructive",
+        title: "Erreur d'initialisation",
+        description: "Impossible d'initialiser la base de données. Veuillez rafraîchir la page."
+      });
+      return false;
     } finally {
-      // Use the parent class's method to reset initialization status
       this.setInitializationInProgress(false);
     }
   }
@@ -83,7 +88,27 @@ export class DatabaseManagerImpl extends DatabaseManagerCore {
     BaseDatabaseManager.resetInitializationAttempts();
   }
 
-  async migrateFromLocalStorage(): Promise<boolean> {
-    return this.initManager.migrateFromLocalStorage();
+  // Method to set up the database
+  protected async setupDatabase(): Promise<Database | null> {
+    try {
+      // This would normally create an instance of SQL.js or Capacitor SQLite
+      // For demonstration, we'll return null, and subclasses will override this
+      return null;
+    } catch (error) {
+      console.error('Error setting up database:', error);
+      return null;
+    }
+  }
+  
+  // Method to set up the database schema
+  protected async setupDatabaseSchema(): Promise<boolean> {
+    try {
+      // Initialize the tables and schema
+      await this.initManager.initializeTables(this.db!);
+      return true;
+    } catch (error) {
+      console.error('Error setting up database schema:', error);
+      return false;
+    }
   }
 }

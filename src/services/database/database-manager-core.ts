@@ -25,12 +25,11 @@ export abstract class DatabaseManagerCore implements IDatabaseManager {
   protected expenseManager?: ExpenseManager;
   protected incomeManager?: IncomeManager;
   protected dashboardManager?: DashboardManager;
-  protected databaseInitializationManager: DatabaseInitManager;
-  protected isInitialized = false;
+  protected initialized = false;
+  protected initializationInProgress = false;
 
   constructor() {
-    this.queryManager = new QueryManager(this);
-    this.databaseInitializationManager = new DatabaseInitManager();
+    this.queryManager = new QueryManager();
   }
 
   /**
@@ -48,8 +47,8 @@ export abstract class DatabaseManagerCore implements IDatabaseManager {
    * Check if database is initialized
    * @returns boolean
    */
-  isDbInitialized(): boolean {
-    return this.isInitialized;
+  isInitialized(): boolean {
+    return this.initialized;
   }
 
   /**
@@ -58,54 +57,28 @@ export abstract class DatabaseManagerCore implements IDatabaseManager {
    * @returns void
    */
   setInitialized(isInitialized: boolean): void {
-    this.isInitialized = isInitialized;
+    this.initialized = isInitialized;
+  }
+
+  /**
+   * Check if initialization is in progress
+   */
+  isInitializationInProgress(): boolean {
+    return this.initializationInProgress;
+  }
+
+  /**
+   * Set initialization in progress flag
+   */
+  setInitializationInProgress(inProgress: boolean): void {
+    this.initializationInProgress = inProgress;
   }
 
   /**
    * Initialize database
-   * @returns void
+   * @returns Promise<boolean>
    */
-  async init(): Promise<void> {
-    if (this.isInitialized) {
-      return;
-    }
-
-    try {
-      // Initialize database using the appropriate SQLite adapter
-      await this.setupDatabase();
-
-      if (this.db) {
-        // Create tables
-        await this.databaseInitializationManager.initializeDatabase(this.db);
-
-        this.queryManager.getDb = () => {
-          if (!this.db) {
-            throw new Error('Database not initialized');
-          }
-          return this.db;
-        };
-
-        this.queryManager.ensureInitialized = async () => {
-          if (!this.isInitialized) {
-            await this.init();
-          }
-          return this.isInitialized;
-        };
-
-        // Set isInitialized flag
-        this.isInitialized = true;
-      }
-    } catch (error) {
-      console.error('Error initializing database:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Setup database
-   * This method is implemented by subclasses for Web and Capacitor
-   */
-  protected abstract setupDatabase(): Promise<void>;
+  abstract init(): Promise<boolean>;
 
   /**
    * Get budget manager
