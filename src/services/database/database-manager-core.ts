@@ -130,7 +130,7 @@ export abstract class DatabaseManagerCore implements IDatabaseManager {
    */
   getDashboardManager(): DashboardManager {
     if (!this.dashboardManager) {
-      this.dashboardManager = new DashboardManager(this.queryManager);
+      this.dashboardManager = new DashboardManager();
     }
     return this.dashboardManager;
   }

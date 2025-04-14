@@ -1,23 +1,28 @@
 
+import { toast } from "@/components/ui/use-toast";
+
 /**
- * Module for SQL.js database operations
+ * Web SQLite operations
  */
-
-import { SqlJsInitializer } from './sql-js-initializer';
-
 export class WebSQLiteOperations {
   /**
    * Execute a SQLite query
    */
-  static async execute(db: any, query: string, params: any[] = []): Promise<any> {
-    if (!db) {
-      throw new Error("Database is not initialized");
-    }
-    
+  static execute(db: any, query: string, params: any[] = []): any {
     try {
-      return db.exec(query, params);
+      console.log("Executing SQL query:", query, "with params:", params);
+      const stmt = db.prepare(query);
+      stmt.bind(params);
+      const result = stmt.step() ? stmt.getAsObject() : null;
+      stmt.free();
+      return result;
     } catch (error) {
-      SqlJsInitializer.logError("execute", error);
+      console.error("Error executing SQL query:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur de base de données",
+        description: `Erreur lors de l'exécution de la requête: ${error}`
+      });
       throw error;
     }
   }
@@ -25,18 +30,20 @@ export class WebSQLiteOperations {
   /**
    * Execute a set of SQLite queries
    */
-  static async executeSet(db: any, queries: string[]): Promise<any> {
-    if (!db) {
-      throw new Error("Database is not initialized");
-    }
-    
+  static executeSet(db: any, queries: string[]): any {
     try {
-      for (const query of queries) {
+      console.log("Executing SQL query set, count:", queries.length);
+      queries.forEach(query => {
         db.exec(query);
-      }
+      });
       return true;
     } catch (error) {
-      SqlJsInitializer.logError("executeSet", error);
+      console.error("Error executing SQL query set:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur de base de données",
+        description: `Erreur lors de l'exécution des requêtes: ${error}`
+      });
       throw error;
     }
   }
@@ -44,18 +51,21 @@ export class WebSQLiteOperations {
   /**
    * Execute a SQLite query without result (INSERT, UPDATE, DELETE)
    */
-  static async run(db: any, query: string, params: any[] = []): Promise<any> {
-    if (!db) {
-      throw new Error("Database is not initialized");
-    }
-    
+  static run(db: any, query: string, params: any[] = []): any {
     try {
+      console.log("Running SQL query:", query, "with params:", params);
       const stmt = db.prepare(query);
-      const result = stmt.run(params);
+      stmt.bind(params);
+      stmt.step();
       stmt.free();
-      return result;
+      return true;
     } catch (error) {
-      SqlJsInitializer.logError("run", error);
+      console.error("Error running SQL query:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur de base de données",
+        description: `Erreur lors de l'exécution de la requête: ${error}`
+      });
       throw error;
     }
   }
@@ -63,23 +73,27 @@ export class WebSQLiteOperations {
   /**
    * Execute a SQLite query and return the results (SELECT)
    */
-  static async query(db: any, query: string, params: any[] = []): Promise<any[]> {
-    if (!db) {
-      throw new Error("Database is not initialized");
-    }
-    
+  static query(db: any, query: string, params: any[] = []): any[] {
     try {
+      console.log("Querying SQL:", query, "with params:", params);
+      const result: any[] = [];
       const stmt = db.prepare(query);
-      const results: any[] = [];
+      stmt.bind(params);
       
       while (stmt.step()) {
-        results.push(stmt.getAsObject());
+        result.push(stmt.getAsObject());
       }
       
       stmt.free();
-      return results;
+      console.log(`Query returned ${result.length} results`);
+      return result;
     } catch (error) {
-      SqlJsInitializer.logError("query", error);
+      console.error("Error querying SQL:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur de base de données",
+        description: `Erreur lors de la requête: ${error}`
+      });
       throw error;
     }
   }
@@ -89,13 +103,15 @@ export class WebSQLiteOperations {
    */
   static importData(SQL: any, data: Uint8Array): any {
     try {
-      if (!SQL) {
-        throw new Error("SQL.js is not initialized");
-      }
-      
+      console.log("Importing database data...");
       return new SQL.Database(data);
     } catch (error) {
-      SqlJsInitializer.logError("importData", error);
+      console.error("Error importing database data:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur de base de données",
+        description: `Erreur lors de l'importation des données: ${error}`
+      });
       throw error;
     }
   }

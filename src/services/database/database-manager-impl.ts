@@ -4,6 +4,7 @@ import { DatabaseManagerCore } from './database-manager-core';
 import { DatabaseInitManager } from './database-init-manager';
 import { BaseDatabaseManager } from './base-database-manager';
 import { Database } from "sql.js";
+import { SqlJsInitializer } from './sql-js-initializer';
 
 /**
  * Implementation of the main database manager that coordinates all specialized managers
@@ -92,11 +93,13 @@ export class DatabaseManagerImpl extends DatabaseManagerCore {
   // Method to reset the initialization attempts
   resetInitializationAttempts(): void {
     BaseDatabaseManager.resetInitializationAttempts();
+    SqlJsInitializer.resetInitializationAttempts();
   }
 
   // Method to set up the database
   protected async setupDatabase(): Promise<Database | null> {
     try {
+      console.log("Base DatabaseManagerImpl.setupDatabase() called - should be overridden by subclasses");
       // This would normally create an instance of SQL.js or Capacitor SQLite
       // For demonstration, we'll return null, and subclasses will override this
       return null;
@@ -109,8 +112,15 @@ export class DatabaseManagerImpl extends DatabaseManagerCore {
   // Method to set up the database schema
   protected async setupDatabaseSchema(): Promise<boolean> {
     try {
+      if (!this.db) {
+        console.error("Database is null, cannot set up schema");
+        return false;
+      }
+      
       // Initialize the tables and schema
-      await this.initManager.initializeTables(this.db!);
+      console.log("Initializing database tables...");
+      await this.initManager.initializeTables(this.db);
+      console.log("Database tables initialized successfully");
       return true;
     } catch (error) {
       console.error('Error setting up database schema:', error);
@@ -124,16 +134,18 @@ export class WebDatabaseManager extends DatabaseManagerImpl {
   protected async setupDatabase(): Promise<Database | null> {
     // Implementation for web (SQL.js)
     try {
-      const { SqlJsInitializer } = await import('./sql-js-initializer');
+      console.log("WebDatabaseManager: Initializing SQL.js...");
       const SQL = await SqlJsInitializer.initialize();
       
-      if (SQL) {
-        console.log("Creating new SQL.js database instance...");
-        return new SQL.Database();
+      if (!SQL) {
+        console.error("WebDatabaseManager: SQL.js initialization failed");
+        return null;
       }
-      return null;
+      
+      console.log("WebDatabaseManager: Creating new SQL.js database instance...");
+      return new SQL.Database();
     } catch (error) {
-      console.error('Error initializing SQL.js database:', error);
+      console.error('WebDatabaseManager: Error initializing SQL.js database:', error);
       return null;
     }
   }
@@ -141,9 +153,15 @@ export class WebDatabaseManager extends DatabaseManagerImpl {
 
 export class CapacitorDatabaseManager extends DatabaseManagerImpl {
   protected async setupDatabase(): Promise<Database | null> {
-    // Implementation for Capacitor
-    // This would use @capacitor-community/sqlite
-    // For now, we'll just return null as a placeholder
-    return null;
+    try {
+      console.log("CapacitorDatabaseManager: Initializing database...");
+      // Implementation for Capacitor
+      // This would use @capacitor-community/sqlite
+      // For now, we'll just return null as a placeholder
+      return null;
+    } catch (error) {
+      console.error('CapacitorDatabaseManager: Error initializing Capacitor database:', error);
+      return null;
+    }
   }
 }

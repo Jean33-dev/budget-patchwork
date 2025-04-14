@@ -1,29 +1,52 @@
 
-import { toast } from "@/components/ui/use-toast";
-
-export interface SQLiteInterface {
-  execute(query: string, params?: any[]): Promise<any>;
-  executeSet(queries: string[]): Promise<any>;
-  run(query: string, params?: any[]): Promise<any>;
-  query(query: string, params?: any[]): Promise<any[]>;
-  close(): Promise<void>;
-}
+import { Database } from 'sql.js';
 
 /**
- * Classe d'adaptateur abstraite qui sera implémentée pour SQL.js et Capacitor SQLite
- * Cette classe sert de pont entre notre logique métier et la technologie de base de données
+ * Abstract class for SQLite adapter
  */
 export abstract class SQLiteAdapter {
   protected initialized = false;
 
+  /**
+   * Initialize the database
+   */
   abstract init(): Promise<boolean>;
-  abstract execute(query: string, params?: any[]): Promise<any>;
-  abstract executeSet(queries: string[]): Promise<any>;
-  abstract run(query: string, params?: any[]): Promise<any>;
-  abstract query(query: string, params?: any[]): Promise<any[]>;
-  abstract close(): Promise<void>;
-  abstract isInitialized(): boolean;
 
+  /**
+   * Execute a SQLite query
+   */
+  abstract execute(query: string, params?: any[]): Promise<any>;
+
+  /**
+   * Execute a set of SQLite queries
+   */
+  abstract executeSet(queries: string[]): Promise<any>;
+
+  /**
+   * Execute a SQLite query without result (INSERT, UPDATE, DELETE)
+   */
+  abstract run(query: string, params?: any[]): Promise<any>;
+
+  /**
+   * Execute a SQLite query and return the results (SELECT)
+   */
+  abstract query(query: string, params?: any[]): Promise<any[]>;
+
+  /**
+   * Close the database connection
+   */
+  abstract close(): Promise<void>;
+
+  /**
+   * Check if the database is initialized
+   */
+  isInitialized(): boolean {
+    return this.initialized;
+  }
+
+  /**
+   * Ensure the adapter is initialized
+   */
   async ensureInitialized(): Promise<boolean> {
     if (!this.initialized) {
       return await this.init();
@@ -31,46 +54,27 @@ export abstract class SQLiteAdapter {
     return true;
   }
 
-  logError(operation: string, error: any): void {
+  /**
+   * Log error
+   */
+  protected logError(operation: string, error: any): void {
     console.error(`SQLite error during ${operation}:`, error);
-    toast({
-      variant: "destructive",
-      title: "Erreur de base de données",
-      description: `Une erreur est survenue: ${error.message || "Erreur inconnue"}`
-    });
   }
 }
 
 /**
- * Détecte l'environnement d'exécution (web ou natif) et retourne l'adaptateur approprié
+ * Factory for SQLite adapter
  */
-export const createSQLiteAdapter = async (): Promise<SQLiteAdapter> => {
-  // Vérifier si l'application s'exécute dans un environnement Capacitor
-  const isCapacitorEnvironment = typeof (window as any)?.Capacitor?.isNativePlatform === 'function' && 
-                               (window as any).Capacitor.isNativePlatform();
-  
-  if (isCapacitorEnvironment) {
-    console.log("Environnement Capacitor détecté, chargement de l'adaptateur SQLite natif");
-    
-    try {
-      // Importation dynamique pour éviter les erreurs dans un environnement web
-      const { CapacitorSQLiteAdapter } = await import('./capacitor-sqlite-adapter');
-      return new CapacitorSQLiteAdapter();
-    } catch (error) {
-      console.error("Erreur lors du chargement de l'adaptateur Capacitor SQLite:", error);
-      toast({
-        variant: "destructive",
-        title: "Erreur d'initialisation",
-        description: "Impossible de charger l'adaptateur SQLite natif. Utilisation de la version web."
-      });
-      
-      // Fallback vers SQL.js si l'importation de Capacitor SQLite échoue
-      const { WebSQLiteAdapter } = await import('./web-sqlite-adapter');
-      return new WebSQLiteAdapter();
-    }
-  } else {
-    console.log("Environnement web détecté, chargement de SQL.js");
+export async function createSQLiteAdapter(): Promise<SQLiteAdapter> {
+  console.log("Creating SQLite adapter...");
+  try {
+    // Import dynamically for better compatibility with modules
     const { WebSQLiteAdapter } = await import('./web-sqlite-adapter');
-    return new WebSQLiteAdapter();
+    console.log("WebSQLiteAdapter imported successfully");
+    const adapter = new WebSQLiteAdapter();
+    return adapter;
+  } catch (error) {
+    console.error("Error creating SQLite adapter:", error);
+    throw error;
   }
-};
+}

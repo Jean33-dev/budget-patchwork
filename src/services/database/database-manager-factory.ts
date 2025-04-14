@@ -1,6 +1,7 @@
+
 import { IDatabaseManager } from './interfaces/IDatabaseManager';
 import { Capacitor } from '@capacitor/core';
-import { DatabaseManagerImpl } from './database-manager-impl';
+import { DatabaseManagerImpl, WebDatabaseManager, CapacitorDatabaseManager } from './database-manager-impl';
 
 /**
  * Factory for database manager
@@ -32,7 +33,8 @@ export class DatabaseManagerFactory {
    */
   private static getWebDatabaseManager(): IDatabaseManager {
     if (!this.instance) {
-      this.instance = new DatabaseManagerImpl();
+      console.log("Creating new WebDatabaseManager instance");
+      this.instance = new WebDatabaseManager();
     }
     return this.instance;
   }
@@ -43,7 +45,8 @@ export class DatabaseManagerFactory {
    */
   private static getCapacitorDatabaseManager(): IDatabaseManager {
     if (!this.instance) {
-      this.instance = new DatabaseManagerImpl();
+      console.log("Creating new CapacitorDatabaseManager instance");
+      this.instance = new CapacitorDatabaseManager();
     }
     return this.instance;
   }
