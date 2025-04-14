@@ -18,7 +18,7 @@ class DatabaseService {
    * Initialize the database
    */
   async init(): Promise<void> {
-    return this.manager.init();
+    await this.manager.init();
   }
 
   /* Budget Methods */
@@ -107,4 +107,7 @@ class DatabaseService {
   }
 }
 
-export const db = new DatabaseService();
+// Export as a named constant 'databaseService' instead of 'db'
+export const databaseService = new DatabaseService();
+// Also export as 'db' for backward compatibility
+export const db = databaseService;

@@ -1,7 +1,7 @@
 
+import { toast } from "@/components/ui/use-toast";
 import { QueryManager } from '../query-manager';
 import { Expense } from '../models/expense';
-import { expenseQueries } from '../queries/expense-queries';
 import { BaseQueryManager } from './base-query-manager';
 
 export class ExpenseQueryManager extends BaseQueryManager {
@@ -11,130 +11,161 @@ export class ExpenseQueryManager extends BaseQueryManager {
 
   async getAll(): Promise<Expense[]> {
     try {
-      console.log("ExpenseQueryManager.getAll: Starting...");
       const success = await this.ensureParentInitialized();
-      if (!success) {
-        console.error("ExpenseQueryManager.getAll: Parent not initialized");
-        return [];
-      }
+      if (!success) return [];
+      
       const db = this.getDb();
-      if (!db) {
-        console.error("ExpenseQueryManager.getAll: Database is null");
-        return [];
+      const stmt = db.prepare("SELECT * FROM expenses");
+      const result = [];
+      
+      while(stmt.step()) {
+        const row = stmt.getAsObject();
+        result.push({
+          id: row.id as string,
+          title: row.title as string,
+          budget: row.budget as number,
+          spent: row.spent as number,
+          type: row.type as string,
+          linkedBudgetId: row.linkedBudgetId as string,
+          date: row.date as string,
+          isRecurring: Boolean(row.isRecurring)
+        });
       }
-      const result = expenseQueries.getAll(db);
-      console.log(`ExpenseQueryManager.getAll: Got ${result.length} expenses`);
+      
+      stmt.free();
       return result;
     } catch (error) {
       console.error("Error getting expenses:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible de récupérer les dépenses"
+      });
       return [];
     }
   }
 
   async getRecurring(): Promise<Expense[]> {
     try {
-      console.log("ExpenseQueryManager.getRecurring: Starting...");
       const success = await this.ensureParentInitialized();
-      if (!success) {
-        console.error("ExpenseQueryManager.getRecurring: Parent not initialized");
-        return [];
-      }
+      if (!success) return [];
+      
       const db = this.getDb();
-      if (!db) {
-        console.error("ExpenseQueryManager.getRecurring: Database is null");
-        return [];
+      const stmt = db.prepare("SELECT * FROM expenses WHERE isRecurring = 1");
+      const result = [];
+      
+      while(stmt.step()) {
+        const row = stmt.getAsObject();
+        result.push({
+          id: row.id as string,
+          title: row.title as string,
+          budget: row.budget as number,
+          spent: row.spent as number,
+          type: row.type as string,
+          linkedBudgetId: row.linkedBudgetId as string,
+          date: row.date as string,
+          isRecurring: true
+        });
       }
       
-      // First try to get recurring expenses using the isRecurring column
-      try {
-        const result = expenseQueries.getRecurring(db);
-        console.log(`ExpenseQueryManager.getRecurring: Got ${result.length} recurring expenses`);
-        return result;
-      } catch (error) {
-        // If the column doesn't exist, try to create it and return an empty array for now
-        console.log("ExpenseQueryManager.getRecurring: Adding isRecurring column to expenses table");
-        try {
-          db.exec("ALTER TABLE expenses ADD COLUMN isRecurring INTEGER DEFAULT 0");
-          console.log("ExpenseQueryManager.getRecurring: Column added successfully");
-          return [];
-        } catch (alterError) {
-          console.error("Error adding isRecurring column:", alterError);
-          return [];
-        }
-      }
+      stmt.free();
+      return result;
     } catch (error) {
       console.error("Error getting recurring expenses:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible de récupérer les dépenses récurrentes"
+      });
       return [];
     }
   }
 
   async add(expense: Expense): Promise<void> {
     try {
-      console.log("ExpenseQueryManager.add: Starting...", expense);
       const success = await this.ensureParentInitialized();
-      if (!success) {
-        console.error("ExpenseQueryManager.add: Parent not initialized");
-        return;
-      }
+      if (!success) return;
+      
       const db = this.getDb();
-      if (!db) {
-        console.error("ExpenseQueryManager.add: Database is null");
-        return;
-      }
-      expenseQueries.add(db, expense);
-      console.log("ExpenseQueryManager.add: Expense added successfully");
+      const stmt = db.prepare(`
+        INSERT INTO expenses (id, title, budget, spent, type, linkedBudgetId, date, isRecurring)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      `);
+      
+      stmt.run([
+        expense.id,
+        expense.title,
+        expense.budget,
+        expense.spent,
+        expense.type,
+        expense.linkedBudgetId || null,
+        expense.date,
+        expense.isRecurring ? 1 : 0
+      ]);
+      
+      stmt.free();
     } catch (error) {
       console.error("Error adding expense:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible d'ajouter la dépense"
+      });
       throw error;
     }
   }
 
   async update(expense: Expense): Promise<void> {
     try {
-      console.log("ExpenseQueryManager.update: Starting...", expense);
       const success = await this.ensureParentInitialized();
-      if (!success) {
-        console.error("ExpenseQueryManager.update: Parent not initialized");
-        return;
-      }
+      if (!success) return;
+      
       const db = this.getDb();
-      if (!db) {
-        console.error("ExpenseQueryManager.update: Database is null");
-        return;
-      }
-      expenseQueries.update(db, expense);
-      console.log("ExpenseQueryManager.update: Expense updated successfully");
+      const stmt = db.prepare(`
+        UPDATE expenses 
+        SET title = ?, budget = ?, spent = ?, type = ?, linkedBudgetId = ?, date = ?, isRecurring = ?
+        WHERE id = ?
+      `);
+      
+      stmt.run([
+        expense.title,
+        expense.budget,
+        expense.spent,
+        expense.type,
+        expense.linkedBudgetId || null,
+        expense.date,
+        expense.isRecurring ? 1 : 0,
+        expense.id
+      ]);
+      
+      stmt.free();
     } catch (error) {
       console.error("Error updating expense:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible de mettre à jour la dépense"
+      });
       throw error;
     }
   }
 
   async delete(id: string): Promise<void> {
     try {
-      console.log(`ExpenseQueryManager.delete: Starting with ID: ${id}`);
-      if (!id) {
-        console.error("ExpenseQueryManager.delete: ID is empty");
-        return;
-      }
-      
       const success = await this.ensureParentInitialized();
-      if (!success) {
-        console.error("ExpenseQueryManager.delete: Parent not initialized");
-        return;
-      }
+      if (!success) return;
       
       const db = this.getDb();
-      if (!db) {
-        console.error("ExpenseQueryManager.delete: Database is null");
-        return;
-      }
-      
-      console.log(`ExpenseQueryManager.delete: Deleting expense with ID: ${id}`);
-      expenseQueries.delete(db, id);
-      console.log("ExpenseQueryManager.delete: Expense deleted successfully");
+      const stmt = db.prepare("DELETE FROM expenses WHERE id = ?");
+      stmt.run([id]);
+      stmt.free();
     } catch (error) {
-      console.error(`Error deleting expense with ID ${id}:`, error);
+      console.error("Error deleting expense:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible de supprimer la dépense"
+      });
       throw error;
     }
   }

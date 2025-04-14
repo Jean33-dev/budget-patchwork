@@ -17,10 +17,12 @@ export interface IQueryManager {
   executeUpdateCategory(category: any): Promise<void>;
   executeDeleteCategory(id: string): Promise<void>;
   executeGetExpenses(): Promise<any[]>;
+  executeGetRecurringExpenses?(): Promise<any[]>;
   executeAddExpense(expense: any): Promise<void>;
   executeUpdateExpense(expense: any): Promise<void>;
   executeDeleteExpense(id: string): Promise<void>;
   executeGetIncomes(): Promise<any[]>;
+  executeGetRecurringIncomes?(): Promise<any[]>;
   executeAddIncome(income: any): Promise<void>;
   executeUpdateIncome(income: any): Promise<void>;
   executeDeleteIncome(id: string): Promise<void>;

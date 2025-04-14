@@ -92,6 +92,10 @@ export class QueryManager implements IQueryManager {
     return this.expenseQueryManager.getAll();
   }
 
+  async executeGetRecurringExpenses(): Promise<any[]> {
+    return this.expenseQueryManager.getRecurring();
+  }
+
   async executeAddExpense(expense: any): Promise<void> {
     return this.expenseQueryManager.add(expense);
   }
@@ -107,6 +111,10 @@ export class QueryManager implements IQueryManager {
   // Income Operations
   async executeGetIncomes(): Promise<any[]> {
     return this.incomeQueryManager.getAll();
+  }
+
+  async executeGetRecurringIncomes(): Promise<any[]> {
+    return this.incomeQueryManager.getRecurring();
   }
 
   async executeAddIncome(income: any): Promise<void> {
