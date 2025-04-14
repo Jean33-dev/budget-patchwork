@@ -15,9 +15,12 @@ export class QueryManager implements IQueryManager {
   private incomeQueryManager: IncomeQueryManager;
   private dashboardQueryManager: DashboardQueryManager;
   private parent: IDatabaseManager;
+  private db: Database | null = null;
 
-  constructor(parent: IDatabaseManager) {
-    this.parent = parent;
+  constructor(parent?: IDatabaseManager) {
+    if (parent) {
+      this.parent = parent;
+    }
     this.budgetQueryManager = new BudgetQueryManager(this);
     this.categoryQueryManager = new CategoryQueryManager(this);
     this.expenseQueryManager = new ExpenseQueryManager(this);
@@ -27,14 +30,27 @@ export class QueryManager implements IQueryManager {
 
   // Database access methods
   getDb(): Database {
-    return this.parent.getDb();
+    if (this.db) {
+      return this.db;
+    }
+    if (this.parent) {
+      return this.parent.getDb();
+    }
+    throw new Error('Database not initialized');
+  }
+
+  setDb(db: Database): void {
+    this.db = db;
   }
 
   ensureInitialized(): Promise<boolean> {
-    if (!this.parent.isDbInitialized()) {
+    if (this.db) {
+      return Promise.resolve(true);
+    }
+    if (this.parent) {
       return this.parent.init().then(() => true).catch(() => false);
     }
-    return Promise.resolve(true);
+    return Promise.resolve(false);
   }
 
   // Budget Operations

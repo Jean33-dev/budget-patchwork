@@ -1,10 +1,6 @@
 
 import { Database } from "sql.js";
 import { toast } from "@/components/ui/use-toast";
-import { budgetTableSchema } from "./queries/budget-queries";
-import { categoryTableSchema } from "./queries/category-queries";
-import { expenseTableSchema } from "./queries/expense-queries";
-import { incomeTableSchema } from "./queries/income-queries";
 import { dashboardTableSchema } from "./queries/dashboard-queries";
 
 /**
@@ -20,10 +16,46 @@ export class DatabaseInitManager {
       
       // Create tables
       db.exec(dashboardTableSchema);
-      db.exec(budgetTableSchema);
-      db.exec(categoryTableSchema);
-      db.exec(expenseTableSchema);
-      db.exec(incomeTableSchema);
+      
+      // Create other tables if needed
+      db.exec(`CREATE TABLE IF NOT EXISTS budgets (
+        id TEXT PRIMARY KEY,
+        title TEXT,
+        budget REAL DEFAULT 0,
+        spent REAL DEFAULT 0,
+        type TEXT,
+        carriedOver REAL DEFAULT 0
+      )`);
+      
+      db.exec(`CREATE TABLE IF NOT EXISTS categories (
+        id TEXT PRIMARY KEY,
+        name TEXT,
+        budgets TEXT,
+        total REAL DEFAULT 0,
+        spent REAL DEFAULT 0,
+        description TEXT
+      )`);
+      
+      db.exec(`CREATE TABLE IF NOT EXISTS expenses (
+        id TEXT PRIMARY KEY,
+        title TEXT,
+        budget REAL DEFAULT 0,
+        spent REAL DEFAULT 0,
+        type TEXT,
+        linkedBudgetId TEXT,
+        date TEXT,
+        isRecurring INTEGER DEFAULT 0
+      )`);
+      
+      db.exec(`CREATE TABLE IF NOT EXISTS incomes (
+        id TEXT PRIMARY KEY,
+        title TEXT,
+        budget REAL DEFAULT 0,
+        spent REAL DEFAULT 0,
+        type TEXT,
+        date TEXT,
+        isRecurring INTEGER DEFAULT 0
+      )`);
       
       console.log("Database tables created successfully!");
       return true;
