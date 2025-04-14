@@ -86,7 +86,7 @@ export abstract class DatabaseManagerCore implements IDatabaseManager {
    */
   getBudgetManager(): IBudgetManager {
     if (!this.budgetManager) {
-      this.budgetManager = new BudgetManager(this.queryManager);
+      this.budgetManager = new BudgetManager();
     }
     return this.budgetManager;
   }
@@ -97,7 +97,7 @@ export abstract class DatabaseManagerCore implements IDatabaseManager {
    */
   getCategoryManager(): ICategoryManager {
     if (!this.categoryManager) {
-      this.categoryManager = new CategoryManager(this.queryManager);
+      this.categoryManager = new CategoryManager();
     }
     return this.categoryManager;
   }
@@ -108,7 +108,7 @@ export abstract class DatabaseManagerCore implements IDatabaseManager {
    */
   getExpenseManager(): IExpenseManager {
     if (!this.expenseManager) {
-      this.expenseManager = new ExpenseManager(this.queryManager);
+      this.expenseManager = new ExpenseManager();
     }
     return this.expenseManager;
   }
@@ -119,7 +119,7 @@ export abstract class DatabaseManagerCore implements IDatabaseManager {
    */
   getIncomeManager(): IIncomeManager {
     if (!this.incomeManager) {
-      this.incomeManager = new IncomeManager(this.queryManager);
+      this.incomeManager = new IncomeManager();
     }
     return this.incomeManager;
   }

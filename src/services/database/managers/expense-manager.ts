@@ -1,14 +1,21 @@
 
+import { toast } from "@/components/ui/use-toast";
 import { Expense } from '../models/expense';
 import { BaseDatabaseManager } from '../base-database-manager';
 import { IExpenseManager } from '../interfaces/IExpenseManager';
 import { IQueryManager } from '../interfaces/IQueryManager';
-import { toast } from "@/components/ui/use-toast";
 
 /**
  * Responsible for handling expense-related database operations
  */
 export class ExpenseManager extends BaseDatabaseManager implements IExpenseManager {
+  constructor(queryManager?: IQueryManager) {
+    super();
+    if (queryManager) {
+      this.queryManager = queryManager;
+    }
+  }
+
   /**
    * Get all expenses from the database
    */
@@ -34,7 +41,7 @@ export class ExpenseManager extends BaseDatabaseManager implements IExpenseManag
   }
 
   /**
-   * Update an expense in the database
+   * Update an existing expense in the database
    */
   async updateExpense(expense: Expense): Promise<void> {
     await this.ensureInitialized();
@@ -48,7 +55,7 @@ export class ExpenseManager extends BaseDatabaseManager implements IExpenseManag
     await this.ensureInitialized();
     await this.queryManager.executeDeleteExpense(id);
   }
-  
+
   /**
    * Copy a recurring expense to a specific month
    */
@@ -61,7 +68,7 @@ export class ExpenseManager extends BaseDatabaseManager implements IExpenseManag
       const recurringExpense = expenses.find(expense => expense.id === expenseId && expense.isRecurring);
       
       if (!recurringExpense) {
-        throw new Error("Dépense récurrente non trouvée");
+        throw new Error("Recurring expense not found");
       }
       
       // Create a new expense based on the recurring one
@@ -69,7 +76,7 @@ export class ExpenseManager extends BaseDatabaseManager implements IExpenseManag
         id: `${recurringExpense.id}_copy_${Date.now()}`,
         title: recurringExpense.title,
         budget: recurringExpense.budget,
-        spent: 0, // Initialize spent to 0
+        spent: 0,
         type: 'expense',
         linkedBudgetId: recurringExpense.linkedBudgetId,
         date: targetDate,
@@ -79,19 +86,19 @@ export class ExpenseManager extends BaseDatabaseManager implements IExpenseManag
       await this.addExpense(newExpense);
       
       toast({
-        title: "Succès",
-        description: `La dépense récurrente "${recurringExpense.title}" a été ajoutée au mois actuel.`
+        title: "Success",
+        description: `The recurring expense "${recurringExpense.title}" has been added to the current month.`
       });
     } catch (error) {
-      console.error("Erreur lors de la copie de la dépense récurrente :", error);
+      console.error("Error copying recurring expense:", error);
       toast({
         variant: "destructive",
-        title: "Erreur",
-        description: "Impossible de copier la dépense récurrente"
+        title: "Error",
+        description: "Failed to copy recurring expense"
       });
     }
   }
-  
+
   /**
    * Set the query manager for this manager
    */

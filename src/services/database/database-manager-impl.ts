@@ -14,6 +14,12 @@ export class DatabaseManagerImpl extends DatabaseManagerCore {
   constructor() {
     super();
     this.initManager = new DatabaseInitManager();
+    
+    // Set query manager in specialized managers
+    this.getBudgetManager().setQueryManager(this.queryManager);
+    this.getCategoryManager().setQueryManager(this.queryManager);
+    this.getExpenseManager().setQueryManager(this.queryManager);
+    this.getIncomeManager().setQueryManager(this.queryManager);
   }
 
   async init(): Promise<boolean> {
@@ -110,5 +116,34 @@ export class DatabaseManagerImpl extends DatabaseManagerCore {
       console.error('Error setting up database schema:', error);
       return false;
     }
+  }
+}
+
+// Create the specific implementations for web and Capacitor
+export class WebDatabaseManager extends DatabaseManagerImpl {
+  protected async setupDatabase(): Promise<Database | null> {
+    // Implementation for web (SQL.js)
+    try {
+      const { SqlJsInitializer } = await import('./sql-js-initializer');
+      const SQL = await SqlJsInitializer.initialize();
+      
+      if (SQL) {
+        console.log("Creating new SQL.js database instance...");
+        return new SQL.Database();
+      }
+      return null;
+    } catch (error) {
+      console.error('Error initializing SQL.js database:', error);
+      return null;
+    }
+  }
+}
+
+export class CapacitorDatabaseManager extends DatabaseManagerImpl {
+  protected async setupDatabase(): Promise<Database | null> {
+    // Implementation for Capacitor
+    // This would use @capacitor-community/sqlite
+    // For now, we'll just return null as a placeholder
+    return null;
   }
 }

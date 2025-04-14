@@ -1,4 +1,3 @@
-
 import { toast } from "@/components/ui/use-toast";
 import { Category } from '../models/category';
 import { BaseDatabaseManager } from '../base-database-manager';
@@ -9,6 +8,13 @@ import { IQueryManager } from '../interfaces/IQueryManager';
  * Responsible for handling category-related database operations
  */
 export class CategoryManager extends BaseDatabaseManager implements ICategoryManager {
+  constructor(queryManager?: IQueryManager) {
+    super();
+    if (queryManager) {
+      this.queryManager = queryManager;
+    }
+  }
+
   /**
    * Get all categories from the database
    */
@@ -52,7 +58,7 @@ export class CategoryManager extends BaseDatabaseManager implements ICategoryMan
       await this.updateCategory(category);
     }
   }
-  
+
   /**
    * Set the query manager for this manager
    */
