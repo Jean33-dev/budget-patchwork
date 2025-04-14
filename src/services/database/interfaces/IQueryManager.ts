@@ -1,44 +1,30 @@
 
-import { Income } from '../models/income';
-import { Expense } from '../models/expense';
-import { Budget } from '../models/budget';
-import { Category } from '../models/category';
-import { Dashboard } from '../models/dashboard';
+import { Database } from "sql.js";
 
+/**
+ * Interface for query managers
+ */
 export interface IQueryManager {
-  // Database access
-  getDb(): any;
+  getDb(): Database;
   ensureInitialized(): Promise<boolean>;
-  
-  // Income operations
-  executeGetIncomes(): Promise<Income[]>;
-  executeGetRecurringIncomes(): Promise<Income[]>;
-  executeAddIncome(income: Income): Promise<void>;
-  executeUpdateIncome(income: Income): Promise<void>;
-  executeDeleteIncome(id: string): Promise<void>;
-  
-  // Expense operations
-  executeGetExpenses(): Promise<Expense[]>;
-  executeGetRecurringExpenses(): Promise<Expense[]>;
-  executeAddExpense(expense: Expense): Promise<void>;
-  executeUpdateExpense(expense: Expense): Promise<void>;
-  executeDeleteExpense(id: string): Promise<void>;
-  
-  // Budget operations
-  executeGetBudgets(): Promise<Budget[]>;
-  executeAddBudget(budget: Budget): Promise<void>;
-  executeUpdateBudget(budget: Budget): Promise<void>;
+  executeGetBudgets(): Promise<any[]>;
+  executeAddBudget(budget: any): Promise<void>;
+  executeUpdateBudget(budget: any): Promise<void>;
   executeDeleteBudget(id: string): Promise<void>;
-  
-  // Category operations
-  executeGetCategories(): Promise<Category[]>;
-  executeAddCategory(category: Category): Promise<void>;
-  executeUpdateCategory(category: Category): Promise<void>;
+  executeGetCategories(): Promise<any[]>;
+  executeAddCategory(category: any): Promise<void>;
+  executeUpdateCategory(category: any): Promise<void>;
   executeDeleteCategory(id: string): Promise<void>;
-  
-  // Dashboard operations
-  executeGetDashboards(): Promise<Dashboard[]>;
-  executeAddDashboard(dashboard: Dashboard): Promise<void>;
-  executeUpdateDashboard(dashboard: Dashboard): Promise<void>;
+  executeGetExpenses(): Promise<any[]>;
+  executeAddExpense(expense: any): Promise<void>;
+  executeUpdateExpense(expense: any): Promise<void>;
+  executeDeleteExpense(id: string): Promise<void>;
+  executeGetIncomes(): Promise<any[]>;
+  executeAddIncome(income: any): Promise<void>;
+  executeUpdateIncome(income: any): Promise<void>;
+  executeDeleteIncome(id: string): Promise<void>;
+  executeGetDashboards(): Promise<any[]>;
+  executeAddDashboard(dashboard: any): Promise<void>;
+  executeUpdateDashboard(dashboard: any): Promise<void>;
   executeDeleteDashboard(id: string): Promise<void>;
 }

@@ -1,94 +1,52 @@
-import { BaseDatabaseManager } from './base-database-manager';
-import { Income } from './models/income';
-import { Expense } from './models/expense';
-import { Budget } from './models/budget';
-import { Category } from './models/category';
-import { Dashboard } from './models/dashboard';
-import { IncomeQueryManager } from './query-managers/income-query-manager';
-import { ExpenseQueryManager } from './query-managers/expense-query-manager';
+
+import { Database } from 'sql.js';
+import { IDatabaseManager } from './interfaces/IDatabaseManager';
+import { IQueryManager } from './interfaces/IQueryManager';
 import { BudgetQueryManager } from './query-managers/budget-query-manager';
 import { CategoryQueryManager } from './query-managers/category-query-manager';
+import { ExpenseQueryManager } from './query-managers/expense-query-manager';
+import { IncomeQueryManager } from './query-managers/income-query-manager';
 import { DashboardQueryManager } from './query-managers/dashboard-query-manager';
-import { IQueryManager } from './interfaces/IQueryManager';
 
-export class QueryManager extends BaseDatabaseManager implements IQueryManager {
-  private incomeQueryManager: IncomeQueryManager;
-  private expenseQueryManager: ExpenseQueryManager;
+export class QueryManager implements IQueryManager {
   private budgetQueryManager: BudgetQueryManager;
   private categoryQueryManager: CategoryQueryManager;
+  private expenseQueryManager: ExpenseQueryManager;
+  private incomeQueryManager: IncomeQueryManager;
   private dashboardQueryManager: DashboardQueryManager;
+  private parent: IDatabaseManager;
 
-  constructor() {
-    super();
-    this.incomeQueryManager = new IncomeQueryManager(this);
-    this.expenseQueryManager = new ExpenseQueryManager(this);
+  constructor(parent: IDatabaseManager) {
+    this.parent = parent;
     this.budgetQueryManager = new BudgetQueryManager(this);
     this.categoryQueryManager = new CategoryQueryManager(this);
+    this.expenseQueryManager = new ExpenseQueryManager(this);
+    this.incomeQueryManager = new IncomeQueryManager(this);
     this.dashboardQueryManager = new DashboardQueryManager(this);
   }
 
-  // Méthodes pour permettre aux query managers d'accéder à la base de données
-  getDb(): any {
-    return this.db;
+  // Database access methods
+  getDb(): Database {
+    return this.parent.getDb();
   }
 
-  // Expose ensureInitialized aux gestionnaires de requête
-  async ensureInitialized(): Promise<boolean> {
-    return super.ensureInitialized();
+  ensureInitialized(): Promise<boolean> {
+    if (!this.parent.isDbInitialized()) {
+      return this.parent.init().then(() => true).catch(() => false);
+    }
+    return Promise.resolve(true);
   }
 
-  // Income operations
-  async executeGetIncomes(): Promise<Income[]> {
-    return this.incomeQueryManager.getAll();
-  }
-
-  async executeGetRecurringIncomes(): Promise<Income[]> {
-    return this.incomeQueryManager.getRecurring();
-  }
-
-  async executeAddIncome(income: Income): Promise<void> {
-    return this.incomeQueryManager.add(income);
-  }
-
-  async executeUpdateIncome(income: Income): Promise<void> {
-    return this.incomeQueryManager.update(income);
-  }
-
-  async executeDeleteIncome(id: string): Promise<void> {
-    return this.incomeQueryManager.delete(id);
-  }
-
-  // Expense operations
-  async executeGetExpenses(): Promise<Expense[]> {
-    return this.expenseQueryManager.getAll();
-  }
-
-  async executeGetRecurringExpenses(): Promise<Expense[]> {
-    return this.expenseQueryManager.getRecurring();
-  }
-
-  async executeAddExpense(expense: Expense): Promise<void> {
-    return this.expenseQueryManager.add(expense);
-  }
-
-  async executeUpdateExpense(expense: Expense): Promise<void> {
-    return this.expenseQueryManager.update(expense);
-  }
-
-  async executeDeleteExpense(id: string): Promise<void> {
-    return this.expenseQueryManager.delete(id);
-  }
-
-  // Budget operations
-  async executeGetBudgets(): Promise<Budget[]> {
+  // Budget Operations
+  async executeGetBudgets(): Promise<any[]> {
     return this.budgetQueryManager.getAll();
   }
 
-  async executeAddBudget(budget: Budget): Promise<void> {
+  async executeAddBudget(budget: any): Promise<void> {
     return this.budgetQueryManager.add(budget);
   }
 
-  async executeUpdateBudget(budget: Budget): Promise<void> {
+  async executeUpdateBudget(budget: any): Promise<void> {
     return this.budgetQueryManager.update(budget);
   }
 
@@ -96,16 +54,16 @@ export class QueryManager extends BaseDatabaseManager implements IQueryManager {
     return this.budgetQueryManager.delete(id);
   }
 
-  // Category operations
-  async executeGetCategories(): Promise<Category[]> {
+  // Category Operations
+  async executeGetCategories(): Promise<any[]> {
     return this.categoryQueryManager.getAll();
   }
 
-  async executeAddCategory(category: Category): Promise<void> {
+  async executeAddCategory(category: any): Promise<void> {
     return this.categoryQueryManager.add(category);
   }
 
-  async executeUpdateCategory(category: Category): Promise<void> {
+  async executeUpdateCategory(category: any): Promise<void> {
     return this.categoryQueryManager.update(category);
   }
 
@@ -113,16 +71,50 @@ export class QueryManager extends BaseDatabaseManager implements IQueryManager {
     return this.categoryQueryManager.delete(id);
   }
 
-  // Dashboard operations
-  async executeGetDashboards(): Promise<Dashboard[]> {
+  // Expense Operations
+  async executeGetExpenses(): Promise<any[]> {
+    return this.expenseQueryManager.getAll();
+  }
+
+  async executeAddExpense(expense: any): Promise<void> {
+    return this.expenseQueryManager.add(expense);
+  }
+
+  async executeUpdateExpense(expense: any): Promise<void> {
+    return this.expenseQueryManager.update(expense);
+  }
+
+  async executeDeleteExpense(id: string): Promise<void> {
+    return this.expenseQueryManager.delete(id);
+  }
+
+  // Income Operations
+  async executeGetIncomes(): Promise<any[]> {
+    return this.incomeQueryManager.getAll();
+  }
+
+  async executeAddIncome(income: any): Promise<void> {
+    return this.incomeQueryManager.add(income);
+  }
+
+  async executeUpdateIncome(income: any): Promise<void> {
+    return this.incomeQueryManager.update(income);
+  }
+
+  async executeDeleteIncome(id: string): Promise<void> {
+    return this.incomeQueryManager.delete(id);
+  }
+
+  // Dashboard Operations
+  async executeGetDashboards(): Promise<any[]> {
     return this.dashboardQueryManager.getAll();
   }
 
-  async executeAddDashboard(dashboard: Dashboard): Promise<void> {
+  async executeAddDashboard(dashboard: any): Promise<void> {
     return this.dashboardQueryManager.add(dashboard);
   }
 
-  async executeUpdateDashboard(dashboard: Dashboard): Promise<void> {
+  async executeUpdateDashboard(dashboard: any): Promise<void> {
     return this.dashboardQueryManager.update(dashboard);
   }
 

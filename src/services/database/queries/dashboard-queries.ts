@@ -1,86 +1,83 @@
 
+import { Database } from 'sql.js';
 import { Dashboard } from '../models/dashboard';
 
 export const dashboardQueries = {
-  getAll: (db: any): Promise<Dashboard[]> => {
-    return new Promise((resolve, reject) => {
-      try {
-        // Vérifier si la table existe
-        db.exec(`CREATE TABLE IF NOT EXISTS dashboards (
-          id TEXT PRIMARY KEY,
-          title TEXT,
-          createdAt TEXT,
-          lastAccessed TEXT
-        )`);
-        
-        const stmt = db.prepare(`SELECT * FROM dashboards ORDER BY lastAccessed DESC`);
-        const results: Dashboard[] = [];
-        
-        while (stmt.step()) {
-          const row = stmt.getAsObject();
-          results.push({
-            id: row.id,
-            title: row.title,
-            createdAt: row.createdAt,
-            lastAccessed: row.lastAccessed
-          });
-        }
-        
-        stmt.free();
-        resolve(results);
-      } catch (error) {
-        console.error("Error in dashboard-queries.getAll:", error);
-        reject(error);
+  /**
+   * Get all dashboards
+   * @param db Database
+   * @returns Dashboards
+   */
+  getAll: (db: Database): Dashboard[] => {
+    try {
+      const result = db.exec('SELECT id, title, createdAt, lastAccessed FROM dashboards');
+      
+      if (result.length === 0 || result[0].values.length === 0) {
+        return [];
       }
-    });
+      
+      const columns = result[0].columns;
+      return result[0].values.map(row => {
+        const dashboard: any = {};
+        columns.forEach((column, index) => {
+          dashboard[column] = row[index];
+        });
+        return dashboard as Dashboard;
+      });
+    } catch (error) {
+      console.error('Error getting dashboards:', error);
+      return [];
+    }
   },
 
-  add: (db: any, dashboard: Dashboard): void => {
+  /**
+   * Add a dashboard
+   * @param db Database
+   * @param dashboard Dashboard
+   */
+  add: (db: Database, dashboard: Dashboard): void => {
     try {
-      // Vérifier si la table existe
-      db.exec(`CREATE TABLE IF NOT EXISTS dashboards (
-        id TEXT PRIMARY KEY,
-        title TEXT,
-        createdAt TEXT,
-        lastAccessed TEXT
-      )`);
-      
-      const stmt = db.prepare(`
-        INSERT INTO dashboards (id, title, createdAt, lastAccessed)
-        VALUES (?, ?, ?, ?)
-      `);
-      
+      const stmt = db.prepare(
+        'INSERT INTO dashboards (id, title, createdAt, lastAccessed) VALUES (?, ?, ?, ?)'
+      );
       stmt.run([dashboard.id, dashboard.title, dashboard.createdAt, dashboard.lastAccessed]);
       stmt.free();
     } catch (error) {
-      console.error("Error in dashboard-queries.add:", error);
+      console.error('Error adding dashboard:', error);
       throw error;
     }
   },
 
-  update: (db: any, dashboard: Dashboard): void => {
+  /**
+   * Update a dashboard
+   * @param db Database
+   * @param dashboard Dashboard
+   */
+  update: (db: Database, dashboard: Dashboard): void => {
     try {
-      const stmt = db.prepare(`
-        UPDATE dashboards 
-        SET title = ?, lastAccessed = ?
-        WHERE id = ?
-      `);
-      
+      const stmt = db.prepare(
+        'UPDATE dashboards SET title = ?, lastAccessed = ? WHERE id = ?'
+      );
       stmt.run([dashboard.title, dashboard.lastAccessed, dashboard.id]);
       stmt.free();
     } catch (error) {
-      console.error("Error in dashboard-queries.update:", error);
+      console.error('Error updating dashboard:', error);
       throw error;
     }
   },
 
-  delete: (db: any, id: string): void => {
+  /**
+   * Delete a dashboard
+   * @param db Database
+   * @param id Dashboard ID
+   */
+  delete: (db: Database, id: string): void => {
     try {
-      const stmt = db.prepare(`DELETE FROM dashboards WHERE id = ?`);
+      const stmt = db.prepare('DELETE FROM dashboards WHERE id = ?');
       stmt.run([id]);
       stmt.free();
     } catch (error) {
-      console.error("Error in dashboard-queries.delete:", error);
+      console.error('Error deleting dashboard:', error);
       throw error;
     }
   }
