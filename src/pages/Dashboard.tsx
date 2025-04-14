@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
@@ -27,7 +26,6 @@ const Dashboard = () => {
   const [nextDate, setNextDate] = useState<Date | null>(null);
   const [pdfExported, setPdfExported] = useState(false);
 
-  // Utilisation du hook useBudgets pour obtenir toutes les données
   const { 
     budgets, 
     totalRevenues, 
@@ -38,7 +36,6 @@ const Dashboard = () => {
 
   const handleMonthChange = (newDate: Date) => {
     setCurrentDate(newDate);
-    // Show transition dialog when month is changed
     setNextDate(newDate);
     setShowTransitionDialog(true);
     setPdfExported(false);
@@ -56,12 +53,10 @@ const Dashboard = () => {
     setShowTransitionDialog(false);
   };
   
-  // Suivi de l'export PDF
   const handlePDFExported = () => {
     setPdfExported(true);
   };
 
-  // Créer la liste des enveloppes à partir des budgets
   const envelopes = budgets.map(budget => ({
     id: budget.id,
     title: budget.title,
@@ -85,6 +80,7 @@ const Dashboard = () => {
           totalExpenses={totalExpenses}
           budgets={envelopes}
           className="mr-2"
+          onClick={handlePDFExported}
         />
         
         <Button variant="outline" onClick={() => navigate("/dashboard/budget/transition")} className="flex items-center gap-2">
