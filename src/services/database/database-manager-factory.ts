@@ -1,4 +1,3 @@
-
 import { IDatabaseManager } from './interfaces/IDatabaseManager';
 import { Capacitor } from '@capacitor/core';
 
@@ -32,8 +31,17 @@ export class DatabaseManagerFactory {
    */
   private static getWebDatabaseManager(): IDatabaseManager {
     if (!this.instance) {
-      const { WebDatabaseManager } = require('./database-manager-impl');
-      this.instance = new WebDatabaseManager();
+      // Use dynamic import instead of require
+      import('./database-manager-impl').then(module => {
+        const { WebDatabaseManager } = module;
+        this.instance = new WebDatabaseManager();
+      });
+      
+      // Create temporary instance while the import is loading
+      import('./database-manager-impl').then(module => {
+        const { DatabaseManagerImpl } = module;
+        return new DatabaseManagerImpl();
+      });
     }
     return this.instance;
   }
@@ -44,8 +52,17 @@ export class DatabaseManagerFactory {
    */
   private static getCapacitorDatabaseManager(): IDatabaseManager {
     if (!this.instance) {
-      const { CapacitorDatabaseManager } = require('./database-manager-impl');
-      this.instance = new CapacitorDatabaseManager();
+      // Use dynamic import instead of require
+      import('./database-manager-impl').then(module => {
+        const { CapacitorDatabaseManager } = module;
+        this.instance = new CapacitorDatabaseManager();
+      });
+      
+      // Create temporary instance while the import is loading
+      import('./database-manager-impl').then(module => {
+        const { DatabaseManagerImpl } = module;
+        return new DatabaseManagerImpl();
+      });
     }
     return this.instance;
   }

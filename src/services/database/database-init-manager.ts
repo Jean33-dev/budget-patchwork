@@ -2,11 +2,61 @@
 import { Database } from "sql.js";
 import { toast } from "@/components/ui/use-toast";
 import { dashboardTableSchema } from "./queries/dashboard-queries";
+import { SQLiteAdapter } from "./sqlite-adapter";
+import { createSQLiteAdapter } from "./sqlite-adapter";
 
 /**
  * Database initialization manager
  */
 export class DatabaseInitManager {
+  private adapter: SQLiteAdapter | null = null;
+  private initialized = false;
+
+  /**
+   * Initialize the database adapter
+   */
+  async init(): Promise<boolean> {
+    try {
+      if (this.initialized && this.adapter) {
+        return true;
+      }
+      
+      this.adapter = await createSQLiteAdapter();
+      const success = await this.adapter.init();
+      this.initialized = success;
+      
+      return success;
+    } catch (error) {
+      console.error("Error initializing database adapter:", error);
+      return false;
+    }
+  }
+
+  /**
+   * Get the database adapter
+   */
+  getAdapter(): SQLiteAdapter | null {
+    return this.adapter;
+  }
+
+  /**
+   * Ensure the database is initialized
+   */
+  async ensureInitialized(): Promise<boolean> {
+    if (!this.initialized || !this.adapter) {
+      return await this.init();
+    }
+    return true;
+  }
+
+  /**
+   * Reset initialization attempts
+   */
+  resetInitializationAttempts(): void {
+    const { WebSQLiteAdapter } = require('./web-sqlite-adapter');
+    WebSQLiteAdapter.resetInitializationAttempts();
+  }
+
   /**
    * Initialize database tables
    */

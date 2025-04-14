@@ -17,8 +17,15 @@ class DatabaseService {
   /**
    * Initialize the database
    */
-  async init(): Promise<void> {
-    await this.manager.init();
+  async init(): Promise<boolean> {
+    return await this.manager.init();
+  }
+
+  /**
+   * Reset initialization attempts
+   */
+  resetInitializationAttempts(): void {
+    this.manager.resetInitializationAttempts?.();
   }
 
   /* Budget Methods */
@@ -60,6 +67,10 @@ class DatabaseService {
     return this.manager.getExpenseManager().getExpenses();
   }
 
+  async getRecurringExpenses(): Promise<Expense[]> {
+    return this.manager.getExpenseManager().getRecurringExpenses();
+  }
+
   async addExpense(expense: Expense): Promise<void> {
     return this.manager.getExpenseManager().addExpense(expense);
   }
@@ -72,9 +83,17 @@ class DatabaseService {
     return this.manager.getExpenseManager().deleteExpense(id);
   }
 
+  async copyRecurringExpenseToMonth(expenseId: string, targetDate: string): Promise<void> {
+    return this.manager.getExpenseManager().copyRecurringExpenseToMonth(expenseId, targetDate);
+  }
+
   /* Income Methods */
   async getIncomes(): Promise<Income[]> {
     return this.manager.getIncomeManager().getIncomes();
+  }
+
+  async getRecurringIncomes(): Promise<Income[]> {
+    return this.manager.getIncomeManager().getRecurringIncomes();
   }
 
   async addIncome(income: Income): Promise<void> {
@@ -87,6 +106,10 @@ class DatabaseService {
 
   async deleteIncome(id: string): Promise<void> {
     return this.manager.getIncomeManager().deleteIncome(id);
+  }
+
+  async copyRecurringIncomeToMonth(incomeId: string, targetDate: string): Promise<void> {
+    return this.manager.getIncomeManager().copyRecurringIncomeToMonth(incomeId, targetDate);
   }
 
   /* Dashboard Methods */
@@ -107,7 +130,7 @@ class DatabaseService {
   }
 }
 
-// Export as a named constant 'databaseService' instead of 'db'
+// Export as a named constant 'databaseService'
 export const databaseService = new DatabaseService();
 // Also export as 'db' for backward compatibility
 export const db = databaseService;

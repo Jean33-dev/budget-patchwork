@@ -134,4 +134,11 @@ export abstract class DatabaseManagerCore implements IDatabaseManager {
     }
     return this.dashboardManager;
   }
+
+  /**
+   * Reset initialization attempts
+   */
+  resetInitializationAttempts(): void {
+    // This will be implemented in subclasses
+  }
 }

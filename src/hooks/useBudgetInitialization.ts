@@ -90,6 +90,7 @@ export const useBudgetInitialization = () => {
           description: "Les données ont été rafraîchies avec succès."
         });
         setInitializationSuccess(true);
+        return true;
       } else {
         console.error("Manual refresh: Database initialization failed");
         toast({
@@ -98,6 +99,7 @@ export const useBudgetInitialization = () => {
           description: "Impossible d'initialiser la base de données. Veuillez réessayer."
         });
         setInitializationSuccess(false);
+        return false;
       }
     } catch (error) {
       console.error("Error during manual refresh:", error);
@@ -107,6 +109,7 @@ export const useBudgetInitialization = () => {
         title: "Erreur d'actualisation",
         description: "Une erreur s'est produite lors de l'actualisation des données."
       });
+      return false;
     } finally {
       setIsRefreshing(false);
     }

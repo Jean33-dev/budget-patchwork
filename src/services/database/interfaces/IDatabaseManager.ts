@@ -17,5 +17,5 @@ export interface IDatabaseManager {
   getExpenseManager(): IExpenseManager;
   getIncomeManager(): IIncomeManager;
   getDashboardManager(): DashboardManager;
-  resetInitializationAttempts?(): void;
+  resetInitializationAttempts(): void;
 }
