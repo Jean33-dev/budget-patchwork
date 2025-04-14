@@ -6,12 +6,14 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
 import { EditDashboardDialog } from "@/components/dashboard/EditDashboardDialog";
+import { SettingsDialog } from "@/components/settings/SettingsDialog";
 import { db } from "@/services/database";
 
 const Home = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isSettingsDialogOpen, setIsSettingsDialogOpen] = useState(false);
   const [dashboardTitle, setDashboardTitle] = useState("Budget Personnel");
   const [isLoading, setIsLoading] = useState(true);
 
@@ -69,6 +71,10 @@ const Home = () => {
     setIsEditDialogOpen(true);
   };
 
+  const handleOpenSettings = () => {
+    setIsSettingsDialogOpen(true);
+  };
+
   const handleSaveDashboardName = async (newName: string) => {
     try {
       // Mettre à jour le titre dans la base de données
@@ -109,7 +115,12 @@ const Home = () => {
 
   return (
     <div className="container mx-auto py-8 space-y-8">
-      <h1 className="text-4xl font-bold">Mes Tableaux de Bord</h1>
+      <div className="flex justify-between items-center">
+        <h1 className="text-4xl font-bold">Mes Tableaux de Bord</h1>
+        <Button variant="outline" size="icon" onClick={handleOpenSettings}>
+          <Settings className="h-5 w-5" />
+        </Button>
+      </div>
       
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate("/dashboard/budget")}>
@@ -157,6 +168,11 @@ const Home = () => {
         onOpenChange={setIsEditDialogOpen}
         currentName={dashboardTitle}
         onSave={handleSaveDashboardName}
+      />
+      
+      <SettingsDialog
+        open={isSettingsDialogOpen}
+        onOpenChange={setIsSettingsDialogOpen}
       />
     </div>
   );
