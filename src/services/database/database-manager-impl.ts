@@ -16,14 +16,9 @@ export class DatabaseManagerImpl extends DatabaseManagerCore {
   constructor() {
     super();
     this.initManager = new DatabaseInitManager();
-    this.queryManager = new QueryManager(this);
     
-    // Set query manager in specialized managers
-    this.getBudgetManager().setQueryManager(this.queryManager);
-    this.getCategoryManager().setQueryManager(this.queryManager);
-    this.getExpenseManager().setQueryManager(this.queryManager);
-    this.getIncomeManager().setQueryManager(this.queryManager);
-    this.getDashboardManager().setQueryManager(this.queryManager);
+    // Set query manager in specialized managers if they exist
+    this.queryManager = new QueryManager(this);
   }
 
   async init(): Promise<boolean> {
@@ -36,13 +31,23 @@ export class DatabaseManagerImpl extends DatabaseManagerCore {
     // Check initialization status
     if (this.isInitializationInProgress()) {
       console.log("DatabaseManager initialization already in progress, waiting...");
-      while (this.isInitializationInProgress()) {
+      let waitCount = 0;
+      const maxWait = 30; // Maximum number of wait cycles
+      
+      while (this.isInitializationInProgress() && waitCount < maxWait) {
         await new Promise(resolve => setTimeout(resolve, 100));
+        waitCount++;
       }
+      
       // Check if initialization was successful
       if (this.initialized && this.db) {
         console.log("DatabaseManager initialization completed while waiting");
         return true;
+      }
+      
+      // If we reached max wait and still not initialized, we'll try again
+      if (waitCount >= maxWait) {
+        console.log("Waited too long for initialization, starting fresh");
       }
     }
     
@@ -50,8 +55,9 @@ export class DatabaseManagerImpl extends DatabaseManagerCore {
     this.setInitializationInProgress(true);
     
     try {
-      // Initialize the database
       console.log("Initializing database...");
+      
+      // Initialize the database
       const dbInstance = await this.setupDatabase();
       
       if (!dbInstance) {
@@ -64,6 +70,7 @@ export class DatabaseManagerImpl extends DatabaseManagerCore {
       
       // Set up the query manager
       if (this.queryManager) {
+        console.log("Setting database in query manager");
         this.queryManager.setDb(this.db);
       } else {
         console.error("Query manager is not initialized");
@@ -108,6 +115,7 @@ export class DatabaseManagerImpl extends DatabaseManagerCore {
   
   // Method to reset the initialization attempts
   resetInitializationAttempts(): void {
+    console.log("Resetting initialization attempts");
     BaseDatabaseManager.resetInitializationAttempts();
     SqlJsInitializer.resetInitializationAttempts();
   }

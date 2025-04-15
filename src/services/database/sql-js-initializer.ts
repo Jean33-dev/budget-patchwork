@@ -31,19 +31,30 @@ export class SqlJsInitializer {
   static async initialize(): Promise<any> {
     // If already initialized, return the SQL object
     if (SqlJsInitializer.SQL) {
+      console.log("SQL.js already initialized, reusing instance");
       return SqlJsInitializer.SQL;
     }
 
     // If initialization is already in progress, wait for it to complete
     if (SqlJsInitializer.initializationInProgress) {
       console.log("SQL.js initialization already in progress, waiting...");
-      while (SqlJsInitializer.initializationInProgress) {
+      let waitCount = 0;
+      const maxWait = 20; // Maximum number of wait cycles
+      
+      while (SqlJsInitializer.initializationInProgress && waitCount < maxWait) {
         await new Promise(resolve => setTimeout(resolve, 100));
+        waitCount++;
       }
       
       // Check if SQL was successfully initialized
       if (SqlJsInitializer.SQL) {
+        console.log("SQL.js initialization completed while waiting");
         return SqlJsInitializer.SQL;
+      }
+      
+      // If we reached max wait and still not initialized, we'll try again
+      if (waitCount >= maxWait) {
+        console.log("Waited too long for SQL.js initialization, starting fresh");
       }
     }
 
@@ -70,22 +81,23 @@ export class SqlJsInitializer {
       const SqlJsModule = await import('sql.js');
       const initSqlJs = SqlJsModule.default;
       
+      console.log("SQL.js module loaded successfully:", !!initSqlJs);
+      
       if (typeof initSqlJs !== 'function') {
         console.error("SQL.js import failed: initSqlJs is not a function", initSqlJs);
         throw new Error("SQL.js module does not export a function");
       }
       
-      console.log("Trying to initialize SQL.js...");
+      console.log("Initializing SQL.js with WASM from: /assets/sql-wasm.wasm");
       
       // Use the correct path to WASM file
       const wasmSource = '/assets/sql-wasm.wasm';
       
-      console.log(`Loading WASM from: ${wasmSource}`);
       SqlJsInitializer.SQL = await initSqlJs({
         locateFile: () => wasmSource
       });
       
-      console.log("SQL.js initialized successfully");
+      console.log(`SQL.js initialized successfully with WASM from: ${wasmSource}`);
       return SqlJsInitializer.SQL;
     } catch (error) {
       console.error("Failed to initialize SQL.js:", error);
@@ -101,6 +113,7 @@ export class SqlJsInitializer {
    */
   static resetInitializationAttempts(): void {
     SqlJsInitializer.initializationAttempts = 0;
+    SqlJsInitializer.initializationInProgress = false;
   }
 
   /**

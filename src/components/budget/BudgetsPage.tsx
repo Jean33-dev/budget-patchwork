@@ -20,6 +20,7 @@ const BudgetsPage = () => {
     isRefreshing, 
     initializationSuccess,
     handleManualRefresh,
+    clearCacheAndRefresh,
     initializeDatabase,
     attempt,
     maxAttempts
@@ -76,8 +77,7 @@ const BudgetsPage = () => {
   // Fonction pour forcer une réinitialisation complète
   const handleForceReset = async () => {
     setRetryCount(0);
-    localStorage.clear(); // Effacer toutes les données du localStorage
-    await handleManualRefresh();
+    await clearCacheAndRefresh();
   };
 
   // Afficher l'état de chargement tant que nous chargeons ou que nous n'avons pas encore essayé d'initialiser

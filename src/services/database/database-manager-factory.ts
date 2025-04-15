@@ -1,6 +1,6 @@
 import { IDatabaseManager } from './interfaces/IDatabaseManager';
 import { Capacitor } from '@capacitor/core';
-import { DatabaseManagerImpl, WebDatabaseManager, CapacitorDatabaseManager } from './database-manager-impl';
+import { WebDatabaseManager, CapacitorDatabaseManager } from './database-manager-impl';
 
 /**
  * Factory for database manager
@@ -14,9 +14,12 @@ export class DatabaseManagerFactory {
    */
   static getDatabaseManager(): IDatabaseManager {
     if (this.instance) {
+      console.log("Returning existing database manager instance");
       return this.instance;
     }
 
+    console.log("Creating new database manager instance");
+    
     // If running in Capacitor, use SQLite
     if (this.isNative()) {
       return this.getCapacitorDatabaseManager();

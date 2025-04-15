@@ -28,8 +28,7 @@ export abstract class DatabaseManagerCore implements IDatabaseManager {
   protected initializationInProgress = false;
 
   constructor() {
-    // Since QueryManager constructor may need 'this', we can't initiate it here
-    // It will be created in subclasses
+    // Create the query manager with this instance
     this.queryManager = new QueryManager(this);
   }
 
@@ -161,5 +160,46 @@ export abstract class DatabaseManagerCore implements IDatabaseManager {
    */
   resetInitializationAttempts(): void {
     // This will be implemented in subclasses
+  }
+
+  // Proxy methods to respective managers
+  async getDashboards(): Promise<any[]> {
+    await this.init();
+    return this.getDashboardManager().getDashboards();
+  }
+
+  async getBudgets(): Promise<any[]> {
+    await this.init();
+    return this.getBudgetManager().getBudgets();
+  }
+
+  async getExpenses(): Promise<any[]> {
+    await this.init();
+    return this.getExpenseManager().getExpenses();
+  }
+
+  async getIncomes(): Promise<any[]> {
+    await this.init();
+    return this.getIncomeManager().getIncomes();
+  }
+  
+  async getCategories(): Promise<any[]> {
+    await this.init();
+    return this.getCategoryManager().getCategories();
+  }
+
+  async addDashboard(dashboard: any): Promise<void> {
+    await this.init();
+    return this.getDashboardManager().addDashboard(dashboard);
+  }
+
+  async updateDashboard(dashboard: any): Promise<void> {
+    await this.init();
+    return this.getDashboardManager().updateDashboard(dashboard);
+  }
+
+  async deleteDashboard(id: string): Promise<void> {
+    await this.init();
+    return this.getDashboardManager().deleteDashboard(id);
   }
 }

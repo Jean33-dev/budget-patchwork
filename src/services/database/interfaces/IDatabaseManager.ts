@@ -20,4 +20,12 @@ export interface IDatabaseManager {
   resetInitializationAttempts(): void;
   isInitialized(): boolean;
   isInitializationInProgress(): boolean;
+  getDashboards(): Promise<any[]>;
+  getBudgets(): Promise<any[]>;
+  getExpenses(): Promise<any[]>;
+  getIncomes(): Promise<any[]>;
+  getCategories(): Promise<any[]>;
+  addDashboard(dashboard: any): Promise<void>;
+  updateDashboard(dashboard: any): Promise<void>;
+  deleteDashboard(id: string): Promise<void>;
 }

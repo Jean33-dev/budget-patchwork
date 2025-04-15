@@ -25,10 +25,19 @@ export const useBudgetInitialization = () => {
         setAttempt(currentAttempt);
         console.log(`Database initialization attempt ${currentAttempt}...`);
         try {
+          // Ajouter un délai progressif entre les tentatives
+          if (currentAttempt > 1) {
+            const delay = 1000 * currentAttempt;
+            console.log(`Waiting ${delay}ms before attempt ${currentAttempt}...`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+          }
+          
+          // Tentative d'initialisation
+          console.log(`Starting database initialization (attempt ${currentAttempt})...`);
           success = await db.init();
           
           if (success) {
-            console.log(`Database successfully initialized on attempt ${currentAttempt}`);
+            console.log(`Database initialized successfully on attempt ${currentAttempt}`);
             setInitializationSuccess(true);
             break;
           } else {
@@ -36,12 +45,6 @@ export const useBudgetInitialization = () => {
           }
         } catch (initError) {
           console.error(`Error during initialization attempt ${currentAttempt}:`, initError);
-        }
-        
-        if (currentAttempt < maxAttempts) {
-          // Attendre un peu avant de réessayer
-          console.log(`Waiting before attempt ${currentAttempt + 1}...`);
-          await new Promise(resolve => setTimeout(resolve, 1500 * currentAttempt));
         }
       }
       
@@ -117,11 +120,58 @@ export const useBudgetInitialization = () => {
     }
   };
 
+  const clearCacheAndRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      console.log("Clearing cache and refreshing...");
+      
+      // Clear localStorage
+      localStorage.clear();
+      
+      // Reset all initialization attempts
+      db.resetInitializationAttempts?.();
+      
+      // Small delay to allow clearing to take effect
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Reinitialize
+      const success = await initializeDatabase();
+      
+      if (success) {
+        console.log("Database reinitialized successfully after cache clear");
+        toast({
+          title: "Cache vidé",
+          description: "Le cache a été vidé et les données ont été réinitialisées avec succès."
+        });
+        return true;
+      } else {
+        console.error("Database reinitialization failed after cache clear");
+        toast({
+          variant: "destructive",
+          title: "Erreur de réinitialisation",
+          description: "Impossible de réinitialiser la base de données après avoir vidé le cache."
+        });
+        return false;
+      }
+    } catch (error) {
+      console.error("Error during cache clear and refresh:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Une erreur s'est produite lors de la réinitialisation."
+      });
+      return false;
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   return {
     isRefreshing,
     initializationSuccess,
     handleManualRefresh,
-    initializeDatabase, // Exporter la fonction pour permettre de réinitialiser la base depuis l'extérieur
+    clearCacheAndRefresh,
+    initializeDatabase,
     attempt,
     maxAttempts
   };

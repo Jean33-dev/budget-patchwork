@@ -15,23 +15,43 @@ export const useDashboards = () => {
     
     try {
       // Initialiser la base de données si nécessaire
-      await db.init();
+      const initialized = await db.init();
+      if (!initialized) {
+        throw new Error("Failed to initialize database");
+      }
       
       // Charger les tableaux de bord
       const dashboardsData = await db.getDashboards();
+      console.log("Retrieved dashboards data:", dashboardsData);
       
       // Si aucun tableau de bord n'existe, créer le tableau de bord par défaut
-      if (dashboardsData.length === 0) {
-        const defaultDashboard: Dashboard = {
-          id: 'default',
-          title: 'Budget Personnel',
-          createdAt: new Date().toISOString(),
-          lastAccessed: new Date().toISOString()
-        };
-        
-        await db.addDashboard(defaultDashboard);
-        setDashboards([defaultDashboard]);
+      if (!dashboardsData || dashboardsData.length === 0) {
+        console.log("No dashboards found, creating default dashboard");
+        try {
+          const defaultDashboard: Dashboard = {
+            id: 'default',
+            title: 'Budget Personnel',
+            createdAt: new Date().toISOString(),
+            lastAccessed: new Date().toISOString()
+          };
+          
+          await db.addDashboard(defaultDashboard);
+          setDashboards([defaultDashboard]);
+        } catch (dashboardError) {
+          // Si nous avons une erreur lors de la création, c'est peut-être parce qu'il existe déjà
+          console.error("Error adding dashboard:", dashboardError);
+          
+          // Essayer de récupérer à nouveau les tableaux de bord
+          const retryData = await db.getDashboards();
+          if (retryData && retryData.length > 0) {
+            console.log("Retrieved dashboards on retry:", retryData);
+            setDashboards(retryData);
+          } else {
+            throw dashboardError;
+          }
+        }
       } else {
+        console.log("Setting dashboards:", dashboardsData);
         setDashboards(dashboardsData);
       }
     } catch (error) {
