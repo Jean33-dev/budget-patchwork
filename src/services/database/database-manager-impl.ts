@@ -1,4 +1,3 @@
-
 import { toast } from "@/components/ui/use-toast";
 import { DatabaseManagerCore } from './database-manager-core';
 import { DatabaseInitManager } from './database-init-manager';

@@ -28,6 +28,13 @@ class DatabaseService {
     this.manager.resetInitializationAttempts?.();
   }
 
+  /**
+   * Safely add a dashboard (doesn't throw exceptions)
+   */
+  async safeAddDashboard(dashboard: Dashboard): Promise<boolean> {
+    return this.manager.safeAddDashboard(dashboard);
+  }
+
   /* Budget Methods */
   async getBudgets(): Promise<Budget[]> {
     return this.manager.getBudgetManager().getBudgets();

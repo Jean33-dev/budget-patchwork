@@ -1,4 +1,3 @@
-
 import { Database } from 'sql.js';
 import { IDatabaseManager } from './interfaces/IDatabaseManager';
 import { IQueryManager } from './interfaces/IQueryManager';
@@ -92,7 +91,7 @@ export abstract class DatabaseManagerCore implements IDatabaseManager {
         this.budgetManager.setQueryManager(this.queryManager);
       }
     }
-    return this.budgetManager;
+    return this.budgetManager!;
   }
 
   /**
@@ -107,7 +106,7 @@ export abstract class DatabaseManagerCore implements IDatabaseManager {
         this.categoryManager.setQueryManager(this.queryManager);
       }
     }
-    return this.categoryManager;
+    return this.categoryManager!;
   }
 
   /**
@@ -122,7 +121,7 @@ export abstract class DatabaseManagerCore implements IDatabaseManager {
         this.expenseManager.setQueryManager(this.queryManager);
       }
     }
-    return this.expenseManager;
+    return this.expenseManager!;
   }
 
   /**
@@ -137,7 +136,7 @@ export abstract class DatabaseManagerCore implements IDatabaseManager {
         this.incomeManager.setQueryManager(this.queryManager);
       }
     }
-    return this.incomeManager;
+    return this.incomeManager!;
   }
 
   /**
@@ -152,7 +151,7 @@ export abstract class DatabaseManagerCore implements IDatabaseManager {
         this.dashboardManager.setQueryManager(this.queryManager);
       }
     }
-    return this.dashboardManager;
+    return this.dashboardManager!;
   }
 
   /**
@@ -160,6 +159,14 @@ export abstract class DatabaseManagerCore implements IDatabaseManager {
    */
   resetInitializationAttempts(): void {
     // This will be implemented in subclasses
+  }
+
+  /**
+   * Safely add a dashboard (doesn't throw exceptions)
+   */
+  async safeAddDashboard(dashboard: any): Promise<boolean> {
+    await this.init();
+    return this.getDashboardManager().safeAddDashboard(dashboard);
   }
 
   // Proxy methods to respective managers
