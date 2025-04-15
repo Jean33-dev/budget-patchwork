@@ -28,7 +28,9 @@ export abstract class DatabaseManagerCore implements IDatabaseManager {
   protected initializationInProgress = false;
 
   constructor() {
-    this.queryManager = new QueryManager();
+    // Since QueryManager constructor may need 'this', we can't initiate it here
+    // It will be created in subclasses
+    this.queryManager = new QueryManager(this);
   }
 
   /**
@@ -85,6 +87,7 @@ export abstract class DatabaseManagerCore implements IDatabaseManager {
    */
   getBudgetManager(): IBudgetManager {
     if (!this.budgetManager) {
+      console.log("Creating new BudgetManager instance");
       this.budgetManager = new BudgetManager();
       if (this.queryManager) {
         this.budgetManager.setQueryManager(this.queryManager);
@@ -99,6 +102,7 @@ export abstract class DatabaseManagerCore implements IDatabaseManager {
    */
   getCategoryManager(): ICategoryManager {
     if (!this.categoryManager) {
+      console.log("Creating new CategoryManager instance");
       this.categoryManager = new CategoryManager();
       if (this.queryManager) {
         this.categoryManager.setQueryManager(this.queryManager);
@@ -113,6 +117,7 @@ export abstract class DatabaseManagerCore implements IDatabaseManager {
    */
   getExpenseManager(): IExpenseManager {
     if (!this.expenseManager) {
+      console.log("Creating new ExpenseManager instance");
       this.expenseManager = new ExpenseManager();
       if (this.queryManager) {
         this.expenseManager.setQueryManager(this.queryManager);
@@ -127,6 +132,7 @@ export abstract class DatabaseManagerCore implements IDatabaseManager {
    */
   getIncomeManager(): IIncomeManager {
     if (!this.incomeManager) {
+      console.log("Creating new IncomeManager instance");
       this.incomeManager = new IncomeManager();
       if (this.queryManager) {
         this.incomeManager.setQueryManager(this.queryManager);
@@ -141,6 +147,7 @@ export abstract class DatabaseManagerCore implements IDatabaseManager {
    */
   getDashboardManager(): DashboardManager {
     if (!this.dashboardManager) {
+      console.log("Creating new DashboardManager instance");
       this.dashboardManager = new DashboardManager();
       if (this.queryManager) {
         this.dashboardManager.setQueryManager(this.queryManager);

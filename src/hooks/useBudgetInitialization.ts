@@ -31,6 +31,8 @@ export const useBudgetInitialization = () => {
             console.log(`Database successfully initialized on attempt ${currentAttempt}`);
             setInitializationSuccess(true);
             break;
+          } else {
+            console.error(`Database initialization failed on attempt ${currentAttempt}`);
           }
         } catch (initError) {
           console.error(`Error during initialization attempt ${currentAttempt}:`, initError);

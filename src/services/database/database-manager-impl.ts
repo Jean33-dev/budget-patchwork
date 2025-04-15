@@ -1,9 +1,11 @@
+
 import { toast } from "@/components/ui/use-toast";
 import { DatabaseManagerCore } from './database-manager-core';
 import { DatabaseInitManager } from './database-init-manager';
 import { BaseDatabaseManager } from './base-database-manager';
 import { Database } from "sql.js";
 import { SqlJsInitializer } from './sql-js-initializer';
+import { QueryManager } from './query-manager';
 
 /**
  * Implementation of the main database manager that coordinates all specialized managers
@@ -14,17 +16,20 @@ export class DatabaseManagerImpl extends DatabaseManagerCore {
   constructor() {
     super();
     this.initManager = new DatabaseInitManager();
+    this.queryManager = new QueryManager(this);
     
     // Set query manager in specialized managers
     this.getBudgetManager().setQueryManager(this.queryManager);
     this.getCategoryManager().setQueryManager(this.queryManager);
     this.getExpenseManager().setQueryManager(this.queryManager);
     this.getIncomeManager().setQueryManager(this.queryManager);
+    this.getDashboardManager().setQueryManager(this.queryManager);
   }
 
   async init(): Promise<boolean> {
     // If already initialized, return true
     if (this.initialized && this.db) {
+      console.log("DatabaseManager already initialized, reusing instance");
       return true;
     }
     
@@ -36,6 +41,7 @@ export class DatabaseManagerImpl extends DatabaseManagerCore {
       }
       // Check if initialization was successful
       if (this.initialized && this.db) {
+        console.log("DatabaseManager initialization completed while waiting");
         return true;
       }
     }
@@ -57,15 +63,26 @@ export class DatabaseManagerImpl extends DatabaseManagerCore {
       this.db = dbInstance;
       
       // Set up the query manager
-      this.queryManager.setDb(this.db);
+      if (this.queryManager) {
+        this.queryManager.setDb(this.db);
+      } else {
+        console.error("Query manager is not initialized");
+        return false;
+      }
       
       // Initialize database schema
       try {
         console.log("Setting up database schema...");
-        await this.setupDatabaseSchema();
+        const schemaResult = await this.setupDatabaseSchema();
+        
+        if (!schemaResult) {
+          console.error("Failed to set up database schema");
+          return false;
+        }
         
         // Set as initialized
         this.initialized = true;
+        console.log("Database initialized successfully!");
         return true;
       } catch (err) {
         console.error('Error initializing database schema:', err);

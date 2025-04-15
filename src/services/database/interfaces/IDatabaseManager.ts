@@ -18,4 +18,6 @@ export interface IDatabaseManager {
   getIncomeManager(): IIncomeManager;
   getDashboardManager(): DashboardManager;
   resetInitializationAttempts(): void;
+  isInitialized(): boolean;
+  isInitializationInProgress(): boolean;
 }
