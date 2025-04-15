@@ -8,11 +8,8 @@ import { IQueryManager } from '../interfaces/IQueryManager';
  * Dashboard manager
  */
 export class DashboardManager extends BaseDatabaseManager {
-  constructor(queryManager?: IQueryManager) {
+  constructor() {
     super();
-    if (queryManager) {
-      this.queryManager = queryManager;
-    }
   }
 
   /**
@@ -23,6 +20,10 @@ export class DashboardManager extends BaseDatabaseManager {
     if (!success) return [];
     
     try {
+      if (!this.queryManager) {
+        console.error("Query manager is not initialized in DashboardManager.getDashboards()");
+        return [];
+      }
       return this.queryManager.executeGetDashboards();
     } catch (error) {
       console.error("Error getting dashboards:", error);
@@ -38,6 +39,10 @@ export class DashboardManager extends BaseDatabaseManager {
     if (!success) return;
     
     try {
+      if (!this.queryManager) {
+        console.error("Query manager is not initialized in DashboardManager.addDashboard()");
+        return;
+      }
       await this.queryManager.executeAddDashboard(dashboard);
     } catch (error) {
       console.error("Error adding dashboard:", error);
@@ -53,6 +58,10 @@ export class DashboardManager extends BaseDatabaseManager {
     if (!success) return;
     
     try {
+      if (!this.queryManager) {
+        console.error("Query manager is not initialized in DashboardManager.updateDashboard()");
+        return;
+      }
       await this.queryManager.executeUpdateDashboard(dashboard);
     } catch (error) {
       console.error("Error updating dashboard:", error);
@@ -68,6 +77,10 @@ export class DashboardManager extends BaseDatabaseManager {
     if (!success) return;
     
     try {
+      if (!this.queryManager) {
+        console.error("Query manager is not initialized in DashboardManager.deleteDashboard()");
+        return;
+      }
       await this.queryManager.executeDeleteDashboard(id);
     } catch (error) {
       console.error("Error deleting dashboard:", error);

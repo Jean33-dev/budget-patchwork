@@ -1,4 +1,3 @@
-
 import { IDatabaseManager } from './interfaces/IDatabaseManager';
 import { Capacitor } from '@capacitor/core';
 import { DatabaseManagerImpl, WebDatabaseManager, CapacitorDatabaseManager } from './database-manager-impl';

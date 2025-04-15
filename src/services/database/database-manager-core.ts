@@ -12,7 +12,6 @@ import { IBudgetManager } from './interfaces/IBudgetManager';
 import { ICategoryManager } from './interfaces/ICategoryManager';
 import { IExpenseManager } from './interfaces/IExpenseManager';
 import { IIncomeManager } from './interfaces/IIncomeManager';
-import { DatabaseInitManager } from './database-init-manager';
 
 /**
  * Core database manager
@@ -87,6 +86,9 @@ export abstract class DatabaseManagerCore implements IDatabaseManager {
   getBudgetManager(): IBudgetManager {
     if (!this.budgetManager) {
       this.budgetManager = new BudgetManager();
+      if (this.queryManager) {
+        this.budgetManager.setQueryManager(this.queryManager);
+      }
     }
     return this.budgetManager;
   }
@@ -98,6 +100,9 @@ export abstract class DatabaseManagerCore implements IDatabaseManager {
   getCategoryManager(): ICategoryManager {
     if (!this.categoryManager) {
       this.categoryManager = new CategoryManager();
+      if (this.queryManager) {
+        this.categoryManager.setQueryManager(this.queryManager);
+      }
     }
     return this.categoryManager;
   }
@@ -109,6 +114,9 @@ export abstract class DatabaseManagerCore implements IDatabaseManager {
   getExpenseManager(): IExpenseManager {
     if (!this.expenseManager) {
       this.expenseManager = new ExpenseManager();
+      if (this.queryManager) {
+        this.expenseManager.setQueryManager(this.queryManager);
+      }
     }
     return this.expenseManager;
   }
@@ -120,6 +128,9 @@ export abstract class DatabaseManagerCore implements IDatabaseManager {
   getIncomeManager(): IIncomeManager {
     if (!this.incomeManager) {
       this.incomeManager = new IncomeManager();
+      if (this.queryManager) {
+        this.incomeManager.setQueryManager(this.queryManager);
+      }
     }
     return this.incomeManager;
   }
@@ -131,6 +142,9 @@ export abstract class DatabaseManagerCore implements IDatabaseManager {
   getDashboardManager(): DashboardManager {
     if (!this.dashboardManager) {
       this.dashboardManager = new DashboardManager();
+      if (this.queryManager) {
+        this.dashboardManager.setQueryManager(this.queryManager);
+      }
     }
     return this.dashboardManager;
   }

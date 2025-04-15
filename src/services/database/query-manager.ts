@@ -14,7 +14,7 @@ export class QueryManager implements IQueryManager {
   private expenseQueryManager: ExpenseQueryManager;
   private incomeQueryManager: IncomeQueryManager;
   private dashboardQueryManager: DashboardQueryManager;
-  private parent: IDatabaseManager;
+  private parent: IDatabaseManager | null = null;
   private db: Database | null = null;
 
   constructor(parent?: IDatabaseManager) {
@@ -40,6 +40,7 @@ export class QueryManager implements IQueryManager {
   }
 
   setDb(db: Database): void {
+    console.log("Setting database in QueryManager");
     this.db = db;
   }
 
@@ -55,94 +56,204 @@ export class QueryManager implements IQueryManager {
 
   // Budget Operations
   async executeGetBudgets(): Promise<any[]> {
-    return this.budgetQueryManager.getAll();
+    try {
+      return this.budgetQueryManager.getAll();
+    } catch (error) {
+      console.error("Error in executeGetBudgets:", error);
+      throw error;
+    }
   }
 
   async executeAddBudget(budget: any): Promise<void> {
-    return this.budgetQueryManager.add(budget);
+    try {
+      return this.budgetQueryManager.add(budget);
+    } catch (error) {
+      console.error("Error in executeAddBudget:", error);
+      throw error;
+    }
   }
 
   async executeUpdateBudget(budget: any): Promise<void> {
-    return this.budgetQueryManager.update(budget);
+    try {
+      return this.budgetQueryManager.update(budget);
+    } catch (error) {
+      console.error("Error in executeUpdateBudget:", error);
+      throw error;
+    }
   }
 
   async executeDeleteBudget(id: string): Promise<void> {
-    return this.budgetQueryManager.delete(id);
+    try {
+      return this.budgetQueryManager.delete(id);
+    } catch (error) {
+      console.error("Error in executeDeleteBudget:", error);
+      throw error;
+    }
   }
 
   // Category Operations
   async executeGetCategories(): Promise<any[]> {
-    return this.categoryQueryManager.getAll();
+    try {
+      return this.categoryQueryManager.getAll();
+    } catch (error) {
+      console.error("Error in executeGetCategories:", error);
+      throw error;
+    }
   }
 
   async executeAddCategory(category: any): Promise<void> {
-    return this.categoryQueryManager.add(category);
+    try {
+      return this.categoryQueryManager.add(category);
+    } catch (error) {
+      console.error("Error in executeAddCategory:", error);
+      throw error;
+    }
   }
 
   async executeUpdateCategory(category: any): Promise<void> {
-    return this.categoryQueryManager.update(category);
+    try {
+      return this.categoryQueryManager.update(category);
+    } catch (error) {
+      console.error("Error in executeUpdateCategory:", error);
+      throw error;
+    }
   }
 
   async executeDeleteCategory(id: string): Promise<void> {
-    return this.categoryQueryManager.delete(id);
+    try {
+      return this.categoryQueryManager.delete(id);
+    } catch (error) {
+      console.error("Error in executeDeleteCategory:", error);
+      throw error;
+    }
   }
 
   // Expense Operations
   async executeGetExpenses(): Promise<any[]> {
-    return this.expenseQueryManager.getAll();
+    try {
+      return this.expenseQueryManager.getAll();
+    } catch (error) {
+      console.error("Error in executeGetExpenses:", error);
+      throw error;
+    }
   }
 
   async executeGetRecurringExpenses(): Promise<any[]> {
-    return this.expenseQueryManager.getRecurring();
+    try {
+      return this.expenseQueryManager.getRecurring();
+    } catch (error) {
+      console.error("Error in executeGetRecurringExpenses:", error);
+      throw error;
+    }
   }
 
   async executeAddExpense(expense: any): Promise<void> {
-    return this.expenseQueryManager.add(expense);
+    try {
+      return this.expenseQueryManager.add(expense);
+    } catch (error) {
+      console.error("Error in executeAddExpense:", error);
+      throw error;
+    }
   }
 
   async executeUpdateExpense(expense: any): Promise<void> {
-    return this.expenseQueryManager.update(expense);
+    try {
+      return this.expenseQueryManager.update(expense);
+    } catch (error) {
+      console.error("Error in executeUpdateExpense:", error);
+      throw error;
+    }
   }
 
   async executeDeleteExpense(id: string): Promise<void> {
-    return this.expenseQueryManager.delete(id);
+    try {
+      return this.expenseQueryManager.delete(id);
+    } catch (error) {
+      console.error("Error in executeDeleteExpense:", error);
+      throw error;
+    }
   }
 
   // Income Operations
   async executeGetIncomes(): Promise<any[]> {
-    return this.incomeQueryManager.getAll();
+    try {
+      return this.incomeQueryManager.getAll();
+    } catch (error) {
+      console.error("Error in executeGetIncomes:", error);
+      throw error;
+    }
   }
 
   async executeGetRecurringIncomes(): Promise<any[]> {
-    return this.incomeQueryManager.getRecurring();
+    try {
+      return this.incomeQueryManager.getRecurring();
+    } catch (error) {
+      console.error("Error in executeGetRecurringIncomes:", error);
+      throw error;
+    }
   }
 
   async executeAddIncome(income: any): Promise<void> {
-    return this.incomeQueryManager.add(income);
+    try {
+      return this.incomeQueryManager.add(income);
+    } catch (error) {
+      console.error("Error in executeAddIncome:", error);
+      throw error;
+    }
   }
 
   async executeUpdateIncome(income: any): Promise<void> {
-    return this.incomeQueryManager.update(income);
+    try {
+      return this.incomeQueryManager.update(income);
+    } catch (error) {
+      console.error("Error in executeUpdateIncome:", error);
+      throw error;
+    }
   }
 
   async executeDeleteIncome(id: string): Promise<void> {
-    return this.incomeQueryManager.delete(id);
+    try {
+      return this.incomeQueryManager.delete(id);
+    } catch (error) {
+      console.error("Error in executeDeleteIncome:", error);
+      throw error;
+    }
   }
 
   // Dashboard Operations
   async executeGetDashboards(): Promise<any[]> {
-    return this.dashboardQueryManager.getAll();
+    try {
+      return this.dashboardQueryManager.getAll();
+    } catch (error) {
+      console.error("Error in executeGetDashboards:", error);
+      throw error;
+    }
   }
 
   async executeAddDashboard(dashboard: any): Promise<void> {
-    return this.dashboardQueryManager.add(dashboard);
+    try {
+      return this.dashboardQueryManager.add(dashboard);
+    } catch (error) {
+      console.error("Error in executeAddDashboard:", error);
+      throw error;
+    }
   }
 
   async executeUpdateDashboard(dashboard: any): Promise<void> {
-    return this.dashboardQueryManager.update(dashboard);
+    try {
+      return this.dashboardQueryManager.update(dashboard);
+    } catch (error) {
+      console.error("Error in executeUpdateDashboard:", error);
+      throw error;
+    }
   }
 
   async executeDeleteDashboard(id: string): Promise<void> {
-    return this.dashboardQueryManager.delete(id);
+    try {
+      return this.dashboardQueryManager.delete(id);
+    } catch (error) {
+      console.error("Error in executeDeleteDashboard:", error);
+      throw error;
+    }
   }
 }
