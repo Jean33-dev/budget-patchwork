@@ -35,12 +35,16 @@ export class DashboardManager extends BaseDatabaseManager {
    * Safely add a dashboard (doesn't throw exceptions)
    */
   async safeAddDashboard(dashboard: Dashboard): Promise<boolean> {
-    const success = await this.ensureInitialized();
-    if (!success) return false;
-    
     try {
+      console.log(`DashboardManager: Safely adding dashboard: ${dashboard.id}`);
+      const success = await this.ensureInitialized();
+      if (!success) {
+        console.error("DashboardManager: Database not initialized, cannot add dashboard");
+        return false;
+      }
+      
       if (!this.queryManager) {
-        console.error("Query manager is not initialized in DashboardManager.safeAddDashboard()");
+        console.error("DashboardManager: Query manager is not initialized");
         return false;
       }
       
@@ -49,14 +53,20 @@ export class DashboardManager extends BaseDatabaseManager {
       const exists = dashboards.some(d => d.id === dashboard.id);
       
       if (exists) {
-        console.log(`Dashboard ${dashboard.id} already exists, skipping add operation`);
+        console.log(`DashboardManager: Dashboard ${dashboard.id} already exists, skipping add operation`);
         return true;
       }
       
-      await this.queryManager.executeAddDashboard(dashboard);
-      return true;
+      try {
+        await this.queryManager.executeAddDashboard(dashboard);
+        console.log(`DashboardManager: Dashboard ${dashboard.id} added successfully`);
+        return true;
+      } catch (error) {
+        console.error("DashboardManager: Error adding dashboard:", error);
+        return false;
+      }
     } catch (error) {
-      console.error("Error safely adding dashboard:", error);
+      console.error("DashboardManager: Unexpected error in safeAddDashboard:", error);
       return false;
     }
   }
@@ -66,13 +76,25 @@ export class DashboardManager extends BaseDatabaseManager {
    */
   async addDashboard(dashboard: Dashboard): Promise<void> {
     const success = await this.ensureInitialized();
-    if (!success) return;
+    if (!success) {
+      throw new Error("Database not initialized");
+    }
     
     try {
       if (!this.queryManager) {
-        console.error("Query manager is not initialized in DashboardManager.addDashboard()");
+        throw new Error("Query manager is not initialized");
+      }
+      
+      // Check if dashboard with this ID already exists
+      const dashboards = await this.getDashboards();
+      const exists = dashboards.some(d => d.id === dashboard.id);
+      
+      if (exists) {
+        console.log(`Dashboard with ID ${dashboard.id} already exists, updating instead`);
+        await this.updateDashboard(dashboard);
         return;
       }
+      
       await this.queryManager.executeAddDashboard(dashboard);
     } catch (error) {
       console.error("Error adding dashboard:", error);
@@ -85,12 +107,13 @@ export class DashboardManager extends BaseDatabaseManager {
    */
   async updateDashboard(dashboard: Dashboard): Promise<void> {
     const success = await this.ensureInitialized();
-    if (!success) return;
+    if (!success) {
+      throw new Error("Database not initialized");
+    }
     
     try {
       if (!this.queryManager) {
-        console.error("Query manager is not initialized in DashboardManager.updateDashboard()");
-        return;
+        throw new Error("Query manager is not initialized");
       }
       await this.queryManager.executeUpdateDashboard(dashboard);
     } catch (error) {
@@ -104,12 +127,13 @@ export class DashboardManager extends BaseDatabaseManager {
    */
   async deleteDashboard(id: string): Promise<void> {
     const success = await this.ensureInitialized();
-    if (!success) return;
+    if (!success) {
+      throw new Error("Database not initialized");
+    }
     
     try {
       if (!this.queryManager) {
-        console.error("Query manager is not initialized in DashboardManager.deleteDashboard()");
-        return;
+        throw new Error("Query manager is not initialized");
       }
       await this.queryManager.executeDeleteDashboard(id);
     } catch (error) {

@@ -18,13 +18,20 @@ class DatabaseService {
    * Initialize the database
    */
   async init(): Promise<boolean> {
-    return await this.manager.init();
+    try {
+      console.log("DatabaseService: Initializing database...");
+      return await this.manager.init();
+    } catch (error) {
+      console.error("DatabaseService: Error during initialization:", error);
+      return false;
+    }
   }
 
   /**
    * Reset initialization attempts
    */
   resetInitializationAttempts(): void {
+    console.log("DatabaseService: Resetting initialization attempts");
     this.manager.resetInitializationAttempts?.();
   }
 
@@ -32,7 +39,13 @@ class DatabaseService {
    * Safely add a dashboard (doesn't throw exceptions)
    */
   async safeAddDashboard(dashboard: Dashboard): Promise<boolean> {
-    return this.manager.safeAddDashboard(dashboard);
+    try {
+      console.log(`DatabaseService: Safely adding dashboard: ${dashboard.id}`);
+      return await this.manager.safeAddDashboard(dashboard);
+    } catch (error) {
+      console.error("DatabaseService: Error in safeAddDashboard:", error);
+      return false;
+    }
   }
 
   /* Budget Methods */

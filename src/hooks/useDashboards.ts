@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { toast } from "@/components/ui/use-toast";
 import { db } from "@/services/database";
 import { Dashboard } from "@/services/database/models/dashboard";
@@ -11,7 +11,7 @@ export const useDashboards = () => {
   const [loadAttempts, setLoadAttempts] = useState(0);
   const MAX_LOAD_ATTEMPTS = 3;
 
-  const loadDashboards = async () => {
+  const loadDashboards = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     
@@ -20,87 +20,90 @@ export const useDashboards = () => {
       setLoadAttempts(prev => prev + 1);
       console.log(`Loading dashboards attempt ${loadAttempts + 1}/${MAX_LOAD_ATTEMPTS}`);
       
-      // Initialiser la base de données si nécessaire
+      // Initialize the database first
+      console.log("Initializing database before loading dashboards");
       const initialized = await db.init();
+      
       if (!initialized) {
+        console.error("Failed to initialize database during loadDashboards");
         throw new Error("Failed to initialize database");
       }
       
-      // Charger les tableaux de bord
-      console.log("Database initialized, attempting to load dashboards");
+      // Load dashboards
+      console.log("Database initialized, loading dashboards");
       const dashboardsData = await db.getDashboards();
       console.log("Retrieved dashboards data:", dashboardsData);
       
-      // Si aucun tableau de bord n'existe, créer le tableau de bord par défaut
+      // If no dashboards exist, create the default dashboard
       if (!dashboardsData || dashboardsData.length === 0) {
         console.log("No dashboards found, creating default dashboard");
-        try {
-          const defaultDashboard: Dashboard = {
-            id: 'default',
-            title: 'Budget Personnel',
-            createdAt: new Date().toISOString(),
-            lastAccessed: new Date().toISOString()
-          };
-          
-          // Use the safe method that doesn't throw exceptions
-          const success = await db.safeAddDashboard(defaultDashboard);
-          
-          if (success) {
-            console.log("Default dashboard created successfully");
-            setDashboards([defaultDashboard]);
-          } else {
-            console.log("Could not create default dashboard, trying to load existing ones");
-            // Even if we couldn't add, try to load again in case it was added in a race condition
-            const retryData = await db.getDashboards();
-            if (retryData && retryData.length > 0) {
-              console.log("Retrieved dashboards on retry:", retryData);
-              setDashboards(retryData);
-            } else {
-              throw new Error("Could not create or find any dashboards");
-            }
-          }
-        } catch (dashboardError) {
-          console.error("Error handling dashboards:", dashboardError);
-          
-          // One last try to get dashboards
+        
+        const defaultDashboard: Dashboard = {
+          id: 'default',
+          title: 'Budget Personnel',
+          createdAt: new Date().toISOString(),
+          lastAccessed: new Date().toISOString()
+        };
+        
+        console.log("Attempting to safely add default dashboard");
+        const success = await db.safeAddDashboard(defaultDashboard);
+        
+        if (success) {
+          console.log("Default dashboard created successfully");
+          setDashboards([defaultDashboard]);
+        } else {
+          console.warn("Could not create default dashboard, trying to load existing ones");
+          // Even if we couldn't add, try to load again in case another process added it
           const retryData = await db.getDashboards();
+          
           if (retryData && retryData.length > 0) {
-            console.log("Retrieved dashboards on final retry:", retryData);
+            console.log("Retrieved dashboards on retry:", retryData);
             setDashboards(retryData);
           } else {
-            throw dashboardError;
+            throw new Error("Could not create or find any dashboards");
           }
         }
       } else {
-        console.log("Setting dashboards:", dashboardsData);
+        console.log("Setting dashboards from database:", dashboardsData);
         setDashboards(dashboardsData);
       }
+      
+      return true;
     } catch (error) {
       console.error("Error loading dashboards:", error);
-      setError(error instanceof Error ? error : new Error("Unknown error"));
+      setError(error instanceof Error ? error : new Error("Unknown error loading dashboards"));
       
       // Only show toast if we've exhausted all attempts
       if (loadAttempts >= MAX_LOAD_ATTEMPTS) {
         toast({
           variant: "destructive",
-          title: "Erreur",
+          title: "Erreur de chargement",
           description: "Impossible de charger les tableaux de bord après plusieurs tentatives"
         });
+        return false;
       } else {
         // Try again after a short delay if we haven't hit max attempts
         setTimeout(() => {
           loadDashboards();
-        }, 1000 * loadAttempts); // Exponential backoff
+        }, 1000 * Math.pow(2, loadAttempts)); // Exponential backoff
+        return false;
       }
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [loadAttempts]);
 
-  // Charger les tableaux de bord au montage du composant
+  // Load dashboards on component mount
   useEffect(() => {
     loadDashboards();
-  }, []);
+  }, [loadDashboards]);
+
+  // Function to manually retry loading dashboards
+  const retryLoadDashboards = useCallback(async () => {
+    setLoadAttempts(0); // Reset attempts counter
+    db.resetInitializationAttempts(); // Reset database initialization attempts
+    return loadDashboards();
+  }, [loadDashboards]);
 
   const addDashboard = async (title: string): Promise<string | null> => {
     try {
@@ -113,7 +116,7 @@ export const useDashboards = () => {
       
       await db.addDashboard(newDashboard);
       
-      // Rafraîchir la liste des tableaux de bord
+      // Refresh dashboard list
       await loadDashboards();
       
       toast({
@@ -140,7 +143,7 @@ export const useDashboards = () => {
         lastAccessed: new Date().toISOString()
       });
       
-      // Rafraîchir la liste des tableaux de bord
+      // Refresh dashboard list
       await loadDashboards();
       
       return true;
@@ -159,7 +162,7 @@ export const useDashboards = () => {
     try {
       await db.deleteDashboard(id);
       
-      // Rafraîchir la liste des tableaux de bord
+      // Refresh dashboard list
       await loadDashboards();
       
       toast({
@@ -184,6 +187,7 @@ export const useDashboards = () => {
     isLoading,
     error,
     loadDashboards,
+    retryLoadDashboards,
     addDashboard,
     updateDashboard,
     deleteDashboard,
