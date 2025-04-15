@@ -28,4 +28,5 @@ export interface IDatabaseManager {
   addDashboard(dashboard: any): Promise<void>;
   updateDashboard(dashboard: any): Promise<void>;
   deleteDashboard(id: string): Promise<void>;
+  safeAddDashboard(dashboard: any): Promise<boolean>;  // New method for safely adding dashboards
 }

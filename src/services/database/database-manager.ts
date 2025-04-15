@@ -214,6 +214,19 @@ export class DatabaseManager extends DatabaseManagerImpl implements IDatabaseMan
     }
   }
 
+  async safeAddDashboard(dashboard: Dashboard): Promise<boolean> {
+    try {
+      if (!this.initialized) {
+        await this.init();
+      }
+      // This is a new method that doesn't throw exceptions
+      return this.getDashboardManager().safeAddDashboard(dashboard);
+    } catch (error) {
+      console.error("Error in safeAddDashboard:", error);
+      return false;
+    }
+  }
+
   async addDashboard(dashboard: Dashboard): Promise<void> {
     if (!this.initialized) {
       await this.init();

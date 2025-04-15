@@ -39,6 +39,47 @@ export class DashboardService extends BaseService {
   }
 
   /**
+   * Safely adds a dashboard, handling uniqueness conflicts
+   */
+  async safeAddDashboard(dashboard: Dashboard): Promise<boolean> {
+    if (!await this.ensureInitialized()) return false;
+    
+    try {
+      const adapter = this.initManager.getAdapter();
+      
+      // Create dashboard table if it doesn't exist
+      await adapter!.run(`CREATE TABLE IF NOT EXISTS dashboards (
+        id TEXT PRIMARY KEY,
+        title TEXT,
+        createdAt TEXT,
+        lastAccessed TEXT
+      )`);
+      
+      // Check if dashboard already exists
+      const existingDashboards = await adapter!.query(
+        'SELECT id FROM dashboards WHERE id = ?',
+        [dashboard.id]
+      );
+      
+      if (existingDashboards.length > 0) {
+        console.log(`Dashboard with ID ${dashboard.id} already exists, skipping insertion`);
+        return true; // Success - dashboard exists already
+      }
+      
+      console.log(`Adding new dashboard: ${dashboard.id} - ${dashboard.title}`);
+      await adapter!.run(
+        'INSERT INTO dashboards (id, title, createdAt, lastAccessed) VALUES (?, ?, ?, ?)',
+        [dashboard.id, dashboard.title, dashboard.createdAt, dashboard.lastAccessed]
+      );
+      return true;
+    } catch (error) {
+      console.error("Error safely adding dashboard:", error);
+      // Don't throw, just return false to indicate failure
+      return false;
+    }
+  }
+
+  /**
    * Adds a new dashboard
    */
   async addDashboard(dashboard: Dashboard): Promise<void> {

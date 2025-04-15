@@ -1,12 +1,16 @@
 import { IDatabaseManager } from './interfaces/IDatabaseManager';
 import { Capacitor } from '@capacitor/core';
 import { WebDatabaseManager, CapacitorDatabaseManager } from './database-manager-impl';
+import { toast } from "@/components/ui/use-toast";
 
 /**
  * Factory for database manager
  */
 export class DatabaseManagerFactory {
-  private static instance: IDatabaseManager;
+  private static instance: IDatabaseManager | null = null;
+  private static initializationAttempts = 0;
+  private static MAX_INIT_ATTEMPTS = 3;
+  private static initializationInProgress = false;
 
   /**
    * Get database manager
@@ -20,13 +24,45 @@ export class DatabaseManagerFactory {
 
     console.log("Creating new database manager instance");
     
-    // If running in Capacitor, use SQLite
-    if (this.isNative()) {
-      return this.getCapacitorDatabaseManager();
+    // If already trying to create an instance, wait before trying again
+    if (this.initializationInProgress) {
+      console.log("Database manager initialization already in progress");
+      
+      // Increment attempt counter
+      this.initializationAttempts++;
+      
+      if (this.initializationAttempts > this.MAX_INIT_ATTEMPTS) {
+        console.error(`Exceeded maximum database manager initialization attempts (${this.MAX_INIT_ATTEMPTS})`);
+        toast({
+          variant: "destructive",
+          title: "Erreur de base de données",
+          description: "Impossible de créer le gestionnaire de base de données après plusieurs tentatives."
+        });
+      }
     }
+    
+    this.initializationInProgress = true;
+    
+    try {
+      // If running in Capacitor, use SQLite
+      if (this.isNative()) {
+        return this.getCapacitorDatabaseManager();
+      }
 
-    // Otherwise, use WebSQL
-    return this.getWebDatabaseManager();
+      // Otherwise, use WebSQL
+      return this.getWebDatabaseManager();
+    } finally {
+      this.initializationInProgress = false;
+    }
+  }
+
+  /**
+   * Reset initialization attempts
+   */
+  static resetInitializationAttempts(): void {
+    this.initializationAttempts = 0;
+    this.initializationInProgress = false;
+    this.instance = null;
   }
 
   /**

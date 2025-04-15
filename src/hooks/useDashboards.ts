@@ -8,12 +8,18 @@ export const useDashboards = () => {
   const [dashboards, setDashboards] = useState<Dashboard[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const [loadAttempts, setLoadAttempts] = useState(0);
+  const MAX_LOAD_ATTEMPTS = 3;
 
   const loadDashboards = async () => {
     setIsLoading(true);
     setError(null);
     
     try {
+      // Increment attempt counter
+      setLoadAttempts(prev => prev + 1);
+      console.log(`Loading dashboards attempt ${loadAttempts + 1}/${MAX_LOAD_ATTEMPTS}`);
+      
       // Initialiser la base de données si nécessaire
       const initialized = await db.init();
       if (!initialized) {
@@ -21,6 +27,7 @@ export const useDashboards = () => {
       }
       
       // Charger les tableaux de bord
+      console.log("Database initialized, attempting to load dashboards");
       const dashboardsData = await db.getDashboards();
       console.log("Retrieved dashboards data:", dashboardsData);
       
@@ -35,16 +42,30 @@ export const useDashboards = () => {
             lastAccessed: new Date().toISOString()
           };
           
-          await db.addDashboard(defaultDashboard);
-          setDashboards([defaultDashboard]);
-        } catch (dashboardError) {
-          // Si nous avons une erreur lors de la création, c'est peut-être parce qu'il existe déjà
-          console.error("Error adding dashboard:", dashboardError);
+          // Use the safe method that doesn't throw exceptions
+          const success = await db.safeAddDashboard(defaultDashboard);
           
-          // Essayer de récupérer à nouveau les tableaux de bord
+          if (success) {
+            console.log("Default dashboard created successfully");
+            setDashboards([defaultDashboard]);
+          } else {
+            console.log("Could not create default dashboard, trying to load existing ones");
+            // Even if we couldn't add, try to load again in case it was added in a race condition
+            const retryData = await db.getDashboards();
+            if (retryData && retryData.length > 0) {
+              console.log("Retrieved dashboards on retry:", retryData);
+              setDashboards(retryData);
+            } else {
+              throw new Error("Could not create or find any dashboards");
+            }
+          }
+        } catch (dashboardError) {
+          console.error("Error handling dashboards:", dashboardError);
+          
+          // One last try to get dashboards
           const retryData = await db.getDashboards();
           if (retryData && retryData.length > 0) {
-            console.log("Retrieved dashboards on retry:", retryData);
+            console.log("Retrieved dashboards on final retry:", retryData);
             setDashboards(retryData);
           } else {
             throw dashboardError;
@@ -57,11 +78,20 @@ export const useDashboards = () => {
     } catch (error) {
       console.error("Error loading dashboards:", error);
       setError(error instanceof Error ? error : new Error("Unknown error"));
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Impossible de charger les tableaux de bord"
-      });
+      
+      // Only show toast if we've exhausted all attempts
+      if (loadAttempts >= MAX_LOAD_ATTEMPTS) {
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Impossible de charger les tableaux de bord après plusieurs tentatives"
+        });
+      } else {
+        // Try again after a short delay if we haven't hit max attempts
+        setTimeout(() => {
+          loadDashboards();
+        }, 1000 * loadAttempts); // Exponential backoff
+      }
     } finally {
       setIsLoading(false);
     }
@@ -156,6 +186,8 @@ export const useDashboards = () => {
     loadDashboards,
     addDashboard,
     updateDashboard,
-    deleteDashboard
+    deleteDashboard,
+    loadAttempts,
+    MAX_LOAD_ATTEMPTS
   };
 };

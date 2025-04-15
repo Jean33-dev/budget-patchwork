@@ -32,6 +32,36 @@ export class DashboardManager extends BaseDatabaseManager {
   }
 
   /**
+   * Safely add a dashboard (doesn't throw exceptions)
+   */
+  async safeAddDashboard(dashboard: Dashboard): Promise<boolean> {
+    const success = await this.ensureInitialized();
+    if (!success) return false;
+    
+    try {
+      if (!this.queryManager) {
+        console.error("Query manager is not initialized in DashboardManager.safeAddDashboard()");
+        return false;
+      }
+      
+      // First check if dashboard already exists
+      const dashboards = await this.getDashboards();
+      const exists = dashboards.some(d => d.id === dashboard.id);
+      
+      if (exists) {
+        console.log(`Dashboard ${dashboard.id} already exists, skipping add operation`);
+        return true;
+      }
+      
+      await this.queryManager.executeAddDashboard(dashboard);
+      return true;
+    } catch (error) {
+      console.error("Error safely adding dashboard:", error);
+      return false;
+    }
+  }
+
+  /**
    * Add a dashboard
    */
   async addDashboard(dashboard: Dashboard): Promise<void> {
