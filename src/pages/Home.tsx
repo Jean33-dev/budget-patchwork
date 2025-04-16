@@ -1,11 +1,9 @@
-
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { PlusCircle, LineChart, Settings, Trash2, AlertCircle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
-import { useState, useEffect } from "react";
-import { EditDashboardDialog } from "@/components/dashboard/EditDashboardDialog";
 import { useDashboards } from "@/hooks/useDashboards";
 import { Dashboard } from "@/services/database/models/dashboard";
 import {
@@ -76,7 +74,6 @@ const Home = () => {
     setIsCreateDialogOpen(false);
     
     if (dashboardId) {
-      // Rediriger vers le nouveau tableau de bord
       navigate(`/dashboard/${dashboardId}`);
     }
   };
@@ -93,13 +90,11 @@ const Home = () => {
   };
 
   const handleDashboardClick = (dashboard: Dashboard) => {
-    // Mettre à jour la date de dernier accès
     updateDashboard({
       ...dashboard,
       lastAccessed: new Date().toISOString()
     });
     
-    // Naviguer vers le dashboard
     navigate(`/dashboard/${dashboard.id}`);
   };
 
@@ -152,7 +147,7 @@ const Home = () => {
       <h1 className="text-4xl font-bold">Mes Tableaux de Bord</h1>
       
       {loadAttempts > 1 && loadAttempts < MAX_LOAD_ATTEMPTS && !error && (
-        <Alert variant="warning" className="bg-amber-50 text-amber-800 border-amber-300">
+        <Alert variant="default" className="bg-amber-50 text-amber-800 border-amber-300">
           <AlertTitle className="text-amber-800">Tentative de reconnexion</AlertTitle>
           <AlertDescription className="text-amber-700">
             Tentative {loadAttempts}/{MAX_LOAD_ATTEMPTS} de connexion à la base de données...
@@ -162,7 +157,6 @@ const Home = () => {
       
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {isLoading ? (
-          // Afficher des squelettes pendant le chargement
           Array(3).fill(0).map((_, index) => (
             <Card key={index} className="cursor-pointer hover:shadow-lg transition-shadow">
               <CardHeader>
@@ -175,7 +169,6 @@ const Home = () => {
             </Card>
           ))
         ) : (
-          // Afficher les tableaux de bord
           dashboards.map(dashboard => (
             <Card 
               key={dashboard.id}
