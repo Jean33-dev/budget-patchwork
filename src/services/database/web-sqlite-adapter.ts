@@ -2,12 +2,15 @@
 import { SQLiteAdapter } from './sqlite-adapter';
 import { SqlJsInitializer } from './sql-js-initializer';
 import { WebSQLiteOperations } from './web-sqlite-operations';
+import { toast } from "@/components/ui/use-toast";
 
 /**
  * Web SQLite adapter using SQL.js
  */
 export class WebSQLiteAdapter extends SQLiteAdapter {
   private db: any = null;
+  private static initAttempts = 0;
+  private static MAX_INIT_ATTEMPTS = 5;
 
   constructor() {
     super();
@@ -20,29 +23,64 @@ export class WebSQLiteAdapter extends SQLiteAdapter {
   async init(): Promise<boolean> {
     try {
       if (this.initialized && this.db) {
+        console.log("WebSQLiteAdapter already initialized, reusing instance");
         return true;
       }
 
-      // Reset initialization attempts if needed
-      SqlJsInitializer.resetInitializationAttempts();
+      // Track initialization attempts
+      WebSQLiteAdapter.initAttempts++;
+      console.log(`WebSQLiteAdapter initialization attempt ${WebSQLiteAdapter.initAttempts}/${WebSQLiteAdapter.MAX_INIT_ATTEMPTS}`);
+      
+      if (WebSQLiteAdapter.initAttempts > WebSQLiteAdapter.MAX_INIT_ATTEMPTS) {
+        console.error(`Exceeded maximum WebSQLiteAdapter initialization attempts (${WebSQLiteAdapter.MAX_INIT_ATTEMPTS})`);
+        toast({
+          variant: "destructive",
+          title: "Erreur d'initialisation",
+          description: "Trop de tentatives d'initialisation de la base de données. Veuillez rafraîchir la page."
+        });
+        return false;
+      }
+      
+      // Add delay for retries with exponential backoff
+      if (WebSQLiteAdapter.initAttempts > 1) {
+        const delay = Math.min(1000 * Math.pow(2, WebSQLiteAdapter.initAttempts - 1), 10000);
+        console.log(`Waiting ${delay}ms before WebSQLiteAdapter retry attempt ${WebSQLiteAdapter.initAttempts}...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
       
       // Initialize SQL.js
+      console.log("WebSQLiteAdapter: initializing SQL.js...");
       const SQL = await SqlJsInitializer.initialize();
       
-      if (SQL) {
-        console.log("Creating new SQL.js database instance...");
-        this.db = new SQL.Database();
-        this.initialized = true;
-        console.log("SQL.js database created successfully!");
-        return true;
-      } else {
-        throw new Error("Failed to initialize SQL.js module");
+      if (!SQL) {
+        console.error("WebSQLiteAdapter: SQL.js initialization failed");
+        return false;
       }
+      
+      console.log("WebSQLiteAdapter: creating new SQL.js database instance...");
+      this.db = new SQL.Database();
+      
+      if (!this.db) {
+        console.error("WebSQLiteAdapter: Failed to create database instance");
+        return false;
+      }
+      
+      this.initialized = true;
+      console.log("WebSQLiteAdapter: initialized successfully");
+      
+      return true;
     } catch (error) {
-      console.error("Error initializing SQL.js:", error);
+      console.error("Error initializing WebSQLiteAdapter:", error);
       this.logError("initialization", error);
       this.initialized = false;
       this.db = null;
+      
+      toast({
+        variant: "destructive",
+        title: "Erreur d'initialisation",
+        description: `Impossible d'initialiser la base de données: ${error instanceof Error ? error.message : "Erreur inconnue"}`
+      });
+      
       return false;
     }
   }
@@ -146,6 +184,8 @@ export class WebSQLiteAdapter extends SQLiteAdapter {
    * Reset initialization attempts
    */
   static resetInitializationAttempts(): void {
+    WebSQLiteAdapter.initAttempts = 0;
     SqlJsInitializer.resetInitializationAttempts();
+    console.log("WebSQLiteAdapter initialization attempts reset");
   }
 }

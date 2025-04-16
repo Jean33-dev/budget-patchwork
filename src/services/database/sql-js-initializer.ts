@@ -39,7 +39,7 @@ export class SqlJsInitializer {
     if (SqlJsInitializer.initializationInProgress) {
       console.log("SQL.js initialization already in progress, waiting...");
       let waitCount = 0;
-      const maxWait = 20; // Maximum number of wait cycles
+      const maxWait = 30; // Maximum number of wait cycles
       
       while (SqlJsInitializer.initializationInProgress && waitCount < maxWait) {
         await new Promise(resolve => setTimeout(resolve, 100));
@@ -88,20 +88,51 @@ export class SqlJsInitializer {
         throw new Error("SQL.js module does not export a function");
       }
       
-      console.log("Initializing SQL.js with WASM from: /assets/sql-wasm.wasm");
+      // Try multiple paths to the WASM file to improve resilience
+      const wasmPaths = [
+        '/assets/sql-wasm.wasm',
+        './assets/sql-wasm.wasm',
+        '../assets/sql-wasm.wasm',
+        'sql-wasm.wasm',
+        '/sql-wasm.wasm'
+      ];
       
-      // Use the correct path to WASM file
-      const wasmSource = '/assets/sql-wasm.wasm';
+      let success = false;
+      let lastError = null;
       
-      SqlJsInitializer.SQL = await initSqlJs({
-        locateFile: () => wasmSource
-      });
+      for (const wasmPath of wasmPaths) {
+        try {
+          console.log(`Trying to load WASM from: ${wasmPath}`);
+          
+          SqlJsInitializer.SQL = await initSqlJs({
+            locateFile: () => wasmPath
+          });
+          
+          console.log(`SQL.js initialized successfully with WASM from: ${wasmPath}`);
+          success = true;
+          break;
+        } catch (error) {
+          console.warn(`Failed to load WASM from ${wasmPath}:`, error);
+          lastError = error;
+        }
+      }
       
-      console.log(`SQL.js initialized successfully with WASM from: ${wasmSource}`);
+      if (!success) {
+        throw new Error(`Failed to load WASM from any path: ${lastError?.message}`);
+      }
+      
       return SqlJsInitializer.SQL;
     } catch (error) {
       console.error("Failed to initialize SQL.js:", error);
       SqlJsInitializer.SQL = null;
+      
+      // Show a toast notification for the user
+      toast({
+        variant: "destructive",
+        title: "Erreur d'initialisation de la base de données",
+        description: `${error instanceof Error ? error.message : "Erreur inconnue"}. Veuillez rafraîchir la page.`
+      });
+      
       throw error;
     } finally {
       SqlJsInitializer.initializationInProgress = false;
@@ -114,6 +145,8 @@ export class SqlJsInitializer {
   static resetInitializationAttempts(): void {
     SqlJsInitializer.initializationAttempts = 0;
     SqlJsInitializer.initializationInProgress = false;
+    SqlJsInitializer.SQL = null;
+    console.log("SQL.js initialization attempts reset");
   }
 
   /**

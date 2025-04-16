@@ -96,13 +96,15 @@ export const useDashboards = () => {
 
   // Load dashboards on component mount
   useEffect(() => {
+    // Reset initialization attempts before loading
+    db.resetInitializationAttempts?.();
     loadDashboards();
   }, [loadDashboards]);
 
   // Function to manually retry loading dashboards
   const retryLoadDashboards = useCallback(async () => {
     setLoadAttempts(0); // Reset attempts counter
-    db.resetInitializationAttempts(); // Reset database initialization attempts
+    db.resetInitializationAttempts?.(); // Reset database initialization attempts
     return loadDashboards();
   }, [loadDashboards]);
 

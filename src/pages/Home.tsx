@@ -1,9 +1,9 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
-import { PlusCircle, LineChart, Settings, Trash2 } from "lucide-react";
+import { PlusCircle, LineChart, Settings, Trash2, AlertCircle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/components/ui/use-toast";
 import { useState, useEffect } from "react";
 import { EditDashboardDialog } from "@/components/dashboard/EditDashboardDialog";
 import { useDashboards } from "@/hooks/useDashboards";
@@ -20,10 +20,10 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CreateDashboardDialog } from "@/components/dashboard/CreateDashboardDialog";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const Home = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -32,9 +32,13 @@ const Home = () => {
   const {
     dashboards,
     isLoading,
+    error,
     addDashboard,
     updateDashboard,
-    deleteDashboard
+    deleteDashboard,
+    retryLoadDashboards,
+    loadAttempts,
+    MAX_LOAD_ATTEMPTS
   } = useDashboards();
 
   const handleCreateDashboard = () => {
@@ -99,9 +103,62 @@ const Home = () => {
     navigate(`/dashboard/${dashboard.id}`);
   };
 
+  const handleRetry = async () => {
+    await retryLoadDashboards();
+  };
+
+  const handleForceReload = () => {
+    window.location.reload();
+  };
+
+  if (error) {
+    return (
+      <div className="container mx-auto py-8 space-y-8">
+        <h1 className="text-4xl font-bold">Mes Tableaux de Bord</h1>
+        
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Erreur de chargement de la base de données</AlertTitle>
+          <AlertDescription>
+            <p className="mb-4">
+              Impossible de charger ou d'initialiser la base de données après plusieurs tentatives.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <Button 
+                variant="outline" 
+                onClick={handleRetry} 
+                className="flex items-center gap-2"
+              >
+                <RefreshCw className="h-4 w-4" />
+                Réessayer
+              </Button>
+              <Button 
+                variant="destructive" 
+                onClick={handleForceReload}
+                className="flex items-center gap-2"
+              >
+                <RefreshCw className="h-4 w-4" />
+                Rafraîchir la page
+              </Button>
+            </div>
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto py-8 space-y-8">
       <h1 className="text-4xl font-bold">Mes Tableaux de Bord</h1>
+      
+      {loadAttempts > 1 && loadAttempts < MAX_LOAD_ATTEMPTS && !error && (
+        <Alert variant="warning" className="bg-amber-50 text-amber-800 border-amber-300">
+          <AlertTitle className="text-amber-800">Tentative de reconnexion</AlertTitle>
+          <AlertDescription className="text-amber-700">
+            Tentative {loadAttempts}/{MAX_LOAD_ATTEMPTS} de connexion à la base de données...
+          </AlertDescription>
+        </Alert>
+      )}
       
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {isLoading ? (
@@ -162,19 +219,38 @@ const Home = () => {
           ))
         )}
 
-        <Card className="border-dashed">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <PlusCircle className="h-6 w-6" />
-              Nouveau Tableau de Bord
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Button variant="outline" className="w-full" onClick={handleCreateDashboard}>
-              Créer
-            </Button>
-          </CardContent>
-        </Card>
+        {!isLoading && dashboards.length === 0 && (
+          <Card className="col-span-full bg-muted/40">
+            <CardHeader>
+              <CardTitle className="text-center">Aucun tableau de bord</CardTitle>
+            </CardHeader>
+            <CardContent className="text-center">
+              <p className="text-muted-foreground mb-4">
+                Vous n'avez pas encore de tableau de bord. Créez-en un pour commencer.
+              </p>
+              <Button onClick={handleCreateDashboard}>
+                <PlusCircle className="h-4 w-4 mr-2" />
+                Créer un tableau de bord
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        {!isLoading && dashboards.length > 0 && (
+          <Card className="border-dashed">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <PlusCircle className="h-6 w-6" />
+                Nouveau Tableau de Bord
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Button variant="outline" className="w-full" onClick={handleCreateDashboard}>
+                Créer
+              </Button>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       <EditDashboardDialog 
