@@ -41,20 +41,21 @@ export const dashboardQueries = {
   getAll: (db: Database): Dashboard[] => {
     try {
       const stmt = db.prepare(getAllDashboardsQuery);
-      const rows = stmt.getAsObject([]);
-      stmt.free();
-
-      if (Array.isArray(rows)) {
-        return rows.map(row => ({
+      const result = [];
+      
+      // Use step to iterate through results
+      while(stmt.step()) {
+        const row = stmt.getAsObject();
+        result.push({
           id: row.id as string,
           title: row.title as string,
           createdAt: row.createdAt as string,
           lastAccessed: row.lastAccessed as string
-        }));
-      } else {
-        console.error("Unexpected result format from database query:", rows);
-        return [];
+        });
       }
+      
+      stmt.free();
+      return result;
     } catch (error) {
       console.error("Error getting dashboards:", error);
       return [];

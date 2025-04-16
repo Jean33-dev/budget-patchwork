@@ -24,7 +24,9 @@ export class DashboardManager extends BaseDatabaseManager {
         console.error("Query manager is not initialized in DashboardManager.getDashboards()");
         return [];
       }
-      return this.queryManager.executeGetDashboards();
+      const dashboards = await this.queryManager.executeGetDashboards();
+      console.log("Retrieved dashboards from database:", dashboards);
+      return dashboards;
     } catch (error) {
       console.error("Error getting dashboards:", error);
       return [];
@@ -62,6 +64,10 @@ export class DashboardManager extends BaseDatabaseManager {
         console.log(`DashboardManager: Dashboard ${dashboard.id} added successfully`);
         return true;
       } catch (error) {
+        if (error instanceof Error && error.message.includes('UNIQUE constraint failed')) {
+          console.log(`DashboardManager: Dashboard ${dashboard.id} already exists (constraint error), treating as success`);
+          return true;
+        }
         console.error("DashboardManager: Error adding dashboard:", error);
         return false;
       }

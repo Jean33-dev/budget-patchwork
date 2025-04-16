@@ -60,7 +60,8 @@ export const useDashboards = () => {
             console.log("Retrieved dashboards on retry:", retryData);
             setDashboards(retryData);
           } else {
-            throw new Error("Could not create or find any dashboards");
+            setDashboards([]); // Set empty array instead of throwing
+            console.error("Could not create or find any dashboards");
           }
         }
       } else {
