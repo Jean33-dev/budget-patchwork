@@ -1,23 +1,10 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import { useDashboards } from "@/hooks/useDashboards";
 import { Dashboard } from "@/services/database/models/dashboard";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { CreateDashboardDialog } from "@/components/dashboard/CreateDashboardDialog";
-import { EditDashboardDialog } from "@/components/dashboard/EditDashboardDialog";
-import { DashboardCard } from "@/components/home/DashboardCard";
-import { CreateDashboardCard } from "@/components/home/CreateDashboardCard";
-import { EmptyDashboardCard } from "@/components/home/EmptyDashboardCard";
-import { LoadingDashboardCard } from "@/components/home/LoadingDashboardCard";
+import { DashboardDialogs } from "@/components/home/DashboardDialogs";
+import { DashboardGrid } from "@/components/home/DashboardGrid";
 import { DatabaseErrorAlert } from "@/components/home/DatabaseErrorAlert";
 import { ReconnectionAlert } from "@/components/home/ReconnectionAlert";
 
@@ -130,62 +117,27 @@ const Home = () => {
         />
       )}
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {isLoading ? (
-          Array(3).fill(0).map((_, index) => (
-            <LoadingDashboardCard key={index} />
-          ))
-        ) : (
-          <>
-            {dashboards.map(dashboard => (
-              <DashboardCard
-                key={dashboard.id}
-                dashboard={dashboard}
-                onEdit={handleEditDashboard}
-                onDelete={handleDeleteDashboard}
-                onClick={handleDashboardClick}
-                canDelete={dashboards.length > 1}
-              />
-            ))}
-
-            {dashboards.length === 0 ? (
-              <EmptyDashboardCard onClick={handleCreateDashboard} />
-            ) : (
-              <CreateDashboardCard onClick={handleCreateDashboard} />
-            )}
-          </>
-        )}
-      </div>
-
-      <EditDashboardDialog
-        open={isEditDialogOpen}
-        onOpenChange={setIsEditDialogOpen}
-        currentName={selectedDashboard?.title || ""}
-        onSave={handleSaveDashboardName}
+      <DashboardGrid
+        isLoading={isLoading}
+        dashboards={dashboards}
+        onEdit={handleEditDashboard}
+        onDelete={handleDeleteDashboard}
+        onClick={handleDashboardClick}
+        onCreateClick={handleCreateDashboard}
       />
 
-      <CreateDashboardDialog
-        open={isCreateDialogOpen}
-        onOpenChange={setIsCreateDialogOpen}
-        onSave={handleCreateNewDashboard}
+      <DashboardDialogs
+        isCreateDialogOpen={isCreateDialogOpen}
+        setIsCreateDialogOpen={setIsCreateDialogOpen}
+        isEditDialogOpen={isEditDialogOpen}
+        setIsEditDialogOpen={setIsEditDialogOpen}
+        isDeleteDialogOpen={isDeleteDialogOpen}
+        setIsDeleteDialogOpen={setIsDeleteDialogOpen}
+        selectedDashboard={selectedDashboard}
+        handleCreateNewDashboard={handleCreateNewDashboard}
+        handleSaveDashboardName={handleSaveDashboardName}
+        handleConfirmDelete={handleConfirmDelete}
       />
-
-      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Êtes-vous sûr de vouloir supprimer ce tableau de bord ?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Cette action est irréversible. Toutes les données associées à ce tableau de bord seront perdues.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Annuler</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Supprimer
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 };
