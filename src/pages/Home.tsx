@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CreateDashboardDialog } from "@/components/dashboard/CreateDashboardDialog";
+import { EditDashboardDialog } from "@/components/dashboard/EditDashboardDialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const Home = () => {
