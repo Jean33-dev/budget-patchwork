@@ -42,7 +42,8 @@ const Home = () => {
     window.location.reload();
   };
 
-  if (error) {
+  // Si erreur pendant le chargement, afficher l'alerte d'erreur
+  if (error || loadAttempts > MAX_LOAD_ATTEMPTS) {
     return (
       <div className="container mx-auto py-8 space-y-8">
         <h1 className="text-4xl font-bold">Mes Tableaux de Bord</h1>
@@ -58,7 +59,8 @@ const Home = () => {
     <div className="container mx-auto py-8 space-y-8">
       <h1 className="text-4xl font-bold">Mes Tableaux de Bord</h1>
 
-      {loadAttempts > 1 && loadAttempts < MAX_LOAD_ATTEMPTS && !error && (
+      {/* Afficher l'alerte de reconnexion seulement si des tentatives sont en cours */}
+      {loadAttempts > 1 && loadAttempts <= MAX_LOAD_ATTEMPTS && !error && (
         <ReconnectionAlert
           attempts={loadAttempts}
           maxAttempts={MAX_LOAD_ATTEMPTS}

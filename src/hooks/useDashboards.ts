@@ -8,17 +8,23 @@ export const useDashboards = () => {
   const [dashboards, setDashboards] = useState<Dashboard[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
-  const [loadAttempts, setLoadAttempts] = useState(0);
+  const [loadAttempts, setLoadAttempts] = useState(1); // Commencer à 1 au lieu de 0
   const MAX_LOAD_ATTEMPTS = 3;
 
   const loadDashboards = useCallback(async () => {
+    // Ne pas charger à nouveau si on a déjà dépassé le nombre max de tentatives
+    if (loadAttempts > MAX_LOAD_ATTEMPTS) {
+      setError(new Error("Impossible de charger les tableaux de bord après plusieurs tentatives"));
+      setIsLoading(false);
+      return false;
+    }
+
     setIsLoading(true);
     setError(null);
     
     try {
-      // Increment attempt counter
-      setLoadAttempts(prev => prev + 1);
-      console.log(`Loading dashboards attempt ${loadAttempts + 1}/${MAX_LOAD_ATTEMPTS}`);
+      // Ne pas incrémenter le compteur de tentatives ici
+      console.log(`Loading dashboards attempt ${loadAttempts}/${MAX_LOAD_ATTEMPTS}`);
       
       // Initialize the database first
       console.log("Initializing database before loading dashboards");
@@ -74,6 +80,9 @@ export const useDashboards = () => {
       console.error("Error loading dashboards:", error);
       setError(error instanceof Error ? error : new Error("Unknown error loading dashboards"));
       
+      // Incrémenter le compteur de tentatives uniquement en cas d'erreur
+      setLoadAttempts(prevAttempts => prevAttempts + 1);
+      
       // Only show toast if we've exhausted all attempts
       if (loadAttempts >= MAX_LOAD_ATTEMPTS) {
         toast({
@@ -98,12 +107,16 @@ export const useDashboards = () => {
   useEffect(() => {
     // Reset initialization attempts before loading
     db.resetInitializationAttempts?.();
+    
+    // Charger une seule fois au montage du composant
     loadDashboards();
-  }, [loadDashboards]);
+    
+    // Désactiver l'effet de dépendance sur loadDashboards pour éviter les boucles infinies
+  }, []); // Retirer loadDashboards des dépendances
 
   // Function to manually retry loading dashboards
   const retryLoadDashboards = useCallback(async () => {
-    setLoadAttempts(0); // Reset attempts counter
+    setLoadAttempts(1); // Reset to 1 instead of 0
     db.resetInitializationAttempts?.(); // Reset database initialization attempts
     return loadDashboards();
   }, [loadDashboards]);
