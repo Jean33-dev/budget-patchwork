@@ -1,6 +1,5 @@
-
 import { useState, useEffect } from "react";
-import { Category } from "@/types/categories";
+import { Category } from "@/services/database/models/category";
 import { useToast } from "@/hooks/use-toast";
 import { db } from "@/services/database";
 

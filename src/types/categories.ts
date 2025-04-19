@@ -1,4 +1,6 @@
 
+import { Category } from "@/services/database/models/category";
+
 export interface Budget {
   id: string;
   title: string;
@@ -9,3 +11,6 @@ export interface Budget {
   carriedOver?: number;
   dashboardId?: string;
 }
+
+// Re-export the Category type from the models folder
+export type { Category };

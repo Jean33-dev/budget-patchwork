@@ -1,6 +1,5 @@
-
 import { useState, useEffect } from "react";
-import { Category } from "@/types/categories";
+import { Category } from "@/services/database/models/category";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
