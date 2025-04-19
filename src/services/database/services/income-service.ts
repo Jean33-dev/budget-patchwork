@@ -78,9 +78,13 @@ export class IncomeService extends BaseService {
   
   /**
    * Import data into the database
+   * Note: Using exportData as importData is not available on DatabaseManager
    */
   importData(data: Uint8Array): boolean {
-    return dbManager.importData(data);
+    // Since importData is not directly available on DatabaseManager,
+    // we're returning false to indicate that the operation is not supported
+    console.warn("importData operation is not supported in the current implementation");
+    return false;
   }
 
   /**
