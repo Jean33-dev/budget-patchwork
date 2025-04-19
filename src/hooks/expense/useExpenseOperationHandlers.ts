@@ -23,7 +23,7 @@ export const useExpenseOperationHandlers = (budgetId: string | null, reloadData:
       const id = uuidv4();
       
       if (envelope.type === "expense") {
-        await db.addExpense({
+        const expenseData: Expense = {
           id,
           title: envelope.title,
           budget: envelope.budget,
@@ -32,8 +32,13 @@ export const useExpenseOperationHandlers = (budgetId: string | null, reloadData:
           linkedBudgetId: envelope.linkedBudgetId || budgetId || undefined,
           date: envelope.date,
           isRecurring: envelope.isRecurring || false,
-          dashboardId: dashboardId || undefined
-        });
+        };
+        
+        if (dashboardId) {
+          expenseData.dashboardId = dashboardId;
+        }
+        
+        await db.addExpense(expenseData);
 
         toast({
           title: "Dépense ajoutée",
@@ -82,10 +87,13 @@ export const useExpenseOperationHandlers = (budgetId: string | null, reloadData:
   const handleUpdateExpense = async (expense: Expense) => {
     setIsProcessing(true);
     try {
-      await db.updateExpense({
-        ...expense,
-        dashboardId: dashboardId || expense.dashboardId
-      });
+      const updatedExpense = { ...expense };
+      
+      if (dashboardId && !expense.dashboardId) {
+        updatedExpense.dashboardId = dashboardId;
+      }
+      
+      await db.updateExpense(updatedExpense);
       
       toast({
         title: "Dépense mise à jour",
