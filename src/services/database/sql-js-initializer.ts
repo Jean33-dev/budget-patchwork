@@ -1,163 +1,121 @@
 
 /**
- * Module responsible for initializing and managing SQL.js
+ * SQLite.js initializer
  */
-import { toast } from "@/components/ui/use-toast";
-
 export class SqlJsInitializer {
   private static SQL: any = null;
+  private static isInitializing = false;
   private static initPromise: Promise<any> | null = null;
-  private static initializationInProgress = false;
-  private static initializationAttempts = 0;
+  private static initAttempts = 0;
   private static MAX_INIT_ATTEMPTS = 5;
 
   /**
-   * Get the initialized SQL object
+   * Initialize SQLite.js
+   */
+  static async initialize(): Promise<any> {
+    // If already initialized, return SQL
+    if (SqlJsInitializer.SQL) {
+      console.log("SqlJsInitializer: SQL.js already initialized");
+      return SqlJsInitializer.SQL;
+    }
+
+    // Track initialization attempts
+    SqlJsInitializer.initAttempts++;
+    console.log(`SqlJsInitializer: initialization attempt ${SqlJsInitializer.initAttempts}/${SqlJsInitializer.MAX_INIT_ATTEMPTS}`);
+    
+    if (SqlJsInitializer.initAttempts > SqlJsInitializer.MAX_INIT_ATTEMPTS) {
+      console.error(`SqlJsInitializer: exceeded maximum initialization attempts (${SqlJsInitializer.MAX_INIT_ATTEMPTS})`);
+      return null;
+    }
+
+    // If already initializing, return the existing promise
+    if (SqlJsInitializer.isInitializing && SqlJsInitializer.initPromise) {
+      console.log("SqlJsInitializer: initialization already in progress, joining existing promise");
+      return SqlJsInitializer.initPromise;
+    }
+
+    // Add delay for retries with exponential backoff
+    if (SqlJsInitializer.initAttempts > 1) {
+      const delay = Math.min(1000 * Math.pow(2, SqlJsInitializer.initAttempts - 1), 8000);
+      console.log(`SqlJsInitializer: waiting ${delay}ms before retry ${SqlJsInitializer.initAttempts}...`);
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+
+    try {
+      SqlJsInitializer.isInitializing = true;
+      
+      // Create a new initialization promise
+      SqlJsInitializer.initPromise = new Promise(async (resolve, reject) => {
+        try {
+          console.log("SqlJsInitializer: initializing SQL.js...");
+          
+          // Dynamic import of sql.js
+          const sqlJs = await import('sql.js');
+          console.log("SqlJsInitializer: sql.js module imported successfully");
+          
+          // Initialize with WASM
+          const SQL = await sqlJs.default({
+            locateFile: (file: string) => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${file}`
+          });
+          
+          console.log("SqlJsInitializer: SQL.js initialized successfully with WASM");
+          SqlJsInitializer.SQL = SQL;
+          SqlJsInitializer.initAttempts = 0; // Reset attempts on success
+          
+          resolve(SQL);
+        } catch (error) {
+          console.error("SqlJsInitializer: error initializing SQL.js:", error);
+          
+          // If using CDN failed, try using local WASM
+          try {
+            console.log("SqlJsInitializer: retrying with local WASM...");
+            const sqlJs = await import('sql.js');
+            
+            const SQL = await sqlJs.default();
+            console.log("SqlJsInitializer: SQL.js initialized successfully with local WASM");
+            
+            SqlJsInitializer.SQL = SQL;
+            SqlJsInitializer.initAttempts = 0; // Reset attempts on success
+            
+            resolve(SQL);
+          } catch (retryError) {
+            console.error("SqlJsInitializer: error initializing SQL.js with local WASM:", retryError);
+            reject(retryError);
+          }
+        } finally {
+          SqlJsInitializer.isInitializing = false;
+        }
+      });
+      
+      return await SqlJsInitializer.initPromise;
+    } catch (error) {
+      console.error("SqlJsInitializer: error in initialization wrapper:", error);
+      SqlJsInitializer.isInitializing = false;
+      SqlJsInitializer.initPromise = null;
+      
+      return null;
+    }
+  }
+
+  /**
+   * Get the SQL instance
    */
   static getSQL(): any {
     return SqlJsInitializer.SQL;
   }
 
   /**
-   * Check if initialization is in progress
-   */
-  static isInitializationInProgress(): boolean {
-    return SqlJsInitializer.initializationInProgress;
-  }
-
-  /**
-   * Initialize SQL.js
-   */
-  static async initialize(): Promise<any> {
-    // If already initialized, return the SQL object
-    if (SqlJsInitializer.SQL) {
-      console.log("SQL.js already initialized, reusing instance");
-      return SqlJsInitializer.SQL;
-    }
-
-    // If initialization is already in progress, wait for it to complete
-    if (SqlJsInitializer.initializationInProgress) {
-      console.log("SQL.js initialization already in progress, waiting...");
-      let waitCount = 0;
-      const maxWait = 30; // Maximum number of wait cycles
-      
-      while (SqlJsInitializer.initializationInProgress && waitCount < maxWait) {
-        await new Promise(resolve => setTimeout(resolve, 100));
-        waitCount++;
-      }
-      
-      // Check if SQL was successfully initialized
-      if (SqlJsInitializer.SQL) {
-        console.log("SQL.js initialization completed while waiting");
-        return SqlJsInitializer.SQL;
-      }
-      
-      // If we reached max wait and still not initialized, we'll try again
-      if (waitCount >= maxWait) {
-        console.log("Waited too long for SQL.js initialization, starting fresh");
-      }
-    }
-
-    SqlJsInitializer.initializationInProgress = true;
-    SqlJsInitializer.initializationAttempts++;
-
-    try {
-      console.log(`Initializing SQL.js (attempt ${SqlJsInitializer.initializationAttempts}/${SqlJsInitializer.MAX_INIT_ATTEMPTS})...`);
-      
-      // Abandon after too many attempts
-      if (SqlJsInitializer.initializationAttempts > SqlJsInitializer.MAX_INIT_ATTEMPTS) {
-        throw new Error(`Exceeded maximum initialization attempts (${SqlJsInitializer.MAX_INIT_ATTEMPTS})`);
-      }
-      
-      // Wait with exponential backoff for retry attempts
-      if (SqlJsInitializer.initializationAttempts > 1) {
-        const delay = Math.min(1000 * Math.pow(2, SqlJsInitializer.initializationAttempts - 1), 10000);
-        console.log(`Waiting ${delay}ms before retry attempt ${SqlJsInitializer.initializationAttempts}...`);
-        await new Promise(resolve => setTimeout(resolve, delay));
-      }
-      
-      // Import SQL.js dynamically
-      console.log("Dynamically importing SQL.js module...");
-      const SqlJsModule = await import('sql.js');
-      const initSqlJs = SqlJsModule.default;
-      
-      console.log("SQL.js module loaded successfully:", !!initSqlJs);
-      
-      if (typeof initSqlJs !== 'function') {
-        console.error("SQL.js import failed: initSqlJs is not a function", initSqlJs);
-        throw new Error("SQL.js module does not export a function");
-      }
-      
-      // Try multiple paths to the WASM file to improve resilience
-      const wasmPaths = [
-        '/assets/sql-wasm.wasm',
-        './assets/sql-wasm.wasm',
-        '../assets/sql-wasm.wasm',
-        'sql-wasm.wasm',
-        '/sql-wasm.wasm'
-      ];
-      
-      let success = false;
-      let lastError = null;
-      
-      for (const wasmPath of wasmPaths) {
-        try {
-          console.log(`Trying to load WASM from: ${wasmPath}`);
-          
-          SqlJsInitializer.SQL = await initSqlJs({
-            locateFile: () => wasmPath
-          });
-          
-          console.log(`SQL.js initialized successfully with WASM from: ${wasmPath}`);
-          success = true;
-          break;
-        } catch (error) {
-          console.warn(`Failed to load WASM from ${wasmPath}:`, error);
-          lastError = error;
-        }
-      }
-      
-      if (!success) {
-        throw new Error(`Failed to load WASM from any path: ${lastError?.message}`);
-      }
-      
-      return SqlJsInitializer.SQL;
-    } catch (error) {
-      console.error("Failed to initialize SQL.js:", error);
-      SqlJsInitializer.SQL = null;
-      
-      // Show a toast notification for the user
-      toast({
-        variant: "destructive",
-        title: "Erreur d'initialisation de la base de données",
-        description: `${error instanceof Error ? error.message : "Erreur inconnue"}. Veuillez rafraîchir la page.`
-      });
-      
-      throw error;
-    } finally {
-      SqlJsInitializer.initializationInProgress = false;
-    }
-  }
-
-  /**
    * Reset initialization attempts
    */
   static resetInitializationAttempts(): void {
-    SqlJsInitializer.initializationAttempts = 0;
-    SqlJsInitializer.initializationInProgress = false;
-    SqlJsInitializer.SQL = null;
-    console.log("SQL.js initialization attempts reset");
+    SqlJsInitializer.initAttempts = 0;
+    console.log("SqlJsInitializer: initialization attempts reset");
   }
 
   /**
-   * Log error with toast notification
+   * Check if SQL.js is initialized
    */
-  static logError(operation: string, error: any): void {
-    console.error(`SQL.js error during ${operation}:`, error);
-    toast({
-      variant: "destructive",
-      title: "Erreur de base de données",
-      description: `Une erreur est survenue: ${error.message || "Erreur inconnue"}`
-    });
+  static isInitialized(): boolean {
+    return !!SqlJsInitializer.SQL;
   }
 }

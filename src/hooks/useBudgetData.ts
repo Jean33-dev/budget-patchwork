@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useCallback } from "react";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { db } from "@/services/database";
 import { Budget } from "@/types/categories";
 import { useParams } from "react-router-dom";
@@ -75,7 +75,8 @@ export const useBudgetData = () => {
           ...budget,
           budget: Number(budget.budget) || 0,
           spent: budgetSpent,
-          carriedOver: budget.carriedOver || 0
+          carriedOver: budget.carriedOver || 0,
+          dashboardId: budget.dashboardId || dashboardId
         };
       });
       

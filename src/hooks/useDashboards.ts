@@ -1,11 +1,13 @@
+
 import { useState, useEffect, useCallback } from "react";
-import { toast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { db } from "@/services/database";
 import { v4 as uuidv4 } from "uuid";
 import { Dashboard } from "@/services/database/models/dashboard";
 
 export const useDashboards = () => {
+  const { toast } = useToast();
   const [dashboards, setDashboards] = useState<Dashboard[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -78,7 +80,7 @@ export const useDashboards = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [loadAttempts, MAX_LOAD_ATTEMPTS]);
+  }, [loadAttempts, MAX_LOAD_ATTEMPTS, toast]);
 
   const retryLoadDashboards = useCallback(async () => {
     console.log("Manually retrying dashboard load...");
@@ -122,7 +124,7 @@ export const useDashboards = () => {
       });
       return null;
     }
-  }, []);
+  }, [toast]);
 
   const updateDashboard = useCallback(async (dashboard: Dashboard): Promise<boolean> => {
     try {
@@ -148,7 +150,7 @@ export const useDashboards = () => {
       });
       return false;
     }
-  }, []);
+  }, [toast]);
 
   const deleteDashboard = useCallback(async (id: string): Promise<boolean> => {
     try {
@@ -172,7 +174,7 @@ export const useDashboards = () => {
       });
       return false;
     }
-  }, []);
+  }, [toast]);
 
   return {
     dashboards,
