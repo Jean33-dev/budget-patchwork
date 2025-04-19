@@ -1,6 +1,5 @@
-
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Menu, CalendarPlus, Download, Home, CalendarClock, CreditCard, DollarSign, Folder } from "lucide-react";
+import { ArrowLeft, Menu, CalendarPlus, Download } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -59,26 +58,21 @@ export const DashboardHeader = ({ currentDate, onMonthChange, onBackClick }: Das
               <Menu className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="bg-white rounded-md shadow-md border-0">
-            <DropdownMenuItem onClick={() => navigate("/dashboard/budget")} className="flex items-center gap-2 py-2">
-              <Home className="h-4 w-4" />
-              <span>Tableau de Bord</span>
+          <DropdownMenuContent align="start">
+            <DropdownMenuItem onClick={() => navigate("/dashboard/budget")}>
+              Tableau de Bord
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate("/dashboard/budget/budgets")} className="flex items-center gap-2 py-2">
-              <CalendarClock className="h-4 w-4" />
-              <span>Gérer les Budgets</span>
+            <DropdownMenuItem onClick={() => navigate("/dashboard/budget/income")}>
+              Gérer les Revenus
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate("/dashboard/budget/expenses")} className="flex items-center gap-2 py-2">
-              <CreditCard className="h-4 w-4" />
-              <span>Gérer les Dépenses</span>
+            <DropdownMenuItem onClick={() => navigate("/dashboard/budget/categories")}>
+              Gérer les Catégories
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate("/dashboard/budget/income")} className="flex items-center gap-2 py-2">
-              <DollarSign className="h-4 w-4" />
-              <span>Gérer les Revenus</span>
+            <DropdownMenuItem onClick={() => navigate("/dashboard/budget/budgets")}>
+              Gérer les Budgets
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate("/dashboard/budget/categories")} className="flex items-center gap-2 py-2">
-              <Folder className="h-4 w-4" />
-              <span>Gérer les Catégories</span>
+            <DropdownMenuItem onClick={() => navigate("/dashboard/budget/expenses")}>
+              Gérer les Dépenses
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
