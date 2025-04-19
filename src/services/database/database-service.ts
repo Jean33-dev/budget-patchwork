@@ -8,6 +8,7 @@ import { ExpenseService } from './services/expense-service';
 import { BudgetService } from './services/budget-service';
 import { CategoryService } from './services/category-service';
 import { DashboardService } from './services/dashboard-service';
+import { DataExportManager } from './data-export-manager';
 
 /**
  * Main database service that uses specialized service classes for each entity
@@ -18,6 +19,7 @@ class DatabaseService {
   private budgetService: BudgetService;
   private categoryService: CategoryService;
   private dashboardService: DashboardService;
+  private dataExportManager: DataExportManager | null = null;
 
   constructor() {
     this.incomeService = new IncomeService();
@@ -33,6 +35,15 @@ class DatabaseService {
   async init(): Promise<boolean> {
     // Initialize all services with the same database
     const success = await this.incomeService.init();
+    
+    if (success) {
+      // Create a DataExportManager with the adapter from incomeService
+      const adapter = this.incomeService.getAdapter?.();
+      if (adapter) {
+        this.dataExportManager = new DataExportManager(adapter);
+      }
+    }
+    
     // Other services will use the same database instance
     return success;
   }
@@ -42,6 +53,31 @@ class DatabaseService {
    */
   resetInitializationAttempts(): void {
     this.incomeService.resetInitializationAttempts();
+  }
+
+  /**
+   * Migrate data from localStorage to SQLite
+   */
+  async migrateFromLocalStorage(): Promise<boolean> {
+    if (!this.dataExportManager) {
+      // Ensure database is initialized first
+      const initialized = await this.init();
+      if (!initialized) {
+        return false;
+      }
+      
+      // Create DataExportManager if it doesn't exist yet
+      const adapter = this.incomeService.getAdapter?.();
+      if (adapter) {
+        this.dataExportManager = new DataExportManager(adapter);
+      }
+    }
+    
+    if (this.dataExportManager) {
+      return await this.dataExportManager.migrateFromLocalStorage();
+    }
+    
+    return false;
   }
 
   // Income methods delegated to IncomeService

@@ -1,6 +1,7 @@
 
 import { DatabaseInitManager } from '../database-init-manager';
 import { DataExportManager } from '../data-export-manager';
+import { SQLiteAdapter } from '../sqlite-adapter';
 
 /**
  * Base service class that provides common functionality for all database services
@@ -24,6 +25,13 @@ export class BaseService {
     }
     
     return success;
+  }
+
+  /**
+   * Returns the current SQLite adapter
+   */
+  getAdapter(): SQLiteAdapter | null {
+    return this.initManager.getAdapter();
   }
 
   /**
