@@ -3,13 +3,7 @@ import { toast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
 import { db } from "@/services/database";
 import { v4 as uuidv4 } from "uuid";
-
-export interface Dashboard {
-  id: string;
-  title: string;
-  createdAt: string;
-  lastAccessed: string;
-}
+import { Dashboard } from "@/services/database/models/dashboard";
 
 export const useDashboards = () => {
   const [dashboards, setDashboards] = useState<Dashboard[]>([]);
@@ -17,7 +11,6 @@ export const useDashboards = () => {
   const [error, setError] = useState<Error | null>(null);
   const [loadAttempts, setLoadAttempts] = useState(0);
   const MAX_LOAD_ATTEMPTS = 3;
-  
   const navigate = useNavigate();
 
   const loadDashboards = useCallback(async () => {
@@ -45,7 +38,7 @@ export const useDashboards = () => {
       if (dashboardsData.length === 0) {
         console.log("No dashboards found, creating default dashboard");
         
-        const defaultDashboard = {
+        const defaultDashboard: Dashboard = {
           id: "default",
           title: "Budget Personnel",
           createdAt: new Date().toISOString(),
@@ -95,16 +88,14 @@ export const useDashboards = () => {
     await loadDashboards();
   }, [loadDashboards]);
 
-  // Load dashboards on component mount
   useEffect(() => {
     loadDashboards();
   }, [loadDashboards]);
 
-  // Add a new dashboard
   const addDashboard = useCallback(async (name: string): Promise<string | null> => {
     try {
       const dashboardId = uuidv4();
-      const newDashboard = {
+      const newDashboard: Dashboard = {
         id: dashboardId,
         title: name,
         createdAt: new Date().toISOString(),
@@ -114,7 +105,7 @@ export const useDashboards = () => {
       await db.addDashboard(newDashboard);
       
       // Update local state
-      setDashboards((prev) => [...prev, newDashboard]);
+      setDashboards(prev => [...prev, newDashboard]);
       
       toast({
         title: "Tableau de bord créé",
@@ -133,7 +124,6 @@ export const useDashboards = () => {
     }
   }, []);
 
-  // Update an existing dashboard
   const updateDashboard = useCallback(async (dashboard: Dashboard): Promise<boolean> => {
     try {
       await db.updateDashboard(dashboard);
@@ -160,7 +150,6 @@ export const useDashboards = () => {
     }
   }, []);
 
-  // Delete a dashboard
   const deleteDashboard = useCallback(async (id: string): Promise<boolean> => {
     try {
       await db.deleteDashboard(id);
