@@ -16,6 +16,7 @@ export function HomePage() {
   const [isCheckingDb, setIsCheckingDb] = useState(true);
   const navigate = useNavigate();
   const dbCheckAttemptRef = useRef(false);
+  const dbCheckTimeoutRef = useRef<number | null>(null);
 
   // Vérifier l'état de la base de données au chargement de la page
   useEffect(() => {
@@ -23,32 +24,43 @@ export function HomePage() {
     if (dbCheckAttemptRef.current) return;
     dbCheckAttemptRef.current = true;
     
-    let checkDbTimeout: number;
-    
     const checkDatabaseStatus = async () => {
       setIsCheckingDb(true);
       try {
         console.log("HomePage: Checking database status...");
         
+        // Clear any existing timeout
+        if (dbCheckTimeoutRef.current) {
+          window.clearTimeout(dbCheckTimeoutRef.current);
+          dbCheckTimeoutRef.current = null;
+        }
+        
         // Réinitialiser les tentatives
         db.resetInitializationAttempts?.();
         
-        // Tenter d'initialiser la base de données
-        const result = await Promise.race([
-          db.init(),
-          new Promise<boolean>(resolve => setTimeout(() => resolve(false), 8000))
-        ]);
+        // Tenter d'initialiser la base de données avec timeout
+        const initPromise = db.init();
+        
+        // Set timeout to handle case where initialization hangs
+        const timeoutPromise = new Promise<boolean>(resolve => {
+          dbCheckTimeoutRef.current = window.setTimeout(() => {
+            console.warn("HomePage: Database initialization timed out after 8 seconds");
+            resolve(false);
+            dbCheckTimeoutRef.current = null;
+          }, 8000);
+        });
+        
+        // Race the initialization against the timeout
+        const result = await Promise.race([initPromise, timeoutPromise]);
+        
+        // Clear timeout if initialization completed before timeout
+        if (dbCheckTimeoutRef.current) {
+          window.clearTimeout(dbCheckTimeoutRef.current);
+          dbCheckTimeoutRef.current = null;
+        }
         
         console.log("HomePage: Database initialization result:", result);
         setDbInitFailed(!result);
-        
-        // Si l'initialisation a échoué, rafraîchir l'état après un délai
-        if (!result) {
-          console.log("HomePage: Database initialization failed, will retry once after 5 seconds");
-          checkDbTimeout = window.setTimeout(() => {
-            checkDatabaseStatus();
-          }, 5000); // Réessayer après 5 secondes
-        }
       } catch (error) {
         console.error("Erreur lors de la vérification de la base de données:", error);
         setDbInitFailed(true);
@@ -60,8 +72,8 @@ export function HomePage() {
     checkDatabaseStatus();
     
     return () => {
-      if (checkDbTimeout) {
-        window.clearTimeout(checkDbTimeout);
+      if (dbCheckTimeoutRef.current) {
+        window.clearTimeout(dbCheckTimeoutRef.current);
       }
     };
   }, []);

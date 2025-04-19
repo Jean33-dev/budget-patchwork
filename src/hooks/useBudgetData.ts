@@ -12,9 +12,9 @@ export const useBudgetData = () => {
   const [totalExpenses, setTotalExpenses] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
-  const [loadAttempt, setLoadAttempt] = useState(0);
   const { dashboardId = "default" } = useParams<{ dashboardId: string }>();
   const isLoadingRef = useRef(false);
+  const effectRanRef = useRef(false);
 
   const loadData = useCallback(async () => {
     // Prevent concurrent loads
@@ -28,13 +28,13 @@ export const useBudgetData = () => {
     setError(null);
     
     try {
-      console.log(`Loading budget data for dashboard ${dashboardId}... (attempt ${loadAttempt + 1})`);
+      console.log(`Loading budget data for dashboard ${dashboardId}...`);
       
       // Force database initialization
       const dbInitialized = await db.init();
       
       if (!dbInitialized) {
-        console.error(`Failed to initialize database in useBudgetData (attempt ${loadAttempt + 1})`);
+        console.error(`Failed to initialize database in useBudgetData`);
         throw new Error("Failed to initialize database");
       }
       
@@ -94,8 +94,6 @@ export const useBudgetData = () => {
         sum + (Number(income.budget) || 0), 0
       );
       setTotalRevenues(totalIncome);
-      
-      setLoadAttempt(prev => prev + 1);
     } catch (err) {
       console.error("Error loading budget data:", err);
       setError(err instanceof Error ? err : new Error("Error loading data"));
@@ -109,13 +107,25 @@ export const useBudgetData = () => {
       setIsLoading(false);
       isLoadingRef.current = false;
     }
-  }, [dashboardId, loadAttempt, toast]);
+  }, [dashboardId, toast]);
 
   // Only load data once on mount or when dashboardId changes
   useEffect(() => {
+    // Prevent effect from running multiple times
+    if (effectRanRef.current) {
+      return;
+    }
+    
     console.log("useBudgetData effect triggered, loading data for dashboard", dashboardId);
+    effectRanRef.current = true;
     loadData();
-    // Only re-run when dashboardId changes, not on every loadAttempt
+    
+    // Reset the effect flag when dashboardId changes
+    return () => {
+      if (dashboardId) {
+        effectRanRef.current = false;
+      }
+    };
   }, [dashboardId, loadData]);
 
   return {

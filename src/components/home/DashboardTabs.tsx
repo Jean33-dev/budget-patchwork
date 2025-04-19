@@ -16,6 +16,7 @@ export function DashboardTabs({ dashboardId }: DashboardTabsProps) {
   const [isDbInitialized, setIsDbInitialized] = useState(false);
   const navigate = useNavigate();
   const initAttemptRef = useRef(false);
+  const dbInitTimeoutRef = useRef<number | null>(null);
 
   // Check database initialization on mount
   useEffect(() => {
@@ -28,14 +29,35 @@ export function DashboardTabs({ dashboardId }: DashboardTabsProps) {
       try {
         console.log("DashboardTabs: Checking database status...");
         
+        // Clear any existing timeout
+        if (dbInitTimeoutRef.current) {
+          window.clearTimeout(dbInitTimeoutRef.current);
+          dbInitTimeoutRef.current = null;
+        }
+        
         // Reset any previous initialization attempts to start fresh
         db.resetInitializationAttempts?.();
         
         // Try to initialize with timeout
-        const initSuccess = await Promise.race([
-          db.init(),
-          new Promise<boolean>(resolve => setTimeout(() => resolve(false), 5000))
-        ]);
+        const initPromise = db.init();
+        
+        // Set timeout to handle case where initialization hangs
+        const timeoutPromise = new Promise<boolean>(resolve => {
+          dbInitTimeoutRef.current = window.setTimeout(() => {
+            console.warn("DashboardTabs: Database initialization timed out after 5 seconds");
+            resolve(false);
+            dbInitTimeoutRef.current = null;
+          }, 5000);
+        });
+        
+        // Race the initialization against the timeout
+        const initSuccess = await Promise.race([initPromise, timeoutPromise]);
+        
+        // Clear timeout if initialization completed before timeout
+        if (dbInitTimeoutRef.current) {
+          window.clearTimeout(dbInitTimeoutRef.current);
+          dbInitTimeoutRef.current = null;
+        }
         
         console.log("DashboardTabs: Database initialization result:", initSuccess);
         setIsDbInitialized(initSuccess);
@@ -48,6 +70,12 @@ export function DashboardTabs({ dashboardId }: DashboardTabsProps) {
     };
     
     checkDbStatus();
+    
+    return () => {
+      if (dbInitTimeoutRef.current) {
+        window.clearTimeout(dbInitTimeoutRef.current);
+      }
+    };
   }, []);
 
   const handleTabChange = (value: string) => {
