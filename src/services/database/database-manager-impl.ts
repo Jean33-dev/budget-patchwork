@@ -8,7 +8,7 @@ import { BaseDatabaseManager } from './base-database-manager';
  * Implementation of the main database manager that coordinates all specialized managers
  */
 export class DatabaseManagerImpl extends DatabaseManagerCore {
-  private initManager: DatabaseInitManager;
+  protected initManager: DatabaseInitManager;
 
   constructor() {
     super();
