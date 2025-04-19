@@ -1,4 +1,3 @@
-
 import { toast } from "@/components/ui/use-toast";
 import { DatabaseManagerCore } from './database-manager-core';
 import { DatabaseInitManager } from './database-init-manager';
@@ -14,6 +13,8 @@ export class DatabaseManagerImpl extends DatabaseManagerCore {
   private initManager: DatabaseInitManager;
   private initAttempts = 0;
   private MAX_INIT_ATTEMPTS = 3;
+  private initializationStartTime: number | null = null;
+  private MAX_INIT_TIME_MS = 10000; // 10 seconds max for initialization
 
   constructor() {
     super();
@@ -33,25 +34,33 @@ export class DatabaseManagerImpl extends DatabaseManagerCore {
       
       // Check initialization status
       if (this.isInitializationInProgress()) {
-        console.log("DatabaseManager initialization already in progress, waiting...");
-        let waitCount = 0;
-        const maxWait = 30; // Maximum number of wait cycles
+        console.log("DatabaseManager initialization already in progress, checking timeout...");
         
-        while (this.isInitializationInProgress() && waitCount < maxWait) {
-          await new Promise(resolve => setTimeout(resolve, 100));
-          waitCount++;
-        }
-        
-        // Check if initialization was successful
-        if (this.initialized && this.db) {
-          console.log("DatabaseManager initialization completed while waiting");
-          return true;
-        }
-        
-        // If we reached max wait and still not initialized, we'll try again
-        if (waitCount >= maxWait) {
-          console.log("Waited too long for initialization, starting fresh");
+        // Check if initialization has been running too long
+        if (this.initializationStartTime && Date.now() - this.initializationStartTime > this.MAX_INIT_TIME_MS) {
+          console.warn(`Initialization has been running for more than ${this.MAX_INIT_TIME_MS}ms, resetting state`);
           this.resetInitializationState();
+        } else {
+          // Otherwise wait for initialization to complete with a timeout
+          let waitCount = 0;
+          const maxWait = 30; // Maximum number of wait cycles
+          
+          while (this.isInitializationInProgress() && waitCount < maxWait) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            waitCount++;
+          }
+          
+          // Check if initialization was successful
+          if (this.initialized && this.db) {
+            console.log("DatabaseManager initialization completed while waiting");
+            return true;
+          }
+          
+          // If we reached max wait and still not initialized, we'll try again
+          if (waitCount >= maxWait) {
+            console.log("Waited too long for initialization, starting fresh");
+            this.resetInitializationState();
+          }
         }
       }
       
@@ -67,8 +76,9 @@ export class DatabaseManagerImpl extends DatabaseManagerCore {
         return false;
       }
       
-      // Set initialization status
+      // Set initialization status and start time
       this.setInitializationInProgress(true);
+      this.initializationStartTime = Date.now();
       
       console.log(`DatabaseManager: Initializing (attempt ${this.initAttempts}/${this.MAX_INIT_ATTEMPTS})...`);
       
@@ -78,6 +88,7 @@ export class DatabaseManagerImpl extends DatabaseManagerCore {
       if (!dbInstance) {
         console.error("Failed to create database instance");
         this.setInitializationInProgress(false);
+        this.initializationStartTime = null;
         return false;
       }
       
@@ -91,6 +102,7 @@ export class DatabaseManagerImpl extends DatabaseManagerCore {
       } else {
         console.error("Query manager is not initialized");
         this.setInitializationInProgress(false);
+        this.initializationStartTime = null;
         return false;
       }
       
@@ -102,6 +114,7 @@ export class DatabaseManagerImpl extends DatabaseManagerCore {
         if (!schemaResult) {
           console.error("Failed to set up database schema");
           this.setInitializationInProgress(false);
+          this.initializationStartTime = null;
           return false;
         }
         
@@ -109,6 +122,7 @@ export class DatabaseManagerImpl extends DatabaseManagerCore {
         this.initialized = true;
         console.log("Database initialized successfully!");
         this.setInitializationInProgress(false);
+        this.initializationStartTime = null;
         return true;
       } catch (err) {
         console.error('Error initializing database schema:', err);
@@ -118,6 +132,7 @@ export class DatabaseManagerImpl extends DatabaseManagerCore {
           description: "Impossible d'initialiser le schéma de base de données."
         });
         this.setInitializationInProgress(false);
+        this.initializationStartTime = null;
         return false;
       }
     } catch (error) {
@@ -128,6 +143,7 @@ export class DatabaseManagerImpl extends DatabaseManagerCore {
         description: "Impossible d'initialiser la base de données. Veuillez rafraîchir la page."
       });
       this.setInitializationInProgress(false);
+      this.initializationStartTime = null;
       return false;
     }
   }
@@ -138,6 +154,8 @@ export class DatabaseManagerImpl extends DatabaseManagerCore {
     this.setInitializationInProgress(false);
     this.initialized = false;
     this.db = null;
+    this.initializationStartTime = null;
+    console.log("Database initialization state reset completely");
   }
   
   // Method to reset the initialization attempts

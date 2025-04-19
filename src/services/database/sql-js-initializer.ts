@@ -8,6 +8,8 @@ export class SqlJsInitializer {
   private static initAttempts = 0;
   private static MAX_INIT_ATTEMPTS = 3;
   private static initialized = false;
+  private static initStartTime: number | null = null;
+  private static MAX_INIT_TIME_MS = 8000; // 8 seconds timeout
 
   /**
    * Initialize SQL.js
@@ -19,10 +21,19 @@ export class SqlJsInitializer {
       return this.SQL;
     }
 
-    // If initialization is in progress, return the existing promise
+    // If initialization is in progress, check for timeout
     if (this.initPromise) {
-      console.log("SqlJsInitializer: Initialization already in progress, returning existing promise");
-      return this.initPromise;
+      console.log("SqlJsInitializer: Initialization already in progress, checking timeout...");
+      
+      // Check if initialization has been running too long
+      if (this.initStartTime && Date.now() - this.initStartTime > this.MAX_INIT_TIME_MS) {
+        console.warn(`SqlJsInitializer: Initialization has been running for more than ${this.MAX_INIT_TIME_MS}ms, resetting state`);
+        this.initPromise = null;
+        this.initStartTime = null;
+      } else {
+        console.log("SqlJsInitializer: Returning existing initialization promise");
+        return this.initPromise;
+      }
     }
 
     // Track initialization attempts
@@ -32,6 +43,9 @@ export class SqlJsInitializer {
       console.error(`SqlJsInitializer: Exceeded maximum initialization attempts (${this.MAX_INIT_ATTEMPTS})`);
       return null;
     }
+
+    // Set initialization start time
+    this.initStartTime = Date.now();
 
     // Create a new initialization promise
     this.initPromise = (async () => {
@@ -65,9 +79,9 @@ export class SqlJsInitializer {
         this.initialized = false;
         return null;
       } finally {
-        // Clear the initialization promise regardless of outcome
-        // This allows retrying after a failure
+        // Clear the initialization promise and start time
         this.initPromise = null;
+        this.initStartTime = null;
       }
     })();
 
@@ -87,6 +101,7 @@ export class SqlJsInitializer {
   static resetInitializationAttempts(): void {
     this.initAttempts = 0;
     this.initPromise = null;
+    this.initStartTime = null;
     this.initialized = false;
     this.SQL = null;
     console.log("SqlJsInitializer: Reset initialization attempts");

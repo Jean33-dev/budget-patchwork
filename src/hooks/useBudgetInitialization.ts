@@ -131,6 +131,25 @@ export const useBudgetInitialization = () => {
       // Reset all initialization attempts
       db.resetInitializationAttempts?.();
       
+      // Try to delete IndexedDB database
+      try {
+        const DBDeleteRequest = window.indexedDB.deleteDatabase('sqlitedb');
+        await new Promise<void>((resolve, reject) => {
+          DBDeleteRequest.onsuccess = () => {
+            console.log("IndexedDB cache cleared successfully");
+            resolve();
+          };
+          DBDeleteRequest.onerror = () => {
+            console.error("Error clearing IndexedDB cache");
+            reject(new Error("Failed to clear IndexedDB"));
+          };
+          // Set a timeout in case the delete operation hangs
+          setTimeout(() => resolve(), 3000);
+        });
+      } catch (dbError) {
+        console.warn("Could not clear IndexedDB:", dbError);
+      }
+      
       // Small delay to allow clearing to take effect
       await new Promise(resolve => setTimeout(resolve, 500));
       
