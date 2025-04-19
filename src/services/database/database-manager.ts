@@ -1,32 +1,38 @@
-
 import { Income } from './models/income';
 import { Expense } from './models/expense';
 import { Budget } from './models/budget';
 import { Category } from './models/category';
 import { Dashboard } from './models/dashboard';
-import { BaseDatabaseManager } from './base-database-manager';
 import { DatabaseManagerImpl } from './database-manager-impl';
 import { DatabaseManagerFactory } from './database-manager-factory';
 import { IDatabaseManager } from './interfaces/IDatabaseManager';
+import { InitializationDatabaseManager } from './managers/initialization-manager';
+import { DataOperationsManager } from './managers/data-operations-manager';
 
 export class DatabaseManager extends DatabaseManagerImpl implements IDatabaseManager {
   private managerFactory: DatabaseManagerFactory;
+  private initManager: InitializationDatabaseManager;
+  private dataManager: DataOperationsManager;
 
   constructor() {
     super();
     this.managerFactory = new DatabaseManagerFactory();
+    this.initManager = new InitializationDatabaseManager();
+    this.dataManager = new DataOperationsManager();
   }
 
   async init(): Promise<boolean> {
-    // Call the parent implementation to initialize the core database
-    const success = await super.init();
+    const success = await this.initManager.init();
     
     if (success && this.db) {
-      // Initialize all the specialized managers with the database instance
       this.managerFactory.initializeManagers(this.db);
     }
     
     return success;
+  }
+
+  exportData() {
+    return this.dataManager.exportData();
   }
 
   // Dashboard methods
