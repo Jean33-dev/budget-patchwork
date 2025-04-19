@@ -60,10 +60,19 @@ export class InitializationManager {
         total REAL DEFAULT 0,
         spent REAL DEFAULT 0,
         description TEXT
+      )`,
+      
+      // Table des tableaux de bord
+      `CREATE TABLE IF NOT EXISTS dashboards (
+        id TEXT PRIMARY KEY,
+        title TEXT,
+        createdAt TEXT,
+        lastAccessed TEXT
       )`
     ];
     
     await this.adapter.executeSet(queries);
+    console.log("Tables de base de données créées avec succès");
   }
 
   /**
@@ -100,28 +109,40 @@ export class InitializationManager {
         console.log("Budgets d'exemple ajoutés");
         
         // Ajouter des dépenses d'exemple liées aux budgets
-        await this.adapter.run(
-          `INSERT OR IGNORE INTO expenses (id, title, budget, spent, type, linkedBudgetId, date, isRecurring)
+        const expenseQuery = `
+          INSERT OR IGNORE INTO expenses (id, title, budget, spent, type, linkedBudgetId, date, isRecurring)
           VALUES 
           ('exp_1', 'Courses Carrefour', 350.00, 350.00, 'expense', 'bud_1', ?, 0),
           ('exp_2', 'Courses Lidl', 250.00, 250.00, 'expense', 'bud_1', ?, 0),
           ('exp_3', 'Restaurant italien', 150.00, 150.00, 'expense', 'bud_4', ?, 0),
           ('exp_4', 'Vêtements', 100.00, 100.00, 'expense', 'bud_5', ?, 0),
           ('exp_5', 'Loyer', 500.00, 500.00, 'expense', NULL, ?, 1),
-          ('exp_6', 'Abonnement Transport', 75.00, 75.00, 'expense', 'bud_2', ?, 1)`,
-          [currentDate, currentDate, currentDate, currentDate, currentDate, currentDate]
-        );
+          ('exp_6', 'Abonnement Transport', 75.00, 75.00, 'expense', 'bud_2', ?, 1)
+        `;
+        
+        await this.adapter.run(expenseQuery, [currentDate, currentDate, currentDate, currentDate, currentDate, currentDate]);
         console.log("Dépenses d'exemple ajoutées");
         
         // Ajouter des revenus d'exemple
-        await this.adapter.run(
-          `INSERT OR IGNORE INTO incomes (id, title, budget, spent, type, date, isRecurring)
+        const incomeQuery = `
+          INSERT OR IGNORE INTO incomes (id, title, budget, spent, type, date, isRecurring)
           VALUES 
           ('inc_1', 'Salaire', 2000.00, 2000.00, 'income', ?, 1),
-          ('inc_2', 'Prime', 500.00, 500.00, 'income', ?, 0)`,
-          [currentDate, currentDate]
-        );
+          ('inc_2', 'Prime', 500.00, 500.00, 'income', ?, 0)
+        `;
+        
+        await this.adapter.run(incomeQuery, [currentDate, currentDate]);
         console.log("Revenus d'exemple ajoutés");
+        
+        // Ajouter un tableau de bord par défaut
+        const dashboardQuery = `
+          INSERT OR IGNORE INTO dashboards (id, title, createdAt, lastAccessed)
+          VALUES ('default', 'Budget Personnel', ?, ?)
+        `;
+        
+        const now = new Date().toISOString();
+        await this.adapter.run(dashboardQuery, [now, now]);
+        console.log("Tableau de bord par défaut ajouté");
         
         console.log("Données d'exemple ajoutées avec succès");
       } else {

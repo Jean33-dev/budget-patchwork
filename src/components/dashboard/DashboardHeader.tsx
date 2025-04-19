@@ -1,40 +1,23 @@
 
-import { ChevronLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { MonthPicker } from "@/components/budget/MonthPicker";
+import { useNavigate } from "react-router-dom";
+import { DashboardNavigation } from "./DashboardNavigation";
 
 interface DashboardHeaderProps {
-  currentDate: Date;
-  onMonthChange: (date: Date) => void;
-  onBackClick: () => void;
+  dashboardId: string;
   title?: string;
 }
 
-export function DashboardHeader({
-  currentDate,
-  onMonthChange,
-  onBackClick,
-  title = "Tableau de Bord"
-}: DashboardHeaderProps) {
+export function DashboardHeader({ dashboardId, title }: DashboardHeaderProps) {
+  const navigate = useNavigate();
+  
+  const handleBack = () => {
+    navigate("/");
+  };
+  
   return (
-    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-      <div className="flex items-center gap-2">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={onBackClick}
-          className="rounded-full"
-          aria-label="Retour"
-        >
-          <ChevronLeft className="h-5 w-5" />
-        </Button>
-        <h1 className="text-3xl font-bold">{title}</h1>
-      </div>
-      
-      <MonthPicker 
-        date={currentDate} 
-        onDateChange={onMonthChange} 
-      />
-    </div>
+    <header className="sticky top-0 z-10 bg-background border-b pb-2 mb-4">
+      <DashboardNavigation dashboardId={dashboardId} onBack={handleBack} />
+      {title && <h2 className="text-lg font-medium mt-2">{title}</h2>}
+    </header>
   );
 }

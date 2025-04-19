@@ -1,54 +1,30 @@
 
-import { Button } from "@/components/ui/button";
-import { ArrowLeft, Menu } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { useNavigate, useParams } from "react-router-dom";
+import { DashboardNavigation } from "@/components/dashboard/DashboardNavigation";
 
 interface ExpensesHeaderProps {
-  onNavigate: (path: string) => void;
+  onNavigate?: (path: string) => void;
 }
 
 export const ExpensesHeader = ({ onNavigate }: ExpensesHeaderProps) => {
+  const navigate = useNavigate();
+  const { dashboardId = "default" } = useParams<{ dashboardId: string }>();
+  
+  const handleNavigate = (path: string) => {
+    if (onNavigate) {
+      onNavigate(path);
+    } else {
+      navigate(path);
+    }
+  };
+  
   return (
-    <div className="flex items-center gap-4 sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-10 pb-4 border-b">
-      <Button 
-        variant="outline" 
-        size="icon" 
-        onClick={() => onNavigate("/dashboard/budget/budgets")}
-      >
-        <ArrowLeft className="h-4 w-4" />
-      </Button>
-
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="icon">
-            <Menu className="h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="start">
-          <DropdownMenuItem onClick={() => onNavigate("/dashboard/budget")}>
-            Tableau de Bord
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => onNavigate("/dashboard/budget/income")}>
-            Gérer les Revenus
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => onNavigate("/dashboard/budget/categories")}>
-            Gérer les Catégories
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => onNavigate("/dashboard/budget/budgets")}>
-            Gérer les Budgets
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => onNavigate("/dashboard/budget/expenses")}>
-            Gérer les Dépenses
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-
-      <h1 className="text-xl">Gestion des Dépenses</h1>
+    <div className="sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-10 pb-4 border-b">
+      <DashboardNavigation 
+        dashboardId={dashboardId} 
+        onBack={() => handleNavigate(`/dashboard/${dashboardId}/budgets`)} 
+      />
+      <h1 className="text-xl mt-2">Gestion des Dépenses</h1>
     </div>
   );
 };

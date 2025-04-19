@@ -22,6 +22,7 @@ export const useBudgetData = () => {
       const dbInitialized = await db.init();
       
       if (!dbInitialized) {
+        console.error("Failed to initialize database in useBudgetData");
         throw new Error("Failed to initialize database");
       }
       
@@ -40,12 +41,15 @@ export const useBudgetData = () => {
         sum + (Number(expense.budget) || 0), 0
       );
       setTotalExpenses(totalSpent);
+      console.log("Total expenses calculated:", totalSpent);
       
       // Update budgets with their associated expenses
       const validatedBudgets = budgetsData.map(budget => {
         const budgetExpenses = expenses.filter(expense => 
           expense.linkedBudgetId === budget.id
         );
+        console.log(`Expenses for budget ${budget.id} (${budget.title}):`, budgetExpenses);
+        
         const budgetSpent = budgetExpenses.reduce((sum, expense) => 
           sum + (Number(expense.budget) || 0), 0
         );
@@ -76,8 +80,8 @@ export const useBudgetData = () => {
       setError(error instanceof Error ? error : new Error("Unknown error"));
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "Unable to load data"
+        title: "Erreur",
+        description: "Impossible de charger les données"
       });
     } finally {
       setIsLoading(false);
