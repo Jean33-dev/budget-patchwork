@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Menu } from "lucide-react";
+import { ArrowLeft, Menu, Home, CalendarClock, CreditCard, DollarSign, Folder } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,21 +29,26 @@ export const ExpensesHeader = ({ onNavigate }: ExpensesHeaderProps) => {
             <Menu className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="start">
-          <DropdownMenuItem onClick={() => onNavigate("/dashboard/budget")}>
+        <DropdownMenuContent align="start" className="bg-background">
+          <DropdownMenuItem onClick={() => onNavigate("/dashboard/budget")} className="gap-2">
+            <Home className="h-4 w-4" />
             Tableau de Bord
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => onNavigate("/dashboard/budget/income")}>
-            Gérer les Revenus
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => onNavigate("/dashboard/budget/categories")}>
-            Gérer les Catégories
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => onNavigate("/dashboard/budget/budgets")}>
+          <DropdownMenuItem onClick={() => onNavigate("/dashboard/budget/budgets")} className="gap-2">
+            <CalendarClock className="h-4 w-4" />
             Gérer les Budgets
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => onNavigate("/dashboard/budget/expenses")}>
+          <DropdownMenuItem onClick={() => onNavigate("/dashboard/budget/expenses")} className="gap-2">
+            <CreditCard className="h-4 w-4" />
             Gérer les Dépenses
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => onNavigate("/dashboard/budget/income")} className="gap-2">
+            <DollarSign className="h-4 w-4" />
+            Gérer les Revenus
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => onNavigate("/dashboard/budget/categories")} className="gap-2">
+            <Folder className="h-4 w-4" />
+            Gérer les Catégories
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
