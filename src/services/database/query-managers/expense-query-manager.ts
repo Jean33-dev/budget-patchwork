@@ -1,7 +1,7 @@
 
 import { QueryManager } from '../query-manager';
 import { Expense } from '../models/expense';
-import { expenseQueries } from '../queries/expense-queries';
+import { expenseQueries } from '../queries/expense';
 import { BaseQueryManager } from './base-query-manager';
 
 export class ExpenseQueryManager extends BaseQueryManager {
