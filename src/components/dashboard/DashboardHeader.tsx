@@ -58,21 +58,26 @@ export const DashboardHeader = ({ currentDate, onMonthChange, onBackClick }: Das
               <Menu className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start">
-            <DropdownMenuItem onClick={() => navigate("/dashboard/budget")}>
+          <DropdownMenuContent align="start" className="bg-background">
+            <DropdownMenuItem onClick={() => navigate("/dashboard/budget")} className="gap-2">
+              <Home className="h-4 w-4" />
               Tableau de Bord
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate("/dashboard/budget/income")}>
-              Gérer les Revenus
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate("/dashboard/budget/categories")}>
-              Gérer les Catégories
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate("/dashboard/budget/budgets")}>
+            <DropdownMenuItem onClick={() => navigate("/dashboard/budget/budgets")} className="gap-2">
+              <Clock className="h-4 w-4" />
               Gérer les Budgets
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate("/dashboard/budget/expenses")}>
+            <DropdownMenuItem onClick={() => navigate("/dashboard/budget/expenses")} className="gap-2">
+              <CreditCard className="h-4 w-4" />
               Gérer les Dépenses
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate("/dashboard/budget/income")} className="gap-2">
+              <DollarSign className="h-4 w-4" />
+              Gérer les Revenus
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate("/dashboard/budget/categories")} className="gap-2">
+              <Calendar className="h-4 w-4" />
+              Gérer les Catégories
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Menu, Home, CalendarClock, CreditCard, DollarSign, Folder } from "lucide-react";
+import { ArrowLeft, Menu, Home, Clock, CreditCard, DollarSign, Calendar } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,7 +31,7 @@ export const BudgetsHeader = ({ onNavigate }: BudgetsHeaderProps) => {
             Tableau de Bord
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => onNavigate("/dashboard/budget/budgets")} className="gap-2">
-            <CalendarClock className="h-4 w-4" />
+            <Clock className="h-4 w-4" />
             Gérer les Budgets
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => onNavigate("/dashboard/budget/expenses")} className="gap-2">
@@ -43,7 +43,7 @@ export const BudgetsHeader = ({ onNavigate }: BudgetsHeaderProps) => {
             Gérer les Revenus
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => onNavigate("/dashboard/budget/categories")} className="gap-2">
-            <Folder className="h-4 w-4" />
+            <Calendar className="h-4 w-4" />
             Gérer les Catégories
           </DropdownMenuItem>
         </DropdownMenuContent>
