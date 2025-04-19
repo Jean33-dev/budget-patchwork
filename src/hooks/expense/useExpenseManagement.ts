@@ -6,12 +6,14 @@ import { Expense } from "../models/expense";
 import { useExpenseDataLoading } from "./useExpenseDataLoading";
 import { useExpenseOperationHandlers } from "./useExpenseOperationHandlers";
 import { useDataReloader } from "./useDataReloader";
+import { useDashboardContext } from "../useDashboardContext";
 
 export type { Budget, Expense };
 
 export const useExpenseManagement = (budgetId: string | null) => {
   const { toast } = useToast();
   const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const { currentDashboardId } = useDashboardContext();
 
   // Load expense data
   const { 
@@ -21,27 +23,31 @@ export const useExpenseManagement = (budgetId: string | null) => {
     error, 
     initAttempted,
     loadData 
-  } = useExpenseDataLoading();
+  } = useExpenseDataLoading(currentDashboardId);
 
-  // Operation handlers
+  // Operation handlers with dashboard context
   const { 
     isProcessing, 
     handleAddEnvelope, 
     handleDeleteExpense, 
     handleUpdateExpense 
-  } = useExpenseOperationHandlers(budgetId, loadData);
+  } = useExpenseOperationHandlers(budgetId, loadData, currentDashboardId);
 
   // Data reloading
   const { forceReload } = useDataReloader(isProcessing, isLoading, loadData);
 
-  // Filter expenses by budgetId
-  const filteredExpenses = budgetId 
-    ? expenses.filter(expense => expense.linkedBudgetId === budgetId)
-    : expenses;
+  // Filter expenses by budgetId and current dashboard
+  const filteredExpenses = useCallback(() => {
+    return expenses.filter(expense => {
+      const matchesBudget = budgetId ? expense.linkedBudgetId === budgetId : true;
+      const matchesDashboard = expense.dashboardId === currentDashboardId;
+      return matchesBudget && matchesDashboard;
+    });
+  }, [expenses, budgetId, currentDashboardId]);
 
   return {
-    expenses: filteredExpenses,
-    availableBudgets,
+    expenses: filteredExpenses(),
+    availableBudgets: availableBudgets.filter(b => b.dashboardId === currentDashboardId),
     addDialogOpen,
     setAddDialogOpen,
     handleAddEnvelope,

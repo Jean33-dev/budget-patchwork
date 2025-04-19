@@ -5,7 +5,7 @@ import { db } from "@/services/database";
 import { Budget } from "@/types/categories";
 import { Expense } from "../models/expense";
 
-export const useExpenseDataLoading = () => {
+export const useExpenseDataLoading = (dashboardId: string | null) => {
   const { toast } = useToast();
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [availableBudgets, setAvailableBudgets] = useState<Budget[]>([]);
@@ -15,6 +15,12 @@ export const useExpenseDataLoading = () => {
 
   // Load data function
   const loadData = useCallback(async () => {
+    if (!dashboardId) {
+      console.warn("No dashboard ID provided, skipping data load");
+      setIsLoading(false);
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
     
@@ -22,15 +28,17 @@ export const useExpenseDataLoading = () => {
       console.log("Initializing database...");
       await db.init();
       
-      // Load budgets
+      // Load budgets for current dashboard
       const loadedBudgets = await db.getBudgets();
-      console.log('Budgets loaded:', loadedBudgets);
-      setAvailableBudgets(loadedBudgets);
+      const filteredBudgets = loadedBudgets.filter(b => b.dashboardId === dashboardId);
+      console.log('Filtered budgets loaded:', filteredBudgets);
+      setAvailableBudgets(filteredBudgets);
       
-      // Load expenses
+      // Load expenses for current dashboard
       const loadedExpenses = await db.getExpenses();
-      console.log('Expenses loaded:', loadedExpenses);
-      setExpenses(loadedExpenses);
+      const filteredExpenses = loadedExpenses.filter(e => e.dashboardId === dashboardId);
+      console.log('Filtered expenses loaded:', filteredExpenses);
+      setExpenses(filteredExpenses);
       
       setInitAttempted(true);
     } catch (error) {
@@ -44,12 +52,12 @@ export const useExpenseDataLoading = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [toast]);
+  }, [dashboardId, toast]);
 
-  // Load data on component mount
+  // Load data on component mount or dashboard change
   useEffect(() => {
     loadData();
-  }, [loadData]);
+  }, [loadData, dashboardId]);
 
   return {
     expenses,
