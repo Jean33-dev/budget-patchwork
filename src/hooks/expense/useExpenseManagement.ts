@@ -15,7 +15,7 @@ export const useExpenseManagement = (budgetId: string | null) => {
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const { currentDashboardId } = useDashboardContext();
   
-  console.log("useExpenseManagement - currentDashboardId:", currentDashboardId);
+  console.log("useExpenseManagement - initialized with budgetId:", budgetId, "currentDashboardId:", currentDashboardId);
 
   // Load expense data
   const { 
@@ -28,6 +28,7 @@ export const useExpenseManagement = (budgetId: string | null) => {
   } = useExpenseDataLoading(currentDashboardId);
   
   console.log("useExpenseManagement - loaded expenses count:", expenses.length);
+  console.log("useExpenseManagement - expense sample:", expenses.slice(0, 2));
 
   // Operation handlers with dashboard context
   const { 
@@ -42,15 +43,15 @@ export const useExpenseManagement = (budgetId: string | null) => {
 
   // Filter expenses by budgetId if specified
   const filteredExpenses = useCallback(() => {
-    console.log("Filtering expenses. Total:", expenses.length, "budgetId:", budgetId);
+    console.log("useExpenseManagement - Filtering expenses. Total:", expenses.length, "budgetId:", budgetId);
     
     if (!budgetId) {
-      console.log("No budgetId filter, returning all expenses");
+      console.log("useExpenseManagement - No budgetId filter, returning all expenses");
       return expenses;
     }
     
     const filtered = expenses.filter(expense => expense.linkedBudgetId === budgetId);
-    console.log(`Filtered by budgetId ${budgetId}, returning ${filtered.length} expenses`);
+    console.log(`useExpenseManagement - Filtered by budgetId ${budgetId}, returning ${filtered.length} expenses`);
     return filtered;
   }, [expenses, budgetId]);
 

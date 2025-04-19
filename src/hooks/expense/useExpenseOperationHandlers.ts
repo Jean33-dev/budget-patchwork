@@ -13,7 +13,7 @@ export const useExpenseOperationHandlers = (
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
   
-  console.log("useExpenseOperationHandlers initialized with dashboardId:", dashboardId);
+  console.log("useExpenseOperationHandlers - initialized with dashboardId:", dashboardId, "budgetId:", budgetId);
 
   const handleAddEnvelope = useCallback(
     async (envelope: {
@@ -27,20 +27,20 @@ export const useExpenseOperationHandlers = (
 
       setIsProcessing(true);
       try {
-        console.log("Adding expense with data:", envelope, "dashboardId:", dashboardId);
+        console.log("useExpenseOperationHandlers - Adding expense with data:", envelope, "dashboardId:", dashboardId);
         const expense: Expense = {
           id: uuidv4(),
           title: envelope.title,
           budget: envelope.budget,
-          spent: 0,
+          spent: envelope.budget, // Pour une dépense, spent == budget
           type: 'expense',
           linkedBudgetId: envelope.linkedBudgetId || budgetId || undefined,
           date: envelope.date || new Date().toISOString().split('T')[0],
           isRecurring: false,
-          dashboardId: dashboardId || undefined
+          dashboardId: dashboardId || "default"
         };
         
-        console.log("Constructed expense object:", expense);
+        console.log("useExpenseOperationHandlers - Constructed expense object:", expense);
         await db.addExpense(expense);
         
         toast({
@@ -67,7 +67,7 @@ export const useExpenseOperationHandlers = (
     async (id: string) => {
       setIsProcessing(true);
       try {
-        console.log(`Deleting expense with ID: ${id}`);
+        console.log(`useExpenseOperationHandlers - Deleting expense with ID: ${id}`);
         await db.deleteExpense(id);
         
         toast({
@@ -94,13 +94,14 @@ export const useExpenseOperationHandlers = (
     async (expense: Expense) => {
       setIsProcessing(true);
       try {
-        console.log("Updating expense:", expense, "with dashboardId:", dashboardId);
+        console.log("useExpenseOperationHandlers - Updating expense:", expense);
         // S'assurer que le dashboardId est préservé lors de la mise à jour
         const updatedExpense: Expense = {
           ...expense,
-          dashboardId: expense.dashboardId || dashboardId || undefined
+          dashboardId: expense.dashboardId || dashboardId || "default"
         };
         
+        console.log("useExpenseOperationHandlers - Final updated expense:", updatedExpense);
         await db.updateExpense(updatedExpense);
         
         toast({

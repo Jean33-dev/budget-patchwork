@@ -48,15 +48,26 @@ export const PontualExpensesTab = ({
   
   // Log pour déboguer
   useEffect(() => {
-    console.log("PontualExpensesTab - expenses count:", expenses.length);
+    console.log("PontualExpensesTab - render with props:", {
+      isLoading,
+      error: error?.message,
+      initAttempted,
+      isProcessing,
+      expensesCount: expenses.length,
+      availableBudgetsCount: availableBudgets.length,
+      budgetId
+    });
+    
     if (expenses.length > 0) {
-      console.log("Sample expense:", expenses[0]);
+      console.log("PontualExpensesTab - First 2 expenses:", expenses.slice(0, 2));
     } else {
-      console.log("No expenses found in PontualExpensesTab");
+      console.log("PontualExpensesTab - No expenses found");
     }
-    console.log("PontualExpensesTab - budgetId:", budgetId);
-    console.log("PontualExpensesTab - availableBudgets count:", availableBudgets.length);
-  }, [expenses, budgetId, availableBudgets]);
+    
+    if (availableBudgets.length > 0) {
+      console.log("PontualExpensesTab - First 2 budgets:", availableBudgets.slice(0, 2));
+    }
+  }, [expenses, budgetId, availableBudgets, isLoading, error, initAttempted, isProcessing]);
   
   return (
     <>

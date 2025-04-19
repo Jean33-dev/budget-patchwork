@@ -14,53 +14,51 @@ export const useExpenseDataLoading = (dashboardId: string | null) => {
   const [initAttempted, setInitAttempted] = useState(false);
 
   const loadData = useCallback(async () => {
-    if (!dashboardId) {
-      console.warn("No dashboard ID provided, skipping data load");
-      setIsLoading(false);
-      return;
-    }
-
+    const useDashboardId = dashboardId || "default";
+    console.log(`useExpenseDataLoading - Beginning data load for dashboard: ${useDashboardId}`);
+    
     setIsLoading(true);
     setError(null);
     
     try {
-      console.log(`Loading data for dashboard: ${dashboardId}`);
       await db.init();
       
       // Load budgets
+      console.log("useExpenseDataLoading - Loading budgets");
       const loadedBudgets = await db.getBudgets();
-      console.log(`Budgets loaded from database:`, loadedBudgets);
+      console.log(`useExpenseDataLoading - All budgets loaded from database (${loadedBudgets.length}):`, loadedBudgets);
       
       const filteredBudgets = loadedBudgets.filter(b => 
-        !b.dashboardId || b.dashboardId === dashboardId
+        !b.dashboardId || b.dashboardId === useDashboardId
       );
-      console.log(`Dashboard ${dashboardId} - Filtered budgets:`, filteredBudgets);
+      console.log(`useExpenseDataLoading - Filtered budgets for dashboard ${useDashboardId}:`, filteredBudgets);
       setAvailableBudgets(filteredBudgets);
       
       // Load expenses
-      console.log("Calling db.getExpenses() to load all expenses");
+      console.log("useExpenseDataLoading - Loading expenses");
       const loadedExpenses = await db.getExpenses();
-      console.log(`All expenses loaded from database (${loadedExpenses.length}):`, loadedExpenses);
+      console.log(`useExpenseDataLoading - All expenses loaded from database (${loadedExpenses.length}):`, loadedExpenses);
       
       // Filtrer les dépenses par dashboardId
-      // Considérez les dépenses sans dashboardId comme appartenant au dashboard par défaut
-      const defaultDashboardId = "default"; // ID du dashboard par défaut
-      
       const filteredExpenses = loadedExpenses.filter(expense => {
         // Si l'expense a un dashboardId, vérifier s'il correspond
         if (expense.dashboardId) {
-          return expense.dashboardId === dashboardId;
+          const match = expense.dashboardId === useDashboardId;
+          console.log(`useExpenseDataLoading - Expense ${expense.id} has dashboardId ${expense.dashboardId}, matches ${useDashboardId}? ${match}`);
+          return match;
         }
         // Si l'expense n'a pas de dashboardId et que le dashboard actuel est celui par défaut
-        return dashboardId === defaultDashboardId;
+        const isDefaultMatch = useDashboardId === "default";
+        console.log(`useExpenseDataLoading - Expense ${expense.id} has no dashboardId, using default? ${isDefaultMatch}`);
+        return isDefaultMatch;
       });
       
-      console.log(`Dashboard ${dashboardId} - Filtered expenses (${filteredExpenses.length}):`, filteredExpenses);
+      console.log(`useExpenseDataLoading - Filtered expenses for dashboard ${useDashboardId} (${filteredExpenses.length}):`, filteredExpenses);
       setExpenses(filteredExpenses);
       
       setInitAttempted(true);
     } catch (error) {
-      console.error(`Error loading data for dashboard ${dashboardId}:`, error);
+      console.error(`useExpenseDataLoading - Error loading data for dashboard ${useDashboardId}:`, error);
       toast({
         variant: "destructive",
         title: "Erreur",
@@ -73,6 +71,7 @@ export const useExpenseDataLoading = (dashboardId: string | null) => {
   }, [dashboardId, toast]);
 
   useEffect(() => {
+    console.log(`useExpenseDataLoading - Effect triggered with dashboardId: ${dashboardId}`);
     loadData();
   }, [loadData, dashboardId]);
 
