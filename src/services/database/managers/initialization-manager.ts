@@ -7,8 +7,9 @@ import { BaseDatabaseManager } from '../base-database-manager';
  * Manager responsible for database initialization
  */
 export class InitializationDatabaseManager extends DatabaseManagerCore {
-  private initCompletePromise: Promise<boolean> | null = null;
-  private initializing = false;
+  // Changed from private to protected to match parent class
+  protected initCompletePromise: Promise<boolean> | null = null;
+  protected initializing = false;
 
   protected isInitializationInProgress(): boolean {
     return BaseDatabaseManager.isInitializationInProgress();
@@ -96,5 +97,31 @@ export class InitializationDatabaseManager extends DatabaseManagerCore {
       });
       return false;
     }
+  }
+  
+  // Add compatibility methods to match DatabaseInitManager
+  getAdapter(): any | null {
+    return null;
+  }
+  
+  getDb(): any {
+    return this.db;
+  }
+  
+  resetInitializationAttempts(): void {
+    BaseDatabaseManager.resetInitializationAttempts();
+  }
+  
+  async ensureInitialized(): Promise<boolean> {
+    if (!this.isInitialized()) {
+      return await this.init();
+    }
+    return true;
+  }
+  
+  async migrateFromLocalStorage(): Promise<boolean> {
+    // Stub implementation to match interface
+    console.warn("migrateFromLocalStorage not implemented in InitializationDatabaseManager");
+    return false;
   }
 }

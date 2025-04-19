@@ -1,3 +1,4 @@
+
 import { Income } from './models/income';
 import { Expense } from './models/expense';
 import { Budget } from './models/budget';
@@ -33,6 +34,16 @@ export class DatabaseManager extends DatabaseManagerImpl implements IDatabaseMan
 
   exportData() {
     return this.dataManager.exportData();
+  }
+  
+  async migrateFromLocalStorage(): Promise<boolean> {
+    // Delegate to the implementation in DatabaseManagerImpl
+    return super.migrateFromLocalStorage();
+  }
+  
+  // Override resetInitializationAttempts to delegate to the initManager
+  resetInitializationAttempts(): void {
+    this.initManager.resetInitializationAttempts();
   }
 
   // Dashboard methods

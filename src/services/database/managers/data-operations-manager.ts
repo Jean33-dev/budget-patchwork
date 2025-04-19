@@ -9,6 +9,20 @@ export class DataOperationsManager extends DatabaseManagerCore {
     return this.db?.export();
   }
 
+  importData(data: Uint8Array): boolean {
+    try {
+      if (this.db) {
+        this.db.close();
+      }
+      // This is a stub implementation
+      console.warn("importData not fully implemented in DataOperationsManager");
+      return false;
+    } catch (error) {
+      console.error("Error importing data:", error);
+      return false;
+    }
+  }
+
   protected async ensureInitialized(): Promise<boolean> {
     if (!this.isInitialized()) {
       console.log("Database manager not initialized, initializing now...");
@@ -23,5 +37,11 @@ export class DataOperationsManager extends DatabaseManagerCore {
 
   isInitialized(): boolean {
     return this.initialized && this.db !== null && super.isInitialized();
+  }
+  
+  async migrateFromLocalStorage(): Promise<boolean> {
+    // Stub implementation to match interface
+    console.warn("migrateFromLocalStorage not implemented in DataOperationsManager");
+    return false;
   }
 }
