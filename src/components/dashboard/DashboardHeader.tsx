@@ -59,26 +59,26 @@ export const DashboardHeader = ({ currentDate, onMonthChange, onBackClick }: Das
               <Menu className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="bg-background">
-            <DropdownMenuItem onClick={() => navigate("/dashboard/budget")} className="gap-2">
+          <DropdownMenuContent align="start" className="bg-background z-50">
+            <DropdownMenuItem onClick={() => navigate("/dashboard/budget")} className="gap-2 flex items-center">
               <Home className="h-4 w-4" />
-              Tableau de Bord
+              <span>Tableau de Bord</span>
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate("/dashboard/budget/budgets")} className="gap-2">
+            <DropdownMenuItem onClick={() => navigate("/dashboard/budget/budgets")} className="gap-2 flex items-center">
               <Clock className="h-4 w-4" />
-              Gérer les Budgets
+              <span>Gérer les Budgets</span>
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate("/dashboard/budget/expenses")} className="gap-2">
+            <DropdownMenuItem onClick={() => navigate("/dashboard/budget/expenses")} className="gap-2 flex items-center">
               <CreditCard className="h-4 w-4" />
-              Gérer les Dépenses
+              <span>Gérer les Dépenses</span>
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate("/dashboard/budget/income")} className="gap-2">
+            <DropdownMenuItem onClick={() => navigate("/dashboard/budget/income")} className="gap-2 flex items-center">
               <DollarSign className="h-4 w-4" />
-              Gérer les Revenus
+              <span>Gérer les Revenus</span>
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate("/dashboard/budget/categories")} className="gap-2">
+            <DropdownMenuItem onClick={() => navigate("/dashboard/budget/categories")} className="gap-2 flex items-center">
               <Calendar className="h-4 w-4" />
-              Gérer les Catégories
+              <span>Gérer les Catégories</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
