@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
@@ -33,14 +32,12 @@ const Dashboard = () => {
 
   const { dashboards, isLoading: isDashboardsLoading } = useDashboards();
 
-  // Charger le titre du tableau de bord
   useEffect(() => {
     if (!isDashboardsLoading && dashboards.length > 0 && dashboardId) {
       const dashboard = dashboards.find(d => d.id === dashboardId);
       if (dashboard) {
         setDashboardTitle(dashboard.title);
       } else {
-        // Si le tableau de bord n'existe pas, rediriger vers la page d'accueil
         navigate("/");
       }
     }
@@ -99,6 +96,7 @@ const Dashboard = () => {
   return (
     <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-8 space-y-6 sm:space-y-8">
       <DashboardHeader
+        dashboardId={dashboardId || "default"}
         currentDate={currentDate}
         onMonthChange={handleMonthChange}
         onBackClick={() => navigate("/")}
