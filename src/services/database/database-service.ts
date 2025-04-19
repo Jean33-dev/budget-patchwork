@@ -1,12 +1,13 @@
-
 import { Income } from './models/income';
 import { Expense } from './models/expense';
 import { Budget } from './models/budget';
 import { Category } from './models/category';
+import { Dashboard } from './models/dashboard';
 import { IncomeService } from './services/income-service';
 import { ExpenseService } from './services/expense-service';
 import { BudgetService } from './services/budget-service';
 import { CategoryService } from './services/category-service';
+import { DashboardService } from './services/dashboard-service';
 
 /**
  * Main database service that uses specialized service classes for each entity
@@ -16,12 +17,14 @@ class DatabaseService {
   private expenseService: ExpenseService;
   private budgetService: BudgetService;
   private categoryService: CategoryService;
+  private dashboardService: DashboardService;
 
   constructor() {
     this.incomeService = new IncomeService();
     this.expenseService = new ExpenseService();
     this.budgetService = new BudgetService();
     this.categoryService = new CategoryService();
+    this.dashboardService = new DashboardService();
   }
 
   /**
@@ -123,6 +126,27 @@ class DatabaseService {
 
   async deleteCategory(id: string): Promise<void> {
     return this.categoryService.deleteCategory(id);
+  }
+
+  // Dashboard methods delegated to DashboardService
+  async getDashboards(): Promise<Dashboard[]> {
+    return this.dashboardService.getDashboards();
+  }
+
+  async getDashboardById(id: string): Promise<Dashboard | null> {
+    return this.dashboardService.getDashboardById(id);
+  }
+
+  async addDashboard(dashboard: Dashboard): Promise<void> {
+    return this.dashboardService.addDashboard(dashboard);
+  }
+
+  async updateDashboard(dashboard: Dashboard): Promise<void> {
+    return this.dashboardService.updateDashboard(dashboard);
+  }
+
+  async deleteDashboard(id: string): Promise<void> {
+    return this.dashboardService.deleteDashboard(id);
   }
 
   /**
