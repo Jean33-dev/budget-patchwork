@@ -70,7 +70,7 @@ export const useBudgetData = () => {
       // Update budgets with their associated expenses
       const budgetsWithSpent = dashboardBudgets.map(budget => {
         const budgetExpenses = dashboardExpenses.filter(expense => 
-          expense.budgetId === budget.id
+          expense.linkedBudgetId === budget.id
         );
         const spent = budgetExpenses.reduce((sum, expense) => 
           sum + (Number(expense.budget) || 0), 0
@@ -91,7 +91,7 @@ export const useBudgetData = () => {
       );
       
       const totalIncome = dashboardIncomes.reduce((sum, income) => 
-        sum + (Number(income.amount) || 0), 0
+        sum + (Number(income.budget) || 0), 0
       );
       setTotalRevenues(totalIncome);
       
