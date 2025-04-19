@@ -5,6 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { db } from "@/services/database";
 import { Expense } from "@/services/database/models/expense";
 import { Budget } from "@/services/database/models/budget";
+import { useDashboardContext } from "@/hooks/useDashboardContext";
 
 export const useRecurringExpenses = () => {
   const { toast } = useToast();
@@ -12,6 +13,7 @@ export const useRecurringExpenses = () => {
   const [availableBudgets, setAvailableBudgets] = useState<Budget[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const currentDate = format(new Date(), "yyyy-MM-dd");
+  const { currentDashboardId } = useDashboardContext();
 
   const loadData = async () => {
     setIsLoading(true);
@@ -19,7 +21,16 @@ export const useRecurringExpenses = () => {
       await db.init();
       const expenses = await db.getRecurringExpenses();
       const budgets = await db.getBudgets();
-      setRecurringExpenses(expenses);
+      
+      // Filtrer les dépenses récurrentes par dashboardId
+      const filteredExpenses = expenses.filter(expense => {
+        if (expense.dashboardId) {
+          return expense.dashboardId === currentDashboardId;
+        }
+        return currentDashboardId === "default";
+      });
+      
+      setRecurringExpenses(filteredExpenses);
       setAvailableBudgets(budgets);
     } catch (error) {
       console.error("Erreur lors du chargement des dépenses récurrentes:", error);
@@ -35,7 +46,7 @@ export const useRecurringExpenses = () => {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [currentDashboardId]);
 
   const handleAddExpense = async (newExpense: { 
     title: string; 
@@ -55,7 +66,8 @@ export const useRecurringExpenses = () => {
         ...newExpense,
         type: "expense",
         spent: 0,
-        isRecurring: true
+        isRecurring: true,
+        dashboardId: currentDashboardId || "default" // Ajouter le dashboardId actuel
       };
       
       await db.addExpense(expense);
@@ -134,6 +146,7 @@ export const useRecurringExpenses = () => {
 
   const handleAddToCurrentMonth = async (id: string) => {
     try {
+      console.log(`Ajout de la dépense récurrente ${id} au mois courant (${currentDate})...`);
       await db.copyRecurringExpenseToMonth(id, currentDate);
       
       toast({

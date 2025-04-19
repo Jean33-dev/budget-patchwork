@@ -43,18 +43,25 @@ export const useExpenseDataLoading = (dashboardId: string | null) => {
       const nonRecurringExpenses = loadedExpenses.filter(expense => !expense.isRecurring);
       console.log(`useExpenseDataLoading - Non-recurring expenses (${nonRecurringExpenses.length}):`, nonRecurringExpenses);
       
-      // Filtrer les dépenses par dashboardId
+      // Modification: amélioration du filtrage par dashboardId
       const filteredExpenses = nonRecurringExpenses.filter(expense => {
-        // Si l'expense a un dashboardId, vérifier s'il correspond
-        if (expense.dashboardId) {
-          const match = expense.dashboardId === useDashboardId;
-          console.log(`useExpenseDataLoading - Expense ${expense.id} has dashboardId ${expense.dashboardId}, matches ${useDashboardId}? ${match}`);
-          return match;
+        // Si l'utilisateur est sur une URL spécifique à un dashboard (comme /dashboard/budget/expenses)
+        const isDashboardSpecificRoute = useDashboardId !== "default";
+        
+        // Si on est sur une route spécifique à un dashboard
+        if (isDashboardSpecificRoute) {
+          // Si l'expense a un dashboardId, on vérifie s'il correspond
+          if (expense.dashboardId) {
+            return expense.dashboardId === useDashboardId;
+          }
+          // Si on est sur une route dashboard spécifique mais que l'expense n'a pas de dashboardId,
+          // on l'inclut seulement si c'est le dashboard par défaut
+          return useDashboardId === "default";
         }
-        // Si l'expense n'a pas de dashboardId et que le dashboard actuel est celui par défaut
-        const isDefaultMatch = useDashboardId === "default";
-        console.log(`useExpenseDataLoading - Expense ${expense.id} has no dashboardId, using default? ${isDefaultMatch}`);
-        return isDefaultMatch;
+        
+        // Si on est sur la route par défaut, on montre toutes les dépenses sans dashboardId
+        // et celles avec dashboardId="default"
+        return !expense.dashboardId || expense.dashboardId === "default";
       });
       
       console.log(`useExpenseDataLoading - Filtered expenses for dashboard ${useDashboardId} (${filteredExpenses.length}):`, filteredExpenses);

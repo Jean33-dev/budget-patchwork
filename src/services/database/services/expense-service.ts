@@ -121,19 +121,22 @@ export class ExpenseService extends BaseService {
         throw new Error("Dépense récurrente non trouvée");
       }
       
+      console.log(`Copie de la dépense récurrente "${recurringExpense.title}" au mois actuel...`);
+      
       // Create a new expense based on the recurring one
       const newExpense: Expense = {
         id: `${recurringExpense.id}_copy_${Date.now()}`,
         title: recurringExpense.title,
         budget: recurringExpense.budget,
-        spent: 0, // Initialize spent to 0
+        spent: recurringExpense.budget, // Modifier pour définir spent = budget
         type: 'expense',
         linkedBudgetId: recurringExpense.linkedBudgetId,
         date: targetDate,
         isRecurring: false, // The copy is not recurring
-        dashboardId: recurringExpense.dashboardId || null
+        dashboardId: recurringExpense.dashboardId // Conserver le même dashboardId
       };
       
+      console.log("Nouvelle dépense à ajouter:", newExpense);
       await this.addExpense(newExpense);
       
       toast({
