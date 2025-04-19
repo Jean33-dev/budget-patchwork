@@ -26,23 +26,23 @@ export const BudgetsHeader = ({ onNavigate }: BudgetsHeaderProps) => {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="bg-background z-50">
-          <DropdownMenuItem onClick={() => onNavigate("/dashboard/budget")} className="gap-2 flex items-center">
+          <DropdownMenuItem onClick={() => onNavigate("/dashboard/budget")} className="flex items-center gap-2">
             <Home className="h-4 w-4" />
             <span>Tableau de Bord</span>
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => onNavigate("/dashboard/budget/budgets")} className="gap-2 flex items-center">
+          <DropdownMenuItem onClick={() => onNavigate("/dashboard/budget/budgets")} className="flex items-center gap-2">
             <Clock className="h-4 w-4" />
             <span>Gérer les Budgets</span>
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => onNavigate("/dashboard/budget/expenses")} className="gap-2 flex items-center">
+          <DropdownMenuItem onClick={() => onNavigate("/dashboard/budget/expenses")} className="flex items-center gap-2">
             <CreditCard className="h-4 w-4" />
             <span>Gérer les Dépenses</span>
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => onNavigate("/dashboard/budget/income")} className="gap-2 flex items-center">
+          <DropdownMenuItem onClick={() => onNavigate("/dashboard/budget/income")} className="flex items-center gap-2">
             <DollarSign className="h-4 w-4" />
             <span>Gérer les Revenus</span>
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => onNavigate("/dashboard/budget/categories")} className="gap-2 flex items-center">
+          <DropdownMenuItem onClick={() => onNavigate("/dashboard/budget/categories")} className="flex items-center gap-2">
             <Calendar className="h-4 w-4" />
             <span>Gérer les Catégories</span>
           </DropdownMenuItem>
