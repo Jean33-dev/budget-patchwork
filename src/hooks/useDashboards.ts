@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import { toast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
 import { db } from "@/services/database";
+import { v4 as uuidv4 } from "uuid";
 
 export interface Dashboard {
   id: string;
@@ -100,12 +101,100 @@ export const useDashboards = () => {
     loadDashboards();
   }, [loadDashboards]);
 
+  // Add a new dashboard
+  const addDashboard = useCallback(async (name: string): Promise<string | null> => {
+    try {
+      const dashboardId = uuidv4();
+      const newDashboard: Dashboard = {
+        id: dashboardId,
+        title: name,
+        createdAt: new Date().toISOString(),
+        lastAccessed: new Date().toISOString()
+      };
+      
+      await db.addDashboard(newDashboard);
+      
+      // Update local state
+      setDashboards(prev => [...prev, newDashboard]);
+      
+      toast({
+        title: "Tableau de bord créé",
+        description: `Le tableau de bord "${name}" a été créé avec succès.`
+      });
+      
+      return dashboardId;
+    } catch (error) {
+      console.error("Error adding dashboard:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible de créer le tableau de bord."
+      });
+      return null;
+    }
+  }, []);
+
+  // Update an existing dashboard
+  const updateDashboard = useCallback(async (dashboard: Dashboard): Promise<boolean> => {
+    try {
+      await db.updateDashboard(dashboard);
+      
+      // Update local state
+      setDashboards(prev => 
+        prev.map(d => d.id === dashboard.id ? dashboard : d)
+      );
+      
+      toast({
+        title: "Tableau de bord mis à jour",
+        description: `Le tableau de bord "${dashboard.title}" a été mis à jour.`
+      });
+      
+      return true;
+    } catch (error) {
+      console.error("Error updating dashboard:", error);
+      toast({
+        variant: "destructive", 
+        title: "Erreur",
+        description: "Impossible de mettre à jour le tableau de bord."
+      });
+      return false;
+    }
+  }, []);
+
+  // Delete a dashboard
+  const deleteDashboard = useCallback(async (id: string): Promise<boolean> => {
+    try {
+      await db.deleteDashboard(id);
+      
+      // Update local state
+      setDashboards(prev => prev.filter(d => d.id !== id));
+      
+      toast({
+        title: "Tableau de bord supprimé",
+        description: "Le tableau de bord a été supprimé avec succès."
+      });
+      
+      return true;
+    } catch (error) {
+      console.error("Error deleting dashboard:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible de supprimer le tableau de bord."
+      });
+      return false;
+    }
+  }, []);
+
   return {
     dashboards,
     isLoading,
     error,
     retryLoadDashboards,
     loadAttempts,
-    MAX_LOAD_ATTEMPTS
+    MAX_LOAD_ATTEMPTS,
+    addDashboard,
+    updateDashboard,
+    deleteDashboard
   };
 };
