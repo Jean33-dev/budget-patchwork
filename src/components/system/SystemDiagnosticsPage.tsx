@@ -20,6 +20,11 @@ import { db } from "@/services/database";
 import { toast } from "@/hooks/use-toast";
 import { DatabaseDiagnostics } from "@/components/database/DatabaseDiagnostics";
 
+// Add interface for Navigator with deviceMemory
+interface NavigatorWithMemory extends Navigator {
+  deviceMemory?: number;
+}
+
 export function SystemDiagnosticsPage() {
   const [browserInfo, setBrowserInfo] = useState<Record<string, any>>({});
   const [isReloading, setIsReloading] = useState(false);
@@ -44,8 +49,9 @@ export function SystemDiagnosticsPage() {
     }
     
     // Récupérer les informations sur la mémoire si disponible
-    if (navigator.deviceMemory) {
-      info.deviceMemory = `${navigator.deviceMemory}GB`;
+    const navigatorWithMemory = navigator as NavigatorWithMemory;
+    if (navigatorWithMemory.deviceMemory) {
+      info.deviceMemory = `${navigatorWithMemory.deviceMemory}GB`;
     }
     
     // Vérifier si le mode privé est détectable
