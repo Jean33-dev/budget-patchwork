@@ -25,12 +25,12 @@ const AppContent = () => {
       <div className="pb-20">
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/dashboard/budget" element={<Dashboard />} />
-          <Route path="/dashboard/budget/budgets" element={<Budgets />} />
-          <Route path="/dashboard/budget/expenses" element={<Expenses />} />
-          <Route path="/dashboard/budget/income" element={<Income />} />
-          <Route path="/dashboard/budget/categories" element={<Categories />} />
-          <Route path="/dashboard/budget/transition" element={<BudgetTransition />} />
+          <Route path="/dashboard/:dashboardId" element={<Dashboard />} />
+          <Route path="/dashboard/:dashboardId/budgets" element={<Budgets />} />
+          <Route path="/dashboard/:dashboardId/expenses" element={<Expenses />} />
+          <Route path="/dashboard/:dashboardId/income" element={<Income />} />
+          <Route path="/dashboard/:dashboardId/categories" element={<Categories />} />
+          <Route path="/dashboard/:dashboardId/transition" element={<BudgetTransition />} />
         </Routes>
       </div>
       {showFooter && <Footer />}

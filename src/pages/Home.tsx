@@ -15,20 +15,16 @@ const Home = () => {
   const [dashboardTitle, setDashboardTitle] = useState("Budget Personnel");
   const [isLoading, setIsLoading] = useState(true);
 
-  // Charger le titre du tableau de bord depuis la base de données
   useEffect(() => {
     const loadDashboardTitle = async () => {
       try {
         await db.init();
         const budgets = await db.getBudgets();
-        
-        // Chercher un budget avec le nom spécial "dashboard_title"
         const dashboardTitleBudget = budgets.find(b => b.id === "dashboard_title");
         
         if (dashboardTitleBudget) {
           setDashboardTitle(dashboardTitleBudget.title);
         } else {
-          // Si le budget n'existe pas encore, le créer avec la valeur par défaut
           const defaultTitle = localStorage.getItem("dashboardTitle") || "Budget Personnel";
           await db.addBudget({
             id: "dashboard_title",
@@ -39,13 +35,10 @@ const Home = () => {
             carriedOver: 0
           });
           setDashboardTitle(defaultTitle);
-          
-          // Supprimer l'ancienne valeur de localStorage après migration
           localStorage.removeItem("dashboardTitle");
         }
       } catch (error) {
         console.error("Erreur lors du chargement du titre:", error);
-        // Fallback sur localStorage en cas d'erreur
         const localTitle = localStorage.getItem("dashboardTitle");
         if (localTitle) {
           setDashboardTitle(localTitle);
@@ -71,7 +64,6 @@ const Home = () => {
 
   const handleSaveDashboardName = async (newName: string) => {
     try {
-      // Mettre à jour le titre dans la base de données
       const budgets = await db.getBudgets();
       const dashboardTitleBudget = budgets.find(b => b.id === "dashboard_title");
       
@@ -112,7 +104,10 @@ const Home = () => {
       <h1 className="text-4xl font-bold">Mes Tableaux de Bord</h1>
       
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate("/dashboard/budget")}>
+        <Card 
+          className="cursor-pointer hover:shadow-lg transition-shadow" 
+          onClick={() => navigate(`/dashboard/${encodeURIComponent(dashboardTitle)}`)}
+        >
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
               <div className="flex items-center gap-2">
