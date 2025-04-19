@@ -2,6 +2,8 @@
 import { WebSQLiteAdapter } from "./web-sqlite-adapter";
 import { SQLiteAdapter } from "./sqlite-adapter";
 import { createSQLiteAdapter } from "./sqlite-adapter";
+import { Database } from "sql.js";
+import { InitializationManager } from "./initialization-manager";
 
 /**
  * Manages database initialization
@@ -111,5 +113,54 @@ export class DatabaseInitManager {
     
     // Also reset the WebSQLiteAdapter's initialization attempts
     WebSQLiteAdapter.resetInitializationAttempts();
+  }
+
+  /**
+   * Ensure database is initialized
+   */
+  async ensureInitialized(): Promise<boolean> {
+    console.log("DatabaseInitManager: Ensuring database is initialized");
+    if (this.adapter?.isInitialized()) {
+      return true;
+    }
+    return await this.init();
+  }
+
+  /**
+   * Reset initialization attempts
+   */
+  resetInitializationAttempts(): void {
+    console.log("DatabaseInitManager: Resetting initialization attempts");
+    // Reset the adapter, which will also reset WebSQLiteAdapter's attempts
+    this.resetAdapter();
+  }
+
+  /**
+   * Initialize database tables
+   */
+  async initializeTables(db: Database): Promise<boolean> {
+    try {
+      console.log("DatabaseInitManager: Initializing database tables");
+      if (!db) {
+        console.error("DatabaseInitManager: No database provided to initialize tables");
+        return false;
+      }
+      
+      if (!this.adapter) {
+        console.error("DatabaseInitManager: No adapter available to initialize tables");
+        return false;
+      }
+      
+      // Create an initialization manager and use it to set up tables
+      const initManager = new InitializationManager(this.adapter);
+      await initManager.createTables();
+      await initManager.checkAndAddSampleData();
+      
+      console.log("DatabaseInitManager: Database tables initialized successfully");
+      return true;
+    } catch (error) {
+      console.error("DatabaseInitManager: Error initializing tables:", error);
+      return false;
+    }
   }
 }
