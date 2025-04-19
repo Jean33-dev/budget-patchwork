@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
@@ -15,12 +15,19 @@ export function DashboardTabs({ dashboardId }: DashboardTabsProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [isDbInitialized, setIsDbInitialized] = useState(false);
   const navigate = useNavigate();
+  const initAttemptRef = useRef(false);
 
   // Check database initialization on mount
   useEffect(() => {
+    // Only run this effect once
+    if (initAttemptRef.current) return;
+    initAttemptRef.current = true;
+    
     const checkDbStatus = async () => {
       setIsLoading(true);
       try {
+        console.log("DashboardTabs: Checking database status...");
+        
         // Reset any previous initialization attempts to start fresh
         db.resetInitializationAttempts?.();
         
@@ -30,6 +37,7 @@ export function DashboardTabs({ dashboardId }: DashboardTabsProps) {
           new Promise<boolean>(resolve => setTimeout(() => resolve(false), 5000))
         ]);
         
+        console.log("DashboardTabs: Database initialization result:", initSuccess);
         setIsDbInitialized(initSuccess);
       } catch (error) {
         console.error("Error checking database status:", error);

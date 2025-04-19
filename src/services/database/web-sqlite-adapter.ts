@@ -1,3 +1,4 @@
+
 import { SQLiteAdapter } from './sqlite-adapter';
 import { SqlJsInitializer } from './sql-js-initializer';
 import { WebSQLiteOperations } from './web-sqlite-operations';
@@ -14,6 +15,7 @@ export class WebSQLiteAdapter extends SQLiteAdapter {
   private initStartTime: number | null = null;
   private MAX_INIT_TIME_MS = 8000; // 8 seconds timeout
   private initTimeout: number | null = null;
+  private isInitializing = false;
 
   constructor() {
     super();
@@ -35,20 +37,22 @@ export class WebSQLiteAdapter extends SQLiteAdapter {
         console.log("WebSQLiteAdapter already initialized, reusing instance");
         return true;
       }
-
-      // If initialization is already in progress, check for timeout
-      if (this.initPromise) {
-        console.log("WebSQLiteAdapter initialization already in progress, checking timeout...");
+      
+      // Prevent multiple concurrent initialization attempts
+      if (this.isInitializing) {
+        console.log("WebSQLiteAdapter: Initialization already in progress");
         
-        // Check if initialization has been running too long
+        // Check for timeout if initialization has been running too long
         if (this.initStartTime && Date.now() - this.initStartTime > this.MAX_INIT_TIME_MS) {
           console.warn(`WebSQLiteAdapter: Initialization has been running for more than ${this.MAX_INIT_TIME_MS}ms, resetting state`);
-          this.initPromise = null;
+          this.isInitializing = false;
           this.initStartTime = null;
+          this.initPromise = null;
           WebSQLiteAdapter.initAttempts = 0; // Reset attempts on timeout
-        } else {
+        } else if (this.initPromise) {
+          // Wait for the existing initialization to complete
           console.log("WebSQLiteAdapter: Joining existing initialization promise");
-          return this.initPromise;
+          return await this.initPromise;
         }
       }
       
@@ -66,7 +70,8 @@ export class WebSQLiteAdapter extends SQLiteAdapter {
         return false;
       }
       
-      // Set initialization start time
+      // Set initialization flags
+      this.isInitializing = true;
       this.initStartTime = Date.now();
       
       // Create an initialization promise with timeout
@@ -132,7 +137,8 @@ export class WebSQLiteAdapter extends SQLiteAdapter {
           
           return false;
         } finally {
-          // Clear the promise and start time so future initialization attempts can create a new one
+          // Clear the flags and promise
+          this.isInitializing = false;
           this.initPromise = null;
           this.initStartTime = null;
           
@@ -147,6 +153,7 @@ export class WebSQLiteAdapter extends SQLiteAdapter {
       return await this.initPromise;
     } catch (error) {
       console.error("Error in WebSQLiteAdapter.init wrapper:", error);
+      this.isInitializing = false;
       this.initPromise = null;
       this.initStartTime = null;
       

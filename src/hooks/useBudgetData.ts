@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { db } from "@/services/database";
 import { Budget } from "@/types/categories";
@@ -14,11 +14,18 @@ export const useBudgetData = () => {
   const [error, setError] = useState<Error | null>(null);
   const [loadAttempt, setLoadAttempt] = useState(0);
   const { dashboardId = "default" } = useParams<{ dashboardId: string }>();
+  const isLoadingRef = useRef(false);
 
   const loadData = useCallback(async () => {
+    // Prevent concurrent loads
+    if (isLoadingRef.current) {
+      console.log("Already loading data, skipping duplicate request");
+      return;
+    }
+    
+    isLoadingRef.current = true;
     setIsLoading(true);
     setError(null);
-    setLoadAttempt(prev => prev + 1);
     
     try {
       console.log(`Loading budget data for dashboard ${dashboardId}... (attempt ${loadAttempt + 1})`);
@@ -61,69 +68,54 @@ export const useBudgetData = () => {
       console.log(`Total expenses calculated for dashboard ${dashboardId}:`, totalSpent);
       
       // Update budgets with their associated expenses
-      const validatedBudgets = dashboardBudgets.map(budget => {
+      const budgetsWithSpent = dashboardBudgets.map(budget => {
         const budgetExpenses = dashboardExpenses.filter(expense => 
-          expense.linkedBudgetId === budget.id
+          expense.budgetId === budget.id
         );
-        console.log(`Expenses for budget ${budget.id} (${budget.title}):`, budgetExpenses);
-        
-        const budgetSpent = budgetExpenses.reduce((sum, expense) => 
+        const spent = budgetExpenses.reduce((sum, expense) => 
           sum + (Number(expense.budget) || 0), 0
         );
         
         return {
           ...budget,
-          budget: Number(budget.budget) || 0,
-          spent: budgetSpent,
-          carriedOver: budget.carriedOver || 0,
-          dashboardId: budget.dashboardId || dashboardId
+          spent
         };
       });
       
-      setBudgets(validatedBudgets);
-      console.log("Budgets updated with expenses:", validatedBudgets);
-
-      // Load and calculate incomes
-      const allIncomes = await db.getIncomes();
-      console.log("All incomes loaded:", allIncomes);
+      setBudgets(budgetsWithSpent);
       
-      // Filter incomes by dashboardId
+      // Load incomes to calculate total revenues
+      const allIncomes = await db.getIncomes();
       const dashboardIncomes = allIncomes.filter(income => 
         income.dashboardId === dashboardId || !income.dashboardId
       );
-      console.log(`Filtered incomes for dashboard ${dashboardId}:`, dashboardIncomes);
       
       const totalIncome = dashboardIncomes.reduce((sum, income) => 
-        sum + (Number(income.budget) || 0), 0
+        sum + (Number(income.amount) || 0), 0
       );
-      
       setTotalRevenues(totalIncome);
-      console.log(`Total revenues calculated for dashboard ${dashboardId}:`, totalIncome);
       
-    } catch (error) {
-      console.error(`Error loading budget data (attempt ${loadAttempt}):`, error);
-      setError(error instanceof Error ? error : new Error("Unknown error"));
-      if (loadAttempt < 3) {
-        // Auto-retry once on failure with a delay
-        const retryDelay = Math.pow(2, loadAttempt) * 1000; // Exponential backoff
-        console.log(`Will auto-retry in ${retryDelay}ms...`);
-        setTimeout(() => loadData(), retryDelay);
-      } else {
-        toast({
-          variant: "destructive",
-          title: "Erreur",
-          description: "Impossible de charger les données budgétaires"
-        });
-      }
+      setLoadAttempt(prev => prev + 1);
+    } catch (err) {
+      console.error("Error loading budget data:", err);
+      setError(err instanceof Error ? err : new Error("Error loading data"));
+      
+      toast({
+        variant: "destructive",
+        title: "Erreur de chargement",
+        description: "Impossible de charger les données budgétaires."
+      });
     } finally {
       setIsLoading(false);
+      isLoadingRef.current = false;
     }
   }, [dashboardId, loadAttempt, toast]);
 
-  // Load data on component mount or when dashboardId changes
+  // Only load data once on mount or when dashboardId changes
   useEffect(() => {
-    console.log(`useBudgetData effect triggered, loading data for dashboard ${dashboardId}`);
+    console.log("useBudgetData effect triggered, loading data for dashboard", dashboardId);
     loadData();
+    // Only re-run when dashboardId changes, not on every loadAttempt
   }, [dashboardId, loadData]);
 
   return {

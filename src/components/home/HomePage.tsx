@@ -1,12 +1,12 @@
 
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import Home from "@/pages/Home";
 import { DashboardTabs } from "@/components/home/DashboardTabs";
 import { DashboardSummary } from "@/components/home/DashboardSummary";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle, Database } from "lucide-react";
+import { AlertCircle, Database, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { db } from "@/services/database";
 import { Link } from "react-router-dom";
 
@@ -14,23 +14,37 @@ export function HomePage() {
   const { dashboardId = "default" } = useParams<{ dashboardId: string }>();
   const [dbInitFailed, setDbInitFailed] = useState(false);
   const [isCheckingDb, setIsCheckingDb] = useState(true);
+  const navigate = useNavigate();
+  const dbCheckAttemptRef = useRef(false);
 
   // Vérifier l'état de la base de données au chargement de la page
   useEffect(() => {
+    // Only attempt database check once
+    if (dbCheckAttemptRef.current) return;
+    dbCheckAttemptRef.current = true;
+    
     let checkDbTimeout: number;
     
     const checkDatabaseStatus = async () => {
       setIsCheckingDb(true);
       try {
+        console.log("HomePage: Checking database status...");
+        
         // Réinitialiser les tentatives
         db.resetInitializationAttempts?.();
         
         // Tenter d'initialiser la base de données
-        const result = await db.init();
+        const result = await Promise.race([
+          db.init(),
+          new Promise<boolean>(resolve => setTimeout(() => resolve(false), 8000))
+        ]);
+        
+        console.log("HomePage: Database initialization result:", result);
         setDbInitFailed(!result);
         
         // Si l'initialisation a échoué, rafraîchir l'état après un délai
         if (!result) {
+          console.log("HomePage: Database initialization failed, will retry once after 5 seconds");
           checkDbTimeout = window.setTimeout(() => {
             checkDatabaseStatus();
           }, 5000); // Réessayer après 5 secondes
@@ -75,7 +89,7 @@ export function HomePage() {
                   onClick={handleForceReload}
                   className="flex items-center gap-2"
                 >
-                  <Database className="h-4 w-4" />
+                  <RefreshCw className="h-4 w-4" />
                   Rafraîchir la page
                 </Button>
                 <Button
@@ -92,8 +106,27 @@ export function HomePage() {
             </AlertDescription>
           </Alert>
         )}
-        <Home />
+        {isCheckingDb ? (
+          <div className="flex items-center justify-center p-8">
+            <RefreshCw className="h-8 w-8 animate-spin text-primary mr-2" />
+            <p>Vérification de la base de données...</p>
+          </div>
+        ) : (
+          <Home />
+        )}
       </>
+    );
+  }
+
+  // If we're checking the database, show a loading indicator
+  if (isCheckingDb) {
+    return (
+      <div className="container mx-auto py-6 space-y-6">
+        <div className="flex items-center justify-center p-8">
+          <RefreshCw className="h-8 w-8 animate-spin text-primary mr-2" />
+          <p>Vérification de la base de données...</p>
+        </div>
+      </div>
     );
   }
 
@@ -114,7 +147,7 @@ export function HomePage() {
                 onClick={handleForceReload}
                 className="flex items-center gap-2"
               >
-                <Database className="h-4 w-4" />
+                <RefreshCw className="h-4 w-4" />
                 Rafraîchir la page
               </Button>
               <Button

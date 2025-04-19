@@ -14,6 +14,7 @@ class DatabaseService {
   private initializationPromise: Promise<boolean> | null = null;
   private initStartTime: number | null = null;
   private readonly MAX_INIT_TIME_MS = 10000; // 10 seconds max
+  private initializationInProgress = false;
 
   constructor() {
     this.manager = DatabaseManagerFactory.getDatabaseManager();
@@ -30,31 +31,28 @@ class DatabaseService {
         return true;
       }
       
-      // If initialization is in progress, check for timeout
-      if (this.initializationPromise) {
-        console.log("DatabaseService: Initialization already in progress");
+      // Prevent multiple concurrent initialization attempts
+      if (this.initializationInProgress) {
+        console.log("DatabaseService: Initialization already in progress, waiting for completion");
         
         // Check if it's been running too long
         if (this.initStartTime && Date.now() - this.initStartTime > this.MAX_INIT_TIME_MS) {
           console.warn(`DatabaseService: Initialization has been running for more than ${this.MAX_INIT_TIME_MS}ms, resetting`);
-          this.initializationPromise = null;
+          this.initializationInProgress = false;
           this.initStartTime = null;
           this.resetInitializationAttempts();
         } else {
-          // Return existing promise with timeout
-          return Promise.race([
-            this.initializationPromise,
-            new Promise<boolean>(resolve => {
-              setTimeout(() => {
-                console.warn("DatabaseService: Initialization promise timed out");
-                resolve(false);
-              }, 5000); // 5 second timeout for waiting on existing promise
-            })
-          ]);
+          // If initialization is already in progress but not timed out, wait for it
+          if (this.initializationPromise) {
+            return await this.initializationPromise;
+          }
+          // If no promise exists but flag is set, something went wrong - reset
+          this.initializationInProgress = false;
         }
       }
       
-      console.log("DatabaseService: Initializing database...");
+      console.log("DatabaseService: Starting new database initialization...");
+      this.initializationInProgress = true;
       this.initStartTime = Date.now();
       
       // Create a new initialization promise with timeout
@@ -94,6 +92,7 @@ class DatabaseService {
           // Clear initialization state
           this.initializationPromise = null;
           this.initStartTime = null;
+          this.initializationInProgress = false;
         }
       })();
       
@@ -102,6 +101,7 @@ class DatabaseService {
       console.error("DatabaseService: Error during initialization:", error);
       this.initializationPromise = null;
       this.initStartTime = null;
+      this.initializationInProgress = false;
       
       toast({
         variant: "destructive",
