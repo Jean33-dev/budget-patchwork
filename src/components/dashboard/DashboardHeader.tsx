@@ -1,6 +1,5 @@
-
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Menu, CalendarPlus } from "lucide-react";
+import { ArrowLeft, Menu, CalendarPlus, Download } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,6 +9,8 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { db } from "@/services/database";
+import { BudgetPDFDownload } from "@/components/pdf/BudgetPDF";
+import { useBudgets } from "@/hooks/useBudgets";
 
 interface DashboardHeaderProps {
   currentDate: Date;
@@ -20,8 +21,8 @@ interface DashboardHeaderProps {
 export const DashboardHeader = ({ currentDate, onMonthChange, onBackClick }: DashboardHeaderProps) => {
   const navigate = useNavigate();
   const [dashboardTitle, setDashboardTitle] = useState("Budget");
+  const { budgets, totalRevenues, totalExpenses } = useBudgets();
 
-  // Récupérer le titre du tableau de bord depuis la base de données
   useEffect(() => {
     const loadDashboardTitle = async () => {
       try {
@@ -79,7 +80,15 @@ export const DashboardHeader = ({ currentDate, onMonthChange, onBackClick }: Das
         <h1 className="text-xl">Tableau de bord {dashboardTitle}</h1>
       </div>
       
-      <div className="flex justify-end mb-4">
+      <div className="flex justify-end gap-2 mb-4">
+        <BudgetPDFDownload
+          fileName="rapport-budget.pdf"
+          totalIncome={totalRevenues}
+          totalExpenses={totalExpenses}
+          budgets={budgets}
+          className="flex items-center gap-2"
+        />
+        
         <Button 
           variant="outline"
           onClick={() => navigate("/dashboard/budget/transition")}
