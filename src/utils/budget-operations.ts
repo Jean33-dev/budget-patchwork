@@ -12,7 +12,7 @@ export const budgetOperations = {
         budget: newBudget.budget,
         spent: 0,
         type: "budget",
-        dashboardId: dashboardId // Associer au tableau de bord actuel
+        dashboardId // Associer au tableau de bord actuel
       };
 
       console.log("Ajout d'un nouveau budget:", budgetToAdd);

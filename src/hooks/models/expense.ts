@@ -5,7 +5,8 @@ export interface Expense {
   budget: number;
   spent: number;
   type: 'expense';
-  linkedBudgetId?: string;
+  linkedBudgetId: string | null;
   date: string;
   isRecurring?: boolean;
+  dashboardId?: string;
 }

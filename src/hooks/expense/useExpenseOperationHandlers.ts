@@ -1,8 +1,8 @@
 
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
-import { expenseOperations } from "@/utils/expense-operations";
-import { Expense } from "../models/expense";
+import { expenseOperations, ExpenseFormData } from "@/utils/expense-operations";
+import { Expense } from "@/services/database/models/expense";
 import { useParams } from "react-router-dom";
 
 export const useExpenseOperationHandlers = (
@@ -24,7 +24,7 @@ export const useExpenseOperationHandlers = (
 
     try {
       if (envelope.type === "expense") {
-        const expenseData = {
+        const expenseData: ExpenseFormData = {
           title: envelope.title,
           budget: envelope.budget,
           type: "expense",
