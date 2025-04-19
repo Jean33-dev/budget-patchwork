@@ -1,4 +1,3 @@
-
 import { Income } from '../models/income';
 import { BaseService } from './base-service';
 import { toast } from "@/components/ui/use-toast";
@@ -24,7 +23,8 @@ export class IncomeService extends BaseService {
         spent: Number(row.spent),
         type: 'income' as const,
         date: row.date,
-        isRecurring: Boolean(row.isRecurring)
+        isRecurring: Boolean(row.isRecurring),
+        dashboardId: row.dashboardId || null
       }));
     } catch (error) {
       console.error("Erreur lors de la récupération des revenus:", error);
@@ -49,7 +49,8 @@ export class IncomeService extends BaseService {
         spent: Number(row.spent),
         type: 'income' as const,
         date: row.date,
-        isRecurring: true
+        isRecurring: true,
+        dashboardId: row.dashboardId || null
       }));
     } catch (error) {
       console.error("Erreur lors de la récupération des revenus récurrents:", error);
@@ -65,8 +66,8 @@ export class IncomeService extends BaseService {
     
     const adapter = this.initManager.getAdapter();
     await adapter!.run(
-      'INSERT INTO incomes (id, title, budget, spent, type, date, isRecurring) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [income.id, income.title, income.budget, income.spent, income.type, income.date, income.isRecurring ? 1 : 0]
+      'INSERT INTO incomes (id, title, budget, spent, type, date, isRecurring, dashboardId) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      [income.id, income.title, income.budget, income.spent, income.type, income.date, income.isRecurring ? 1 : 0, income.dashboardId || null]
     );
   }
 
@@ -78,8 +79,8 @@ export class IncomeService extends BaseService {
     
     const adapter = this.initManager.getAdapter();
     await adapter!.run(
-      'UPDATE incomes SET title = ?, budget = ?, spent = ?, isRecurring = ? WHERE id = ?',
-      [income.title, income.budget, income.spent, income.isRecurring ? 1 : 0, income.id]
+      'UPDATE incomes SET title = ?, budget = ?, spent = ?, isRecurring = ?, dashboardId = ? WHERE id = ?',
+      [income.title, income.budget, income.spent, income.isRecurring ? 1 : 0, income.dashboardId || null, income.id]
     );
   }
 
@@ -116,7 +117,8 @@ export class IncomeService extends BaseService {
         spent: recurringIncome.budget, // Set spent to budget for income
         type: 'income',
         date: targetDate,
-        isRecurring: false // The copy is not recurring
+        isRecurring: false, // The copy is not recurring
+        dashboardId: recurringIncome.dashboardId || null
       };
       
       await this.addIncome(newIncome);

@@ -1,4 +1,3 @@
-
 import { Expense } from '../models/expense';
 import { BaseService } from './base-service';
 import { toast } from "@/components/ui/use-toast";
@@ -25,7 +24,8 @@ export class ExpenseService extends BaseService {
         type: 'expense' as const,
         linkedBudgetId: row.linkedBudgetId,
         date: row.date,
-        isRecurring: Boolean(row.isRecurring)
+        isRecurring: Boolean(row.isRecurring),
+        dashboardId: row.dashboardId || null
       }));
     } catch (error) {
       console.error("Erreur lors de la récupération des dépenses:", error);
@@ -51,7 +51,8 @@ export class ExpenseService extends BaseService {
         type: 'expense' as const,
         linkedBudgetId: row.linkedBudgetId,
         date: row.date,
-        isRecurring: true
+        isRecurring: true,
+        dashboardId: row.dashboardId || null
       }));
     } catch (error) {
       console.error("Erreur lors de la récupération des dépenses récurrentes:", error);
@@ -67,8 +68,8 @@ export class ExpenseService extends BaseService {
     
     const adapter = this.initManager.getAdapter();
     await adapter!.run(
-      'INSERT INTO expenses (id, title, budget, spent, type, linkedBudgetId, date, isRecurring) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-      [expense.id, expense.title, expense.budget, expense.spent, expense.type, expense.linkedBudgetId, expense.date, expense.isRecurring ? 1 : 0]
+      'INSERT INTO expenses (id, title, budget, spent, type, linkedBudgetId, date, isRecurring, dashboardId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [expense.id, expense.title, expense.budget, expense.spent, expense.type, expense.linkedBudgetId, expense.date, expense.isRecurring ? 1 : 0, expense.dashboardId || null]
     );
   }
 
@@ -80,8 +81,8 @@ export class ExpenseService extends BaseService {
     
     const adapter = this.initManager.getAdapter();
     await adapter!.run(
-      'UPDATE expenses SET title = ?, budget = ?, spent = ?, linkedBudgetId = ?, date = ?, isRecurring = ? WHERE id = ?',
-      [expense.title, expense.budget, expense.spent, expense.linkedBudgetId, expense.date, expense.isRecurring ? 1 : 0, expense.id]
+      'UPDATE expenses SET title = ?, budget = ?, spent = ?, linkedBudgetId = ?, date = ?, isRecurring = ?, dashboardId = ? WHERE id = ?',
+      [expense.title, expense.budget, expense.spent, expense.linkedBudgetId, expense.date, expense.isRecurring ? 1 : 0, expense.dashboardId || null, expense.id]
     );
   }
 
@@ -119,7 +120,8 @@ export class ExpenseService extends BaseService {
         type: 'expense',
         linkedBudgetId: recurringExpense.linkedBudgetId,
         date: targetDate,
-        isRecurring: false // The copy is not recurring
+        isRecurring: false, // The copy is not recurring
+        dashboardId: recurringExpense.dashboardId || null
       };
       
       await this.addExpense(newExpense);

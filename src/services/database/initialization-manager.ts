@@ -27,7 +27,8 @@ export class InitializationManager {
         spent REAL DEFAULT 0,
         type TEXT,
         date TEXT,
-        isRecurring INTEGER DEFAULT 0
+        isRecurring INTEGER DEFAULT 0,
+        dashboardId TEXT
       )`,
       
       // Table des dépenses
@@ -39,7 +40,8 @@ export class InitializationManager {
         type TEXT,
         linkedBudgetId TEXT,
         date TEXT,
-        isRecurring INTEGER DEFAULT 0
+        isRecurring INTEGER DEFAULT 0,
+        dashboardId TEXT
       )`,
       
       // Table des budgets
@@ -49,7 +51,8 @@ export class InitializationManager {
         budget REAL DEFAULT 0,
         spent REAL DEFAULT 0,
         type TEXT,
-        carriedOver REAL DEFAULT 0
+        carriedOver REAL DEFAULT 0,
+        dashboardId TEXT
       )`,
       
       // Table des catégories
@@ -59,7 +62,8 @@ export class InitializationManager {
         budgets TEXT,
         total REAL DEFAULT 0,
         spent REAL DEFAULT 0,
-        description TEXT
+        description TEXT,
+        dashboardId TEXT
       )`
     ];
     
@@ -79,40 +83,42 @@ export class InitializationManager {
       
       if (budgetCount === 0) {
         const currentDate = new Date().toISOString().split('T')[0];
+        const defaultDashboardId = 'default';
         
         // Ajouter des budgets d'exemple
         const budgetQueries = [
-          `INSERT OR IGNORE INTO budgets (id, title, budget, spent, type, carriedOver)
+          `INSERT OR IGNORE INTO budgets (id, title, budget, spent, type, carriedOver, dashboardId)
           VALUES 
-          ('bud_1', 'Courses', 500.00, 600.00, 'budget', 0),
-          ('bud_2', 'Transport', 200.00, 0.00, 'budget', 0),
-          ('bud_3', 'Loisirs', 150.00, 0.00, 'budget', 0),
-          ('bud_4', 'Restaurant', 300.00, 150.00, 'budget', 0),
-          ('bud_5', 'Shopping', 250.00, 100.00, 'budget', 0)`
+          ('bud_1', 'Courses', 500.00, 600.00, 'budget', 0, '${defaultDashboardId}'),
+          ('bud_2', 'Transport', 200.00, 0.00, 'budget', 0, '${defaultDashboardId}'),
+          ('bud_3', 'Loisirs', 150.00, 0.00, 'budget', 0, '${defaultDashboardId}'),
+          ('bud_4', 'Restaurant', 300.00, 150.00, 'budget', 0, '${defaultDashboardId}'),
+          ('bud_5', 'Shopping', 250.00, 100.00, 'budget', 0, '${defaultDashboardId}')`
         ];
         
         await this.adapter.executeSet(budgetQueries);
         
         // Ajouter des dépenses d'exemple liées aux budgets
         await this.adapter.run(
-          `INSERT OR IGNORE INTO expenses (id, title, budget, spent, type, linkedBudgetId, date, isRecurring)
+          `INSERT OR IGNORE INTO expenses (id, title, budget, spent, type, linkedBudgetId, date, isRecurring, dashboardId)
           VALUES 
-          ('exp_1', 'Courses Carrefour', 350.00, 0, 'expense', 'bud_1', ?, 0),
-          ('exp_2', 'Courses Lidl', 250.00, 0, 'expense', 'bud_1', ?, 0),
-          ('exp_3', 'Restaurant italien', 150.00, 0, 'expense', 'bud_4', ?, 0),
-          ('exp_4', 'Vêtements', 100.00, 0, 'expense', 'bud_5', ?, 0),
-          ('exp_5', 'Loyer', 500.00, 0, 'expense', 'bud_1', ?, 1),
-          ('exp_6', 'Abonnement Transport', 75.00, 0, 'expense', 'bud_2', ?, 1)`,
-          [currentDate, currentDate, currentDate, currentDate, currentDate, currentDate]
+          ('exp_1', 'Courses Carrefour', 350.00, 0, 'expense', 'bud_1', ?, 0, ?),
+          ('exp_2', 'Courses Lidl', 250.00, 0, 'expense', 'bud_1', ?, 0, ?),
+          ('exp_3', 'Restaurant italien', 150.00, 0, 'expense', 'bud_4', ?, 0, ?),
+          ('exp_4', 'Vêtements', 100.00, 0, 'expense', 'bud_5', ?, 0, ?),
+          ('exp_5', 'Loyer', 500.00, 0, 'expense', 'bud_1', ?, 1, ?),
+          ('exp_6', 'Abonnement Transport', 75.00, 0, 'expense', 'bud_2', ?, 1, ?)`,
+          [currentDate, defaultDashboardId, currentDate, defaultDashboardId, currentDate, defaultDashboardId, 
+           currentDate, defaultDashboardId, currentDate, defaultDashboardId, currentDate, defaultDashboardId]
         );
         
         // Ajouter des revenus d'exemple
         await this.adapter.run(
-          `INSERT OR IGNORE INTO incomes (id, title, budget, spent, type, date, isRecurring)
+          `INSERT OR IGNORE INTO incomes (id, title, budget, spent, type, date, isRecurring, dashboardId)
           VALUES 
-          ('inc_1', 'Salaire', 2000.00, 2000.00, 'income', ?, 1),
-          ('inc_2', 'Prime', 500.00, 500.00, 'income', ?, 0)`,
-          [currentDate, currentDate]
+          ('inc_1', 'Salaire', 2000.00, 2000.00, 'income', ?, 1, ?),
+          ('inc_2', 'Prime', 500.00, 500.00, 'income', ?, 0, ?)`,
+          [currentDate, defaultDashboardId, currentDate, defaultDashboardId]
         );
         
         console.log("Données d'exemple ajoutées avec succès");

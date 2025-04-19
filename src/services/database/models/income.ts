@@ -7,4 +7,5 @@ export interface Income {
   type: 'income';
   date: string;
   isRecurring?: boolean;
+  dashboardId?: string;
 }

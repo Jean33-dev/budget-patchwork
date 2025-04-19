@@ -8,6 +8,7 @@ export type ExpenseFormData = {
   type: "expense";
   linkedBudgetId?: string;
   date: string;
+  dashboardId?: string;
 };
 
 export const expenseOperations = {
@@ -21,7 +22,8 @@ export const expenseOperations = {
         spent: Number(data.budget) || 0,
         type: "expense",
         linkedBudgetId: data.linkedBudgetId || null,
-        date: data.date || new Date().toISOString().split('T')[0]
+        date: data.date || new Date().toISOString().split('T')[0],
+        dashboardId: data.dashboardId || null
       };
 
       console.log("expenseOperations.addExpense: Created expense object:", newExpense);
@@ -50,7 +52,8 @@ export const expenseOperations = {
         spent: Number(expenseToUpdate.spent) || Number(expenseToUpdate.budget) || 0,
         type: "expense",
         linkedBudgetId: expenseToUpdate.linkedBudgetId ? String(expenseToUpdate.linkedBudgetId) : null,
-        date: String(expenseToUpdate.date || new Date().toISOString().split('T')[0])
+        date: String(expenseToUpdate.date || new Date().toISOString().split('T')[0]),
+        dashboardId: expenseToUpdate.dashboardId || null
       };
 
       console.log("expenseOperations.updateExpense: Validated expense:", validatedExpense);

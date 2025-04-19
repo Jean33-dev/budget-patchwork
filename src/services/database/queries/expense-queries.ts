@@ -11,7 +11,8 @@ export const expenseQueries = {
       type TEXT,
       linkedBudgetId TEXT,
       date TEXT,
-      isRecurring INTEGER DEFAULT 0
+      isRecurring INTEGER DEFAULT 0,
+      dashboardId TEXT
     )
   `,
   
@@ -24,19 +25,26 @@ export const expenseQueries = {
       
       // Check if isRecurring column exists
       let hasIsRecurringColumn = false;
+      let hasDashboardIdColumn = false;
       try {
         // Try to query for the column in the table info
         const tableInfo = db.exec("PRAGMA table_info(expenses)");
         if (tableInfo && tableInfo.length > 0 && tableInfo[0].values) {
           hasIsRecurringColumn = tableInfo[0].values.some((col: any) => col[1] === 'isRecurring');
+          hasDashboardIdColumn = tableInfo[0].values.some((col: any) => col[1] === 'dashboardId');
         }
         
         if (!hasIsRecurringColumn) {
           console.log("Adding isRecurring column to expenses table");
           db.exec("ALTER TABLE expenses ADD COLUMN isRecurring INTEGER DEFAULT 0");
         }
+        
+        if (!hasDashboardIdColumn) {
+          console.log("Adding dashboardId column to expenses table");
+          db.exec("ALTER TABLE expenses ADD COLUMN dashboardId TEXT");
+        }
       } catch (e) {
-        console.error("Error checking or adding isRecurring column:", e);
+        console.error("Error checking or adding columns to expenses table:", e);
       }
       
       const result = db.exec('SELECT * FROM expenses');
@@ -54,7 +62,8 @@ export const expenseQueries = {
           type: 'expense' as const,
           linkedBudgetId: row[5] ? String(row[5]) : null,
           date: String(row[6] || new Date().toISOString().split('T')[0]),
-          isRecurring: hasIsRecurringColumn ? Boolean(row[7]) : false
+          isRecurring: hasIsRecurringColumn ? Boolean(row[7]) : false,
+          dashboardId: hasDashboardIdColumn ? (row[8] ? String(row[8]) : null) : null
         };
       });
       
@@ -124,7 +133,7 @@ export const expenseQueries = {
     
     try {
       const stmt = db.prepare(
-        'INSERT INTO expenses (id, title, budget, spent, type, linkedBudgetId, date, isRecurring) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+        'INSERT INTO expenses (id, title, budget, spent, type, linkedBudgetId, date, isRecurring, dashboardId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
       );
       
       stmt.run([
@@ -135,7 +144,8 @@ export const expenseQueries = {
         'expense', 
         expense.linkedBudgetId ? String(expense.linkedBudgetId) : null, 
         String(expense.date || new Date().toISOString().split('T')[0]),
-        expense.isRecurring ? 1 : 0
+        expense.isRecurring ? 1 : 0,
+        expense.dashboardId ? String(expense.dashboardId) : null
       ]);
       
       stmt.free();
@@ -152,7 +162,7 @@ export const expenseQueries = {
     
     try {
       const stmt = db.prepare(
-        'UPDATE expenses SET title = ?, budget = ?, spent = ?, linkedBudgetId = ?, date = ?, isRecurring = ? WHERE id = ?'
+        'UPDATE expenses SET title = ?, budget = ?, spent = ?, linkedBudgetId = ?, date = ?, isRecurring = ?, dashboardId = ? WHERE id = ?'
       );
       
       stmt.run([
@@ -162,6 +172,7 @@ export const expenseQueries = {
         expense.linkedBudgetId ? String(expense.linkedBudgetId) : null, 
         String(expense.date || new Date().toISOString().split('T')[0]),
         expense.isRecurring ? 1 : 0,
+        expense.dashboardId ? String(expense.dashboardId) : null,
         String(expense.id)
       ]);
       
