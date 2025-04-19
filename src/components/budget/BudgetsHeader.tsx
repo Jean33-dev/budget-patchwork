@@ -25,26 +25,26 @@ export const BudgetsHeader = ({ onNavigate }: BudgetsHeaderProps) => {
             <Menu className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="bg-background">
-          <DropdownMenuItem onClick={() => onNavigate("/dashboard/budget")} className="gap-2">
+        <DropdownMenuContent align="start" className="bg-white rounded-md shadow-md border-0">
+          <DropdownMenuItem onClick={() => onNavigate("/dashboard/budget")} className="flex items-center gap-2 py-2">
             <Home className="h-4 w-4" />
-            Tableau de Bord
+            <span>Tableau de Bord</span>
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => onNavigate("/dashboard/budget/budgets")} className="gap-2">
+          <DropdownMenuItem onClick={() => onNavigate("/dashboard/budget/budgets")} className="flex items-center gap-2 py-2">
             <CalendarClock className="h-4 w-4" />
-            Gérer les Budgets
+            <span>Gérer les Budgets</span>
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => onNavigate("/dashboard/budget/expenses")} className="gap-2">
+          <DropdownMenuItem onClick={() => onNavigate("/dashboard/budget/expenses")} className="flex items-center gap-2 py-2">
             <CreditCard className="h-4 w-4" />
-            Gérer les Dépenses
+            <span>Gérer les Dépenses</span>
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => onNavigate("/dashboard/budget/income")} className="gap-2">
+          <DropdownMenuItem onClick={() => onNavigate("/dashboard/budget/income")} className="flex items-center gap-2 py-2">
             <DollarSign className="h-4 w-4" />
-            Gérer les Revenus
+            <span>Gérer les Revenus</span>
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => onNavigate("/dashboard/budget/categories")} className="gap-2">
+          <DropdownMenuItem onClick={() => onNavigate("/dashboard/budget/categories")} className="flex items-center gap-2 py-2">
             <Folder className="h-4 w-4" />
-            Gérer les Catégories
+            <span>Gérer les Catégories</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
