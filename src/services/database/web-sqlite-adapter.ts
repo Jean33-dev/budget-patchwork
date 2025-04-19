@@ -1,8 +1,7 @@
-
 import { SQLiteAdapter } from './sqlite-adapter';
 import { SqlJsInitializer } from './sql-js-initializer';
 import { WebSQLiteOperations } from './web-sqlite-operations';
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 
 /**
  * Web SQLite adapter using SQL.js
@@ -10,7 +9,8 @@ import { toast } from "@/components/ui/use-toast";
 export class WebSQLiteAdapter extends SQLiteAdapter {
   private db: any = null;
   private static initAttempts = 0;
-  private static MAX_INIT_ATTEMPTS = 5;
+  private static MAX_INIT_ATTEMPTS = 3;
+  private initPromise: Promise<boolean> | null = null;
 
   constructor() {
     super();
@@ -27,6 +27,12 @@ export class WebSQLiteAdapter extends SQLiteAdapter {
         return true;
       }
 
+      // If initialization is already in progress, return the existing promise
+      if (this.initPromise) {
+        console.log("WebSQLiteAdapter initialization already in progress, joining existing promise");
+        return this.initPromise;
+      }
+      
       // Track initialization attempts
       WebSQLiteAdapter.initAttempts++;
       console.log(`WebSQLiteAdapter initialization attempt ${WebSQLiteAdapter.initAttempts}/${WebSQLiteAdapter.MAX_INIT_ATTEMPTS}`);
@@ -41,46 +47,60 @@ export class WebSQLiteAdapter extends SQLiteAdapter {
         return false;
       }
       
-      // Add delay for retries with exponential backoff
-      if (WebSQLiteAdapter.initAttempts > 1) {
-        const delay = Math.min(1000 * Math.pow(2, WebSQLiteAdapter.initAttempts - 1), 10000);
-        console.log(`Waiting ${delay}ms before WebSQLiteAdapter retry attempt ${WebSQLiteAdapter.initAttempts}...`);
-        await new Promise(resolve => setTimeout(resolve, delay));
-      }
+      // Create an initialization promise
+      this.initPromise = (async () => {
+        try {
+          // Add delay for retries with exponential backoff
+          if (WebSQLiteAdapter.initAttempts > 1) {
+            const delay = Math.min(1000 * Math.pow(2, WebSQLiteAdapter.initAttempts - 1), 10000);
+            console.log(`Waiting ${delay}ms before WebSQLiteAdapter retry attempt ${WebSQLiteAdapter.initAttempts}...`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+          }
+          
+          // Initialize SQL.js
+          console.log("WebSQLiteAdapter: initializing SQL.js...");
+          const SQL = await SqlJsInitializer.initialize();
+          
+          if (!SQL) {
+            console.error("WebSQLiteAdapter: SQL.js initialization failed");
+            return false;
+          }
+          
+          console.log("WebSQLiteAdapter: creating new SQL.js database instance...");
+          this.db = new SQL.Database();
+          
+          if (!this.db) {
+            console.error("WebSQLiteAdapter: Failed to create database instance");
+            return false;
+          }
+          
+          this.initialized = true;
+          console.log("WebSQLiteAdapter: initialized successfully");
+          
+          return true;
+        } catch (error) {
+          console.error("Error initializing WebSQLiteAdapter:", error);
+          this.logError("initialization", error);
+          this.initialized = false;
+          this.db = null;
+          
+          toast({
+            variant: "destructive",
+            title: "Erreur d'initialisation",
+            description: `Impossible d'initialiser la base de données: ${error instanceof Error ? error.message : "Erreur inconnue"}`
+          });
+          
+          return false;
+        } finally {
+          // Clear the promise so future initialization attempts can create a new one
+          this.initPromise = null;
+        }
+      })();
       
-      // Initialize SQL.js
-      console.log("WebSQLiteAdapter: initializing SQL.js...");
-      const SQL = await SqlJsInitializer.initialize();
-      
-      if (!SQL) {
-        console.error("WebSQLiteAdapter: SQL.js initialization failed");
-        return false;
-      }
-      
-      console.log("WebSQLiteAdapter: creating new SQL.js database instance...");
-      this.db = new SQL.Database();
-      
-      if (!this.db) {
-        console.error("WebSQLiteAdapter: Failed to create database instance");
-        return false;
-      }
-      
-      this.initialized = true;
-      console.log("WebSQLiteAdapter: initialized successfully");
-      
-      return true;
+      return await this.initPromise;
     } catch (error) {
-      console.error("Error initializing WebSQLiteAdapter:", error);
-      this.logError("initialization", error);
-      this.initialized = false;
-      this.db = null;
-      
-      toast({
-        variant: "destructive",
-        title: "Erreur d'initialisation",
-        description: `Impossible d'initialiser la base de données: ${error instanceof Error ? error.message : "Erreur inconnue"}`
-      });
-      
+      console.error("Error in WebSQLiteAdapter.init wrapper:", error);
+      this.initPromise = null;
       return false;
     }
   }
