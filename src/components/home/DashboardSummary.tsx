@@ -36,10 +36,13 @@ export function DashboardSummary({ dashboardId }: DashboardSummaryProps) {
             setDashboard(null);
           }
         } else {
-          // Load specific dashboard
-          const dashboardData = await db.getDashboardById(dashboardId);
-          setDashboard(dashboardData);
-          loadStats(dashboardId);
+          // For specific dashboard, find it in the list of dashboards
+          const dashboards = await db.getDashboards();
+          const dashboardData = dashboards.find(d => d.id === dashboardId);
+          setDashboard(dashboardData || null);
+          if (dashboardData) {
+            loadStats(dashboardId);
+          }
         }
       } catch (error) {
         console.error("Error loading dashboard data:", error);
@@ -50,9 +53,15 @@ export function DashboardSummary({ dashboardId }: DashboardSummaryProps) {
 
     const loadStats = async (id: string) => {
       try {
-        const budgets = await db.getBudgets(id);
-        const expenses = await db.getExpenses(id);
-        const incomes = await db.getIncomes(id);
+        // Get all items and filter by dashboard ID
+        const allBudgets = await db.getBudgets();
+        const allExpenses = await db.getExpenses();
+        const allIncomes = await db.getIncomes();
+        
+        // Filter items for the current dashboard
+        const budgets = allBudgets.filter(b => b.dashboardId === id);
+        const expenses = allExpenses.filter(e => e.dashboardId === id);
+        const incomes = allIncomes.filter(i => i.dashboardId === id);
         
         setStats({
           budgetCount: budgets.length,
