@@ -2,7 +2,7 @@
 import { useState, useCallback } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { Budget } from "@/types/categories";
-import { Expense } from "../models/expense"; 
+import { Expense } from "@/services/database/models/expense"; 
 import { useExpenseDataLoading } from "./useExpenseDataLoading";
 import { useExpenseOperationHandlers } from "./useExpenseOperationHandlers";
 import { useDataReloader } from "./useDataReloader";

@@ -26,11 +26,13 @@ export const expenseGetQueries = {
         if (!hasIsRecurringColumn) {
           console.log("Adding isRecurring column to expenses table");
           db.exec("ALTER TABLE expenses ADD COLUMN isRecurring INTEGER DEFAULT 0");
+          hasIsRecurringColumn = true;
         }
         
         if (!hasDashboardIdColumn) {
           console.log("Adding dashboardId column to expenses table");
           db.exec("ALTER TABLE expenses ADD COLUMN dashboardId TEXT");
+          hasDashboardIdColumn = true;
         }
       } catch (e) {
         console.error("Error checking or adding columns to expenses table:", e);
@@ -48,7 +50,9 @@ export const expenseGetQueries = {
       
       console.log(`Found ${result[0].values.length} expense records in database`);
       console.log("Column names:", result[0].columns);
-      console.log("First row sample:", result[0].values[0]);
+      if (result[0].values.length > 0) {
+        console.log("First row sample:", result[0].values[0]);
+      }
       
       // Map database results to Expense objects
       return result[0].values.map((row: any[]) => {
@@ -58,10 +62,10 @@ export const expenseGetQueries = {
           budget: Number(row[2] || 0),
           spent: Number(row[3] || 0),
           type: 'expense' as const,
-          linkedBudgetId: row[5] ? String(row[5]) : null,
+          linkedBudgetId: row[5] ? String(row[5]) : undefined,
           date: String(row[6] || new Date().toISOString().split('T')[0]),
           isRecurring: hasIsRecurringColumn ? Boolean(row[7]) : false,
-          dashboardId: hasDashboardIdColumn ? (row[8] ? String(row[8]) : null) : null
+          dashboardId: hasDashboardIdColumn ? (row[8] ? String(row[8]) : undefined) : undefined
         };
         console.log("Mapped expense:", expense);
         return expense;
@@ -90,10 +94,10 @@ export const expenseGetQueries = {
         budget: Number(row[2] || 0),
         spent: Number(row[3] || 0),
         type: 'expense' as const,
-        linkedBudgetId: row[5] ? String(row[5]) : null,
+        linkedBudgetId: row[5] ? String(row[5]) : undefined,
         date: String(row[6] || new Date().toISOString().split('T')[0]),
         isRecurring: true,
-        dashboardId: row[8] ? String(row[8]) : null
+        dashboardId: row[8] ? String(row[8]) : undefined
       }));
     } catch (error) {
       console.error("Erreur lors de la récupération des dépenses récurrentes:", error);

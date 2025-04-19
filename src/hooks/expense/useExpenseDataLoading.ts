@@ -39,8 +39,12 @@ export const useExpenseDataLoading = (dashboardId: string | null) => {
       const loadedExpenses = await db.getExpenses();
       console.log(`useExpenseDataLoading - All expenses loaded from database (${loadedExpenses.length}):`, loadedExpenses);
       
+      // Filtrer les dépenses qui ne sont pas récurrentes
+      const nonRecurringExpenses = loadedExpenses.filter(expense => !expense.isRecurring);
+      console.log(`useExpenseDataLoading - Non-recurring expenses (${nonRecurringExpenses.length}):`, nonRecurringExpenses);
+      
       // Filtrer les dépenses par dashboardId
-      const filteredExpenses = loadedExpenses.filter(expense => {
+      const filteredExpenses = nonRecurringExpenses.filter(expense => {
         // Si l'expense a un dashboardId, vérifier s'il correspond
         if (expense.dashboardId) {
           const match = expense.dashboardId === useDashboardId;
