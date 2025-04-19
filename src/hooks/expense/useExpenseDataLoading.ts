@@ -30,13 +30,15 @@ export const useExpenseDataLoading = (dashboardId: string | null) => {
       
       // Load budgets for current dashboard
       const loadedBudgets = await db.getBudgets();
-      const filteredBudgets = loadedBudgets.filter(b => b.dashboardId === dashboardId);
+      // Inclure les budgets sans dashboardId ainsi que ceux du dashboard actuel
+      const filteredBudgets = loadedBudgets.filter(b => !b.dashboardId || b.dashboardId === dashboardId);
       console.log('Filtered budgets loaded:', filteredBudgets);
       setAvailableBudgets(filteredBudgets);
       
-      // Load expenses for current dashboard
+      // Load expenses
       const loadedExpenses = await db.getExpenses();
-      const filteredExpenses = loadedExpenses.filter(e => e.dashboardId === dashboardId);
+      // Inclure les dépenses sans dashboardId ainsi que celles du dashboard actuel
+      const filteredExpenses = loadedExpenses.filter(e => !e.dashboardId || e.dashboardId === dashboardId);
       console.log('Filtered expenses loaded:', filteredExpenses);
       setExpenses(filteredExpenses);
       

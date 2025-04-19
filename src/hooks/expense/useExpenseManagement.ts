@@ -36,18 +36,21 @@ export const useExpenseManagement = (budgetId: string | null) => {
   // Data reloading
   const { forceReload } = useDataReloader(isProcessing, isLoading, loadData);
 
-  // Filter expenses by budgetId and current dashboard
+  // Filter expenses by budgetId and current dashboard, modifié pour afficher les dépenses même sans dashboardId
   const filteredExpenses = useCallback(() => {
     return expenses.filter(expense => {
       const matchesBudget = budgetId ? expense.linkedBudgetId === budgetId : true;
-      const matchesDashboard = expense.dashboardId === currentDashboardId;
+      
+      // Afficher les dépenses sans dashboardId ou celles qui correspondent au dashboard actuel
+      const matchesDashboard = !expense.dashboardId || expense.dashboardId === currentDashboardId;
+      
       return matchesBudget && matchesDashboard;
     });
   }, [expenses, budgetId, currentDashboardId]);
 
   return {
     expenses: filteredExpenses(),
-    availableBudgets: availableBudgets.filter(b => b.dashboardId === currentDashboardId),
+    availableBudgets: availableBudgets.filter(b => !b.dashboardId || b.dashboardId === currentDashboardId),
     addDialogOpen,
     setAddDialogOpen,
     handleAddEnvelope,
