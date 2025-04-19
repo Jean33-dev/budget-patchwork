@@ -29,18 +29,31 @@ export const useExpenseDataLoading = (dashboardId: string | null) => {
       
       // Load budgets
       const loadedBudgets = await db.getBudgets();
+      console.log(`Budgets loaded from database:`, loadedBudgets);
+      
       const filteredBudgets = loadedBudgets.filter(b => 
         !b.dashboardId || b.dashboardId === dashboardId
       );
-      console.log(`Dashboard ${dashboardId} - Budgets loaded:`, filteredBudgets);
+      console.log(`Dashboard ${dashboardId} - Filtered budgets:`, filteredBudgets);
       setAvailableBudgets(filteredBudgets);
       
       // Load expenses
+      console.log("Calling db.getExpenses() to load all expenses");
       const loadedExpenses = await db.getExpenses();
-      const filteredExpenses = loadedExpenses.filter(e => 
+      console.log(`All expenses loaded from database:`, loadedExpenses);
+      
+      // Add default dashboardId if missing
+      const processedExpenses = loadedExpenses.map(expense => {
+        if (!expense.dashboardId) {
+          return { ...expense, dashboardId: dashboardId };
+        }
+        return expense;
+      });
+      
+      const filteredExpenses = processedExpenses.filter(e => 
         !e.dashboardId || e.dashboardId === dashboardId
       );
-      console.log(`Dashboard ${dashboardId} - Expenses loaded:`, filteredExpenses);
+      console.log(`Dashboard ${dashboardId} - Filtered expenses:`, filteredExpenses);
       setExpenses(filteredExpenses);
       
       setInitAttempted(true);

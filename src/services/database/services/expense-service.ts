@@ -1,3 +1,4 @@
+
 import { Expense } from '../models/expense';
 import { BaseService } from './base-service';
 import { toast } from "@/components/ui/use-toast";
@@ -11,12 +12,18 @@ export class ExpenseService extends BaseService {
    */
   async getExpenses(): Promise<Expense[]> {
     try {
-      if (!await this.ensureInitialized()) return [];
+      console.log("ExpenseService.getExpenses: Starting...");
+      if (!await this.ensureInitialized()) {
+        console.log("ExpenseService.getExpenses: Database not initialized");
+        return [];
+      }
       
       const adapter = this.initManager.getAdapter();
+      console.log("ExpenseService.getExpenses: Database adapter retrieved, executing query");
       const results = await adapter!.query("SELECT * FROM expenses");
+      console.log(`ExpenseService.getExpenses: Got ${results.length} results`, results);
       
-      return results.map(row => ({
+      const expenses = results.map(row => ({
         id: row.id,
         title: row.title,
         budget: Number(row.budget),
@@ -27,6 +34,9 @@ export class ExpenseService extends BaseService {
         isRecurring: Boolean(row.isRecurring),
         dashboardId: row.dashboardId || null
       }));
+      
+      console.log(`ExpenseService.getExpenses: Mapped ${expenses.length} expense objects`);
+      return expenses;
     } catch (error) {
       console.error("Erreur lors de la récupération des dépenses:", error);
       return [];

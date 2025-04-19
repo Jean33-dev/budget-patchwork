@@ -1,120 +1,125 @@
 
-import { useState } from "react";
-import { useToast } from "@/components/ui/use-toast";
-import { v4 as uuidv4 } from "uuid";
-import { db } from "@/services/database";
-import { Expense } from "../models/expense";
+import { useState, useCallback } from 'react';
+import { useToast } from '@/components/ui/use-toast';
+import { v4 as uuidv4 } from 'uuid';
+import { db } from '@/services/database';
+import { Expense } from '@/services/database/models/expense';
 
-export const useExpenseOperationHandlers = (budgetId: string | null, reloadData: () => Promise<void>, dashboardId: string | null) => {
-  const { toast } = useToast();
+export const useExpenseOperationHandlers = (
+  budgetId: string | null,
+  onSuccessCallback: () => Promise<void>,
+  dashboardId: string | null
+) => {
   const [isProcessing, setIsProcessing] = useState(false);
+  const { toast } = useToast();
 
-  // Gérer l'ajout d'une enveloppe (budget, dépense ou revenu)
-  const handleAddEnvelope = async (envelope: {
-    title: string;
-    budget: number;
-    type: "income" | "expense" | "budget";
-    linkedBudgetId?: string;
-    date: string;
-    isRecurring?: boolean;
-  }) => {
-    setIsProcessing(true);
-    try {
-      const id = uuidv4();
-      
-      if (envelope.type === "expense") {
-        const expenseData: Expense = {
-          id,
+  const handleAddEnvelope = useCallback(
+    async (envelope: {
+      title: string;
+      budget: number;
+      type: 'income' | 'expense' | 'budget';
+      linkedBudgetId?: string;
+      date: string;
+    }) => {
+      if (envelope.type !== 'expense') return;
+
+      setIsProcessing(true);
+      try {
+        console.log("Adding expense with data:", envelope, "dashboardId:", dashboardId);
+        const expense: Expense = {
+          id: uuidv4(),
           title: envelope.title,
           budget: envelope.budget,
-          spent: envelope.budget,
-          type: "expense",
+          spent: 0,
+          type: 'expense',
           linkedBudgetId: envelope.linkedBudgetId || budgetId || undefined,
-          date: envelope.date,
-          isRecurring: envelope.isRecurring || false,
+          date: envelope.date || new Date().toISOString().split('T')[0],
+          isRecurring: false,
+          dashboardId: dashboardId || undefined
         };
         
-        if (dashboardId) {
-          expenseData.dashboardId = dashboardId;
-        }
+        console.log("Constructed expense object:", expense);
+        await db.addExpense(expense);
         
-        console.log("Adding expense:", expenseData);
-        await db.addExpense(expenseData);
-
         toast({
-          title: "Dépense ajoutée",
-          description: `${envelope.title} a été ajouté avec succès`
+          title: 'Succès',
+          description: 'Dépense ajoutée avec succès'
         });
+        
+        await onSuccessCallback();
+      } catch (error) {
+        console.error('Error adding expense:', error);
+        toast({
+          variant: 'destructive',
+          title: 'Erreur',
+          description: "Une erreur est survenue lors de l'ajout de la dépense"
+        });
+      } finally {
+        setIsProcessing(false);
       }
-      
-      await reloadData();
-    } catch (error) {
-      console.error("Erreur lors de l'ajout d'une enveloppe:", error);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Impossible d'ajouter l'enveloppe."
-      });
-    } finally {
-      setIsProcessing(false);
-    }
-  };
+    },
+    [budgetId, onSuccessCallback, toast, dashboardId]
+  );
 
-  // Gérer la suppression d'une dépense
-  const handleDeleteExpense = async (id: string) => {
-    setIsProcessing(true);
-    try {
-      console.log("Deleting expense with ID:", id);
-      await db.deleteExpense(id);
-      
-      toast({
-        title: "Dépense supprimée",
-        description: "La dépense a été supprimée avec succès"
-      });
-      
-      await reloadData();
-    } catch (error) {
-      console.error("Erreur lors de la suppression de la dépense:", error);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Impossible de supprimer la dépense."
-      });
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
-  // Gérer la mise à jour d'une dépense
-  const handleUpdateExpense = async (expense: Expense) => {
-    setIsProcessing(true);
-    try {
-      const updatedExpense = { ...expense };
-      
-      if (dashboardId && !expense.dashboardId) {
-        updatedExpense.dashboardId = dashboardId;
+  const handleDeleteExpense = useCallback(
+    async (id: string) => {
+      setIsProcessing(true);
+      try {
+        console.log(`Deleting expense with ID: ${id}`);
+        await db.deleteExpense(id);
+        
+        toast({
+          title: 'Succès',
+          description: 'Dépense supprimée avec succès'
+        });
+        
+        await onSuccessCallback();
+      } catch (error) {
+        console.error('Error deleting expense:', error);
+        toast({
+          variant: 'destructive',
+          title: 'Erreur',
+          description: 'Une erreur est survenue lors de la suppression de la dépense'
+        });
+      } finally {
+        setIsProcessing(false);
       }
-      
-      console.log("Updating expense:", updatedExpense);
-      await db.updateExpense(updatedExpense);
-      
-      toast({
-        title: "Dépense mise à jour",
-        description: `${expense.title} a été mise à jour avec succès`
-      });
-      
-      await reloadData();
-    } catch (error) {
-      console.error("Erreur lors de la mise à jour de la dépense:", error);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Impossible de mettre à jour la dépense."
-      });
-    } finally {
-      setIsProcessing(false);
-    }
-  };
+    },
+    [onSuccessCallback, toast]
+  );
+
+  const handleUpdateExpense = useCallback(
+    async (expense: Expense) => {
+      setIsProcessing(true);
+      try {
+        console.log("Updating expense:", expense, "with dashboardId:", dashboardId);
+        // S'assurer que le dashboardId est inclus lors de la mise à jour
+        const updatedExpense: Expense = {
+          ...expense,
+          dashboardId: expense.dashboardId || dashboardId || undefined
+        };
+        
+        await db.updateExpense(updatedExpense);
+        
+        toast({
+          title: 'Succès',
+          description: 'Dépense mise à jour avec succès'
+        });
+        
+        await onSuccessCallback();
+      } catch (error) {
+        console.error('Error updating expense:', error);
+        toast({
+          variant: 'destructive',
+          title: 'Erreur',
+          description: 'Une erreur est survenue lors de la mise à jour de la dépense'
+        });
+      } finally {
+        setIsProcessing(false);
+      }
+    },
+    [onSuccessCallback, toast, dashboardId]
+  );
 
   return {
     isProcessing,

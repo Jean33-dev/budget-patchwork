@@ -22,8 +22,11 @@ export class ExpenseQueryManager extends BaseQueryManager {
         console.error("ExpenseQueryManager.getAll: Database is null");
         return [];
       }
+      
+      // Ajout de logs pour déboguer le problème
+      console.log("ExpenseQueryManager.getAll: Database connection established, executing query...");
       const result = expenseQueries.getAll(db);
-      console.log(`ExpenseQueryManager.getAll: Got ${result.length} expenses`);
+      console.log(`ExpenseQueryManager.getAll: Got ${result.length} expenses`, result);
       return result;
     } catch (error) {
       console.error("Error getting expenses:", error);
