@@ -4,6 +4,8 @@ export interface Budget {
   title: string;
   budget: number;
   spent: number;
-  type: 'budget';
+  type: "budget";
+  categoryId?: string;
   carriedOver?: number;
+  dashboardId?: string; // Ajout de l'ID du tableau de bord
 }

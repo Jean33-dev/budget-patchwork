@@ -4,7 +4,8 @@ export interface Income {
   title: string;
   budget: number;
   spent: number;
-  type: 'income';
+  type: "income";
   date: string;
   isRecurring?: boolean;
+  dashboardId?: string; // Ajout de l'ID du tableau de bord
 }

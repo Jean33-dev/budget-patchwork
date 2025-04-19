@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { db } from "@/services/database";
 import { Income } from "@/services/database/models/income";
 import { useToast } from "@/hooks/use-toast";
+import { useParams } from "react-router-dom";
 
 export const useIncomeManagement = () => {
   const { toast } = useToast();
@@ -18,6 +19,7 @@ export const useIncomeManagement = () => {
   } | null>(null);
   const [envelopes, setEnvelopes] = useState<Income[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { dashboardId = "default" } = useParams<{ dashboardId: string }>();
 
   // Initialiser la base de données et charger les revenus
   useEffect(() => {
@@ -25,8 +27,15 @@ export const useIncomeManagement = () => {
       setIsLoading(true);
       try {
         await db.init();
-        const incomes = await db.getIncomes();
-        setEnvelopes(incomes);
+        const allIncomes = await db.getIncomes();
+        
+        // Filter incomes by dashboardId
+        const filteredIncomes = allIncomes.filter(income => 
+          income.dashboardId === dashboardId || !income.dashboardId
+        );
+        console.log(`Filtered incomes for dashboard ${dashboardId}:`, filteredIncomes);
+        
+        setEnvelopes(filteredIncomes);
       } catch (error) {
         console.error("Erreur lors du chargement des revenus:", error);
         toast({
@@ -40,14 +49,15 @@ export const useIncomeManagement = () => {
     };
     
     initializeData();
-  }, [toast]);
+  }, [toast, dashboardId]);
 
   const handleAddIncome = async (newIncome: { title: string; budget: number; type: "income"; date: string }) => {
     const income = {
       id: Date.now().toString(),
       ...newIncome,
       spent: newIncome.budget,
-      isRecurring: false // Non récurrent par défaut
+      isRecurring: false, // Non récurrent par défaut
+      dashboardId: dashboardId // Associer au tableau de bord actuel
     };
     
     await db.addIncome(income);
@@ -68,6 +78,7 @@ export const useIncomeManagement = () => {
       budget: editedIncome.budget,
       spent: editedIncome.budget,
       date: editedIncome.date,
+      dashboardId: dashboardId // Conserver le lien avec le tableau de bord
     };
 
     await db.updateIncome(updatedIncome);

@@ -4,14 +4,15 @@ import { db } from "@/services/database";
 import { Budget } from "@/types/categories";
 
 export const budgetOperations = {
-  async addBudget(newBudget: Omit<Budget, "id" | "spent">): Promise<boolean> {
+  async addBudget(newBudget: Omit<Budget, "id" | "spent">, dashboardId: string = "default"): Promise<boolean> {
     try {
       const budgetToAdd: Budget = {
         id: Date.now().toString(),
         title: newBudget.title,
         budget: newBudget.budget,
         spent: 0,
-        type: "budget"
+        type: "budget",
+        dashboardId: dashboardId // Associer au tableau de bord actuel
       };
 
       console.log("Ajout d'un nouveau budget:", budgetToAdd);
@@ -36,7 +37,13 @@ export const budgetOperations = {
 
   async updateBudget(budgetToUpdate: Budget): Promise<boolean> {
     try {
-      await db.updateBudget(budgetToUpdate);
+      // Préserver le dashboardId lors des mises à jour
+      const updatedBudget = {
+        ...budgetToUpdate,
+        dashboardId: budgetToUpdate.dashboardId || "default"
+      };
+      
+      await db.updateBudget(updatedBudget);
       
       toast({
         title: "Budget modifié",

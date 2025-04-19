@@ -4,6 +4,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { db } from "@/services/database";
 import { Budget } from "@/types/categories";
 import { Expense } from "../models/expense";
+import { useParams } from "react-router-dom";
 
 export const useExpenseDataLoading = () => {
   const { toast } = useToast();
@@ -12,6 +13,7 @@ export const useExpenseDataLoading = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [initAttempted, setInitAttempted] = useState(false);
+  const { dashboardId = "default" } = useParams<{ dashboardId: string }>();
 
   // Load data function
   const loadData = useCallback(async () => {
@@ -19,18 +21,32 @@ export const useExpenseDataLoading = () => {
     setError(null);
     
     try {
-      console.log("Initializing database...");
+      console.log(`Loading data for dashboard ${dashboardId}...`);
       await db.init();
       
       // Load budgets
-      const loadedBudgets = await db.getBudgets();
-      console.log('Budgets loaded:', loadedBudgets);
-      setAvailableBudgets(loadedBudgets);
+      const allBudgets = await db.getBudgets();
+      console.log('All budgets loaded:', allBudgets);
+      
+      // Filter budgets by dashboardId
+      const filteredBudgets = allBudgets.filter(budget => 
+        budget.dashboardId === dashboardId || !budget.dashboardId
+      );
+      console.log(`Filtered budgets for dashboard ${dashboardId}:`, filteredBudgets);
+      
+      setAvailableBudgets(filteredBudgets);
       
       // Load expenses
-      const loadedExpenses = await db.getExpenses();
-      console.log('Expenses loaded:', loadedExpenses);
-      setExpenses(loadedExpenses);
+      const allExpenses = await db.getExpenses();
+      console.log('All expenses loaded:', allExpenses);
+      
+      // Filter expenses by dashboardId
+      const filteredExpenses = allExpenses.filter(expense => 
+        expense.dashboardId === dashboardId || !expense.dashboardId
+      );
+      console.log(`Filtered expenses for dashboard ${dashboardId}:`, filteredExpenses);
+      
+      setExpenses(filteredExpenses);
       
       setInitAttempted(true);
     } catch (error) {
@@ -44,12 +60,12 @@ export const useExpenseDataLoading = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [toast]);
+  }, [toast, dashboardId]);
 
-  // Load data on component mount
+  // Load data on component mount or when dashboardId changes
   useEffect(() => {
     loadData();
-  }, [loadData]);
+  }, [loadData, dashboardId]);
 
   return {
     expenses,

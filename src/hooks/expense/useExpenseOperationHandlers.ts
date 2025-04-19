@@ -1,183 +1,126 @@
 
-import { useCallback, useState } from "react";
-import { useToast } from "@/hooks/use-toast";
-import { db } from "@/services/database";
+import { useState } from "react";
+import { useToast } from "@/components/ui/use-toast";
+import { expenseOperations } from "@/utils/expense-operations";
 import { Expense } from "../models/expense";
+import { useParams } from "react-router-dom";
 
 export const useExpenseOperationHandlers = (
   budgetId: string | null,
-  loadData: () => Promise<void>
+  onSuccess: () => void
 ) => {
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
+  const { dashboardId = "default" } = useParams<{ dashboardId: string }>();
 
-  // Add an expense
-  const handleAddEnvelope = useCallback(async (envelopeData: {
+  const handleAddEnvelope = async (envelope: {
     title: string;
     budget: number;
     type: "income" | "expense" | "budget";
     linkedBudgetId?: string;
     date: string;
   }) => {
-    if (isProcessing) {
-      toast({
-        title: "Opération en cours",
-        description: "Une opération est déjà en cours"
-      });
-      return;
-    }
+    setIsProcessing(true);
 
     try {
-      setIsProcessing(true);
-      console.log("handleAddEnvelope: Starting with data:", envelopeData);
-      
-      const newExpense: Expense = {
-        id: Date.now().toString(),
-        title: String(envelopeData.title || "Sans titre"),
-        budget: Number(envelopeData.budget) || 0,
-        spent: Number(envelopeData.budget) || 0,
-        type: "expense",
-        linkedBudgetId: budgetId ? String(budgetId) : envelopeData.linkedBudgetId ? String(envelopeData.linkedBudgetId) : null,
-        date: String(envelopeData.date || new Date().toISOString().split('T')[0])
-      };
+      if (envelope.type === "expense") {
+        const expenseData = {
+          title: envelope.title,
+          budget: envelope.budget,
+          type: "expense",
+          linkedBudgetId: envelope.linkedBudgetId || budgetId || undefined,
+          date: envelope.date
+        };
 
-      console.log("handleAddEnvelope: Created expense object:", newExpense);
-      await db.addExpense(newExpense);
-      
-      toast({
-        title: "Succès",
-        description: "Dépense ajoutée avec succès"
-      });
-      
-      await loadData();
+        const success = await expenseOperations.addExpense(expenseData, dashboardId);
+
+        if (success) {
+          toast({
+            title: "Dépense ajoutée",
+            description: "La dépense a été ajoutée avec succès."
+          });
+          onSuccess();
+        } else {
+          toast({
+            variant: "destructive",
+            title: "Erreur",
+            description: "Impossible d'ajouter la dépense."
+          });
+        }
+      }
     } catch (error) {
-      console.error("Error adding expense:", error);
+      console.error("Error adding envelope:", error);
       toast({
         variant: "destructive",
         title: "Erreur",
-        description: "Impossible d'ajouter la dépense"
+        description: "Une erreur est survenue lors de l'ajout."
       });
     } finally {
       setIsProcessing(false);
     }
-  }, [budgetId, isProcessing, loadData, toast]);
+  };
 
-  // Delete an expense
-  const handleDeleteExpense = useCallback(async (id: string) => {
-    if (isProcessing) {
-      toast({
-        title: "Opération en cours",
-        description: "Une opération est déjà en cours"
-      });
-      return;
-    }
-
+  const handleUpdateExpense = async (expense: Expense) => {
     setIsProcessing(true);
-    console.log(`handleDeleteExpense: Starting with ID: ${id}`);
-    
-    if (!id) {
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "ID invalide pour la suppression"
-      });
-      setIsProcessing(false);
-      return;
-    }
-    
-    try {
-      // Effectuer la suppression sans demander de confirmation
-      await db.deleteExpense(String(id));
-      
-      toast({
-        title: "Succès",
-        description: "Dépense supprimée avec succès"
-      });
-      
-      // Attendre un court instant avant de recharger les données
-      setTimeout(async () => {
-        try {
-          await loadData();
-        } catch (reloadError) {
-          console.error("Error reloading data after delete:", reloadError);
-        } finally {
-          setIsProcessing(false);
-        }
-      }, 1000); // Augmenté à 1000ms pour s'assurer que l'opération soit bien terminée
-      
-    } catch (error) {
-      console.error("Error deleting expense:", error);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Impossible de supprimer la dépense"
-      });
-      setIsProcessing(false);
-    }
-  }, [isProcessing, loadData, toast]);
 
-  // Update an expense
-  const handleUpdateExpense = useCallback(async (expense: Expense) => {
-    if (isProcessing) {
-      toast({
-        title: "Opération en cours",
-        description: "Une opération est déjà en cours"
-      });
-      return;
-    }
-
-    setIsProcessing(true);
-    console.log("handleUpdateExpense: Starting with data:", expense);
-    
-    if (!expense || !expense.id) {
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Données de dépense invalides"
-      });
-      setIsProcessing(false);
-      return;
-    }
-    
     try {
-      const validatedExpense: Expense = {
-        id: String(expense.id),
-        title: String(expense.title || "Sans titre"),
-        budget: Number(expense.budget) || 0,
-        spent: Number(expense.spent || expense.budget) || 0,
-        type: "expense",
-        linkedBudgetId: expense.linkedBudgetId ? String(expense.linkedBudgetId) : null,
-        date: String(expense.date || new Date().toISOString().split('T')[0])
-      };
-      
-      await db.updateExpense(validatedExpense);
-      
-      toast({
-        title: "Succès",
-        description: "Dépense mise à jour avec succès"
-      });
-      
-      // Attendre un court instant avant de recharger les données
-      setTimeout(async () => {
-        try {
-          await loadData();
-        } catch (reloadError) {
-          console.error("Error reloading data after update:", reloadError);
-        } finally {
-          setIsProcessing(false);
-        }
-      }, 1000); // Augmenté à 1000ms pour s'assurer que l'opération soit bien terminée
-      
+      const success = await expenseOperations.updateExpense(expense, dashboardId);
+
+      if (success) {
+        toast({
+          title: "Dépense mise à jour",
+          description: "La dépense a été mise à jour avec succès."
+        });
+        onSuccess();
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Impossible de mettre à jour la dépense."
+        });
+      }
     } catch (error) {
       console.error("Error updating expense:", error);
       toast({
         variant: "destructive",
         title: "Erreur",
-        description: "Impossible de mettre à jour la dépense"
+        description: "Une erreur est survenue lors de la mise à jour."
       });
+    } finally {
       setIsProcessing(false);
     }
-  }, [isProcessing, loadData, toast]);
+  };
+
+  const handleDeleteExpense = async (id: string) => {
+    setIsProcessing(true);
+
+    try {
+      const success = await expenseOperations.deleteExpense(id);
+
+      if (success) {
+        toast({
+          title: "Dépense supprimée",
+          description: "La dépense a été supprimée avec succès."
+        });
+        onSuccess();
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Impossible de supprimer la dépense."
+        });
+      }
+    } catch (error) {
+      console.error("Error deleting expense:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la suppression."
+      });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   return {
     isProcessing,

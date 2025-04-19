@@ -1,156 +1,362 @@
 
 import { SQLiteAdapter } from './sqlite-adapter';
-import { toast } from "@/components/ui/use-toast";
+import { Dashboard } from './models/dashboard';
+import { Budget } from './models/budget';
+import { Income } from './models/income';
+import { Expense } from './models/expense';
 
-/**
- * Class responsible for initializing the database tables and sample data
- */
 export class InitializationManager {
   private adapter: SQLiteAdapter;
-  
+
   constructor(adapter: SQLiteAdapter) {
     this.adapter = adapter;
   }
 
   /**
-   * Create all required database tables
+   * Ensure the database has the necessary tables
    */
   async createTables(): Promise<void> {
-    if (!this.adapter) throw new Error("Adaptateur SQLite non initialisé");
+    console.log("Creating database tables...");
     
-    const queries = [
-      // Table des revenus
-      `CREATE TABLE IF NOT EXISTS incomes (
+    // Create dashboard table
+    await this.adapter.execute(`
+      CREATE TABLE IF NOT EXISTS dashboards (
         id TEXT PRIMARY KEY,
-        title TEXT,
-        budget REAL DEFAULT 0,
-        spent REAL DEFAULT 0,
-        type TEXT,
-        date TEXT,
-        isRecurring INTEGER DEFAULT 0
-      )`,
-      
-      // Table des dépenses
-      `CREATE TABLE IF NOT EXISTS expenses (
+        title TEXT NOT NULL,
+        createdAt TEXT NOT NULL,
+        lastAccessed TEXT NOT NULL
+      )
+    `);
+    
+    // Create budget table
+    await this.adapter.execute(`
+      CREATE TABLE IF NOT EXISTS budgets (
         id TEXT PRIMARY KEY,
-        title TEXT,
-        budget REAL DEFAULT 0,
-        spent REAL DEFAULT 0,
-        type TEXT,
+        title TEXT NOT NULL,
+        budget REAL NOT NULL DEFAULT 0,
+        spent REAL NOT NULL DEFAULT 0,
+        type TEXT NOT NULL DEFAULT 'budget',
+        categoryId TEXT,
+        carriedOver REAL DEFAULT 0,
+        dashboardId TEXT
+      )
+    `);
+    
+    // Create expense table
+    await this.adapter.execute(`
+      CREATE TABLE IF NOT EXISTS expenses (
+        id TEXT PRIMARY KEY,
+        title TEXT NOT NULL,
+        budget REAL NOT NULL DEFAULT 0,
+        spent REAL NOT NULL DEFAULT 0,
+        type TEXT NOT NULL DEFAULT 'expense',
         linkedBudgetId TEXT,
         date TEXT,
-        isRecurring INTEGER DEFAULT 0
-      )`,
-      
-      // Table des budgets
-      `CREATE TABLE IF NOT EXISTS budgets (
+        isRecurring INTEGER DEFAULT 0,
+        dashboardId TEXT
+      )
+    `);
+    
+    // Create income table
+    await this.adapter.execute(`
+      CREATE TABLE IF NOT EXISTS incomes (
         id TEXT PRIMARY KEY,
-        title TEXT,
-        budget REAL DEFAULT 0,
-        spent REAL DEFAULT 0,
-        type TEXT,
-        carriedOver REAL DEFAULT 0
-      )`,
-      
-      // Table des catégories
-      `CREATE TABLE IF NOT EXISTS categories (
+        title TEXT NOT NULL,
+        budget REAL NOT NULL DEFAULT 0,
+        spent REAL NOT NULL DEFAULT 0,
+        type TEXT NOT NULL DEFAULT 'income',
+        date TEXT,
+        isRecurring INTEGER DEFAULT 0,
+        dashboardId TEXT
+      )
+    `);
+    
+    // Create category table
+    await this.adapter.execute(`
+      CREATE TABLE IF NOT EXISTS categories (
         id TEXT PRIMARY KEY,
-        name TEXT,
-        budgets TEXT,
+        name TEXT NOT NULL,
+        budgets TEXT DEFAULT '[]',
         total REAL DEFAULT 0,
         spent REAL DEFAULT 0,
-        description TEXT
-      )`,
-      
-      // Table des tableaux de bord
-      `CREATE TABLE IF NOT EXISTS dashboards (
-        id TEXT PRIMARY KEY,
-        title TEXT,
-        createdAt TEXT,
-        lastAccessed TEXT
-      )`
-    ];
+        description TEXT,
+        dashboardId TEXT
+      )
+    `);
     
-    await this.adapter.executeSet(queries);
-    console.log("Tables de base de données créées avec succès");
+    console.log("Database tables created successfully");
   }
 
   /**
-   * Check if sample data needs to be added and add it if necessary
+   * Add default dashboard if none exists
+   */
+  async addDefaultDashboard(): Promise<string> {
+    console.log("Checking if default dashboard exists...");
+    
+    const dashboards = await this.adapter.query("SELECT * FROM dashboards WHERE id = 'default'");
+    
+    if (dashboards.length === 0) {
+      console.log("No default dashboard found, creating one...");
+      
+      const defaultDashboard: Dashboard = {
+        id: 'default',
+        title: 'Budget Personnel',
+        createdAt: new Date().toISOString(),
+        lastAccessed: new Date().toISOString()
+      };
+      
+      await this.adapter.execute(
+        "INSERT INTO dashboards (id, title, createdAt, lastAccessed) VALUES (?, ?, ?, ?)",
+        [defaultDashboard.id, defaultDashboard.title, defaultDashboard.createdAt, defaultDashboard.lastAccessed]
+      );
+      
+      console.log("Default dashboard created successfully");
+      return defaultDashboard.id;
+    }
+    
+    console.log("Default dashboard already exists");
+    return 'default';
+  }
+
+  /**
+   * Add sample budgets if the budgets table is empty
+   */
+  async addSampleBudgets(dashboardId: string): Promise<void> {
+    console.log("Checking if sample budgets need to be added...");
+    
+    const budgets = await this.adapter.query("SELECT * FROM budgets");
+    
+    if (budgets.length === 0) {
+      console.log("No budgets found, adding sample budgets...");
+      
+      const sampleBudgets: Budget[] = [
+        {
+          id: 'budget_logement',
+          title: 'Logement',
+          budget: 800,
+          spent: 0,
+          type: 'budget',
+          categoryId: 'necessaire',
+          dashboardId
+        },
+        {
+          id: 'budget_alimentation',
+          title: 'Alimentation',
+          budget: 400,
+          spent: 0,
+          type: 'budget',
+          categoryId: 'necessaire',
+          dashboardId
+        },
+        {
+          id: 'budget_loisirs',
+          title: 'Loisirs',
+          budget: 200,
+          spent: 0,
+          type: 'budget',
+          categoryId: 'plaisir',
+          dashboardId
+        },
+        {
+          id: 'budget_epargne',
+          title: 'Épargne',
+          budget: 300,
+          spent: 0,
+          type: 'budget',
+          categoryId: 'epargne',
+          dashboardId
+        }
+      ];
+      
+      for (const budget of sampleBudgets) {
+        await this.adapter.execute(
+          "INSERT INTO budgets (id, title, budget, spent, type, categoryId, dashboardId) VALUES (?, ?, ?, ?, ?, ?, ?)",
+          [budget.id, budget.title, budget.budget, budget.spent, budget.type, budget.categoryId, budget.dashboardId]
+        );
+      }
+      
+      console.log("Sample budgets added successfully");
+    } else {
+      console.log("Budgets already exist, skipping sample data");
+    }
+  }
+
+  /**
+   * Add sample incomes if the incomes table is empty
+   */
+  async addSampleIncomes(dashboardId: string): Promise<void> {
+    console.log("Checking if sample incomes need to be added...");
+    
+    const incomes = await this.adapter.query("SELECT * FROM incomes");
+    
+    if (incomes.length === 0) {
+      console.log("No incomes found, adding sample incomes...");
+      
+      const sampleIncomes: Income[] = [
+        {
+          id: 'income_salaire',
+          title: 'Salaire',
+          budget: 2000,
+          spent: 2000,
+          type: 'income',
+          date: new Date().toISOString().split('T')[0],
+          dashboardId
+        },
+        {
+          id: 'income_autres',
+          title: 'Autres revenus',
+          budget: 200,
+          spent: 200,
+          type: 'income',
+          date: new Date().toISOString().split('T')[0],
+          dashboardId
+        }
+      ];
+      
+      for (const income of sampleIncomes) {
+        await this.adapter.execute(
+          "INSERT INTO incomes (id, title, budget, spent, type, date, dashboardId) VALUES (?, ?, ?, ?, ?, ?, ?)",
+          [income.id, income.title, income.budget, income.spent, income.type, income.date, income.dashboardId]
+        );
+      }
+      
+      console.log("Sample incomes added successfully");
+    } else {
+      console.log("Incomes already exist, skipping sample data");
+    }
+  }
+
+  /**
+   * Add sample expenses if the expenses table is empty
+   */
+  async addSampleExpenses(dashboardId: string): Promise<void> {
+    console.log("Checking if sample expenses need to be added...");
+    
+    const expenses = await this.adapter.query("SELECT * FROM expenses");
+    
+    if (expenses.length === 0) {
+      console.log("No expenses found, adding sample expenses...");
+      
+      const sampleExpenses: Expense[] = [
+        {
+          id: 'expense_loyer',
+          title: 'Loyer',
+          budget: 650,
+          spent: 650,
+          type: 'expense',
+          linkedBudgetId: 'budget_logement',
+          date: new Date().toISOString().split('T')[0],
+          dashboardId
+        },
+        {
+          id: 'expense_courses',
+          title: 'Courses',
+          budget: 120,
+          spent: 120,
+          type: 'expense',
+          linkedBudgetId: 'budget_alimentation',
+          date: new Date().toISOString().split('T')[0],
+          dashboardId
+        },
+        {
+          id: 'expense_cinema',
+          title: 'Cinéma',
+          budget: 30,
+          spent: 30,
+          type: 'expense',
+          linkedBudgetId: 'budget_loisirs',
+          date: new Date().toISOString().split('T')[0],
+          dashboardId
+        }
+      ];
+      
+      for (const expense of sampleExpenses) {
+        await this.adapter.execute(
+          "INSERT INTO expenses (id, title, budget, spent, type, linkedBudgetId, date, dashboardId) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+          [expense.id, expense.title, expense.budget, expense.spent, expense.type, expense.linkedBudgetId, expense.date, expense.dashboardId]
+        );
+      }
+      
+      console.log("Sample expenses added successfully");
+    } else {
+      console.log("Expenses already exist, skipping sample data");
+    }
+  }
+
+  /**
+   * Check and add sample data if needed
    */
   async checkAndAddSampleData(): Promise<void> {
-    if (!this.adapter) throw new Error("Adaptateur SQLite non initialisé");
-    
     try {
-      console.log("Vérifiant si des données d'exemple doivent être ajoutées...");
+      // Add default dashboard
+      const dashboardId = await this.addDefaultDashboard();
       
-      // Vérifier si des budgets existent déjà
-      const budgets = await this.adapter.query("SELECT COUNT(*) as count FROM budgets");
-      const budgetCount = budgets.length > 0 ? (budgets[0]?.count || 0) : 0;
+      // Create default categories if they don't exist
+      await this.addDefaultCategories(dashboardId);
       
-      console.log(`Nombre de budgets existants: ${budgetCount}`);
+      // Add sample data if needed
+      await this.addSampleBudgets(dashboardId);
+      await this.addSampleIncomes(dashboardId);
+      await this.addSampleExpenses(dashboardId);
       
-      if (budgetCount === 0) {
-        console.log("Aucun budget trouvé, ajout de données d'exemple...");
-        const currentDate = new Date().toISOString().split('T')[0];
-        
-        // Ajouter des budgets d'exemple
-        const budgetQueries = [
-          `INSERT OR IGNORE INTO budgets (id, title, budget, spent, type, carriedOver)
-          VALUES 
-          ('bud_1', 'Courses', 500.00, 0.00, 'budget', 0),
-          ('bud_2', 'Transport', 200.00, 0.00, 'budget', 0),
-          ('bud_3', 'Loisirs', 150.00, 0.00, 'budget', 0),
-          ('bud_4', 'Restaurant', 300.00, 0.00, 'budget', 0),
-          ('bud_5', 'Shopping', 250.00, 0.00, 'budget', 0)`
-        ];
-        
-        await this.adapter.executeSet(budgetQueries);
-        console.log("Budgets d'exemple ajoutés");
-        
-        // Ajouter des dépenses d'exemple liées aux budgets
-        const expenseQuery = `
-          INSERT OR IGNORE INTO expenses (id, title, budget, spent, type, linkedBudgetId, date, isRecurring)
-          VALUES 
-          ('exp_1', 'Courses Carrefour', 350.00, 350.00, 'expense', 'bud_1', ?, 0),
-          ('exp_2', 'Courses Lidl', 250.00, 250.00, 'expense', 'bud_1', ?, 0),
-          ('exp_3', 'Restaurant italien', 150.00, 150.00, 'expense', 'bud_4', ?, 0),
-          ('exp_4', 'Vêtements', 100.00, 100.00, 'expense', 'bud_5', ?, 0),
-          ('exp_5', 'Loyer', 500.00, 500.00, 'expense', NULL, ?, 1),
-          ('exp_6', 'Abonnement Transport', 75.00, 75.00, 'expense', 'bud_2', ?, 1)
-        `;
-        
-        await this.adapter.run(expenseQuery, [currentDate, currentDate, currentDate, currentDate, currentDate, currentDate]);
-        console.log("Dépenses d'exemple ajoutées");
-        
-        // Ajouter des revenus d'exemple
-        const incomeQuery = `
-          INSERT OR IGNORE INTO incomes (id, title, budget, spent, type, date, isRecurring)
-          VALUES 
-          ('inc_1', 'Salaire', 2000.00, 2000.00, 'income', ?, 1),
-          ('inc_2', 'Prime', 500.00, 500.00, 'income', ?, 0)
-        `;
-        
-        await this.adapter.run(incomeQuery, [currentDate, currentDate]);
-        console.log("Revenus d'exemple ajoutés");
-        
-        // Ajouter un tableau de bord par défaut
-        const dashboardQuery = `
-          INSERT OR IGNORE INTO dashboards (id, title, createdAt, lastAccessed)
-          VALUES ('default', 'Budget Personnel', ?, ?)
-        `;
-        
-        const now = new Date().toISOString();
-        await this.adapter.run(dashboardQuery, [now, now]);
-        console.log("Tableau de bord par défaut ajouté");
-        
-        console.log("Données d'exemple ajoutées avec succès");
-      } else {
-        console.log(`${budgetCount} budgets trouvés, pas besoin d'ajouter des données d'exemple`);
-      }
+      console.log("Sample data setup complete");
     } catch (error) {
-      console.error("Erreur lors de la vérification ou de l'ajout de données d'exemple:", error);
-      // Continue même en cas d'erreur avec les données d'exemple
+      console.error("Error adding sample data:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Add default categories if they don't exist
+   */
+  async addDefaultCategories(dashboardId: string): Promise<void> {
+    console.log("Checking if default categories exist...");
+    
+    const categories = await this.adapter.query("SELECT * FROM categories");
+    
+    if (categories.length === 0) {
+      console.log("No categories found, adding default categories...");
+      
+      const defaultCategories = [
+        {
+          id: 'necessaire',
+          name: 'Nécessaire',
+          budgets: '[]',
+          total: 0,
+          spent: 0,
+          description: 'Dépenses essentielles comme le logement, l\'alimentation, etc.',
+          dashboardId
+        },
+        {
+          id: 'plaisir',
+          name: 'Plaisir',
+          budgets: '[]',
+          total: 0,
+          spent: 0,
+          description: 'Loisirs, sorties, shopping, etc.',
+          dashboardId
+        },
+        {
+          id: 'epargne',
+          name: 'Épargne',
+          budgets: '[]',
+          total: 0,
+          spent: 0,
+          description: 'Économies et investissements',
+          dashboardId
+        }
+      ];
+      
+      for (const category of defaultCategories) {
+        await this.adapter.execute(
+          "INSERT INTO categories (id, name, budgets, total, spent, description, dashboardId) VALUES (?, ?, ?, ?, ?, ?, ?)",
+          [category.id, category.name, category.budgets, category.total, category.spent, category.description, category.dashboardId]
+        );
+      }
+      
+      console.log("Default categories added successfully");
+    } else {
+      console.log("Categories already exist, skipping default categories");
     }
   }
 }
