@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -105,7 +104,7 @@ export const useDashboards = () => {
   const addDashboard = useCallback(async (name: string): Promise<string | null> => {
     try {
       const dashboardId = uuidv4();
-      const newDashboard: Dashboard = {
+      const newDashboard = {
         id: dashboardId,
         title: name,
         createdAt: new Date().toISOString(),
@@ -115,7 +114,7 @@ export const useDashboards = () => {
       await db.addDashboard(newDashboard);
       
       // Update local state
-      setDashboards(prev => [...prev, newDashboard]);
+      setDashboards((prev) => [...prev, newDashboard]);
       
       toast({
         title: "Tableau de bord créé",
