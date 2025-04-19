@@ -11,6 +11,9 @@ import { toast } from "@/components/ui/use-toast";
 class DatabaseService {
   private manager: IDatabaseManager;
   private initialized = false;
+  private initializationPromise: Promise<boolean> | null = null;
+  private initStartTime: number | null = null;
+  private readonly MAX_INIT_TIME_MS = 10000; // 10 seconds max
 
   constructor() {
     this.manager = DatabaseManagerFactory.getDatabaseManager();
@@ -27,22 +30,79 @@ class DatabaseService {
         return true;
       }
       
-      console.log("DatabaseService: Initializing database...");
-      const success = await this.manager.init();
-      
-      if (success) {
-        console.log("DatabaseService: Initialization successful");
-        this.initialized = true;
+      // If initialization is in progress, check for timeout
+      if (this.initializationPromise) {
+        console.log("DatabaseService: Initialization already in progress");
         
-        // After successful initialization, ensure default dashboard exists
-        await this.ensureDefaultDashboard();
-      } else {
-        console.error("DatabaseService: Initialization failed");
+        // Check if it's been running too long
+        if (this.initStartTime && Date.now() - this.initStartTime > this.MAX_INIT_TIME_MS) {
+          console.warn(`DatabaseService: Initialization has been running for more than ${this.MAX_INIT_TIME_MS}ms, resetting`);
+          this.initializationPromise = null;
+          this.initStartTime = null;
+          this.resetInitializationAttempts();
+        } else {
+          // Return existing promise with timeout
+          return Promise.race([
+            this.initializationPromise,
+            new Promise<boolean>(resolve => {
+              setTimeout(() => {
+                console.warn("DatabaseService: Initialization promise timed out");
+                resolve(false);
+              }, 5000); // 5 second timeout for waiting on existing promise
+            })
+          ]);
+        }
       }
       
-      return success;
+      console.log("DatabaseService: Initializing database...");
+      this.initStartTime = Date.now();
+      
+      // Create a new initialization promise with timeout
+      this.initializationPromise = (async () => {
+        try {
+          // Timeout for the manager initialization
+          const initResult = await Promise.race([
+            this.manager.init(),
+            new Promise<boolean>(resolve => {
+              setTimeout(() => {
+                console.warn("DatabaseService: Manager initialization timed out");
+                resolve(false);
+              }, this.MAX_INIT_TIME_MS);
+            })
+          ]);
+          
+          if (initResult) {
+            console.log("DatabaseService: Initialization successful");
+            this.initialized = true;
+            
+            // After successful initialization, ensure default dashboard exists
+            await this.ensureDefaultDashboard();
+            return true;
+          } else {
+            console.error("DatabaseService: Initialization failed or timed out");
+            return false;
+          }
+        } catch (error) {
+          console.error("DatabaseService: Error during initialization:", error);
+          toast({
+            variant: "destructive",
+            title: "Erreur de base de données",
+            description: "Impossible d'initialiser la base de données. Veuillez rafraîchir la page."
+          });
+          return false;
+        } finally {
+          // Clear initialization state
+          this.initializationPromise = null;
+          this.initStartTime = null;
+        }
+      })();
+      
+      return await this.initializationPromise;
     } catch (error) {
       console.error("DatabaseService: Error during initialization:", error);
+      this.initializationPromise = null;
+      this.initStartTime = null;
+      
       toast({
         variant: "destructive",
         title: "Erreur de base de données",
@@ -90,6 +150,8 @@ class DatabaseService {
   resetInitializationAttempts(): void {
     console.log("DatabaseService: Resetting initialization attempts");
     this.initialized = false;
+    this.initializationPromise = null;
+    this.initStartTime = null;
     this.manager.resetInitializationAttempts?.();
   }
 

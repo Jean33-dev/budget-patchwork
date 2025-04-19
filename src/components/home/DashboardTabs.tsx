@@ -1,8 +1,10 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
+import { Loader2 } from "lucide-react";
+import { db } from "@/services/database";
 
 interface DashboardTabsProps {
   dashboardId: string;
@@ -10,7 +12,35 @@ interface DashboardTabsProps {
 
 export function DashboardTabs({ dashboardId }: DashboardTabsProps) {
   const [activeTab, setActiveTab] = useState("budgets");
+  const [isLoading, setIsLoading] = useState(true);
+  const [isDbInitialized, setIsDbInitialized] = useState(false);
   const navigate = useNavigate();
+
+  // Check database initialization on mount
+  useEffect(() => {
+    const checkDbStatus = async () => {
+      setIsLoading(true);
+      try {
+        // Reset any previous initialization attempts to start fresh
+        db.resetInitializationAttempts?.();
+        
+        // Try to initialize with timeout
+        const initSuccess = await Promise.race([
+          db.init(),
+          new Promise<boolean>(resolve => setTimeout(() => resolve(false), 5000))
+        ]);
+        
+        setIsDbInitialized(initSuccess);
+      } catch (error) {
+        console.error("Error checking database status:", error);
+        setIsDbInitialized(false);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    checkDbStatus();
+  }, []);
 
   const handleTabChange = (value: string) => {
     setActiveTab(value);
@@ -34,6 +64,34 @@ export function DashboardTabs({ dashboardId }: DashboardTabsProps) {
     }
   };
 
+  // Show loading state
+  if (isLoading) {
+    return (
+      <Card className="p-6 flex justify-center items-center">
+        <Loader2 className="h-6 w-6 animate-spin text-primary mr-2" />
+        <p>Chargement des données...</p>
+      </Card>
+    );
+  }
+
+  // Show error state if database failed to initialize
+  if (!isDbInitialized) {
+    return (
+      <Card className="p-6">
+        <div className="text-center">
+          <p className="text-destructive mb-2">Problème de chargement de la base de données</p>
+          <button 
+            className="text-sm underline" 
+            onClick={() => navigate("/diagnostics")}
+          >
+            Voir les diagnostics système
+          </button>
+        </div>
+      </Card>
+    );
+  }
+
+  // Normal state with tabs
   return (
     <Card>
       <Tabs 

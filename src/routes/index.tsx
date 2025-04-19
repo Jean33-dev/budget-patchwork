@@ -6,6 +6,7 @@ import ExpensesPage from "@/components/expense/ExpensesPage";
 import IncomesPage from "@/components/income/IncomesPage";
 import RecurringsPage from "@/components/recurring/RecurringsPage";
 import { SystemDiagnosticsPage } from "@/components/system/SystemDiagnosticsPage";
+import { Navigate } from "react-router-dom";
 
 export const Router = () => {
   return (
@@ -17,6 +18,12 @@ export const Router = () => {
       <Route path="/dashboard/:dashboardId/incomes" element={<IncomesPage />} />
       <Route path="/dashboard/:dashboardId/recurrings" element={<RecurringsPage />} />
       <Route path="/diagnostics" element={<SystemDiagnosticsPage />} />
+      
+      {/* Add a redirect for database issues */}
+      <Route path="/database-error" element={<Navigate to="/diagnostics" />} />
+      
+      {/* Add a fallback route */}
+      <Route path="*" element={<Navigate to="/" />} />
     </Routes>
   );
 };
