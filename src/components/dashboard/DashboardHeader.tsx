@@ -5,13 +5,26 @@ import { DashboardNavigation } from "./DashboardNavigation";
 interface DashboardHeaderProps {
   dashboardId: string;
   title?: string;
+  currentDate?: Date;
+  onMonthChange?: (newDate: Date) => void;
+  onBackClick?: () => void;
 }
 
-export function DashboardHeader({ dashboardId, title }: DashboardHeaderProps) {
+export function DashboardHeader({ 
+  dashboardId, 
+  title,
+  currentDate,
+  onMonthChange,
+  onBackClick 
+}: DashboardHeaderProps) {
   const navigate = useNavigate();
   
   const handleBack = () => {
-    navigate("/");
+    if (onBackClick) {
+      onBackClick();
+    } else {
+      navigate("/");
+    }
   };
   
   return (
