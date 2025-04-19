@@ -40,20 +40,22 @@ export const useExpenseDataLoading = (dashboardId: string | null) => {
       // Load expenses
       console.log("Calling db.getExpenses() to load all expenses");
       const loadedExpenses = await db.getExpenses();
-      console.log(`All expenses loaded from database:`, loadedExpenses);
+      console.log(`All expenses loaded from database (${loadedExpenses.length}):`, loadedExpenses);
       
-      // Add default dashboardId if missing
-      const processedExpenses = loadedExpenses.map(expense => {
-        if (!expense.dashboardId) {
-          return { ...expense, dashboardId: dashboardId };
+      // Filtrer les dépenses par dashboardId
+      // Considérez les dépenses sans dashboardId comme appartenant au dashboard par défaut
+      const defaultDashboardId = "default"; // ID du dashboard par défaut
+      
+      const filteredExpenses = loadedExpenses.filter(expense => {
+        // Si l'expense a un dashboardId, vérifier s'il correspond
+        if (expense.dashboardId) {
+          return expense.dashboardId === dashboardId;
         }
-        return expense;
+        // Si l'expense n'a pas de dashboardId et que le dashboard actuel est celui par défaut
+        return dashboardId === defaultDashboardId;
       });
       
-      const filteredExpenses = processedExpenses.filter(e => 
-        !e.dashboardId || e.dashboardId === dashboardId
-      );
-      console.log(`Dashboard ${dashboardId} - Filtered expenses:`, filteredExpenses);
+      console.log(`Dashboard ${dashboardId} - Filtered expenses (${filteredExpenses.length}):`, filteredExpenses);
       setExpenses(filteredExpenses);
       
       setInitAttempted(true);

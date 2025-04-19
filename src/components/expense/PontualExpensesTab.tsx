@@ -54,7 +54,9 @@ export const PontualExpensesTab = ({
     } else {
       console.log("No expenses found in PontualExpensesTab");
     }
-  }, [expenses]);
+    console.log("PontualExpensesTab - budgetId:", budgetId);
+    console.log("PontualExpensesTab - availableBudgets count:", availableBudgets.length);
+  }, [expenses, budgetId, availableBudgets]);
   
   return (
     <>

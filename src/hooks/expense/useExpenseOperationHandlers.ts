@@ -12,6 +12,8 @@ export const useExpenseOperationHandlers = (
 ) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
+  
+  console.log("useExpenseOperationHandlers initialized with dashboardId:", dashboardId);
 
   const handleAddEnvelope = useCallback(
     async (envelope: {
@@ -93,7 +95,7 @@ export const useExpenseOperationHandlers = (
       setIsProcessing(true);
       try {
         console.log("Updating expense:", expense, "with dashboardId:", dashboardId);
-        // S'assurer que le dashboardId est inclus lors de la mise à jour
+        // S'assurer que le dashboardId est préservé lors de la mise à jour
         const updatedExpense: Expense = {
           ...expense,
           dashboardId: expense.dashboardId || dashboardId || undefined

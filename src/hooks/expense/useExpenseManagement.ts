@@ -14,6 +14,8 @@ export const useExpenseManagement = (budgetId: string | null) => {
   const { toast } = useToast();
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const { currentDashboardId } = useDashboardContext();
+  
+  console.log("useExpenseManagement - currentDashboardId:", currentDashboardId);
 
   // Load expense data
   const { 
@@ -24,6 +26,8 @@ export const useExpenseManagement = (budgetId: string | null) => {
     initAttempted,
     loadData 
   } = useExpenseDataLoading(currentDashboardId);
+  
+  console.log("useExpenseManagement - loaded expenses count:", expenses.length);
 
   // Operation handlers with dashboard context
   const { 
@@ -36,32 +40,26 @@ export const useExpenseManagement = (budgetId: string | null) => {
   // Data reloading
   const { forceReload } = useDataReloader(isProcessing, isLoading, loadData);
 
-  // Filter expenses by budgetId and current dashboard
+  // Filter expenses by budgetId if specified
   const filteredExpenses = useCallback(() => {
-    console.log("Filtering expenses. Total:", expenses.length, "budgetId:", budgetId, "dashboardId:", currentDashboardId);
+    console.log("Filtering expenses. Total:", expenses.length, "budgetId:", budgetId);
     
-    return expenses.filter(expense => {
-      const matchesBudget = budgetId ? expense.linkedBudgetId === budgetId : true;
-      
-      // Afficher les dépenses sans dashboardId ou celles qui correspondent au dashboard actuel
-      const matchesDashboard = !expense.dashboardId || expense.dashboardId === currentDashboardId;
-      
-      const shouldInclude = matchesBudget && matchesDashboard;
-      if (!shouldInclude) {
-        console.log("Filtering out expense:", expense.title, "linkedBudgetId:", expense.linkedBudgetId, "dashboardId:", expense.dashboardId);
-      }
-      
-      return shouldInclude;
-    });
-  }, [expenses, budgetId, currentDashboardId]);
+    if (!budgetId) {
+      console.log("No budgetId filter, returning all expenses");
+      return expenses;
+    }
+    
+    const filtered = expenses.filter(expense => expense.linkedBudgetId === budgetId);
+    console.log(`Filtered by budgetId ${budgetId}, returning ${filtered.length} expenses`);
+    return filtered;
+  }, [expenses, budgetId]);
 
   // Calculer les dépenses filtrées une seule fois et les stocker
   const filteredExpensesResult = filteredExpenses();
-  console.log("Filtered expenses result count:", filteredExpensesResult.length);
 
   return {
     expenses: filteredExpensesResult,
-    availableBudgets: availableBudgets.filter(b => !b.dashboardId || b.dashboardId === currentDashboardId),
+    availableBudgets,
     addDialogOpen,
     setAddDialogOpen,
     handleAddEnvelope,
