@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/table";
 import { ExpenseTableRow } from "./ExpenseTableRow";
 import { ExpenseDialogs, useExpenseDialogState } from "./ExpenseDialogs";
+import { useEffect } from "react";
 
 interface Envelope {
   id: string;
@@ -49,6 +50,11 @@ export const ExpenseTable = ({
     handleDeleteClick,
     handleConfirmEdit
   } = useExpenseDialogState(onUpdateExpense, onDeleteExpense);
+  
+  // Log pour déboguer
+  useEffect(() => {
+    console.log("ExpenseTable - expenses count:", expenses.length);
+  }, [expenses]);
   
   const getBudgetTitle = (budgetId?: string) => {
     if (!budgetId) return "Non assigné";

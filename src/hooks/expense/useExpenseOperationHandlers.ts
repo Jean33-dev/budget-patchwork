@@ -38,6 +38,7 @@ export const useExpenseOperationHandlers = (budgetId: string | null, reloadData:
           expenseData.dashboardId = dashboardId;
         }
         
+        console.log("Adding expense:", expenseData);
         await db.addExpense(expenseData);
 
         toast({
@@ -63,6 +64,7 @@ export const useExpenseOperationHandlers = (budgetId: string | null, reloadData:
   const handleDeleteExpense = async (id: string) => {
     setIsProcessing(true);
     try {
+      console.log("Deleting expense with ID:", id);
       await db.deleteExpense(id);
       
       toast({
@@ -93,6 +95,7 @@ export const useExpenseOperationHandlers = (budgetId: string | null, reloadData:
         updatedExpense.dashboardId = dashboardId;
       }
       
+      console.log("Updating expense:", updatedExpense);
       await db.updateExpense(updatedExpense);
       
       toast({

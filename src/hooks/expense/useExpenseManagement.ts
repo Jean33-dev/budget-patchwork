@@ -38,18 +38,29 @@ export const useExpenseManagement = (budgetId: string | null) => {
 
   // Filter expenses by budgetId and current dashboard, modifié pour afficher les dépenses même sans dashboardId
   const filteredExpenses = useCallback(() => {
+    console.log("Filtering expenses:", expenses.length, "budgetId:", budgetId, "dashboardId:", currentDashboardId);
+    
     return expenses.filter(expense => {
       const matchesBudget = budgetId ? expense.linkedBudgetId === budgetId : true;
       
       // Afficher les dépenses sans dashboardId ou celles qui correspondent au dashboard actuel
       const matchesDashboard = !expense.dashboardId || expense.dashboardId === currentDashboardId;
       
-      return matchesBudget && matchesDashboard;
+      const shouldInclude = matchesBudget && matchesDashboard;
+      if (!shouldInclude) {
+        console.log("Filtering out expense:", expense.title, "linkedBudgetId:", expense.linkedBudgetId, "dashboardId:", expense.dashboardId);
+      }
+      
+      return shouldInclude;
     });
   }, [expenses, budgetId, currentDashboardId]);
 
+  // Calculer les dépenses filtrées une seule fois et les stocker
+  const filteredExpensesResult = filteredExpenses();
+  console.log("Filtered expenses result:", filteredExpensesResult.length);
+
   return {
-    expenses: filteredExpenses(),
+    expenses: filteredExpensesResult,
     availableBudgets: availableBudgets.filter(b => !b.dashboardId || b.dashboardId === currentDashboardId),
     addDialogOpen,
     setAddDialogOpen,

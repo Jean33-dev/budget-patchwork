@@ -4,6 +4,7 @@ import { BudgetLoadingState } from "@/components/budget/BudgetLoadingState";
 import { ExpenseErrorState } from "@/components/budget/ExpenseErrorState";
 import { Expense } from "@/services/database/models/expense";
 import { Budget } from "@/hooks/useBudgets";
+import { useEffect } from "react";
 
 interface PontualExpensesTabProps {
   isLoading: boolean;
@@ -44,6 +45,15 @@ export const PontualExpensesTab = ({
   handleRetry,
   budgetId
 }: PontualExpensesTabProps) => {
+  
+  // Log pour déboguer
+  useEffect(() => {
+    console.log("PontualExpensesTab - expenses count:", expenses.length);
+    if (expenses.length > 0) {
+      console.log("Sample expense:", expenses[0]);
+    }
+  }, [expenses]);
+  
   return (
     <>
       {isLoading && (
