@@ -16,6 +16,7 @@ export interface SavedTransitionPreference {
 /**
  * Hook pour la récupération des préférences de transition
  * Responsable uniquement de la lecture des préférences depuis le localStorage
+ * Ces préférences doivent rester dans localStorage et ne pas être migrées vers SQLite
  */
 export const useTransitionPreferencesGet = () => {
   /**
