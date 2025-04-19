@@ -1,4 +1,3 @@
-
 import { Income } from './models/income';
 import { Expense } from './models/expense';
 import { Budget } from './models/budget';
@@ -8,6 +7,7 @@ import { BaseDatabaseManager } from './base-database-manager';
 import { DatabaseManagerImpl } from './database-manager-impl';
 import { DatabaseManagerFactory } from './database-manager-factory';
 import { IDatabaseManager } from './interfaces/IDatabaseManager';
+import { InitializationManager } from './initialization-manager';
 
 export class DatabaseManager extends DatabaseManagerImpl implements IDatabaseManager {
   constructor() {
@@ -15,8 +15,32 @@ export class DatabaseManager extends DatabaseManagerImpl implements IDatabaseMan
   }
 
   async init(): Promise<boolean> {
-    // Call the parent implementation to initialize the core database
-    return await super.init();
+    try {
+      // Call the parent implementation to initialize the core database
+      const initialized = await super.init();
+      
+      if (initialized) {
+        // Initialize sample data after database is created
+        console.log("Database initialized, checking and adding sample data...");
+        const initManager = new InitializationManager(this.getInitManager().getAdapter()!);
+        
+        try {
+          // Verify tables exist
+          await initManager.createTables();
+          // Add sample data if tables are empty
+          await initManager.checkAndAddSampleData();
+          console.log("Sample data checked and added if needed");
+        } catch (error) {
+          console.error("Error initializing sample data:", error);
+          // Continue even if sample data fails - we don't want to block the app
+        }
+      }
+      
+      return initialized;
+    } catch (error) {
+      console.error("Error in DatabaseManager.init():", error);
+      return false;
+    }
   }
 
   // Budget methods

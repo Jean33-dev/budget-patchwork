@@ -63,6 +63,7 @@ export const useBudgetData = () => {
 
       // Load and calculate incomes
       const incomesData = await db.getIncomes();
+      console.log("Total incomes loaded:", incomesData);
       const totalIncome = incomesData.reduce((sum, income) => 
         sum + (Number(income.budget) || 0), 0
       );

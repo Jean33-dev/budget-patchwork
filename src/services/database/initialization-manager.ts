@@ -73,38 +73,45 @@ export class InitializationManager {
     if (!this.adapter) throw new Error("Adaptateur SQLite non initialisé");
     
     try {
+      console.log("Vérifiant si des données d'exemple doivent être ajoutées...");
+      
       // Vérifier si des budgets existent déjà
       const budgets = await this.adapter.query("SELECT COUNT(*) as count FROM budgets");
-      const budgetCount = budgets[0]?.count || 0;
+      const budgetCount = budgets.length > 0 ? (budgets[0]?.count || 0) : 0;
+      
+      console.log(`Nombre de budgets existants: ${budgetCount}`);
       
       if (budgetCount === 0) {
+        console.log("Aucun budget trouvé, ajout de données d'exemple...");
         const currentDate = new Date().toISOString().split('T')[0];
         
         // Ajouter des budgets d'exemple
         const budgetQueries = [
           `INSERT OR IGNORE INTO budgets (id, title, budget, spent, type, carriedOver)
           VALUES 
-          ('bud_1', 'Courses', 500.00, 600.00, 'budget', 0),
+          ('bud_1', 'Courses', 500.00, 0.00, 'budget', 0),
           ('bud_2', 'Transport', 200.00, 0.00, 'budget', 0),
           ('bud_3', 'Loisirs', 150.00, 0.00, 'budget', 0),
-          ('bud_4', 'Restaurant', 300.00, 150.00, 'budget', 0),
-          ('bud_5', 'Shopping', 250.00, 100.00, 'budget', 0)`
+          ('bud_4', 'Restaurant', 300.00, 0.00, 'budget', 0),
+          ('bud_5', 'Shopping', 250.00, 0.00, 'budget', 0)`
         ];
         
         await this.adapter.executeSet(budgetQueries);
+        console.log("Budgets d'exemple ajoutés");
         
         // Ajouter des dépenses d'exemple liées aux budgets
         await this.adapter.run(
           `INSERT OR IGNORE INTO expenses (id, title, budget, spent, type, linkedBudgetId, date, isRecurring)
           VALUES 
-          ('exp_1', 'Courses Carrefour', 350.00, 0, 'expense', 'bud_1', ?, 0),
-          ('exp_2', 'Courses Lidl', 250.00, 0, 'expense', 'bud_1', ?, 0),
-          ('exp_3', 'Restaurant italien', 150.00, 0, 'expense', 'bud_4', ?, 0),
-          ('exp_4', 'Vêtements', 100.00, 0, 'expense', 'bud_5', ?, 0),
-          ('exp_5', 'Loyer', 500.00, 0, 'expense', 'bud_1', ?, 1),
-          ('exp_6', 'Abonnement Transport', 75.00, 0, 'expense', 'bud_2', ?, 1)`,
+          ('exp_1', 'Courses Carrefour', 350.00, 350.00, 'expense', 'bud_1', ?, 0),
+          ('exp_2', 'Courses Lidl', 250.00, 250.00, 'expense', 'bud_1', ?, 0),
+          ('exp_3', 'Restaurant italien', 150.00, 150.00, 'expense', 'bud_4', ?, 0),
+          ('exp_4', 'Vêtements', 100.00, 100.00, 'expense', 'bud_5', ?, 0),
+          ('exp_5', 'Loyer', 500.00, 500.00, 'expense', NULL, ?, 1),
+          ('exp_6', 'Abonnement Transport', 75.00, 75.00, 'expense', 'bud_2', ?, 1)`,
           [currentDate, currentDate, currentDate, currentDate, currentDate, currentDate]
         );
+        console.log("Dépenses d'exemple ajoutées");
         
         // Ajouter des revenus d'exemple
         await this.adapter.run(
@@ -114,6 +121,7 @@ export class InitializationManager {
           ('inc_2', 'Prime', 500.00, 500.00, 'income', ?, 0)`,
           [currentDate, currentDate]
         );
+        console.log("Revenus d'exemple ajoutés");
         
         console.log("Données d'exemple ajoutées avec succès");
       } else {
