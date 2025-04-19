@@ -1,3 +1,4 @@
+
 import { BudgetManager } from './managers/budget-manager';
 import { ExpenseManager } from './managers/expense-manager';
 import { IncomeManager } from './managers/income-manager';
@@ -10,7 +11,6 @@ import { IIncomeManager } from './interfaces/IIncomeManager';
 import { ICategoryManager } from './interfaces/ICategoryManager';
 import { IDashboardManager } from './interfaces/IDashboardManager';
 import { IQueryManager } from './interfaces/IQueryManager';
-import { TransitionPreferencesManager } from './managers/transition-preferences-manager';
 
 /**
  * Factory that creates and coordinates all specialized database managers
@@ -22,7 +22,6 @@ export class DatabaseManagerFactory {
   private categoryManager: ICategoryManager;
   private dashboardManager: IDashboardManager;
   private queryManager: IQueryManager;
-  private transitionPreferencesManager: TransitionPreferencesManager | null = null;
   
   constructor() {
     this.queryManager = new QueryManager();
@@ -36,22 +35,22 @@ export class DatabaseManagerFactory {
   /**
    * Initialize all managers with the provided database instance
    */
-  initializeManagers(db: any): void {
-    if (!db) {
+  initializeManagers(dbInstance: any): void {
+    if (!dbInstance) {
       console.error("Cannot initialize managers with null database instance");
       return;
     }
     
     // Set the database instance for the query manager
-    this.queryManager.setDb(db);
+    this.queryManager.setDb(dbInstance);
     this.queryManager.setInitialized(true);
     
     // Set the database instance for all specialized managers
-    this.budgetManager.setDb(db);
-    this.expenseManager.setDb(db);
-    this.incomeManager.setDb(db);
-    this.categoryManager.setDb(db);
-    this.dashboardManager.setDb(db);
+    this.budgetManager.setDb(dbInstance);
+    this.expenseManager.setDb(dbInstance);
+    this.incomeManager.setDb(dbInstance);
+    this.categoryManager.setDb(dbInstance);
+    this.dashboardManager.setDb(dbInstance);
     
     // Set all managers as initialized
     this.budgetManager.setInitialized(true);
@@ -66,10 +65,6 @@ export class DatabaseManagerFactory {
     this.incomeManager.setQueryManager(this.queryManager);
     this.categoryManager.setQueryManager(this.queryManager);
     this.dashboardManager.setQueryManager(this.queryManager);
-    
-    this.transitionPreferencesManager = new TransitionPreferencesManager();
-    this.transitionPreferencesManager.setDb(db);
-    this.transitionPreferencesManager.setInitialized(true);
   }
   
   getBudgetManager(): IBudgetManager {
@@ -94,15 +89,5 @@ export class DatabaseManagerFactory {
   
   getQueryManager(): IQueryManager {
     return this.queryManager;
-  }
-
-  /**
-   * Get the transition preferences manager
-   */
-  getTransitionPreferencesManager(): TransitionPreferencesManager {
-    if (!this.transitionPreferencesManager) {
-      this.transitionPreferencesManager = new TransitionPreferencesManager();
-    }
-    return this.transitionPreferencesManager;
   }
 }

@@ -1,4 +1,3 @@
-
 import { Income } from './models/income';
 import { Expense } from './models/expense';
 import { Budget } from './models/budget';
@@ -9,7 +8,6 @@ import { ExpenseService } from './services/expense-service';
 import { BudgetService } from './services/budget-service';
 import { CategoryService } from './services/category-service';
 import { DashboardService } from './services/dashboard-service';
-import { SavedTransitionPreference } from '@/hooks/transition/useTransitionPreferencesGet';
 
 /**
  * Main database service that uses specialized service classes for each entity
@@ -149,20 +147,6 @@ class DatabaseService {
 
   async deleteDashboard(id: string): Promise<void> {
     return this.dashboardService.deleteDashboard(id);
-  }
-
-  /**
-   * Gets transition preferences from the database
-   */
-  async getTransitionPreferences(): Promise<SavedTransitionPreference[] | null> {
-    return this.incomeService.getTransitionPreferences();
-  }
-
-  /**
-   * Saves transition preferences to the database
-   */
-  async saveTransitionPreferences(preferences: SavedTransitionPreference[]): Promise<boolean> {
-    return this.incomeService.saveTransitionPreferences(preferences);
   }
 
   /**

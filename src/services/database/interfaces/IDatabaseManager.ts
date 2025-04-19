@@ -1,9 +1,9 @@
+
 import { Budget } from '../models/budget';
 import { Expense } from '../models/expense';
 import { Income } from '../models/income';
 import { Category } from '../models/category';
 import { Dashboard } from '../models/dashboard';
-import { SavedTransitionPreference } from '@/hooks/transition/useTransitionPreferencesGet';
 
 /**
  * Interface defining all database operations
@@ -50,8 +50,4 @@ export interface IDatabaseManager {
   updateCategory(category: Category): Promise<void>;
   deleteCategory(id: string): Promise<void>;
   resetCategoryExpenses(categoryId: string): Promise<void>;
-  
-  // Transition preferences operations
-  getTransitionPreferences(): Promise<SavedTransitionPreference[] | null>;
-  saveTransitionPreferences(preferences: SavedTransitionPreference[]): Promise<boolean>;
 }

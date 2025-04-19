@@ -1,3 +1,4 @@
+
 import { Income } from './models/income';
 import { Expense } from './models/expense';
 import { Budget } from './models/budget';
@@ -13,8 +14,6 @@ import { ExpenseOperationsManager } from './managers/expense-operations-manager'
 import { IncomeOperationsManager } from './managers/income-operations-manager';
 import { CategoryOperationsManager } from './managers/category-operations-manager';
 import { DashboardOperationsManager } from './managers/dashboard-operations-manager';
-import { TransitionOperationsManager } from './managers/transition-operations-manager';
-import { SavedTransitionPreference } from "@/hooks/transition/useTransitionPreferencesGet";
 
 export class DatabaseManager extends DatabaseManagerImpl implements IDatabaseManager {
   private managerFactory: DatabaseManagerFactory;
@@ -25,7 +24,6 @@ export class DatabaseManager extends DatabaseManagerImpl implements IDatabaseMan
   private incomeManager: IncomeOperationsManager;
   private categoryManager: CategoryOperationsManager;
   private dashboardManager: DashboardOperationsManager;
-  private transitionManager: TransitionOperationsManager;
 
   constructor() {
     super();
@@ -37,10 +35,10 @@ export class DatabaseManager extends DatabaseManagerImpl implements IDatabaseMan
     this.incomeManager = new IncomeOperationsManager(this.ensureInitialized.bind(this), this.managerFactory);
     this.categoryManager = new CategoryOperationsManager(this.ensureInitialized.bind(this), this.managerFactory);
     this.dashboardManager = new DashboardOperationsManager(this.ensureInitialized.bind(this), this.managerFactory);
-    this.transitionManager = new TransitionOperationsManager(this.ensureInitialized.bind(this), this.managerFactory);
   }
 
   async init(): Promise<boolean> {
+    // Use our custom initialization manager instead of the parent's
     const success = await this.customInitManager.init();
     
     if (success && this.db) {
@@ -55,13 +53,16 @@ export class DatabaseManager extends DatabaseManagerImpl implements IDatabaseMan
   }
   
   async migrateFromLocalStorage(): Promise<boolean> {
+    // Delegate to the implementation in DatabaseManagerImpl
     return super.migrateFromLocalStorage();
   }
   
+  // Override resetInitializationAttempts to delegate to the customInitManager
   resetInitializationAttempts(): void {
     this.customInitManager.resetInitializationAttempts();
   }
 
+  // Dashboard methods
   async getDashboards(): Promise<Dashboard[]> {
     return this.dashboardManager.getDashboards();
   }
@@ -82,6 +83,7 @@ export class DatabaseManager extends DatabaseManagerImpl implements IDatabaseMan
     return this.dashboardManager.deleteDashboard(id);
   }
 
+  // Budget methods
   async getBudgets(): Promise<Budget[]> {
     return this.budgetManager.getBudgets();
   }
@@ -98,6 +100,7 @@ export class DatabaseManager extends DatabaseManagerImpl implements IDatabaseMan
     return this.budgetManager.deleteBudget(id);
   }
 
+  // Expense methods
   async getExpenses(): Promise<Expense[]> {
     return this.expenseManager.getExpenses();
   }
@@ -122,6 +125,7 @@ export class DatabaseManager extends DatabaseManagerImpl implements IDatabaseMan
     return this.expenseManager.copyRecurringExpenseToMonth(expenseId, targetDate);
   }
 
+  // Income methods
   async getIncomes(): Promise<Income[]> {
     return this.incomeManager.getIncomes();
   }
@@ -146,6 +150,7 @@ export class DatabaseManager extends DatabaseManagerImpl implements IDatabaseMan
     return this.incomeManager.copyRecurringIncomeToMonth(incomeId, targetDate);
   }
 
+  // Category methods
   async getCategories(): Promise<Category[]> {
     return this.categoryManager.getCategories();
   }
@@ -164,13 +169,5 @@ export class DatabaseManager extends DatabaseManagerImpl implements IDatabaseMan
 
   async resetCategoryExpenses(categoryId: string): Promise<void> {
     return this.categoryManager.resetCategoryExpenses(categoryId);
-  }
-
-  async getTransitionPreferences(): Promise<SavedTransitionPreference[] | null> {
-    return this.transitionManager.getTransitionPreferences();
-  }
-
-  async saveTransitionPreferences(preferences: SavedTransitionPreference[]): Promise<boolean> {
-    return this.transitionManager.saveTransitionPreferences(preferences);
   }
 }
