@@ -1,183 +1,109 @@
 
-import { useCallback, useState } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
+import { useToast } from "@/components/ui/use-toast";
+import { v4 as uuidv4 } from "uuid";
 import { db } from "@/services/database";
 import { Expense } from "../models/expense";
 
-export const useExpenseOperationHandlers = (
-  budgetId: string | null,
-  loadData: () => Promise<void>
-) => {
+export const useExpenseOperationHandlers = (budgetId: string | null, reloadData: () => Promise<void>, dashboardId: string | null) => {
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Add an expense
-  const handleAddEnvelope = useCallback(async (envelopeData: {
+  // Gérer l'ajout d'une enveloppe (budget, dépense ou revenu)
+  const handleAddEnvelope = async (envelope: {
     title: string;
     budget: number;
     type: "income" | "expense" | "budget";
     linkedBudgetId?: string;
     date: string;
+    isRecurring?: boolean;
   }) => {
-    if (isProcessing) {
-      toast({
-        title: "Opération en cours",
-        description: "Une opération est déjà en cours"
-      });
-      return;
-    }
-
+    setIsProcessing(true);
     try {
-      setIsProcessing(true);
-      console.log("handleAddEnvelope: Starting with data:", envelopeData);
+      const id = uuidv4();
       
-      const newExpense: Expense = {
-        id: Date.now().toString(),
-        title: String(envelopeData.title || "Sans titre"),
-        budget: Number(envelopeData.budget) || 0,
-        spent: Number(envelopeData.budget) || 0,
-        type: "expense",
-        linkedBudgetId: budgetId ? String(budgetId) : envelopeData.linkedBudgetId ? String(envelopeData.linkedBudgetId) : null,
-        date: String(envelopeData.date || new Date().toISOString().split('T')[0])
-      };
+      if (envelope.type === "expense") {
+        await db.addExpense({
+          id,
+          title: envelope.title,
+          budget: envelope.budget,
+          spent: envelope.budget,
+          type: "expense",
+          linkedBudgetId: envelope.linkedBudgetId || budgetId || undefined,
+          date: envelope.date,
+          isRecurring: envelope.isRecurring || false,
+          dashboardId: dashboardId || undefined
+        });
 
-      console.log("handleAddEnvelope: Created expense object:", newExpense);
-      await db.addExpense(newExpense);
+        toast({
+          title: "Dépense ajoutée",
+          description: `${envelope.title} a été ajouté avec succès`
+        });
+      }
       
-      toast({
-        title: "Succès",
-        description: "Dépense ajoutée avec succès"
-      });
-      
-      await loadData();
+      await reloadData();
     } catch (error) {
-      console.error("Error adding expense:", error);
+      console.error("Erreur lors de l'ajout d'une enveloppe:", error);
       toast({
         variant: "destructive",
         title: "Erreur",
-        description: "Impossible d'ajouter la dépense"
+        description: "Impossible d'ajouter l'enveloppe."
       });
     } finally {
       setIsProcessing(false);
     }
-  }, [budgetId, isProcessing, loadData, toast]);
+  };
 
-  // Delete an expense
-  const handleDeleteExpense = useCallback(async (id: string) => {
-    if (isProcessing) {
-      toast({
-        title: "Opération en cours",
-        description: "Une opération est déjà en cours"
-      });
-      return;
-    }
-
+  // Gérer la suppression d'une dépense
+  const handleDeleteExpense = async (id: string) => {
     setIsProcessing(true);
-    console.log(`handleDeleteExpense: Starting with ID: ${id}`);
-    
-    if (!id) {
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "ID invalide pour la suppression"
-      });
-      setIsProcessing(false);
-      return;
-    }
-    
     try {
-      // Effectuer la suppression sans demander de confirmation
-      await db.deleteExpense(String(id));
+      await db.deleteExpense(id);
       
       toast({
-        title: "Succès",
-        description: "Dépense supprimée avec succès"
+        title: "Dépense supprimée",
+        description: "La dépense a été supprimée avec succès"
       });
       
-      // Attendre un court instant avant de recharger les données
-      setTimeout(async () => {
-        try {
-          await loadData();
-        } catch (reloadError) {
-          console.error("Error reloading data after delete:", reloadError);
-        } finally {
-          setIsProcessing(false);
-        }
-      }, 1000); // Augmenté à 1000ms pour s'assurer que l'opération soit bien terminée
-      
+      await reloadData();
     } catch (error) {
-      console.error("Error deleting expense:", error);
+      console.error("Erreur lors de la suppression de la dépense:", error);
       toast({
         variant: "destructive",
         title: "Erreur",
-        description: "Impossible de supprimer la dépense"
+        description: "Impossible de supprimer la dépense."
       });
+    } finally {
       setIsProcessing(false);
     }
-  }, [isProcessing, loadData, toast]);
+  };
 
-  // Update an expense
-  const handleUpdateExpense = useCallback(async (expense: Expense) => {
-    if (isProcessing) {
-      toast({
-        title: "Opération en cours",
-        description: "Une opération est déjà en cours"
-      });
-      return;
-    }
-
+  // Gérer la mise à jour d'une dépense
+  const handleUpdateExpense = async (expense: Expense) => {
     setIsProcessing(true);
-    console.log("handleUpdateExpense: Starting with data:", expense);
-    
-    if (!expense || !expense.id) {
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Données de dépense invalides"
-      });
-      setIsProcessing(false);
-      return;
-    }
-    
     try {
-      const validatedExpense: Expense = {
-        id: String(expense.id),
-        title: String(expense.title || "Sans titre"),
-        budget: Number(expense.budget) || 0,
-        spent: Number(expense.spent || expense.budget) || 0,
-        type: "expense",
-        linkedBudgetId: expense.linkedBudgetId ? String(expense.linkedBudgetId) : null,
-        date: String(expense.date || new Date().toISOString().split('T')[0])
-      };
-      
-      await db.updateExpense(validatedExpense);
-      
-      toast({
-        title: "Succès",
-        description: "Dépense mise à jour avec succès"
+      await db.updateExpense({
+        ...expense,
+        dashboardId: dashboardId || expense.dashboardId
       });
       
-      // Attendre un court instant avant de recharger les données
-      setTimeout(async () => {
-        try {
-          await loadData();
-        } catch (reloadError) {
-          console.error("Error reloading data after update:", reloadError);
-        } finally {
-          setIsProcessing(false);
-        }
-      }, 1000); // Augmenté à 1000ms pour s'assurer que l'opération soit bien terminée
+      toast({
+        title: "Dépense mise à jour",
+        description: `${expense.title} a été mise à jour avec succès`
+      });
       
+      await reloadData();
     } catch (error) {
-      console.error("Error updating expense:", error);
+      console.error("Erreur lors de la mise à jour de la dépense:", error);
       toast({
         variant: "destructive",
         title: "Erreur",
-        description: "Impossible de mettre à jour la dépense"
+        description: "Impossible de mettre à jour la dépense."
       });
+    } finally {
       setIsProcessing(false);
     }
-  }, [isProcessing, loadData, toast]);
+  };
 
   return {
     isProcessing,

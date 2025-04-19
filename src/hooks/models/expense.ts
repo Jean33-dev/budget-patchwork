@@ -8,4 +8,5 @@ export interface Expense {
   linkedBudgetId?: string;
   date: string;
   isRecurring?: boolean;
+  dashboardId?: string; // Ajout de la propriété dashboardId
 }
