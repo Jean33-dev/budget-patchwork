@@ -28,8 +28,10 @@ export const RecurringExpenseCard = ({
       onClick={() => onEdit()}
     >
       <CardHeader className="bg-destructive/5 pb-2">
-        <CardTitle className="flex justify-between items-start gap-2">
-          <span className="text-base leading-tight break-words line-clamp-2">{expense.title}</span>
+        <CardTitle className="flex justify-between items-center gap-2">
+          <span className="text-base leading-tight break-words line-clamp-2 hover:line-clamp-none my-auto" title={expense.title}>
+            {expense.title}
+          </span>
           <span className="text-lg font-semibold whitespace-nowrap shrink-0">{expense.budget.toFixed(2)} €</span>
         </CardTitle>
       </CardHeader>

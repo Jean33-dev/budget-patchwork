@@ -15,10 +15,10 @@ export const IncomeCard = ({ income, onDelete, onClick }: IncomeCardProps) => {
   return (
     <Card className="overflow-hidden hover:shadow-md transition-all" onClick={onClick}>
       <CardHeader className="bg-primary/5 pb-2">
-        <CardTitle className="flex justify-between items-start gap-2">
+        <CardTitle className="flex justify-between items-center gap-2">
           <span 
             className={cn(
-              "text-base leading-tight break-words",
+              "text-base leading-tight break-words my-auto",
               income.title.length > 20 ? "line-clamp-2 hover:line-clamp-none" : ""
             )}
             title={income.title}
