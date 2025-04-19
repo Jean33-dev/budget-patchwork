@@ -3,6 +3,7 @@ import { Budget } from '../models/budget';
 import { Expense } from '../models/expense';
 import { Income } from '../models/income';
 import { Category } from '../models/category';
+import { Dashboard } from '../models/dashboard';
 
 /**
  * Interface for query manager operations
@@ -35,4 +36,11 @@ export interface IQueryManager {
   executeAddCategory(category: Category): Promise<void>;
   executeUpdateCategory(category: Category): Promise<void>;
   executeDeleteCategory(id: string): Promise<void>;
+  
+  // Dashboard operations
+  executeGetDashboards(): Promise<Dashboard[]>;
+  executeGetDashboardById(id: string): Promise<Dashboard | null>;
+  executeAddDashboard(dashboard: Dashboard): Promise<void>;
+  executeUpdateDashboard(dashboard: Dashboard): Promise<void>;
+  executeDeleteDashboard(id: string): Promise<void>;
 }

@@ -4,10 +4,12 @@ import { Income } from './models/income';
 import { Expense } from './models/expense';
 import { Budget } from './models/budget';
 import { Category } from './models/category';
+import { Dashboard } from './models/dashboard';
 import { IncomeQueryManager } from './query-managers/income-query-manager';
 import { ExpenseQueryManager } from './query-managers/expense-query-manager';
 import { BudgetQueryManager } from './query-managers/budget-query-manager';
 import { CategoryQueryManager } from './query-managers/category-query-manager';
+import { DashboardQueryManager } from './query-managers/dashboard-query-manager';
 import { IQueryManager } from './interfaces/IQueryManager';
 
 export class QueryManager extends BaseDatabaseManager implements IQueryManager {
@@ -15,6 +17,7 @@ export class QueryManager extends BaseDatabaseManager implements IQueryManager {
   private expenseQueryManager: ExpenseQueryManager;
   private budgetQueryManager: BudgetQueryManager;
   private categoryQueryManager: CategoryQueryManager;
+  private dashboardQueryManager: DashboardQueryManager;
 
   constructor() {
     super();
@@ -22,6 +25,7 @@ export class QueryManager extends BaseDatabaseManager implements IQueryManager {
     this.expenseQueryManager = new ExpenseQueryManager(this);
     this.budgetQueryManager = new BudgetQueryManager(this);
     this.categoryQueryManager = new CategoryQueryManager(this);
+    this.dashboardQueryManager = new DashboardQueryManager(this);
   }
 
   // Méthodes pour permettre aux query managers d'accéder à la base de données
@@ -108,5 +112,26 @@ export class QueryManager extends BaseDatabaseManager implements IQueryManager {
 
   async executeDeleteCategory(id: string): Promise<void> {
     return this.categoryQueryManager.delete(id);
+  }
+
+  // Dashboard operations
+  async executeGetDashboards(): Promise<Dashboard[]> {
+    return this.dashboardQueryManager.getAll();
+  }
+
+  async executeGetDashboardById(id: string): Promise<Dashboard | null> {
+    return this.dashboardQueryManager.getById(id);
+  }
+
+  async executeAddDashboard(dashboard: Dashboard): Promise<void> {
+    return this.dashboardQueryManager.add(dashboard);
+  }
+
+  async executeUpdateDashboard(dashboard: Dashboard): Promise<void> {
+    return this.dashboardQueryManager.update(dashboard);
+  }
+
+  async executeDeleteDashboard(id: string): Promise<void> {
+    return this.dashboardQueryManager.delete(id);
   }
 }

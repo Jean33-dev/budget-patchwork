@@ -3,6 +3,7 @@ import { Budget } from '../models/budget';
 import { Expense } from '../models/expense';
 import { Income } from '../models/income';
 import { Category } from '../models/category';
+import { Dashboard } from '../models/dashboard';
 
 /**
  * Interface defining all database operations
@@ -13,6 +14,13 @@ export interface IDatabaseManager {
   isInitialized(): boolean;
   exportData(): any;
   migrateFromLocalStorage(): Promise<boolean>;
+  
+  // Dashboard operations
+  getDashboards(): Promise<Dashboard[]>;
+  getDashboardById(id: string): Promise<Dashboard | null>;
+  addDashboard(dashboard: Dashboard): Promise<void>;
+  updateDashboard(dashboard: Dashboard): Promise<void>;
+  deleteDashboard(id: string): Promise<void>;
   
   // Budget operations
   getBudgets(): Promise<Budget[]>;
