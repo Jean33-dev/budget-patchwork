@@ -9,21 +9,29 @@ import { DatabaseManagerFactory } from './database-manager-factory';
 import { IDatabaseManager } from './interfaces/IDatabaseManager';
 import { InitializationDatabaseManager } from './managers/initialization-manager';
 import { DataOperationsManager } from './managers/data-operations-manager';
+import { DatabaseInitManager } from './database-init-manager';
 
 export class DatabaseManager extends DatabaseManagerImpl implements IDatabaseManager {
   private managerFactory: DatabaseManagerFactory;
-  private initManager: InitializationDatabaseManager;
+  // Changed the property declaration to match the base class but use composition
+  // for the actual implementation
+  private _initManager: InitializationDatabaseManager;
   private dataManager: DataOperationsManager;
+  
+  // Override the inherited property to use our implementation
+  protected get initManager(): DatabaseInitManager {
+    return this._initManager as unknown as DatabaseInitManager;
+  }
 
   constructor() {
     super();
     this.managerFactory = new DatabaseManagerFactory();
-    this.initManager = new InitializationDatabaseManager();
+    this._initManager = new InitializationDatabaseManager();
     this.dataManager = new DataOperationsManager();
   }
 
   async init(): Promise<boolean> {
-    const success = await this.initManager.init();
+    const success = await this._initManager.init();
     
     if (success && this.db) {
       this.managerFactory.initializeManagers(this.db);
@@ -43,7 +51,7 @@ export class DatabaseManager extends DatabaseManagerImpl implements IDatabaseMan
   
   // Override resetInitializationAttempts to delegate to the initManager
   resetInitializationAttempts(): void {
-    this.initManager.resetInitializationAttempts();
+    this._initManager.resetInitializationAttempts();
   }
 
   // Dashboard methods

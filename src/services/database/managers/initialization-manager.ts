@@ -45,7 +45,7 @@ export class InitializationDatabaseManager extends DatabaseManagerCore {
     }
     
     this.initializing = true;
-    const initPromise = this.performInitialization();
+    const initPromise = this.doPerformInitialization(); // Renamed to avoid conflict with parent class
     this.initCompletePromise = initPromise;
     
     try {
@@ -58,7 +58,8 @@ export class InitializationDatabaseManager extends DatabaseManagerCore {
     }
   }
 
-  private async performInitialization(): Promise<boolean> {
+  // Renamed from performInitialization to avoid conflict with parent class's method
+  private async doPerformInitialization(): Promise<boolean> {
     try {
       console.log("Starting database initialization sequence...");
       let success = false;
