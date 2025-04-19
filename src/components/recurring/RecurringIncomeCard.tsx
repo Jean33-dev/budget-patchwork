@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/componen
 import { Button } from "@/components/ui/button";
 import { Calendar } from "lucide-react";
 import { Income } from "@/services/database/models/income";
+import { cn } from "@/lib/utils";
 
 interface RecurringIncomeCardProps {
   income: Income;
@@ -15,7 +16,15 @@ export const RecurringIncomeCard = ({ income, onDelete, onClick }: RecurringInco
     <Card className="overflow-hidden hover:shadow-md transition-all" onClick={onClick}>
       <CardHeader className="bg-primary/5 pb-2">
         <CardTitle className="flex justify-between items-start gap-2">
-          <span className="text-base leading-tight break-words line-clamp-2">{income.title}</span>
+          <span 
+            className={cn(
+              "text-base leading-tight break-words",
+              income.title.length > 20 ? "line-clamp-2 hover:line-clamp-none" : ""
+            )}
+            title={income.title}
+          >
+            {income.title}
+          </span>
           <span className="text-lg font-semibold whitespace-nowrap shrink-0">{income.budget.toFixed(2)} €</span>
         </CardTitle>
       </CardHeader>
