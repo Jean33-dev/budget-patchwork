@@ -1,3 +1,4 @@
+
 import { Income } from './models/income';
 import { Expense } from './models/expense';
 import { Budget } from './models/budget';
@@ -8,22 +9,22 @@ import { DatabaseManagerFactory } from './database-manager-factory';
 import { IDatabaseManager } from './interfaces/IDatabaseManager';
 import { InitializationDatabaseManager } from './managers/initialization-manager';
 import { DataOperationsManager } from './managers/data-operations-manager';
-import { DatabaseInitManager } from './database-init-manager';
 
 export class DatabaseManager extends DatabaseManagerImpl implements IDatabaseManager {
   private managerFactory: DatabaseManagerFactory;
-  protected override initManager: InitializationDatabaseManager;
+  private customInitManager: InitializationDatabaseManager;
   private dataManager: DataOperationsManager;
 
   constructor() {
     super();
     this.managerFactory = new DatabaseManagerFactory();
-    this.initManager = new InitializationDatabaseManager();
+    this.customInitManager = new InitializationDatabaseManager();
     this.dataManager = new DataOperationsManager();
   }
 
   async init(): Promise<boolean> {
-    const success = await this.initManager.init();
+    // Use our custom initialization manager instead of the parent's
+    const success = await this.customInitManager.init();
     
     if (success && this.db) {
       this.managerFactory.initializeManagers(this.db);
@@ -41,9 +42,9 @@ export class DatabaseManager extends DatabaseManagerImpl implements IDatabaseMan
     return super.migrateFromLocalStorage();
   }
   
-  // Override resetInitializationAttempts to delegate to the initManager
+  // Override resetInitializationAttempts to delegate to the customInitManager
   resetInitializationAttempts(): void {
-    this.initManager.resetInitializationAttempts();
+    this.customInitManager.resetInitializationAttempts();
   }
 
   // Dashboard methods
