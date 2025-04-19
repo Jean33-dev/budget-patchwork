@@ -5,8 +5,7 @@ import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { DashboardOverview } from "@/components/dashboard/DashboardOverview";
 import { BudgetStats } from "@/components/dashboard/BudgetStats";
 import { useBudgets } from "@/hooks/useBudgets";
-import { BudgetPDFDownload } from "@/components/pdf/BudgetPDF";
-import { AlertTriangle, FileText } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,21 +17,12 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [showTransitionDialog, setShowTransitionDialog] = useState(false);
-  const [showPDFDialog, setShowPDFDialog] = useState(false);
   const [nextDate, setNextDate] = useState<Date | null>(null);
-  const [pdfExported, setPdfExported] = useState(false);
 
   // Utilisation du hook useBudgets pour obtenir toutes les données
   const { 
@@ -48,7 +38,6 @@ const Dashboard = () => {
     // Show transition dialog when month is changed
     setNextDate(newDate);
     setShowTransitionDialog(true);
-    setPdfExported(false);
   };
 
   const handleTransitionConfirm = () => {
@@ -61,16 +50,6 @@ const Dashboard = () => {
   const handleTransitionCancel = () => {
     setNextDate(null);
     setShowTransitionDialog(false);
-  };
-  
-  // Gérer l'export PDF
-  const handleExportPDF = () => {
-    setShowPDFDialog(true);
-  };
-
-  // Suivi de l'export PDF
-  const handlePDFExported = () => {
-    setPdfExported(true);
   };
 
   // Créer la liste des enveloppes à partir des budgets
@@ -88,7 +67,6 @@ const Dashboard = () => {
         currentDate={currentDate}
         onMonthChange={handleMonthChange}
         onBackClick={() => navigate("/")}
-        onExportPDF={handleExportPDF}
       />
       
       <DashboardOverview
@@ -120,26 +98,6 @@ const Dashboard = () => {
                     En passant au nouveau mois, vos dépenses et revenus actuels seront réinitialisés.
                     Ces données seront définitivement perdues.
                   </p>
-                  
-                  <div className="flex items-center gap-2 mt-2">
-                    <FileText className="h-4 w-4" />
-                    <span className="text-xs font-medium">Nous vous recommandons d'exporter vos données en PDF avant de continuer.</span>
-                  </div>
-                  
-                  <div className="mt-2" onClick={handlePDFExported}>
-                    <BudgetPDFDownload
-                      fileName={`rapport-budget-${currentDate.toISOString().slice(0, 7)}.pdf`}
-                      totalIncome={totalRevenues}
-                      totalExpenses={totalExpenses}
-                      budgets={envelopes}
-                    />
-                  </div>
-                  
-                  {pdfExported && (
-                    <p className="text-xs text-green-600 dark:text-green-400 mt-2">
-                      PDF exporté avec succès. Vous pouvez maintenant procéder à la transition.
-                    </p>
-                  )}
                 </AlertDescription>
               </Alert>
             </AlertDialogDescription>
@@ -152,26 +110,6 @@ const Dashboard = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-      
-      <Dialog open={showPDFDialog} onOpenChange={setShowPDFDialog}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Exporter en PDF</DialogTitle>
-            <DialogDescription>
-              Téléchargez un rapport budgétaire au format PDF.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex flex-col gap-4 py-4">
-            <BudgetPDFDownload
-              fileName={`rapport-budget-${currentDate.toISOString().slice(0, 7)}.pdf`}
-              totalIncome={totalRevenues}
-              totalExpenses={totalExpenses}
-              budgets={envelopes}
-              onClick={handlePDFExported}
-            />
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
