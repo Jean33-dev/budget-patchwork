@@ -51,6 +51,8 @@ export const PontualExpensesTab = ({
     console.log("PontualExpensesTab - expenses count:", expenses.length);
     if (expenses.length > 0) {
       console.log("Sample expense:", expenses[0]);
+    } else {
+      console.log("No expenses found in PontualExpensesTab");
     }
   }, [expenses]);
   

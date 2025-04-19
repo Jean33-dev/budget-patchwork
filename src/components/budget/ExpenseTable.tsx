@@ -54,6 +54,9 @@ export const ExpenseTable = ({
   // Log pour déboguer
   useEffect(() => {
     console.log("ExpenseTable - expenses count:", expenses.length);
+    if (expenses.length === 0) {
+      console.log("ExpenseTable - No expenses to display");
+    }
   }, [expenses]);
   
   const getBudgetTitle = (budgetId?: string) => {

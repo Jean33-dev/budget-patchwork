@@ -32,7 +32,7 @@ export const useExpenseDataLoading = (dashboardId: string | null) => {
       const filteredBudgets = loadedBudgets.filter(b => 
         !b.dashboardId || b.dashboardId === dashboardId
       );
-      console.log(`Dashboard ${dashboardId} - Budgets:`, filteredBudgets);
+      console.log(`Dashboard ${dashboardId} - Budgets loaded:`, filteredBudgets);
       setAvailableBudgets(filteredBudgets);
       
       // Load expenses
@@ -40,7 +40,7 @@ export const useExpenseDataLoading = (dashboardId: string | null) => {
       const filteredExpenses = loadedExpenses.filter(e => 
         !e.dashboardId || e.dashboardId === dashboardId
       );
-      console.log(`Dashboard ${dashboardId} - Expenses:`, filteredExpenses);
+      console.log(`Dashboard ${dashboardId} - Expenses loaded:`, filteredExpenses);
       setExpenses(filteredExpenses);
       
       setInitAttempted(true);

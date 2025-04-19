@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { EnvelopeListHeader } from "./EnvelopeListHeader";
 import { ExpenseTable } from "./ExpenseTable";
 import { AddEnvelopeDialog } from "./AddEnvelopeDialog";
@@ -33,6 +33,16 @@ export const ExpenseList = ({
   defaultBudgetId,
 }: ExpenseListProps) => {
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
+
+  // Log pour déboguer
+  useEffect(() => {
+    console.log("ExpenseList - received expenses:", expenses.length);
+    if (expenses.length > 0) {
+      console.log("ExpenseList - sample expense:", expenses[0]);
+    } else {
+      console.log("ExpenseList - No expenses provided to component");
+    }
+  }, [expenses]);
 
   const handleExpenseClick = (expense: Expense) => {
     console.log("Expense clicked:", expense);

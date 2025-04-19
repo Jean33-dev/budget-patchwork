@@ -36,9 +36,9 @@ export const useExpenseManagement = (budgetId: string | null) => {
   // Data reloading
   const { forceReload } = useDataReloader(isProcessing, isLoading, loadData);
 
-  // Filter expenses by budgetId and current dashboard, modifié pour afficher les dépenses même sans dashboardId
+  // Filter expenses by budgetId and current dashboard
   const filteredExpenses = useCallback(() => {
-    console.log("Filtering expenses:", expenses.length, "budgetId:", budgetId, "dashboardId:", currentDashboardId);
+    console.log("Filtering expenses. Total:", expenses.length, "budgetId:", budgetId, "dashboardId:", currentDashboardId);
     
     return expenses.filter(expense => {
       const matchesBudget = budgetId ? expense.linkedBudgetId === budgetId : true;
@@ -57,7 +57,7 @@ export const useExpenseManagement = (budgetId: string | null) => {
 
   // Calculer les dépenses filtrées une seule fois et les stocker
   const filteredExpensesResult = filteredExpenses();
-  console.log("Filtered expenses result:", filteredExpensesResult.length);
+  console.log("Filtered expenses result count:", filteredExpensesResult.length);
 
   return {
     expenses: filteredExpensesResult,
