@@ -1,5 +1,6 @@
+
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Menu, CalendarPlus, Download } from "lucide-react";
+import { ArrowLeft, Menu, Home, Clock, CreditCard, DollarSign, Calendar, CalendarPlus, Download } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
