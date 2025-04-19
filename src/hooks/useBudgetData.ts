@@ -1,30 +1,33 @@
 
-import { useState, useEffect } from "react";
-import { toast } from "@/components/ui/use-toast";
+import { useState, useEffect, useCallback } from "react";
+import { useToast } from "@/components/ui/use-toast";
 import { db } from "@/services/database";
 import { Budget } from "@/types/categories";
 import { useParams } from "react-router-dom";
 
 export const useBudgetData = () => {
+  const { toast } = useToast();
   const [budgets, setBudgets] = useState<Budget[]>([]);
   const [totalRevenues, setTotalRevenues] = useState(0);
   const [totalExpenses, setTotalExpenses] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const [loadAttempt, setLoadAttempt] = useState(0);
   const { dashboardId = "default" } = useParams<{ dashboardId: string }>();
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setIsLoading(true);
     setError(null);
+    setLoadAttempt(prev => prev + 1);
     
     try {
-      console.log(`Loading budget data for dashboard ${dashboardId}...`);
+      console.log(`Loading budget data for dashboard ${dashboardId}... (attempt ${loadAttempt + 1})`);
       
       // Force database initialization
       const dbInitialized = await db.init();
       
       if (!dbInitialized) {
-        console.error("Failed to initialize database in useBudgetData");
+        console.error(`Failed to initialize database in useBudgetData (attempt ${loadAttempt + 1})`);
         throw new Error("Failed to initialize database");
       }
       
@@ -40,7 +43,7 @@ export const useBudgetData = () => {
       );
       console.log(`Filtered budgets for dashboard ${dashboardId}:`, dashboardBudgets);
       
-      // Load expenses
+      // Load expenses to calculate totals
       const allExpenses = await db.getExpenses();
       console.log("All expenses loaded:", allExpenses);
       
@@ -97,22 +100,30 @@ export const useBudgetData = () => {
       console.log(`Total revenues calculated for dashboard ${dashboardId}:`, totalIncome);
       
     } catch (error) {
-      console.error("Error loading data:", error);
+      console.error(`Error loading budget data (attempt ${loadAttempt}):`, error);
       setError(error instanceof Error ? error : new Error("Unknown error"));
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Impossible de charger les données"
-      });
+      if (loadAttempt < 3) {
+        // Auto-retry once on failure with a delay
+        const retryDelay = Math.pow(2, loadAttempt) * 1000; // Exponential backoff
+        console.log(`Will auto-retry in ${retryDelay}ms...`);
+        setTimeout(() => loadData(), retryDelay);
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Impossible de charger les données budgétaires"
+        });
+      }
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [dashboardId, loadAttempt, toast]);
 
   // Load data on component mount or when dashboardId changes
   useEffect(() => {
+    console.log(`useBudgetData effect triggered, loading data for dashboard ${dashboardId}`);
     loadData();
-  }, [dashboardId]);
+  }, [dashboardId, loadData]);
 
   return {
     budgets,
