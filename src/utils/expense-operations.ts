@@ -11,7 +11,7 @@ export type ExpenseFormData = {
 };
 
 export const expenseOperations = {
-  async addExpense(data: ExpenseFormData, dashboardId: string = "default"): Promise<boolean> {
+  async addExpense(data: ExpenseFormData): Promise<boolean> {
     try {
       console.log("expenseOperations.addExpense: Starting with data:", data);
       const newExpense: Expense = {
@@ -21,8 +21,7 @@ export const expenseOperations = {
         spent: Number(data.budget) || 0,
         type: "expense",
         linkedBudgetId: data.linkedBudgetId || null,
-        date: data.date || new Date().toISOString().split('T')[0],
-        dashboardId: dashboardId // Associer au tableau de bord actuel
+        date: data.date || new Date().toISOString().split('T')[0]
       };
 
       console.log("expenseOperations.addExpense: Created expense object:", newExpense);
@@ -36,7 +35,7 @@ export const expenseOperations = {
     }
   },
 
-  async updateExpense(expenseToUpdate: Expense, dashboardId: string = "default"): Promise<boolean> {
+  async updateExpense(expenseToUpdate: Expense): Promise<boolean> {
     try {
       console.log("expenseOperations.updateExpense: Starting with data:", expenseToUpdate);
       if (!expenseToUpdate.id) {
@@ -51,8 +50,7 @@ export const expenseOperations = {
         spent: Number(expenseToUpdate.spent) || Number(expenseToUpdate.budget) || 0,
         type: "expense",
         linkedBudgetId: expenseToUpdate.linkedBudgetId ? String(expenseToUpdate.linkedBudgetId) : null,
-        date: String(expenseToUpdate.date || new Date().toISOString().split('T')[0]),
-        dashboardId: expenseToUpdate.dashboardId || dashboardId // Conserver ou définir l'ID du tableau de bord
+        date: String(expenseToUpdate.date || new Date().toISOString().split('T')[0])
       };
 
       console.log("expenseOperations.updateExpense: Validated expense:", validatedExpense);

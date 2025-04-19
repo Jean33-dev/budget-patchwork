@@ -1,11 +1,12 @@
-import { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { DashboardOverview } from "@/components/dashboard/DashboardOverview";
 import { BudgetStats } from "@/components/dashboard/BudgetStats";
 import { useBudgets } from "@/hooks/useBudgets";
 import { BudgetPDFDownload } from "@/components/pdf/BudgetPDF";
-import { AlertTriangle, FileText, CalendarPlus } from "lucide-react";
+import { AlertTriangle, FileText } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,32 +18,23 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
-import { useDashboards } from "@/hooks/useDashboards";
-import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { dashboardId } = useParams<{ dashboardId: string }>();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [showTransitionDialog, setShowTransitionDialog] = useState(false);
+  const [showPDFDialog, setShowPDFDialog] = useState(false);
   const [nextDate, setNextDate] = useState<Date | null>(null);
   const [pdfExported, setPdfExported] = useState(false);
-  const [dashboardTitle, setDashboardTitle] = useState("");
 
-  const { dashboards, isLoading: isDashboardsLoading } = useDashboards();
-
-  useEffect(() => {
-    if (!isDashboardsLoading && dashboards.length > 0 && dashboardId) {
-      const dashboard = dashboards.find(d => d.id === dashboardId);
-      if (dashboard) {
-        setDashboardTitle(dashboard.title);
-      } else {
-        navigate("/");
-      }
-    }
-  }, [dashboardId, dashboards, isDashboardsLoading, navigate]);
-
+  // Utilisation du hook useBudgets pour obtenir toutes les données
   const { 
     budgets, 
     totalRevenues, 
@@ -53,14 +45,15 @@ const Dashboard = () => {
 
   const handleMonthChange = (newDate: Date) => {
     setCurrentDate(newDate);
+    // Show transition dialog when month is changed
     setNextDate(newDate);
     setShowTransitionDialog(true);
     setPdfExported(false);
   };
 
   const handleTransitionConfirm = () => {
-    if (nextDate && dashboardId) {
-      navigate(`/dashboard/${dashboardId}/transition`);
+    if (nextDate) {
+      navigate("/dashboard/budget/transition");
     }
     setShowTransitionDialog(false);
   };
@@ -70,10 +63,17 @@ const Dashboard = () => {
     setShowTransitionDialog(false);
   };
   
+  // Gérer l'export PDF
+  const handleExportPDF = () => {
+    setShowPDFDialog(true);
+  };
+
+  // Suivi de l'export PDF
   const handlePDFExported = () => {
     setPdfExported(true);
   };
 
+  // Créer la liste des enveloppes à partir des budgets
   const envelopes = budgets.map(budget => ({
     id: budget.id,
     title: budget.title,
@@ -82,42 +82,14 @@ const Dashboard = () => {
     type: budget.type
   }));
 
-  if (isDashboardsLoading) {
-    return (
-      <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-8 space-y-6 sm:space-y-8">
-        <Skeleton className="h-10 w-3/4 mb-6" />
-        <Skeleton className="h-6 w-full mb-4" />
-        <Skeleton className="h-40 w-full mb-6" />
-        <Skeleton className="h-20 w-full" />
-      </div>
-    );
-  }
-
   return (
     <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-8 space-y-6 sm:space-y-8">
       <DashboardHeader
-        dashboardId={dashboardId || "default"}
         currentDate={currentDate}
         onMonthChange={handleMonthChange}
         onBackClick={() => navigate("/")}
-        title={dashboardTitle}
+        onExportPDF={handleExportPDF}
       />
-      
-      <div className="flex justify-end mb-4 gap-2">
-        <BudgetPDFDownload
-          fileName={`rapport-budget-${dashboardTitle}-${currentDate.toISOString().slice(0, 7)}.pdf`}
-          totalIncome={totalRevenues}
-          totalExpenses={totalExpenses}
-          budgets={envelopes}
-          className="mr-2"
-          onClick={handlePDFExported}
-        />
-        
-        <Button variant="outline" onClick={() => navigate(`/dashboard/${dashboardId}/transition`)} className="flex items-center gap-2">
-          <CalendarPlus className="h-4 w-4" />
-          Nouveau mois
-        </Button>
-      </div>
       
       <DashboardOverview
         totalIncome={totalRevenues}
@@ -156,7 +128,7 @@ const Dashboard = () => {
                   
                   <div className="mt-2" onClick={handlePDFExported}>
                     <BudgetPDFDownload
-                      fileName={`rapport-budget-${dashboardTitle}-${currentDate.toISOString().slice(0, 7)}.pdf`}
+                      fileName={`rapport-budget-${currentDate.toISOString().slice(0, 7)}.pdf`}
                       totalIncome={totalRevenues}
                       totalExpenses={totalExpenses}
                       budgets={envelopes}
@@ -180,6 +152,26 @@ const Dashboard = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      
+      <Dialog open={showPDFDialog} onOpenChange={setShowPDFDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Exporter en PDF</DialogTitle>
+            <DialogDescription>
+              Téléchargez un rapport budgétaire au format PDF.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-4 py-4">
+            <BudgetPDFDownload
+              fileName={`rapport-budget-${currentDate.toISOString().slice(0, 7)}.pdf`}
+              totalIncome={totalRevenues}
+              totalExpenses={totalExpenses}
+              budgets={envelopes}
+              onClick={handlePDFExported}
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

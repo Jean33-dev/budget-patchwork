@@ -12,8 +12,7 @@ import { toast } from "@/components/ui/use-toast";
 import { useBudgetInitialization } from "@/hooks/useBudgetInitialization";
 import { useBudgetInteractions } from "@/hooks/useBudgetInteractions";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, RefreshCw, Database } from "lucide-react";
-import { db } from "@/services/database";
+import { AlertCircle, RefreshCw } from "lucide-react";
 
 const BudgetsPage = () => {
   const navigate = useNavigate();
@@ -21,14 +20,12 @@ const BudgetsPage = () => {
     isRefreshing, 
     initializationSuccess,
     handleManualRefresh,
-    clearCacheAndRefresh,
     initializeDatabase,
     attempt,
     maxAttempts
   } = useBudgetInitialization();
   
   const [retryCount, setRetryCount] = useState(0);
-  const [isCustomRetrying, setIsCustomRetrying] = useState(false);
   
   const {
     budgets,
@@ -76,53 +73,11 @@ const BudgetsPage = () => {
     }
   }, [initializationSuccess, retryCount, initializeDatabase]);
 
-  // Function to retry loading data with a custom approach
-  const handleCustomRetry = async () => {
-    setIsCustomRetrying(true);
-    try {
-      console.log("Performing custom retry with database reset...");
-      
-      // Reset database initialization attempts
-      db.resetInitializationAttempts();
-      
-      // Force initialization
-      const success = await db.init();
-      
-      if (success) {
-        console.log("Custom retry: Database initialized successfully");
-        toast({
-          title: "Base de données initialisée",
-          description: "Rechargement des données en cours..."
-        });
-        
-        // Reload page content after short delay
-        setTimeout(() => {
-          window.location.reload();
-        }, 1000);
-      } else {
-        console.error("Custom retry: Database initialization failed");
-        toast({
-          variant: "destructive",
-          title: "Échec de l'initialisation",
-          description: "Impossible d'initialiser la base de données."
-        });
-      }
-    } catch (e) {
-      console.error("Error during custom retry:", e);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Une erreur est survenue lors de la réinitialisation."
-      });
-    } finally {
-      setIsCustomRetrying(false);
-    }
-  };
-
   // Fonction pour forcer une réinitialisation complète
   const handleForceReset = async () => {
     setRetryCount(0);
-    await clearCacheAndRefresh();
+    localStorage.clear(); // Effacer toutes les données du localStorage
+    await handleManualRefresh();
   };
 
   // Afficher l'état de chargement tant que nous chargeons ou que nous n'avons pas encore essayé d'initialiser
@@ -144,31 +99,11 @@ const BudgetsPage = () => {
                 Impossible de charger la base de données. Veuillez essayer l'une des solutions suivantes:
               </p>
               <div className="mt-4 space-y-2">
-                <Button 
-                  onClick={handleManualRefresh} 
-                  className="mr-2" 
-                  variant="outline"
-                  disabled={isCustomRetrying}
-                >
+                <Button onClick={handleManualRefresh} className="mr-2" variant="outline">
                   <RefreshCw className="h-4 w-4 mr-2" />
                   Réessayer simplement
                 </Button>
-                
-                <Button 
-                  onClick={handleCustomRetry} 
-                  variant="outline"
-                  disabled={isCustomRetrying}
-                  className="mr-2"
-                >
-                  <Database className="h-4 w-4 mr-2" />
-                  {isCustomRetrying ? "Réinitialisation en cours..." : "Réinitialiser la base de données"}
-                </Button>
-                
-                <Button 
-                  onClick={handleForceReset} 
-                  variant="destructive"
-                  disabled={isCustomRetrying}
-                >
+                <Button onClick={handleForceReset} variant="destructive">
                   <RefreshCw className="h-4 w-4 mr-2" />
                   Réinitialiser complètement
                 </Button>

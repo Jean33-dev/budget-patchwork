@@ -3,12 +3,10 @@ import { useState } from "react";
 import { useBudgetData } from "./useBudgetData";
 import { budgetOperations } from "@/utils/budget-operations";
 import { Budget } from "@/types/categories";
-import { useParams } from "react-router-dom";
 
 export type { Budget };
 
 export const useBudgets = () => {
-  const { dashboardId = "default" } = useParams<{ dashboardId: string }>();
   const { 
     budgets, 
     totalRevenues, 
@@ -26,7 +24,7 @@ export const useBudgets = () => {
   }
 
   const addBudget = async (newBudget: Omit<Budget, "id" | "spent">) => {
-    const success = await budgetOperations.addBudget(newBudget, dashboardId);
+    const success = await budgetOperations.addBudget(newBudget);
     if (success) {
       // Refresh data to include the new budget
       await loadData();
@@ -35,17 +33,11 @@ export const useBudgets = () => {
   };
 
   const updateBudget = async (budget: Budget) => {
-    // Ensure the budget has the current dashboardId
-    const budgetWithDashboardId = {
-      ...budget,
-      dashboardId: budget.dashboardId || dashboardId
-    };
-    
-    const success = await budgetOperations.updateBudget(budgetWithDashboardId);
+    const success = await budgetOperations.updateBudget(budget);
     if (success) {
       // Update local state immediately for better UX
       setLocalBudgets(prevBudgets => 
-        prevBudgets.map(b => b.id === budget.id ? budgetWithDashboardId : b)
+        prevBudgets.map(b => b.id === budget.id ? budget : b)
       );
       
       // Also refresh data to ensure consistency

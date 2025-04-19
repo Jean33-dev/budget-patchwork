@@ -2,13 +2,12 @@
 import { useState, useCallback } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { Budget } from "@/types/categories";
-import { Expense } from "@/services/database/models/expense"; 
+import { Expense } from "../models/expense"; 
 import { useExpenseDataLoading } from "./useExpenseDataLoading";
 import { useExpenseOperationHandlers } from "./useExpenseOperationHandlers";
 import { useDataReloader } from "./useDataReloader";
 
-export type { Budget };
-export type { Expense };
+export type { Budget, Expense };
 
 export const useExpenseManagement = (budgetId: string | null) => {
   const { toast } = useToast();

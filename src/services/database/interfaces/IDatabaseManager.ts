@@ -1,32 +1,45 @@
 
-import { IBudgetManager } from './IBudgetManager';
-import { ICategoryManager } from './ICategoryManager';
-import { IExpenseManager } from './IExpenseManager';
-import { IIncomeManager } from './IIncomeManager';
-import { DashboardManager } from '../managers/dashboard-manager';
-import { Database } from 'sql.js';
+import { Budget } from '../models/budget';
+import { Expense } from '../models/expense';
+import { Income } from '../models/income';
+import { Category } from '../models/category';
 
 /**
- * Interface for database manager
+ * Interface defining all database operations
  */
 export interface IDatabaseManager {
+  // Initialization
   init(): Promise<boolean>;
-  getDb(): Database;
-  getBudgetManager(): IBudgetManager;
-  getCategoryManager(): ICategoryManager;
-  getExpenseManager(): IExpenseManager;
-  getIncomeManager(): IIncomeManager;
-  getDashboardManager(): DashboardManager;
-  resetInitializationAttempts(): void;
   isInitialized(): boolean;
-  isInitializationInProgress(): boolean;
-  getDashboards(): Promise<any[]>;
-  getBudgets(): Promise<any[]>;
-  getExpenses(): Promise<any[]>;
-  getIncomes(): Promise<any[]>;
-  getCategories(): Promise<any[]>;
-  addDashboard(dashboard: any): Promise<void>;
-  updateDashboard(dashboard: any): Promise<void>;
-  deleteDashboard(id: string): Promise<void>;
-  safeAddDashboard(dashboard: any): Promise<boolean>;  // New method for safely adding dashboards
+  exportData(): any;
+  migrateFromLocalStorage(): Promise<boolean>;
+  
+  // Budget operations
+  getBudgets(): Promise<Budget[]>;
+  addBudget(budget: Budget): Promise<void>;
+  updateBudget(budget: Budget): Promise<void>;
+  deleteBudget(id: string): Promise<void>;
+  
+  // Expense operations
+  getExpenses(): Promise<Expense[]>;
+  getRecurringExpenses(): Promise<Expense[]>;
+  addExpense(expense: Expense): Promise<void>;
+  updateExpense(expense: Expense): Promise<void>;
+  deleteExpense(id: string): Promise<void>;
+  copyRecurringExpenseToMonth(expenseId: string, targetDate: string): Promise<void>;
+  
+  // Income operations
+  getIncomes(): Promise<Income[]>;
+  getRecurringIncomes(): Promise<Income[]>;
+  addIncome(income: Income): Promise<void>;
+  updateIncome(income: Income): Promise<void>;
+  deleteIncome(id: string): Promise<void>;
+  copyRecurringIncomeToMonth(incomeId: string, targetDate: string): Promise<void>;
+  
+  // Category operations
+  getCategories(): Promise<Category[]>;
+  addCategory(category: Category): Promise<void>;
+  updateCategory(category: Category): Promise<void>;
+  deleteCategory(id: string): Promise<void>;
+  resetCategoryExpenses(categoryId: string): Promise<void>;
 }

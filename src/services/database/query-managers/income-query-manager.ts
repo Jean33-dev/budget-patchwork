@@ -2,6 +2,7 @@
 import { toast } from "@/components/ui/use-toast";
 import { QueryManager } from '../query-manager';
 import { Income } from '../models/income';
+import { incomeQueries } from '../queries/income-queries';
 import { BaseQueryManager } from './base-query-manager';
 
 export class IncomeQueryManager extends BaseQueryManager {
@@ -11,27 +12,19 @@ export class IncomeQueryManager extends BaseQueryManager {
 
   async getAll(): Promise<Income[]> {
     try {
+      console.log("IncomeQueryManager.getAll: Starting...");
       const success = await this.ensureParentInitialized();
-      if (!success) return [];
-      
-      const db = this.getDb();
-      const stmt = db.prepare("SELECT * FROM incomes");
-      const result = [];
-      
-      while(stmt.step()) {
-        const row = stmt.getAsObject();
-        result.push({
-          id: row.id as string,
-          title: row.title as string,
-          budget: row.budget as number,
-          spent: row.spent as number,
-          type: row.type as string,
-          date: row.date as string,
-          isRecurring: Boolean(row.isRecurring)
-        });
+      if (!success) {
+        console.error("IncomeQueryManager.getAll: Parent not initialized");
+        return [];
       }
-      
-      stmt.free();
+      const db = this.getDb();
+      if (!db) {
+        console.error("IncomeQueryManager.getAll: Database is null");
+        return [];
+      }
+      const result = incomeQueries.getAll(db);
+      console.log(`IncomeQueryManager.getAll: Got ${result.length} incomes`);
       return result;
     } catch (error) {
       console.error("Error getting incomes:", error);
@@ -46,28 +39,35 @@ export class IncomeQueryManager extends BaseQueryManager {
 
   async getRecurring(): Promise<Income[]> {
     try {
+      console.log("IncomeQueryManager.getRecurring: Starting...");
       const success = await this.ensureParentInitialized();
-      if (!success) return [];
-      
+      if (!success) {
+        console.error("IncomeQueryManager.getRecurring: Parent not initialized");
+        return [];
+      }
       const db = this.getDb();
-      const stmt = db.prepare("SELECT * FROM incomes WHERE isRecurring = 1");
-      const result = [];
-      
-      while(stmt.step()) {
-        const row = stmt.getAsObject();
-        result.push({
-          id: row.id as string,
-          title: row.title as string,
-          budget: row.budget as number,
-          spent: row.spent as number,
-          type: row.type as string,
-          date: row.date as string,
-          isRecurring: true
-        });
+      if (!db) {
+        console.error("IncomeQueryManager.getRecurring: Database is null");
+        return [];
       }
       
-      stmt.free();
-      return result;
+      // First try to get recurring incomes using the isRecurring column
+      try {
+        const result = incomeQueries.getRecurring(db);
+        console.log(`IncomeQueryManager.getRecurring: Got ${result.length} recurring incomes`);
+        return result;
+      } catch (error) {
+        // If the column doesn't exist, try to create it and return an empty array for now
+        console.log("IncomeQueryManager.getRecurring: Adding isRecurring column to incomes table");
+        try {
+          db.exec("ALTER TABLE incomes ADD COLUMN isRecurring INTEGER DEFAULT 0");
+          console.log("IncomeQueryManager.getRecurring: Column added successfully");
+          return [];
+        } catch (alterError) {
+          console.error("Error adding isRecurring column:", alterError);
+          return [];
+        }
+      }
     } catch (error) {
       console.error("Error getting recurring incomes:", error);
       toast({
@@ -81,26 +81,19 @@ export class IncomeQueryManager extends BaseQueryManager {
 
   async add(income: Income): Promise<void> {
     try {
+      console.log("IncomeQueryManager.add: Starting...", income);
       const success = await this.ensureParentInitialized();
-      if (!success) return;
-      
+      if (!success) {
+        console.error("IncomeQueryManager.add: Parent not initialized");
+        return;
+      }
       const db = this.getDb();
-      const stmt = db.prepare(`
-        INSERT INTO incomes (id, title, budget, spent, type, date, isRecurring)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-      `);
-      
-      stmt.run([
-        income.id,
-        income.title,
-        income.budget,
-        income.spent,
-        income.type,
-        income.date,
-        income.isRecurring ? 1 : 0
-      ]);
-      
-      stmt.free();
+      if (!db) {
+        console.error("IncomeQueryManager.add: Database is null");
+        return;
+      }
+      incomeQueries.add(db, income);
+      console.log("IncomeQueryManager.add: Income added successfully");
     } catch (error) {
       console.error("Error adding income:", error);
       toast({
@@ -114,27 +107,19 @@ export class IncomeQueryManager extends BaseQueryManager {
 
   async update(income: Income): Promise<void> {
     try {
+      console.log("IncomeQueryManager.update: Starting...", income);
       const success = await this.ensureParentInitialized();
-      if (!success) return;
-      
+      if (!success) {
+        console.error("IncomeQueryManager.update: Parent not initialized");
+        return;
+      }
       const db = this.getDb();
-      const stmt = db.prepare(`
-        UPDATE incomes 
-        SET title = ?, budget = ?, spent = ?, type = ?, date = ?, isRecurring = ?
-        WHERE id = ?
-      `);
-      
-      stmt.run([
-        income.title,
-        income.budget,
-        income.spent,
-        income.type,
-        income.date,
-        income.isRecurring ? 1 : 0,
-        income.id
-      ]);
-      
-      stmt.free();
+      if (!db) {
+        console.error("IncomeQueryManager.update: Database is null");
+        return;
+      }
+      incomeQueries.update(db, income);
+      console.log("IncomeQueryManager.update: Income updated successfully");
     } catch (error) {
       console.error("Error updating income:", error);
       toast({
@@ -148,15 +133,29 @@ export class IncomeQueryManager extends BaseQueryManager {
 
   async delete(id: string): Promise<void> {
     try {
+      console.log(`IncomeQueryManager.delete: Starting with ID: ${id}`);
+      if (!id) {
+        console.error("IncomeQueryManager.delete: ID is empty");
+        return;
+      }
+      
       const success = await this.ensureParentInitialized();
-      if (!success) return;
+      if (!success) {
+        console.error("IncomeQueryManager.delete: Parent not initialized");
+        return;
+      }
       
       const db = this.getDb();
-      const stmt = db.prepare("DELETE FROM incomes WHERE id = ?");
-      stmt.run([id]);
-      stmt.free();
+      if (!db) {
+        console.error("IncomeQueryManager.delete: Database is null");
+        return;
+      }
+      
+      console.log(`IncomeQueryManager.delete: Deleting income with ID: ${id}`);
+      incomeQueries.delete(db, id);
+      console.log("IncomeQueryManager.delete: Income deleted successfully");
     } catch (error) {
-      console.error("Error deleting income:", error);
+      console.error(`Error deleting income with ID ${id}:`, error);
       toast({
         variant: "destructive",
         title: "Erreur",

@@ -9,13 +9,6 @@ import { IQueryManager } from '../interfaces/IQueryManager';
  * Responsible for handling budget-related database operations
  */
 export class BudgetManager extends BaseDatabaseManager implements IBudgetManager {
-  constructor(queryManager?: IQueryManager) {
-    super();
-    if (queryManager) {
-      this.queryManager = queryManager;
-    }
-  }
-
   /**
    * Get all budgets from the database
    */

@@ -1,33 +1,38 @@
 
-import { Database } from "sql.js";
+import { Budget } from '../models/budget';
+import { Expense } from '../models/expense';
+import { Income } from '../models/income';
+import { Category } from '../models/category';
 
 /**
- * Interface for query managers
+ * Interface for query manager operations
  */
 export interface IQueryManager {
-  getDb(): Database;
-  setDb(db: Database): void;
+  setDb(db: any): void;
+  getDb(): any;
+  setInitialized(value: boolean): void;
   ensureInitialized(): Promise<boolean>;
-  executeGetBudgets(): Promise<any[]>;
-  executeAddBudget(budget: any): Promise<void>;
-  executeUpdateBudget(budget: any): Promise<void>;
-  executeDeleteBudget(id: string): Promise<void>;
-  executeGetCategories(): Promise<any[]>;
-  executeAddCategory(category: any): Promise<void>;
-  executeUpdateCategory(category: any): Promise<void>;
-  executeDeleteCategory(id: string): Promise<void>;
-  executeGetExpenses(): Promise<any[]>;
-  executeGetRecurringExpenses(): Promise<any[]>;
-  executeAddExpense(expense: any): Promise<void>;
-  executeUpdateExpense(expense: any): Promise<void>;
-  executeDeleteExpense(id: string): Promise<void>;
-  executeGetIncomes(): Promise<any[]>;
-  executeGetRecurringIncomes(): Promise<any[]>;
-  executeAddIncome(income: any): Promise<void>;
-  executeUpdateIncome(income: any): Promise<void>;
+  
+  // Query execution methods
+  executeGetIncomes(): Promise<Income[]>;
+  executeGetRecurringIncomes(): Promise<Income[]>;
+  executeAddIncome(income: Income): Promise<void>;
+  executeUpdateIncome(income: Income): Promise<void>;
   executeDeleteIncome(id: string): Promise<void>;
-  executeGetDashboards(): Promise<any[]>;
-  executeAddDashboard(dashboard: any): Promise<void>;
-  executeUpdateDashboard(dashboard: any): Promise<void>;
-  executeDeleteDashboard(id: string): Promise<void>;
+  
+  executeGetExpenses(): Promise<Expense[]>;
+  executeGetRecurringExpenses(): Promise<Expense[]>;
+  executeAddExpense(expense: Expense): Promise<void>;
+  executeUpdateExpense(expense: Expense): Promise<void>;
+  executeDeleteExpense(id: string): Promise<void>;
+  
+  executeGetBudgets(): Promise<Budget[]>;
+  executeAddBudget(budget: Budget): Promise<void>;
+  executeUpdateBudget(budget: Budget): Promise<void>;
+  executeDeleteBudget(id: string): Promise<void>;
+  
+  executeGetCategories(): Promise<Category[]>;
+  executeAddCategory(category: Category): Promise<void>;
+  executeUpdateCategory(category: Category): Promise<void>;
+  executeDeleteCategory(id: string): Promise<void>;
 }

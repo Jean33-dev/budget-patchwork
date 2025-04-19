@@ -1,4 +1,5 @@
-import { Category } from "@/services/database/models/category";
+
+import { Category } from "@/types/categories";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Pencil } from "lucide-react";

@@ -5,7 +5,6 @@ import { useToast } from "@/hooks/use-toast";
 import { db } from "@/services/database";
 import { Expense } from "@/services/database/models/expense";
 import { Budget } from "@/services/database/models/budget";
-import { useParams } from "react-router-dom";
 
 export const useRecurringExpenses = () => {
   const { toast } = useToast();
@@ -13,7 +12,6 @@ export const useRecurringExpenses = () => {
   const [availableBudgets, setAvailableBudgets] = useState<Budget[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const currentDate = format(new Date(), "yyyy-MM-dd");
-  const { dashboardId = "default" } = useParams<{ dashboardId: string }>();
 
   const loadData = async () => {
     setIsLoading(true);
@@ -21,17 +19,8 @@ export const useRecurringExpenses = () => {
       await db.init();
       const expenses = await db.getRecurringExpenses();
       const budgets = await db.getBudgets();
-      
-      // Filter by dashboardId
-      const filteredExpenses = expenses.filter(expense => 
-        expense.dashboardId === dashboardId || !expense.dashboardId
-      );
-      const filteredBudgets = budgets.filter(budget => 
-        budget.dashboardId === dashboardId || !budget.dashboardId
-      );
-      
-      setRecurringExpenses(filteredExpenses);
-      setAvailableBudgets(filteredBudgets);
+      setRecurringExpenses(expenses);
+      setAvailableBudgets(budgets);
     } catch (error) {
       console.error("Erreur lors du chargement des dépenses récurrentes:", error);
       toast({
@@ -46,7 +35,7 @@ export const useRecurringExpenses = () => {
 
   useEffect(() => {
     loadData();
-  }, [dashboardId]);
+  }, []);
 
   const handleAddExpense = async (newExpense: { 
     title: string; 
@@ -66,9 +55,7 @@ export const useRecurringExpenses = () => {
         ...newExpense,
         type: "expense",
         spent: 0,
-        linkedBudgetId: newExpense.linkedBudgetId || null,
-        isRecurring: true,
-        dashboardId
+        isRecurring: true
       };
       
       await db.addExpense(expense);
@@ -93,13 +80,11 @@ export const useRecurringExpenses = () => {
 
   const handleUpdateExpense = async (updatedExpense: Expense) => {
     try {
-      // Ensure the expense is still recurring and has the correct dashboardId
+      // Ensure the expense is still recurring
       const expense: Expense = {
         ...updatedExpense,
         type: "expense",
-        isRecurring: true,
-        linkedBudgetId: updatedExpense.linkedBudgetId || null,
-        dashboardId: updatedExpense.dashboardId || dashboardId
+        isRecurring: true
       };
       
       await db.updateExpense(expense);

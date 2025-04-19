@@ -1,3 +1,4 @@
+
 import { toast } from "@/components/ui/use-toast";
 import { Income } from '../models/income';
 import { BaseDatabaseManager } from '../base-database-manager';
@@ -8,13 +9,6 @@ import { IQueryManager } from '../interfaces/IQueryManager';
  * Responsible for handling income-related database operations
  */
 export class IncomeManager extends BaseDatabaseManager implements IIncomeManager {
-  constructor(queryManager?: IQueryManager) {
-    super();
-    if (queryManager) {
-      this.queryManager = queryManager;
-    }
-  }
-
   /**
    * Get all incomes from the database
    */

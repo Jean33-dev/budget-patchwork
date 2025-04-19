@@ -1,22 +1,23 @@
 
-import { toast } from "@/hooks/use-toast";
-
 /**
- * Helper class for Web SQLite operations
+ * Module for SQL.js database operations
  */
+
+import { SqlJsInitializer } from './sql-js-initializer';
+
 export class WebSQLiteOperations {
   /**
    * Execute a SQLite query
    */
-  static execute(db: any, query: string, params: any[] = []): any {
+  static async execute(db: any, query: string, params: any[] = []): Promise<any> {
+    if (!db) {
+      throw new Error("Database is not initialized");
+    }
+    
     try {
-      console.log(`Executing query: ${query}`, params);
-      const stmt = db.prepare(query);
-      const result = stmt.getAsObject(params);
-      stmt.free();
-      return result;
+      return db.exec(query, params);
     } catch (error) {
-      console.error(`Error executing query: ${query}`, error);
+      SqlJsInitializer.logError("execute", error);
       throw error;
     }
   }
@@ -24,15 +25,18 @@ export class WebSQLiteOperations {
   /**
    * Execute a set of SQLite queries
    */
-  static executeSet(db: any, queries: string[]): any {
+  static async executeSet(db: any, queries: string[]): Promise<any> {
+    if (!db) {
+      throw new Error("Database is not initialized");
+    }
+    
     try {
-      console.log(`Executing ${queries.length} queries`);
       for (const query of queries) {
         db.exec(query);
       }
       return true;
     } catch (error) {
-      console.error(`Error executing query set`, error);
+      SqlJsInitializer.logError("executeSet", error);
       throw error;
     }
   }
@@ -40,24 +44,18 @@ export class WebSQLiteOperations {
   /**
    * Execute a SQLite query without result (INSERT, UPDATE, DELETE)
    */
-  static run(db: any, query: string, params: any[] = []): any {
+  static async run(db: any, query: string, params: any[] = []): Promise<any> {
+    if (!db) {
+      throw new Error("Database is not initialized");
+    }
+    
     try {
-      console.log(`Running query: ${query}`, params);
       const stmt = db.prepare(query);
-      stmt.run(params);
+      const result = stmt.run(params);
       stmt.free();
-      return true;
+      return result;
     } catch (error) {
-      console.error(`Error running query: ${query}`, error);
-      // Check for specific SQLite errors
-      const errorMsg = error instanceof Error ? error.message : String(error);
-      
-      // Handle constraint errors more gracefully
-      if (errorMsg.includes('UNIQUE constraint failed')) {
-        console.warn(`UNIQUE constraint failed for query: ${query}`);
-        return false;
-      }
-      
+      SqlJsInitializer.logError("run", error);
       throw error;
     }
   }
@@ -65,23 +63,23 @@ export class WebSQLiteOperations {
   /**
    * Execute a SQLite query and return the results (SELECT)
    */
-  static query(db: any, query: string, params: any[] = []): any[] {
+  static async query(db: any, query: string, params: any[] = []): Promise<any[]> {
+    if (!db) {
+      throw new Error("Database is not initialized");
+    }
+    
     try {
-      console.log(`Querying: ${query}`, params);
       const stmt = db.prepare(query);
-      const result = [];
+      const results: any[] = [];
       
-      // Use step to iterate through results
       while (stmt.step()) {
-        const row = stmt.getAsObject();
-        result.push(row);
+        results.push(stmt.getAsObject());
       }
       
       stmt.free();
-      console.log(`Query returned ${result.length} results`);
-      return result;
+      return results;
     } catch (error) {
-      console.error(`Error querying: ${query}`, error);
+      SqlJsInitializer.logError("query", error);
       throw error;
     }
   }
@@ -91,14 +89,13 @@ export class WebSQLiteOperations {
    */
   static importData(SQL: any, data: Uint8Array): any {
     try {
+      if (!SQL) {
+        throw new Error("SQL.js is not initialized");
+      }
+      
       return new SQL.Database(data);
     } catch (error) {
-      console.error("Error importing database data:", error);
-      toast({
-        variant: "destructive",
-        title: "Erreur d'importation",
-        description: "Impossible d'importer les données de la base de données."
-      });
+      SqlJsInitializer.logError("importData", error);
       throw error;
     }
   }

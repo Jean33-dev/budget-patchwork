@@ -1,134 +1,92 @@
 
-import { useState, useEffect, useCallback, useRef } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { useState, useEffect } from "react";
+import { toast } from "@/components/ui/use-toast";
 import { db } from "@/services/database";
 import { Budget } from "@/types/categories";
-import { useParams } from "react-router-dom";
 
 export const useBudgetData = () => {
-  const { toast } = useToast();
   const [budgets, setBudgets] = useState<Budget[]>([]);
   const [totalRevenues, setTotalRevenues] = useState(0);
   const [totalExpenses, setTotalExpenses] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
-  const { dashboardId = "default" } = useParams<{ dashboardId: string }>();
-  const isLoadingRef = useRef(false);
-  const effectRanRef = useRef(false);
 
-  const loadData = useCallback(async () => {
-    // Prevent concurrent loads
-    if (isLoadingRef.current) {
-      console.log("Already loading data, skipping duplicate request");
-      return;
-    }
-    
-    isLoadingRef.current = true;
+  const loadData = async () => {
     setIsLoading(true);
     setError(null);
     
     try {
-      console.log(`Loading budget data for dashboard ${dashboardId}...`);
+      console.log("Loading budget data...");
       
       // Force database initialization
       const dbInitialized = await db.init();
       
       if (!dbInitialized) {
-        console.error(`Failed to initialize database in useBudgetData`);
         throw new Error("Failed to initialize database");
       }
       
       console.log("Database initialized, loading budgets...");
       
       // Load budgets
-      const allBudgets = await db.getBudgets();
-      console.log("All budgets loaded:", allBudgets);
+      const budgetsData = await db.getBudgets();
+      console.log("Budgets loaded:", budgetsData);
       
-      // Filter budgets by dashboardId
-      const dashboardBudgets = allBudgets.filter(budget => 
-        budget.dashboardId === dashboardId || !budget.dashboardId
-      );
-      console.log(`Filtered budgets for dashboard ${dashboardId}:`, dashboardBudgets);
-      
-      // Load expenses to calculate totals
-      const allExpenses = await db.getExpenses();
-      console.log("All expenses loaded:", allExpenses);
-      
-      // Filter expenses by dashboardId
-      const dashboardExpenses = allExpenses.filter(expense => 
-        expense.dashboardId === dashboardId || !expense.dashboardId
-      );
-      console.log(`Filtered expenses for dashboard ${dashboardId}:`, dashboardExpenses);
+      // Load expenses
+      const expenses = await db.getExpenses();
+      console.log("Total expenses loaded:", expenses);
       
       // Calculate total expenses
-      const totalSpent = dashboardExpenses.reduce((sum, expense) => 
+      const totalSpent = expenses.reduce((sum, expense) => 
         sum + (Number(expense.budget) || 0), 0
       );
       setTotalExpenses(totalSpent);
-      console.log(`Total expenses calculated for dashboard ${dashboardId}:`, totalSpent);
       
       // Update budgets with their associated expenses
-      const budgetsWithSpent = dashboardBudgets.map(budget => {
-        const budgetExpenses = dashboardExpenses.filter(expense => 
+      const validatedBudgets = budgetsData.map(budget => {
+        const budgetExpenses = expenses.filter(expense => 
           expense.linkedBudgetId === budget.id
         );
-        const spent = budgetExpenses.reduce((sum, expense) => 
+        const budgetSpent = budgetExpenses.reduce((sum, expense) => 
           sum + (Number(expense.budget) || 0), 0
         );
         
         return {
           ...budget,
-          spent
+          budget: Number(budget.budget) || 0,
+          spent: budgetSpent,
+          carriedOver: budget.carriedOver || 0
         };
       });
       
-      setBudgets(budgetsWithSpent);
-      
-      // Load incomes to calculate total revenues
-      const allIncomes = await db.getIncomes();
-      const dashboardIncomes = allIncomes.filter(income => 
-        income.dashboardId === dashboardId || !income.dashboardId
-      );
-      
-      const totalIncome = dashboardIncomes.reduce((sum, income) => 
+      setBudgets(validatedBudgets);
+      console.log("Budgets updated with expenses:", validatedBudgets);
+
+      // Load and calculate incomes
+      const incomesData = await db.getIncomes();
+      const totalIncome = incomesData.reduce((sum, income) => 
         sum + (Number(income.budget) || 0), 0
       );
-      setTotalRevenues(totalIncome);
-    } catch (err) {
-      console.error("Error loading budget data:", err);
-      setError(err instanceof Error ? err : new Error("Error loading data"));
       
+      setTotalRevenues(totalIncome);
+      console.log("Total revenues calculated:", totalIncome);
+      
+    } catch (error) {
+      console.error("Error loading data:", error);
+      setError(error instanceof Error ? error : new Error("Unknown error"));
       toast({
         variant: "destructive",
-        title: "Erreur de chargement",
-        description: "Impossible de charger les données budgétaires."
+        title: "Error",
+        description: "Unable to load data"
       });
     } finally {
       setIsLoading(false);
-      isLoadingRef.current = false;
     }
-  }, [dashboardId, toast]);
+  };
 
-  // Only load data once on mount or when dashboardId changes
+  // Load data on component mount
   useEffect(() => {
-    // This critical flag was causing infinite loops - only run effect once per dashboard
-    if (effectRanRef.current && dashboardId === "default") {
-      console.log("Effect already ran for this dashboard, skipping");
-      return;
-    }
-    
-    console.log("useBudgetData effect triggered, loading data for dashboard", dashboardId);
-    effectRanRef.current = true;
     loadData();
-    
-    // Reset the effect flag when dashboardId changes but not on unmount when on default dashboard
-    return () => {
-      if (dashboardId !== "default") {
-        console.log("Resetting effect ran flag due to dashboard change from", dashboardId);
-        effectRanRef.current = false;
-      }
-    };
-  }, [dashboardId, loadData]);
+  }, []);
 
   return {
     budgets,

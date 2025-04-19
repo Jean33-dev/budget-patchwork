@@ -1,99 +1,82 @@
-import { IDatabaseManager } from './interfaces/IDatabaseManager';
-import { Capacitor } from '@capacitor/core';
-import { WebDatabaseManager, CapacitorDatabaseManager } from './database-manager-impl';
-import { toast } from "@/components/ui/use-toast";
+
+import { BudgetManager } from './managers/budget-manager';
+import { ExpenseManager } from './managers/expense-manager';
+import { IncomeManager } from './managers/income-manager';
+import { CategoryManager } from './managers/category-manager';
+import { QueryManager } from './query-manager';
+import { IBudgetManager } from './interfaces/IBudgetManager';
+import { IExpenseManager } from './interfaces/IExpenseManager';
+import { IIncomeManager } from './interfaces/IIncomeManager';
+import { ICategoryManager } from './interfaces/ICategoryManager';
+import { IQueryManager } from './interfaces/IQueryManager';
 
 /**
- * Factory for database manager
+ * Factory that creates and coordinates all specialized database managers
  */
 export class DatabaseManagerFactory {
-  private static instance: IDatabaseManager | null = null;
-  private static initializationAttempts = 0;
-  private static MAX_INIT_ATTEMPTS = 3;
-  private static initializationInProgress = false;
-
+  private budgetManager: IBudgetManager;
+  private expenseManager: IExpenseManager;
+  private incomeManager: IIncomeManager;
+  private categoryManager: ICategoryManager;
+  private queryManager: IQueryManager;
+  
+  constructor() {
+    this.queryManager = new QueryManager();
+    this.budgetManager = new BudgetManager();
+    this.expenseManager = new ExpenseManager();
+    this.incomeManager = new IncomeManager();
+    this.categoryManager = new CategoryManager();
+  }
+  
   /**
-   * Get database manager
-   * @returns DatabaseManager
+   * Initialize all managers with the provided database instance
    */
-  static getDatabaseManager(): IDatabaseManager {
-    if (this.instance) {
-      console.log("Returning existing database manager instance");
-      return this.instance;
-    }
-
-    console.log("Creating new database manager instance");
-    
-    // If already trying to create an instance, wait before trying again
-    if (this.initializationInProgress) {
-      console.log("Database manager initialization already in progress");
-      
-      // Increment attempt counter
-      this.initializationAttempts++;
-      
-      if (this.initializationAttempts > this.MAX_INIT_ATTEMPTS) {
-        console.error(`Exceeded maximum database manager initialization attempts (${this.MAX_INIT_ATTEMPTS})`);
-        toast({
-          variant: "destructive",
-          title: "Erreur de base de données",
-          description: "Impossible de créer le gestionnaire de base de données après plusieurs tentatives."
-        });
-      }
+  initializeManagers(dbInstance: any): void {
+    if (!dbInstance) {
+      console.error("Cannot initialize managers with null database instance");
+      return;
     }
     
-    this.initializationInProgress = true;
+    // Set the database instance for the query manager
+    this.queryManager.setDb(dbInstance);
+    this.queryManager.setInitialized(true);
     
-    try {
-      // If running in Capacitor, use SQLite
-      if (this.isNative()) {
-        return this.getCapacitorDatabaseManager();
-      }
-
-      // Otherwise, use WebSQL
-      return this.getWebDatabaseManager();
-    } finally {
-      this.initializationInProgress = false;
-    }
+    // Set the database instance for all specialized managers
+    this.budgetManager.setDb(dbInstance);
+    this.expenseManager.setDb(dbInstance);
+    this.incomeManager.setDb(dbInstance);
+    this.categoryManager.setDb(dbInstance);
+    
+    // Set all managers as initialized
+    this.budgetManager.setInitialized(true);
+    this.expenseManager.setInitialized(true);
+    this.incomeManager.setInitialized(true);
+    this.categoryManager.setInitialized(true);
+    
+    // Ensure all managers have a query manager reference
+    this.budgetManager.setQueryManager(this.queryManager);
+    this.expenseManager.setQueryManager(this.queryManager);
+    this.incomeManager.setQueryManager(this.queryManager);
+    this.categoryManager.setQueryManager(this.queryManager);
   }
-
-  /**
-   * Reset initialization attempts
-   */
-  static resetInitializationAttempts(): void {
-    this.initializationAttempts = 0;
-    this.initializationInProgress = false;
-    this.instance = null;
+  
+  getBudgetManager(): IBudgetManager {
+    return this.budgetManager;
   }
-
-  /**
-   * Get web database manager
-   * @returns WebDatabaseManager
-   */
-  private static getWebDatabaseManager(): IDatabaseManager {
-    if (!this.instance) {
-      console.log("Creating new WebDatabaseManager instance");
-      this.instance = new WebDatabaseManager();
-    }
-    return this.instance;
+  
+  getExpenseManager(): IExpenseManager {
+    return this.expenseManager;
   }
-
-  /**
-   * Get capacitor database manager
-   * @returns CapacitorDatabaseManager
-   */
-  private static getCapacitorDatabaseManager(): IDatabaseManager {
-    if (!this.instance) {
-      console.log("Creating new CapacitorDatabaseManager instance");
-      this.instance = new CapacitorDatabaseManager();
-    }
-    return this.instance;
+  
+  getIncomeManager(): IIncomeManager {
+    return this.incomeManager;
   }
-
-  /**
-   * Check if running in a native environment
-   * @returns boolean
-   */
-  private static isNative(): boolean {
-    return Capacitor.isNativePlatform();
+  
+  getCategoryManager(): ICategoryManager {
+    return this.categoryManager;
+  }
+  
+  getQueryManager(): IQueryManager {
+    return this.queryManager;
   }
 }

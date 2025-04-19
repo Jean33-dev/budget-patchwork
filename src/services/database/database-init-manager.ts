@@ -1,166 +1,156 @@
 
-import { WebSQLiteAdapter } from "./web-sqlite-adapter";
-import { SQLiteAdapter } from "./sqlite-adapter";
-import { createSQLiteAdapter } from "./sqlite-adapter";
-import { Database } from "sql.js";
-import { InitializationManager } from "./initialization-manager";
+import { SQLiteAdapter, createSQLiteAdapter } from './sqlite-adapter';
+import { InitializationManager } from './initialization-manager';
+import { toast } from "@/components/ui/use-toast";
+import { DataExportManager } from './data-export-manager';
 
 /**
- * Manages database initialization
+ * Class responsible for database initialization
  */
 export class DatabaseInitManager {
   private adapter: SQLiteAdapter | null = null;
-  private initializationPromise: Promise<boolean> | null = null;
-  private isInitializing = false;
-
-  /**
-   * Create and initialize an adapter
-   */
-  async createAdapter(): Promise<SQLiteAdapter | null> {
-    try {
-      console.log("DatabaseInitManager: Creating SQLite adapter...");
-      
-      const adapter = await createSQLiteAdapter();
-      
-      if (!adapter) {
-        console.error("DatabaseInitManager: Failed to create SQLite adapter");
-        return null;
-      }
-      
-      console.log("DatabaseInitManager: SQLite adapter created");
-      
-      this.adapter = adapter;
-      return adapter;
-    } catch (error) {
-      console.error("DatabaseInitManager: Error creating SQLite adapter:", error);
-      return null;
-    }
+  private initialized = false;
+  private initializing = false;
+  private initAttempts = 0;
+  private readonly MAX_INIT_ATTEMPTS = 3;
+  private dataExportManager: DataExportManager | null = null;
+  
+  constructor() {
+    this.initialized = false;
   }
-
+  
   /**
-   * Initialize the database
-   */
-  async init(): Promise<boolean> {
-    try {
-      if (this.adapter?.isInitialized()) {
-        console.log("DatabaseInitManager: Adapter already initialized");
-        return true;
-      }
-      
-      // If already initializing, return the existing promise
-      if (this.isInitializing && this.initializationPromise) {
-        console.log("DatabaseInitManager: initialization already in progress, joining existing promise");
-        return this.initializationPromise;
-      }
-      
-      this.isInitializing = true;
-      
-      // Create a new initialization promise
-      this.initializationPromise = (async () => {
-        try {
-          if (!this.adapter) {
-            console.log("DatabaseInitManager: No adapter, creating one...");
-            this.adapter = await this.createAdapter();
-            
-            if (!this.adapter) {
-              console.error("DatabaseInitManager: Failed to create adapter");
-              return false;
-            }
-          }
-          
-          console.log("DatabaseInitManager: Initializing adapter...");
-          const initialized = await this.adapter.init();
-          
-          if (!initialized) {
-            console.error("DatabaseInitManager: Failed to initialize adapter");
-            return false;
-          }
-          
-          console.log("DatabaseInitManager: Adapter initialized successfully");
-          return true;
-        } catch (error) {
-          console.error("DatabaseInitManager: Error initializing adapter:", error);
-          return false;
-        } finally {
-          this.isInitializing = false;
-        }
-      })();
-      
-      return await this.initializationPromise;
-    } catch (error) {
-      console.error("DatabaseInitManager: Error in init wrapper:", error);
-      this.isInitializing = false;
-      this.initializationPromise = null;
-      
-      return false;
-    }
-  }
-
-  /**
-   * Get the adapter
+   * Get the current SQLite adapter
    */
   getAdapter(): SQLiteAdapter | null {
     return this.adapter;
   }
-
+  
   /**
-   * Reset the adapter
+   * Get the database instance from the adapter
    */
-  resetAdapter(): void {
-    this.adapter = null;
-    this.initializationPromise = null;
-    this.isInitializing = false;
-    
-    // Also reset the WebSQLiteAdapter's initialization attempts
-    WebSQLiteAdapter.resetInitializationAttempts();
+  getDb(): any {
+    return this.adapter ? (this.adapter as any).db : null;
   }
-
+  
   /**
-   * Ensure database is initialized
+   * Check if the database is initialized
    */
-  async ensureInitialized(): Promise<boolean> {
-    console.log("DatabaseInitManager: Ensuring database is initialized");
-    if (this.adapter?.isInitialized()) {
-      return true;
-    }
-    return await this.init();
+  isInitialized(): boolean {
+    return this.initialized;
   }
-
+  
   /**
-   * Reset initialization attempts
+   * Reset the initialization attempts counter
    */
   resetInitializationAttempts(): void {
-    console.log("DatabaseInitManager: Resetting initialization attempts");
-    // Reset the adapter, which will also reset WebSQLiteAdapter's attempts
-    this.resetAdapter();
+    this.initAttempts = 0;
   }
-
+  
   /**
-   * Initialize database tables
+   * Initialize the database with the appropriate adapter
    */
-  async initializeTables(db: Database): Promise<boolean> {
+  async init(): Promise<boolean> {
+    // Si déjà initialisé, retourne true
+    if (this.initialized && this.adapter) {
+      console.log("Base de données déjà initialisée");
+      return true;
+    }
+    
+    // Si l'initialisation est en cours, attendez
+    if (this.initializing) {
+      console.log("Initialisation de la base de données en cours...");
+      while (this.initializing) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+      return this.initialized;
+    }
+    
+    this.initializing = true;
+    this.initAttempts++;
+    
     try {
-      console.log("DatabaseInitManager: Initializing database tables");
-      if (!db) {
-        console.error("DatabaseInitManager: No database provided to initialize tables");
-        return false;
+      console.log(`Tentative d'initialisation de la base de données (${this.initAttempts}/${this.MAX_INIT_ATTEMPTS})...`);
+      
+      // Créer l'adaptateur SQLite approprié selon l'environnement
+      this.adapter = await createSQLiteAdapter();
+      
+      // Initialiser l'adaptateur
+      const adapterInitialized = await this.adapter.init();
+      if (!adapterInitialized) {
+        throw new Error("Échec de l'initialisation de l'adaptateur SQLite");
       }
       
-      if (!this.adapter) {
-        console.error("DatabaseInitManager: No adapter available to initialize tables");
-        return false;
-      }
-      
-      // Create an initialization manager and use it to set up tables
+      // Create an initialization manager
       const initManager = new InitializationManager(this.adapter);
+      
+      // Create the database tables
       await initManager.createTables();
+      
+      // Check if sample data needs to be added
       await initManager.checkAndAddSampleData();
       
-      console.log("DatabaseInitManager: Database tables initialized successfully");
+      // Initialize the data export manager
+      this.dataExportManager = new DataExportManager(this.adapter);
+      
+      this.initialized = true;
+      console.log("Base de données initialisée avec succès");
+      
       return true;
     } catch (error) {
-      console.error("DatabaseInitManager: Error initializing tables:", error);
+      console.error("Erreur lors de l'initialisation de la base de données:", error);
+      
+      // Si on n'a pas dépassé le nombre max de tentatives, on peut réessayer automatiquement
+      if (this.initAttempts < this.MAX_INIT_ATTEMPTS) {
+        this.initializing = false;
+        console.log(`Nouvelle tentative d'initialisation (${this.initAttempts + 1}/${this.MAX_INIT_ATTEMPTS})...`);
+        // On laisse le code appelant décider s'il faut réessayer
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Erreur d'initialisation",
+          description: "Impossible d'initialiser la base de données après plusieurs tentatives."
+        });
+        this.initialized = false;
+        this.adapter = null;
+      }
+      
       return false;
+    } finally {
+      this.initializing = false;
     }
+  }
+  
+  /**
+   * Ensure the database is initialized
+   */
+  async ensureInitialized(): Promise<boolean> {
+    if (!this.initialized || !this.adapter) {
+      return await this.init();
+    }
+    return true;
+  }
+  
+  /**
+   * Migrate data from localStorage (legacy storage) to SQLite
+   * Implementation delegated to DataExportManager
+   */
+  async migrateFromLocalStorage(): Promise<boolean> {
+    if (!this.adapter || !this.dataExportManager) {
+      const initialized = await this.ensureInitialized();
+      if (!initialized) {
+        return false;
+      }
+      
+      if (!this.dataExportManager && this.adapter) {
+        this.dataExportManager = new DataExportManager(this.adapter);
+      }
+    }
+    
+    if (this.dataExportManager) {
+      return await this.dataExportManager.migrateFromLocalStorage();
+    }
+    
+    return false;
   }
 }

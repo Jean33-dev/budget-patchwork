@@ -1,105 +1,89 @@
 
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/components/ui/use-toast";
 import { db } from "@/services/database";
-import { v4 as uuidv4 } from "uuid";
 import { Budget } from "@/types/categories";
 
 export const budgetOperations = {
-  async addBudget(data: Omit<Budget, "id" | "spent">, dashboardId: string = "default"): Promise<boolean> {
+  async addBudget(newBudget: Omit<Budget, "id" | "spent">): Promise<boolean> {
     try {
-      console.log("budgetOperations.addBudget: Starting with data:", data);
-      
-      const budget: Budget = {
-        id: uuidv4(),
-        title: data.title,
-        budget: Number(data.budget) || 0,
+      const budgetToAdd: Budget = {
+        id: Date.now().toString(),
+        title: newBudget.title,
+        budget: newBudget.budget,
         spent: 0,
-        type: "budget",
-        categoryId: data.categoryId,
-        dashboardId: dashboardId
+        type: "budget"
       };
 
-      console.log("budgetOperations.addBudget: Created budget object:", budget);
-      await db.addBudget(budget);
-      console.log("budgetOperations.addBudget: Budget added successfully");
+      console.log("Ajout d'un nouveau budget:", budgetToAdd);
+      await db.addBudget(budgetToAdd);
       
       toast({
         title: "Budget ajouté",
-        description: `Le budget "${budget.title}" a été ajouté avec succès.`
+        description: `Le budget "${newBudget.title}" a été créé avec succès.`
       });
       
       return true;
     } catch (error) {
-      console.error("Error adding budget:", error);
-      
+      console.error("Erreur lors de l'ajout du budget:", error);
       toast({
         variant: "destructive",
         title: "Erreur",
-        description: "Impossible d'ajouter le budget."
+        description: "Impossible d'ajouter le budget"
       });
-      
       return false;
     }
   },
 
   async updateBudget(budgetToUpdate: Budget): Promise<boolean> {
     try {
-      console.log("budgetOperations.updateBudget: Starting with data:", budgetToUpdate);
-      
-      if (!budgetToUpdate.id) {
-        console.error("budgetOperations.updateBudget: Missing budget ID");
-        return false;
-      }
-
       await db.updateBudget(budgetToUpdate);
-      console.log("budgetOperations.updateBudget: Budget updated successfully");
       
       toast({
-        title: "Budget mis à jour",
-        description: `Le budget "${budgetToUpdate.title}" a été mis à jour avec succès.`
+        title: "Budget modifié",
+        description: `Le budget "${budgetToUpdate.title}" a été mis à jour.`
       });
-      
       return true;
     } catch (error) {
-      console.error("Error updating budget:", error);
-      
+      console.error("Erreur lors de la modification du budget:", error);
       toast({
         variant: "destructive",
         title: "Erreur",
-        description: "Impossible de mettre à jour le budget."
+        description: "Impossible de modifier le budget"
       });
-      
       return false;
     }
   },
 
   async deleteBudget(budgetId: string): Promise<boolean> {
     try {
-      console.log(`budgetOperations.deleteBudget: Starting with ID: ${budgetId}`);
+      const expenses = await db.getExpenses();
+      const hasLinkedExpenses = expenses.some(expense => 
+        expense.linkedBudgetId === budgetId
+      );
       
-      if (!budgetId) {
-        console.error("budgetOperations.deleteBudget: Missing budget ID");
+      if (hasLinkedExpenses) {
+        toast({
+          variant: "destructive",
+          title: "Suppression impossible",
+          description: "Ce budget a des dépenses qui lui sont affectées."
+        });
         return false;
       }
 
       await db.deleteBudget(budgetId);
-      console.log(`budgetOperations.deleteBudget: Budget ${budgetId} deleted successfully`);
       
       toast({
         title: "Budget supprimé",
         description: "Le budget a été supprimé avec succès."
       });
-      
       return true;
     } catch (error) {
-      console.error("Error deleting budget:", error);
-      
+      console.error("Erreur lors de la suppression du budget:", error);
       toast({
         variant: "destructive",
         title: "Erreur",
-        description: "Impossible de supprimer le budget."
+        description: "Impossible de supprimer le budget"
       });
-      
       return false;
     }
   }

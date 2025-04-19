@@ -1,10 +1,10 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Menu } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Budget } from "@/types/categories";
-import { Category } from "@/services/database/models/category";
+import { Category, Budget } from "@/types/categories";
 import { CategoryCard } from "@/components/categories/CategoryCard";
 import { AssignmentCard } from "@/components/categories/AssignmentCard";
 import { EditCategoryDialog } from "@/components/categories/EditCategoryDialog";

@@ -1,92 +1,162 @@
 
-import React from 'react';
-import { useDashboards } from "@/hooks/useDashboards";
-import { useDashboardActions } from "@/hooks/useDashboardActions";
-import { DashboardDialogs } from "@/components/home/DashboardDialogs";
-import { DashboardGrid } from "@/components/home/DashboardGrid";
-import { DatabaseErrorAlert } from "@/components/home/DatabaseErrorAlert";
-import { ReconnectionAlert } from "@/components/home/ReconnectionAlert";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useNavigate } from "react-router-dom";
+import { PlusCircle, LineChart, Settings } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+import { useState, useEffect } from "react";
+import { EditDashboardDialog } from "@/components/dashboard/EditDashboardDialog";
+import { db } from "@/services/database";
 
 const Home = () => {
-  const {
-    dashboards,
-    isLoading,
-    error,
-    retryLoadDashboards,
-    loadAttempts,
-    MAX_LOAD_ATTEMPTS
-  } = useDashboards();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [dashboardTitle, setDashboardTitle] = useState("Budget Personnel");
+  const [isLoading, setIsLoading] = useState(true);
 
-  const {
-    isEditDialogOpen,
-    setIsEditDialogOpen,
-    isCreateDialogOpen,
-    setIsCreateDialogOpen,
-    isDeleteDialogOpen,
-    setIsDeleteDialogOpen,
-    selectedDashboard,
-    handleCreateDashboard,
-    handleEditDashboard,
-    handleDeleteDashboard,
-    handleSaveDashboardName,
-    handleCreateNewDashboard,
-    handleConfirmDelete,
-    handleDashboardClick,
-  } = useDashboardActions();
+  // Charger le titre du tableau de bord depuis la base de données
+  useEffect(() => {
+    const loadDashboardTitle = async () => {
+      try {
+        await db.init();
+        const budgets = await db.getBudgets();
+        
+        // Chercher un budget avec le nom spécial "dashboard_title"
+        const dashboardTitleBudget = budgets.find(b => b.id === "dashboard_title");
+        
+        if (dashboardTitleBudget) {
+          setDashboardTitle(dashboardTitleBudget.title);
+        } else {
+          // Si le budget n'existe pas encore, le créer avec la valeur par défaut
+          const defaultTitle = localStorage.getItem("dashboardTitle") || "Budget Personnel";
+          await db.addBudget({
+            id: "dashboard_title",
+            title: defaultTitle,
+            budget: 0,
+            spent: 0,
+            type: 'budget',
+            carriedOver: 0
+          });
+          setDashboardTitle(defaultTitle);
+          
+          // Supprimer l'ancienne valeur de localStorage après migration
+          localStorage.removeItem("dashboardTitle");
+        }
+      } catch (error) {
+        console.error("Erreur lors du chargement du titre:", error);
+        // Fallback sur localStorage en cas d'erreur
+        const localTitle = localStorage.getItem("dashboardTitle");
+        if (localTitle) {
+          setDashboardTitle(localTitle);
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  const handleRetry = async () => {
-    await retryLoadDashboards();
+    loadDashboardTitle();
+  }, []);
+
+  const handleCreateDashboard = () => {
+    toast({
+      title: "Bientôt disponible",
+      description: "La création de nouveaux tableaux de bord sera disponible prochainement.",
+    });
   };
 
-  const handleForceReload = () => {
-    window.location.reload();
+  const handleEditDashboard = () => {
+    setIsEditDialogOpen(true);
   };
 
-  // Si erreur pendant le chargement, afficher l'alerte d'erreur
-  if (error || loadAttempts > MAX_LOAD_ATTEMPTS) {
-    return (
-      <div className="container mx-auto py-8 space-y-8">
-        <h1 className="text-4xl font-bold">Mes Tableaux de Bord</h1>
-        <DatabaseErrorAlert
-          onRetry={handleRetry}
-          onForceReload={handleForceReload}
-        />
-      </div>
-    );
-  }
+  const handleSaveDashboardName = async (newName: string) => {
+    try {
+      // Mettre à jour le titre dans la base de données
+      const budgets = await db.getBudgets();
+      const dashboardTitleBudget = budgets.find(b => b.id === "dashboard_title");
+      
+      if (dashboardTitleBudget) {
+        await db.updateBudget({
+          ...dashboardTitleBudget,
+          title: newName
+        });
+      } else {
+        await db.addBudget({
+          id: "dashboard_title",
+          title: newName,
+          budget: 0,
+          spent: 0,
+          type: 'budget',
+          carriedOver: 0
+        });
+      }
+      
+      setDashboardTitle(newName);
+      setIsEditDialogOpen(false);
+      toast({
+        title: "Nom modifié",
+        description: "Le nom du tableau de bord a été mis à jour.",
+      });
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour du titre:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible de mettre à jour le nom du tableau de bord."
+      });
+    }
+  };
 
   return (
     <div className="container mx-auto py-8 space-y-8">
       <h1 className="text-4xl font-bold">Mes Tableaux de Bord</h1>
+      
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate("/dashboard/budget")}>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <LineChart className="h-6 w-6" />
+                {isLoading ? "Chargement..." : dashboardTitle}
+              </div>
+              <Button 
+                variant="ghost" 
+                size="icon"
+                className="h-8 w-8" 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleEditDashboard();
+                }}
+              >
+                <Settings className="h-4 w-4" />
+              </Button>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {/* Contenu de la carte supprimé comme demandé */}
+          </CardContent>
+        </Card>
 
-      {/* Afficher l'alerte de reconnexion seulement si des tentatives sont en cours */}
-      {loadAttempts > 1 && loadAttempts <= MAX_LOAD_ATTEMPTS && !error && (
-        <ReconnectionAlert
-          attempts={loadAttempts}
-          maxAttempts={MAX_LOAD_ATTEMPTS}
-        />
-      )}
+        <Card className="border-dashed">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <PlusCircle className="h-6 w-6" />
+              Nouveau Tableau de Bord
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Button variant="outline" className="w-full" onClick={handleCreateDashboard}>
+              Créer
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
 
-      <DashboardGrid
-        isLoading={isLoading}
-        dashboards={dashboards}
-        onEdit={handleEditDashboard}
-        onDelete={handleDeleteDashboard}
-        onClick={handleDashboardClick}
-        onCreateClick={handleCreateDashboard}
-      />
-
-      <DashboardDialogs
-        isCreateDialogOpen={isCreateDialogOpen}
-        setIsCreateDialogOpen={setIsCreateDialogOpen}
-        isEditDialogOpen={isEditDialogOpen}
-        setIsEditDialogOpen={setIsEditDialogOpen}
-        isDeleteDialogOpen={isDeleteDialogOpen}
-        setIsDeleteDialogOpen={setIsDeleteDialogOpen}
-        selectedDashboard={selectedDashboard}
-        handleCreateNewDashboard={handleCreateNewDashboard}
-        handleSaveDashboardName={handleSaveDashboardName}
-        handleConfirmDelete={handleConfirmDelete}
+      <EditDashboardDialog 
+        open={isEditDialogOpen}
+        onOpenChange={setIsEditDialogOpen}
+        currentName={dashboardTitle}
+        onSave={handleSaveDashboardName}
       />
     </div>
   );

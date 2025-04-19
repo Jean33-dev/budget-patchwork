@@ -1,212 +1,171 @@
-import { Database } from 'sql.js';
-import { IDatabaseManager } from './interfaces/IDatabaseManager';
-import { IQueryManager } from './interfaces/IQueryManager';
+
+import { toast } from "@/components/ui/use-toast";
 import { QueryManager } from './query-manager';
-import { BudgetManager } from './managers/budget-manager';
-import { CategoryManager } from './managers/category-manager';
-import { ExpenseManager } from './managers/expense-manager';
-import { IncomeManager } from './managers/income-manager';
-import { DashboardManager } from './managers/dashboard-manager';
-import { IBudgetManager } from './interfaces/IBudgetManager';
-import { ICategoryManager } from './interfaces/ICategoryManager';
-import { IExpenseManager } from './interfaces/IExpenseManager';
-import { IIncomeManager } from './interfaces/IIncomeManager';
+import { BaseDatabaseManager } from './base-database-manager';
+import { IQueryManager } from './interfaces/IQueryManager';
 
 /**
- * Core database manager
+ * Core functionality for the database manager
  */
-export abstract class DatabaseManagerCore implements IDatabaseManager {
-  protected db?: Database;
-  protected queryManager: IQueryManager;
-  protected budgetManager?: BudgetManager;
-  protected categoryManager?: CategoryManager;
-  protected expenseManager?: ExpenseManager;
-  protected incomeManager?: IncomeManager;
-  protected dashboardManager?: DashboardManager;
-  protected initialized = false;
-  protected initializationInProgress = false;
+export class DatabaseManagerCore extends BaseDatabaseManager {
+  declare protected queryManager: IQueryManager;
+  protected initializing = false;
+  private static initCompletePromise: Promise<boolean> | null = null;
 
   constructor() {
-    // Create the query manager with this instance
-    this.queryManager = new QueryManager(this);
+    super();
+    this.queryManager = new QueryManager();
   }
 
   /**
-   * Get database
-   * @returns Database
+   * Vérifie si l'initialisation est en cours
    */
-  getDb(): Database {
-    if (!this.db) {
-      throw new Error('Database not initialized');
+  protected isInitializationInProgress(): boolean {
+    // Access the parent class's initialization status
+    return BaseDatabaseManager.isInitializationInProgress();
+  }
+
+  /**
+   * Définit l'état d'initialisation
+   */
+  protected setInitializationInProgress(value: boolean): void {
+    // Set the initialization status in the parent class
+    BaseDatabaseManager.setInitializationInProgress(value);
+  }
+
+  /**
+   * Initialize the database manager
+   */
+  async init(): Promise<boolean> {
+    // If already initialized, return true
+    if (this.initialized && this.db) {
+      return true;
     }
-    return this.db;
-  }
-
-  /**
-   * Check if database is initialized
-   * @returns boolean
-   */
-  isInitialized(): boolean {
-    return this.initialized;
-  }
-
-  /**
-   * Set isInitialized flag
-   * @param isInitialized
-   * @returns void
-   */
-  setInitialized(isInitialized: boolean): void {
-    this.initialized = isInitialized;
-  }
-
-  /**
-   * Check if initialization is in progress
-   */
-  isInitializationInProgress(): boolean {
-    return this.initializationInProgress;
-  }
-
-  /**
-   * Set initialization in progress flag
-   */
-  setInitializationInProgress(inProgress: boolean): void {
-    this.initializationInProgress = inProgress;
-  }
-
-  /**
-   * Initialize database
-   * @returns Promise<boolean>
-   */
-  abstract init(): Promise<boolean>;
-
-  /**
-   * Get budget manager
-   * @returns BudgetManager
-   */
-  getBudgetManager(): IBudgetManager {
-    if (!this.budgetManager) {
-      console.log("Creating new BudgetManager instance");
-      this.budgetManager = new BudgetManager();
-      if (this.queryManager) {
-        this.budgetManager.setQueryManager(this.queryManager);
+    
+    // If a global initialization is in progress, wait for it
+    if (DatabaseManagerCore.initCompletePromise) {
+      console.log("Global database initialization in progress, waiting...");
+      try {
+        const result = await DatabaseManagerCore.initCompletePromise;
+        // Après l'initialisation globale, vérifions si notre instance est initialisée
+        if (this.initialized && this.db) {
+          return true;
+        }
+        // Si pas initialisé malgré l'initialisation globale, continuons avec notre propre init
+      } catch (error) {
+        console.error("Global initialization failed, trying local initialization:", error);
       }
     }
-    return this.budgetManager!;
-  }
-
-  /**
-   * Get category manager
-   * @returns CategoryManager
-   */
-  getCategoryManager(): ICategoryManager {
-    if (!this.categoryManager) {
-      console.log("Creating new CategoryManager instance");
-      this.categoryManager = new CategoryManager();
-      if (this.queryManager) {
-        this.categoryManager.setQueryManager(this.queryManager);
+    
+    // If initialization is in progress for this instance, wait
+    if (this.initializing) {
+      console.log("Instance database manager initialization already in progress");
+      // Wait for initialization to complete
+      while (this.initializing) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+      return this.initialized && this.db !== null;
+    }
+    
+    this.initializing = true;
+    
+    // Create a promise for others to wait on
+    const initPromise = this.performInitialization();
+    DatabaseManagerCore.initCompletePromise = initPromise;
+    
+    try {
+      const result = await initPromise;
+      return result;
+    } finally {
+      this.initializing = false;
+      // Clear the global promise if this is the one that set it
+      if (DatabaseManagerCore.initCompletePromise === initPromise) {
+        DatabaseManagerCore.initCompletePromise = null;
       }
     }
-    return this.categoryManager!;
-  }
-
-  /**
-   * Get expense manager
-   * @returns ExpenseManager
-   */
-  getExpenseManager(): IExpenseManager {
-    if (!this.expenseManager) {
-      console.log("Creating new ExpenseManager instance");
-      this.expenseManager = new ExpenseManager();
-      if (this.queryManager) {
-        this.expenseManager.setQueryManager(this.queryManager);
-      }
-    }
-    return this.expenseManager!;
-  }
-
-  /**
-   * Get income manager
-   * @returns IncomeManager
-   */
-  getIncomeManager(): IIncomeManager {
-    if (!this.incomeManager) {
-      console.log("Creating new IncomeManager instance");
-      this.incomeManager = new IncomeManager();
-      if (this.queryManager) {
-        this.incomeManager.setQueryManager(this.queryManager);
-      }
-    }
-    return this.incomeManager!;
-  }
-
-  /**
-   * Get dashboard manager
-   * @returns DashboardManager
-   */
-  getDashboardManager(): DashboardManager {
-    if (!this.dashboardManager) {
-      console.log("Creating new DashboardManager instance");
-      this.dashboardManager = new DashboardManager();
-      if (this.queryManager) {
-        this.dashboardManager.setQueryManager(this.queryManager);
-      }
-    }
-    return this.dashboardManager!;
-  }
-
-  /**
-   * Reset initialization attempts
-   */
-  resetInitializationAttempts(): void {
-    // This will be implemented in subclasses
-  }
-
-  /**
-   * Safely add a dashboard (doesn't throw exceptions)
-   */
-  async safeAddDashboard(dashboard: any): Promise<boolean> {
-    await this.init();
-    return this.getDashboardManager().safeAddDashboard(dashboard);
-  }
-
-  // Proxy methods to respective managers
-  async getDashboards(): Promise<any[]> {
-    await this.init();
-    return this.getDashboardManager().getDashboards();
-  }
-
-  async getBudgets(): Promise<any[]> {
-    await this.init();
-    return this.getBudgetManager().getBudgets();
-  }
-
-  async getExpenses(): Promise<any[]> {
-    await this.init();
-    return this.getExpenseManager().getExpenses();
-  }
-
-  async getIncomes(): Promise<any[]> {
-    await this.init();
-    return this.getIncomeManager().getIncomes();
   }
   
-  async getCategories(): Promise<any[]> {
-    await this.init();
-    return this.getCategoryManager().getCategories();
+  /**
+   * Internal method to perform the actual initialization
+   */
+  private async performInitialization(): Promise<boolean> {
+    try {
+      // Initialize the base database manager
+      console.log("Starting database initialization sequence...");
+      
+      // Essayer d'initialiser plusieurs fois
+      let success = false;
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        console.log(`Database initialization attempt ${attempt}...`);
+        try {
+          success = await super.init();
+          if (success) {
+            console.log(`Database initialization succeeded on attempt ${attempt}`);
+            break;
+          }
+        } catch (error) {
+          console.error(`Error on initialization attempt ${attempt}:`, error);
+          if (attempt < 3) {
+            // Attendre avant de réessayer
+            await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+          }
+        }
+      }
+      
+      if (!success) {
+        console.error("Failed to initialize database manager after multiple attempts");
+        return false;
+      }
+      
+      // Share the database instance with query manager
+      this.queryManager.setDb(this.db);
+      this.queryManager.setInitialized(true);
+      
+      this.initialized = true;
+      console.log("Database manager fully initialized");
+      return true;
+    } catch (err) {
+      console.error('Error initializing database manager:', err);
+      toast({
+        variant: "destructive",
+        title: "Database error",
+        description: "Unable to initialize the database. Please refresh the page."
+      });
+      return false;
+    }
   }
 
-  async addDashboard(dashboard: any): Promise<void> {
-    await this.init();
-    return this.getDashboardManager().addDashboard(dashboard);
+  /**
+   * Check if the database manager is initialized
+   */
+  isInitialized(): boolean {
+    return this.initialized && this.db !== null && super.isInitialized();
   }
 
-  async updateDashboard(dashboard: any): Promise<void> {
-    await this.init();
-    return this.getDashboardManager().updateDashboard(dashboard);
+  /**
+   * Export data from the database
+   */
+  exportData() {
+    return this.db?.export();
   }
 
-  async deleteDashboard(id: string): Promise<void> {
-    await this.init();
-    return this.getDashboardManager().deleteDashboard(id);
+  /**
+   * Ensure that the database manager is initialized
+   */
+  protected async ensureInitialized(): Promise<boolean> {
+    if (!this.isInitialized()) {
+      console.log("Database manager not initialized, initializing now...");
+      const success = await this.init();
+      if (!success) {
+        console.error("Failed to initialize database manager");
+        toast({
+          variant: "destructive",
+          title: "Database error",
+          description: "Unable to initialize the database. Please refresh the page."
+        });
+        return false;
+      }
+    }
+    return true;
   }
 }
