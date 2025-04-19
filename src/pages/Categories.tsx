@@ -2,19 +2,13 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Menu } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Category, Budget } from "@/types/categories";
 import { CategoryCard } from "@/components/categories/CategoryCard";
 import { AssignmentCard } from "@/components/categories/AssignmentCard";
 import { EditCategoryDialog } from "@/components/categories/EditCategoryDialog";
 import { useCategories } from "@/hooks/useCategories";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { db } from "@/services/database";
 import { useToast } from "@/hooks/use-toast";
 
@@ -104,31 +98,6 @@ const Categories = () => {
         >
           <ArrowLeft className="h-4 w-4" />
         </Button>
-
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="icon">
-              <Menu className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start">
-            <DropdownMenuItem onClick={() => navigate("/dashboard/budget")}>
-              Tableau de Bord
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate("/dashboard/budget/income")}>
-              Gérer les Revenus
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate("/dashboard/budget/categories")}>
-              Gérer les Catégories
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate("/dashboard/budget/budgets")}>
-              Gérer les Budgets
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate("/dashboard/budget/expenses")}>
-              Gérer les Dépenses
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
 
         <h1 className="text-xl">Gestion des Catégories</h1>
       </div>
