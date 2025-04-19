@@ -111,8 +111,9 @@ export const useBudgetData = () => {
 
   // Only load data once on mount or when dashboardId changes
   useEffect(() => {
-    // Prevent effect from running multiple times
-    if (effectRanRef.current) {
+    // This critical flag was causing infinite loops - only run effect once per dashboard
+    if (effectRanRef.current && dashboardId === "default") {
+      console.log("Effect already ran for this dashboard, skipping");
       return;
     }
     
@@ -120,9 +121,10 @@ export const useBudgetData = () => {
     effectRanRef.current = true;
     loadData();
     
-    // Reset the effect flag when dashboardId changes
+    // Reset the effect flag when dashboardId changes but not on unmount when on default dashboard
     return () => {
-      if (dashboardId) {
+      if (dashboardId !== "default") {
+        console.log("Resetting effect ran flag due to dashboard change from", dashboardId);
         effectRanRef.current = false;
       }
     };
