@@ -37,6 +37,26 @@ export abstract class BaseQueryManager {
     return db;
   }
   
+  protected async query(sql: string, params: any[] = []): Promise<any[]> {
+    try {
+      const db = this.getDb();
+      return await db.exec(sql, params);
+    } catch (error) {
+      this.logError(`executing query: ${sql}`, error);
+      throw error;
+    }
+  }
+  
+  protected async run(sql: string, params: any[] = []): Promise<void> {
+    try {
+      const db = this.getDb();
+      await db.exec(sql, params);
+    } catch (error) {
+      this.logError(`executing run: ${sql}`, error);
+      throw error;
+    }
+  }
+  
   protected logError(operation: string, error: any): void {
     console.error(`Query error during ${operation}:`, error);
     toast({

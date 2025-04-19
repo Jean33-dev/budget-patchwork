@@ -14,7 +14,7 @@ export class DashboardQueryManager extends BaseQueryManager {
       if (!success) return [];
       
       const db = this.getDb();
-      const results = await this.query("SELECT * FROM dashboards");
+      const results = await db.exec("SELECT * FROM dashboards");
       
       return results.map(row => ({
         id: row.id,
@@ -36,7 +36,8 @@ export class DashboardQueryManager extends BaseQueryManager {
       const success = await this.ensureParentInitialized();
       if (!success) return null;
       
-      const results = await this.query("SELECT * FROM dashboards WHERE id = ?", [id]);
+      const db = this.getDb();
+      const results = await db.exec("SELECT * FROM dashboards WHERE id = ?", [id]);
       
       if (results.length === 0) {
         return null;
@@ -63,8 +64,9 @@ export class DashboardQueryManager extends BaseQueryManager {
       const success = await this.ensureParentInitialized();
       if (!success) return;
       
+      const db = this.getDb();
       const now = new Date().toISOString();
-      await this.run(
+      await db.exec(
         'INSERT INTO dashboards (id, title, createdAt, updatedAt, description, icon, color) VALUES (?, ?, ?, ?, ?, ?, ?)',
         [
           dashboard.id, 
@@ -87,8 +89,9 @@ export class DashboardQueryManager extends BaseQueryManager {
       const success = await this.ensureParentInitialized();
       if (!success) return;
       
+      const db = this.getDb();
       const now = new Date().toISOString();
-      await this.run(
+      await db.exec(
         'UPDATE dashboards SET title = ?, updatedAt = ?, description = ?, icon = ?, color = ? WHERE id = ?',
         [
           dashboard.title, 
@@ -110,7 +113,8 @@ export class DashboardQueryManager extends BaseQueryManager {
       const success = await this.ensureParentInitialized();
       if (!success) return;
       
-      await this.run('DELETE FROM dashboards WHERE id = ?', [id]);
+      const db = this.getDb();
+      await db.exec('DELETE FROM dashboards WHERE id = ?', [id]);
     } catch (error) {
       console.error("Error deleting dashboard:", error);
       throw error;

@@ -18,10 +18,14 @@ export class DashboardManager extends BaseDatabaseManager implements IDashboardM
     if (!success) return [];
     
     try {
-      // Temporairement, nous allons utiliser une requête directe car nous n'avons pas encore
-      // implémenté un query manager pour les tableaux de bord
-      const results = await this.query("SELECT * FROM dashboards");
-      return results.map(row => ({
+      // Use the queryManager once ensured it's initialized
+      if (this.queryManager) {
+        return this.queryManager.executeGetDashboards();
+      }
+      
+      // Fallback to direct DB query if queryManager is not available
+      const results = await this.getDb().exec("SELECT * FROM dashboards");
+      return this.mapResultsToDataObjects(results, row => ({
         id: row.id,
         title: row.title,
         createdAt: row.createdAt,
@@ -44,7 +48,13 @@ export class DashboardManager extends BaseDatabaseManager implements IDashboardM
     if (!success) return null;
     
     try {
-      const results = await this.query("SELECT * FROM dashboards WHERE id = ?", [id]);
+      // Use the queryManager once ensured it's initialized
+      if (this.queryManager) {
+        return this.queryManager.executeGetDashboardById(id);
+      }
+      
+      // Fallback to direct DB query if queryManager is not available
+      const results = await this.getDb().exec("SELECT * FROM dashboards WHERE id = ?", [id]);
       if (results.length === 0) {
         return null;
       }
@@ -73,8 +83,15 @@ export class DashboardManager extends BaseDatabaseManager implements IDashboardM
     if (!success) return;
     
     try {
+      // Use the queryManager once ensured it's initialized
+      if (this.queryManager) {
+        await this.queryManager.executeAddDashboard(dashboard);
+        return;
+      }
+      
+      // Fallback to direct DB execution if queryManager is not available
       const now = new Date().toISOString();
-      await this.run(
+      await this.getDb().exec(
         'INSERT INTO dashboards (id, title, createdAt, updatedAt, description, icon, color) VALUES (?, ?, ?, ?, ?, ?, ?)',
         [
           dashboard.id, 
@@ -100,8 +117,15 @@ export class DashboardManager extends BaseDatabaseManager implements IDashboardM
     if (!success) return;
     
     try {
+      // Use the queryManager once ensured it's initialized
+      if (this.queryManager) {
+        await this.queryManager.executeUpdateDashboard(dashboard);
+        return;
+      }
+      
+      // Fallback to direct DB execution if queryManager is not available
       const now = new Date().toISOString();
-      await this.run(
+      await this.getDb().exec(
         'UPDATE dashboards SET title = ?, updatedAt = ?, description = ?, icon = ?, color = ? WHERE id = ?',
         [
           dashboard.title, 
@@ -126,7 +150,14 @@ export class DashboardManager extends BaseDatabaseManager implements IDashboardM
     if (!success) return;
     
     try {
-      await this.run('DELETE FROM dashboards WHERE id = ?', [id]);
+      // Use the queryManager once ensured it's initialized
+      if (this.queryManager) {
+        await this.queryManager.executeDeleteDashboard(id);
+        return;
+      }
+      
+      // Fallback to direct DB execution if queryManager is not available
+      await this.getDb().exec('DELETE FROM dashboards WHERE id = ?', [id]);
     } catch (error) {
       console.error("Error deleting dashboard:", error);
       throw error;
@@ -145,6 +176,16 @@ export class DashboardManager extends BaseDatabaseManager implements IDashboardM
    */
   setCurrentDashboardId(id: string): void {
     this.currentDashboardId = id;
+  }
+  
+  /**
+   * Map database results to an array of data objects
+   */
+  private mapResultsToDataObjects<T>(results: any[], mapper: (row: any) => T): T[] {
+    if (!results || results.length === 0) {
+      return [];
+    }
+    return results.map(mapper);
   }
   
   /**
