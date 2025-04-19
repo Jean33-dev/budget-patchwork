@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { PlusCircle, LineChart, Settings } from "lucide-react";
@@ -7,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
 import { EditDashboardDialog } from "@/components/dashboard/EditDashboardDialog";
 import { db } from "@/services/database";
+import { v4 as uuidv4 } from 'uuid';
 
 const Home = () => {
   const navigate = useNavigate();
@@ -51,11 +51,30 @@ const Home = () => {
     loadDashboardTitle();
   }, []);
 
-  const handleCreateDashboard = () => {
-    toast({
-      title: "Bientôt disponible",
-      description: "La création de nouveaux tableaux de bord sera disponible prochainement.",
-    });
+  const handleCreateDashboard = async () => {
+    try {
+      const newDashboard = {
+        id: uuidv4(),
+        title: "Nouveau tableau de bord",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+
+      await db.addDashboard(newDashboard);
+      navigate(`/dashboard/${newDashboard.id}`);
+      
+      toast({
+        title: "Succès",
+        description: "Le tableau de bord a été créé",
+      });
+    } catch (error) {
+      console.error("Erreur lors de la création du tableau de bord:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible de créer le tableau de bord"
+      });
+    }
   };
 
   const handleEditDashboard = () => {
