@@ -14,46 +14,61 @@ export class ExpenseManager extends BaseDatabaseManager implements IExpenseManag
    * Get all expenses from the database
    */
   async getExpenses(): Promise<Expense[]> {
+    console.log("🔍 ExpenseManager.getExpenses called");
     await this.ensureInitialized();
-    return this.queryManager.executeGetExpenses();
+    const expenses = await this.queryManager.executeGetExpenses();
+    console.log(`🔍 ExpenseManager.getExpenses returning ${expenses.length} expenses with dashboardIds:`, 
+      expenses.map(e => ({ id: e.id, title: e.title, dashboardId: e.dashboardId })));
+    return expenses;
   }
 
   /**
    * Get recurring expenses from the database
    */
   async getRecurringExpenses(): Promise<Expense[]> {
+    console.log("🔍 ExpenseManager.getRecurringExpenses called");
     await this.ensureInitialized();
-    return this.queryManager.executeGetRecurringExpenses();
+    const recurringExpenses = await this.queryManager.executeGetRecurringExpenses();
+    console.log(`🔍 ExpenseManager.getRecurringExpenses returning ${recurringExpenses.length} expenses with dashboardIds:`, 
+      recurringExpenses.map(e => ({ id: e.id, title: e.title, dashboardId: e.dashboardId })));
+    return recurringExpenses;
   }
 
   /**
    * Add a new expense to the database
    */
   async addExpense(expense: Expense): Promise<void> {
+    console.log("🔍 ExpenseManager.addExpense called with expense:", expense);
     await this.ensureInitialized();
     await this.queryManager.executeAddExpense(expense);
+    console.log("🔍 ExpenseManager.addExpense completed");
   }
 
   /**
    * Update an expense in the database
    */
   async updateExpense(expense: Expense): Promise<void> {
+    console.log("🔍 ExpenseManager.updateExpense called with expense:", expense);
     await this.ensureInitialized();
     await this.queryManager.executeUpdateExpense(expense);
+    console.log("🔍 ExpenseManager.updateExpense completed");
   }
 
   /**
    * Delete an expense from the database
    */
   async deleteExpense(id: string): Promise<void> {
+    console.log(`🔍 ExpenseManager.deleteExpense called for id: ${id}`);
     await this.ensureInitialized();
     await this.queryManager.executeDeleteExpense(id);
+    console.log("🔍 ExpenseManager.deleteExpense completed");
   }
   
   /**
    * Copy a recurring expense to a specific month
    */
   async copyRecurringExpenseToMonth(expenseId: string, targetDate: string): Promise<void> {
+    console.log(`🔍 ExpenseManager.copyRecurringExpenseToMonth called for expenseId: ${expenseId} and targetDate: ${targetDate}`);
     await this.ensureInitialized();
     
     try {
@@ -64,6 +79,8 @@ export class ExpenseManager extends BaseDatabaseManager implements IExpenseManag
       if (!recurringExpense) {
         throw new Error("Dépense récurrente non trouvée");
       }
+      
+      console.log(`🔍 Found recurring expense to copy:`, recurringExpense);
       
       // Create a new expense based on the recurring one
       const newExpense: Expense = {
@@ -78,14 +95,17 @@ export class ExpenseManager extends BaseDatabaseManager implements IExpenseManag
         dashboardId: recurringExpense.dashboardId // Conserver le même dashboardId
       };
       
+      console.log(`🔍 New expense created from recurring one:`, newExpense);
       await this.addExpense(newExpense);
       
       toast({
         title: "Succès",
         description: `La dépense récurrente "${recurringExpense.title}" a été ajoutée au mois actuel.`
       });
+      
+      console.log("🔍 ExpenseManager.copyRecurringExpenseToMonth completed successfully");
     } catch (error) {
-      console.error("Erreur lors de la copie de la dépense récurrente :", error);
+      console.error("🔍 Erreur lors de la copie de la dépense récurrente :", error);
       toast({
         variant: "destructive",
         title: "Erreur",

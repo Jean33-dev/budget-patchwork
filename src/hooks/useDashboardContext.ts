@@ -8,41 +8,61 @@ export const useDashboardContext = () => {
   const { dashboardId } = useParams();
 
   const getCurrentDashboardId = useCallback((): string => {
+    console.log("🔍 useDashboardContext - Starting with dashboardId param:", dashboardId);
+    console.log("🔍 useDashboardContext - location pathname:", location.pathname);
+    
     if (dashboardId) {
-      console.log("useDashboardContext - dashboardId from params:", dashboardId);
+      console.log("🔍 useDashboardContext - Using dashboardId from params:", dashboardId);
       return dashboardId;
     }
 
     const pathParts = location.pathname.split('/');
-    console.log("useDashboardContext - pathname:", location.pathname);
+    console.log("🔍 useDashboardContext - pathname parts:", pathParts);
     
     const dashboardIndex = pathParts.indexOf('dashboard');
     if (dashboardIndex !== -1 && pathParts[dashboardIndex + 1]) {
       const specialRoutes = ['budget', 'expenses', 'income', 'recurring-expenses', 'recurring-income', 'categories'];
       const potentialId = decodeURIComponent(pathParts[dashboardIndex + 1]);
+      console.log("🔍 useDashboardContext - Found potential dashboardId in path:", potentialId);
       
       if (specialRoutes.includes(potentialId)) {
+        console.log("🔍 useDashboardContext - This is a special route:", potentialId);
         // Generate a unique ID for the default dashboard if it doesn't exist
         const defaultId = localStorage.getItem('defaultDashboardId') || uuidv4();
         if (!localStorage.getItem('defaultDashboardId')) {
+          console.log("🔍 useDashboardContext - Creating new defaultDashboardId:", defaultId);
           localStorage.setItem('defaultDashboardId', defaultId);
+        } else {
+          console.log("🔍 useDashboardContext - Using existing defaultDashboardId:", defaultId);
         }
+        
+        if (potentialId === 'budget') {
+          console.log("🔍 useDashboardContext - On budget route, returning special value 'budget'");
+          return 'budget';
+        }
+        
         return defaultId;
       }
       
+      console.log("🔍 useDashboardContext - Returning ID from path:", potentialId);
       return potentialId;
     }
     
     // Generate a unique ID for the default dashboard if it doesn't exist
     const defaultId = localStorage.getItem('defaultDashboardId') || uuidv4();
     if (!localStorage.getItem('defaultDashboardId')) {
+      console.log("🔍 useDashboardContext - Creating new defaultDashboardId:", defaultId);
       localStorage.setItem('defaultDashboardId', defaultId);
+    } else {
+      console.log("🔍 useDashboardContext - Using existing defaultDashboardId:", defaultId);
     }
+    
+    console.log("🔍 useDashboardContext - No dashboardId found in path, using default:", defaultId);
     return defaultId;
   }, [location, dashboardId]);
 
   const currentDashboardId = getCurrentDashboardId();
-  console.log("useDashboardContext - final currentDashboardId:", currentDashboardId);
+  console.log("🔍 useDashboardContext - Final currentDashboardId:", currentDashboardId);
 
   return {
     currentDashboardId

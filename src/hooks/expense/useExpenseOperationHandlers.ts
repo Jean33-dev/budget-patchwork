@@ -16,7 +16,7 @@ export const useExpenseOperationHandlers = (
   // Normaliser dashboardId pour les cas "budget"
   const normalizedDashboardId = dashboardId === "budget" ? "default" : dashboardId;
   
-  console.log("useExpenseOperationHandlers - initialized with dashboardId:", dashboardId, 
+  console.log("🔍 useExpenseOperationHandlers - initialized with dashboardId:", dashboardId, 
               "normalized to:", normalizedDashboardId, 
               "budgetId:", budgetId);
 
@@ -32,7 +32,7 @@ export const useExpenseOperationHandlers = (
 
       setIsProcessing(true);
       try {
-        console.log("useExpenseOperationHandlers - Adding expense with data:", envelope, 
+        console.log("🔍 useExpenseOperationHandlers - Adding expense with data:", envelope, 
                     "normalized dashboardId:", normalizedDashboardId);
         
         const expense: Expense = {
@@ -47,7 +47,7 @@ export const useExpenseOperationHandlers = (
           dashboardId: normalizedDashboardId || "default" // S'assurer que le dashboardId est toujours défini
         };
         
-        console.log("useExpenseOperationHandlers - Constructed expense object:", expense);
+        console.log("🔍 useExpenseOperationHandlers - Constructed expense object:", expense);
         await db.addExpense(expense);
         
         toast({
@@ -57,7 +57,7 @@ export const useExpenseOperationHandlers = (
         
         await onSuccessCallback();
       } catch (error) {
-        console.error('Error adding expense:', error);
+        console.error('🔍 Error adding expense:', error);
         toast({
           variant: 'destructive',
           title: 'Erreur',
@@ -74,7 +74,7 @@ export const useExpenseOperationHandlers = (
     async (id: string) => {
       setIsProcessing(true);
       try {
-        console.log(`useExpenseOperationHandlers - Deleting expense with ID: ${id}`);
+        console.log(`🔍 useExpenseOperationHandlers - Deleting expense with ID: ${id}`);
         await db.deleteExpense(id);
         
         toast({
@@ -84,7 +84,7 @@ export const useExpenseOperationHandlers = (
         
         await onSuccessCallback();
       } catch (error) {
-        console.error('Error deleting expense:', error);
+        console.error('🔍 Error deleting expense:', error);
         toast({
           variant: 'destructive',
           title: 'Erreur',
@@ -101,7 +101,7 @@ export const useExpenseOperationHandlers = (
     async (expense: Expense) => {
       setIsProcessing(true);
       try {
-        console.log("useExpenseOperationHandlers - Updating expense:", expense);
+        console.log("🔍 useExpenseOperationHandlers - Updating expense:", expense);
         
         // Normaliser le dashboardId pour le cas "budget"
         const dashboardToUse = expense.dashboardId === "budget" ? "default" : 
@@ -113,7 +113,7 @@ export const useExpenseOperationHandlers = (
           dashboardId: dashboardToUse
         };
         
-        console.log("useExpenseOperationHandlers - Final updated expense:", updatedExpense);
+        console.log("🔍 useExpenseOperationHandlers - Final updated expense:", updatedExpense);
         await db.updateExpense(updatedExpense);
         
         toast({
@@ -123,7 +123,7 @@ export const useExpenseOperationHandlers = (
         
         await onSuccessCallback();
       } catch (error) {
-        console.error('Error updating expense:', error);
+        console.error('🔍 Error updating expense:', error);
         toast({
           variant: 'destructive',
           title: 'Erreur',

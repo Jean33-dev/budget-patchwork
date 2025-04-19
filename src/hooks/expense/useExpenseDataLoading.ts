@@ -15,7 +15,7 @@ export const useExpenseDataLoading = (dashboardId: string | null) => {
 
   const loadData = useCallback(async () => {
     const useDashboardId = dashboardId || "default";
-    console.log(`useExpenseDataLoading - Beginning data load for dashboard: ${useDashboardId}`);
+    console.log(`🔍 useExpenseDataLoading - Beginning data load for dashboard: ${useDashboardId}`);
     
     setIsLoading(true);
     setError(null);
@@ -24,45 +24,50 @@ export const useExpenseDataLoading = (dashboardId: string | null) => {
       await db.init();
       
       // Load budgets
-      console.log("useExpenseDataLoading - Loading budgets");
+      console.log("🔍 useExpenseDataLoading - Loading budgets");
       const loadedBudgets = await db.getBudgets();
-      console.log(`useExpenseDataLoading - All budgets loaded from database (${loadedBudgets.length}):`, loadedBudgets);
+      console.log(`🔍 useExpenseDataLoading - All budgets loaded from database (${loadedBudgets.length}):`, loadedBudgets);
       
       const filteredBudgets = loadedBudgets.filter(b => 
         !b.dashboardId || b.dashboardId === useDashboardId
       );
-      console.log(`useExpenseDataLoading - Filtered budgets for dashboard ${useDashboardId}:`, filteredBudgets);
+      console.log(`🔍 useExpenseDataLoading - Filtered budgets for dashboard ${useDashboardId}:`, filteredBudgets);
       setAvailableBudgets(filteredBudgets);
       
       // Load expenses
-      console.log("useExpenseDataLoading - Loading expenses");
+      console.log("🔍 useExpenseDataLoading - Loading expenses");
       const loadedExpenses = await db.getExpenses();
-      console.log(`useExpenseDataLoading - All expenses loaded from database (${loadedExpenses.length}):`, loadedExpenses);
+      console.log(`🔍 useExpenseDataLoading - All expenses loaded from database (${loadedExpenses.length}):`, loadedExpenses);
       
       // Filtrer les dépenses qui ne sont pas récurrentes
       const nonRecurringExpenses = loadedExpenses.filter(expense => !expense.isRecurring);
-      console.log(`useExpenseDataLoading - Non-recurring expenses (${nonRecurringExpenses.length}):`, nonRecurringExpenses);
+      console.log(`🔍 useExpenseDataLoading - Non-recurring expenses (${nonRecurringExpenses.length}):`, nonRecurringExpenses);
       
       // Simplifier la logique de filtrage par dashboardId
+      console.log(`🔍 useExpenseDataLoading - Filtering expenses for dashboard: ${useDashboardId}`);
       const filteredExpenses = nonRecurringExpenses.filter(expense => {
         // Si le dashboardId demandé est "budget", traiter comme un cas spécial
         if (useDashboardId === "budget") {
+          const shouldInclude = !expense.dashboardId || expense.dashboardId === "default" || expense.dashboardId === "budget";
+          console.log(`🔍 Expense ${expense.id} (${expense.title}) with dashboardId=${expense.dashboardId} on budget route: include=${shouldInclude}`);
           // Pour "budget", montrer toutes les dépenses sans dashboardId ou avec dashboardId="default"
-          return !expense.dashboardId || expense.dashboardId === "default" || expense.dashboardId === "budget";
+          return shouldInclude;
         }
         
         // Sinon, montrer uniquement les dépenses qui correspondent au dashboardId demandé
         // ou les dépenses sans dashboardId si on est sur le dashboard par défaut
-        return expense.dashboardId === useDashboardId || 
+        const shouldInclude = expense.dashboardId === useDashboardId || 
                (!expense.dashboardId && useDashboardId === "default");
+        console.log(`🔍 Expense ${expense.id} (${expense.title}) with dashboardId=${expense.dashboardId} on dashboard ${useDashboardId}: include=${shouldInclude}`);
+        return shouldInclude;
       });
       
-      console.log(`useExpenseDataLoading - Filtered expenses for dashboard ${useDashboardId} (${filteredExpenses.length}):`, filteredExpenses);
+      console.log(`🔍 useExpenseDataLoading - Filtered expenses for dashboard ${useDashboardId} (${filteredExpenses.length}):`, filteredExpenses);
       setExpenses(filteredExpenses);
       
       setInitAttempted(true);
     } catch (error) {
-      console.error(`useExpenseDataLoading - Error loading data for dashboard ${useDashboardId}:`, error);
+      console.error(`🔍 useExpenseDataLoading - Error loading data for dashboard ${useDashboardId}:`, error);
       toast({
         variant: "destructive",
         title: "Erreur",
@@ -75,7 +80,7 @@ export const useExpenseDataLoading = (dashboardId: string | null) => {
   }, [dashboardId, toast]);
 
   useEffect(() => {
-    console.log(`useExpenseDataLoading - Effect triggered with dashboardId: ${dashboardId}`);
+    console.log(`🔍 useExpenseDataLoading - Effect triggered with dashboardId: ${dashboardId}`);
     loadData();
   }, [loadData, dashboardId]);
 
