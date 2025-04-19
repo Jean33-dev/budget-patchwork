@@ -22,7 +22,7 @@ export const expenseMutationQueries = {
         expense.linkedBudgetId ? String(expense.linkedBudgetId) : null, 
         String(expense.date || new Date().toISOString().split('T')[0]),
         expense.isRecurring ? 1 : 0,
-        expense.dashboardId ? String(expense.dashboardId) : null
+        expense.dashboardId ? String(expense.dashboardId) : "default"
       ]);
       
       stmt.free();

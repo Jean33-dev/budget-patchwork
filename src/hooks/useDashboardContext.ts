@@ -1,26 +1,31 @@
 
 import { useCallback } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 
 export const useDashboardContext = () => {
   const location = useLocation();
+  const { dashboardId } = useParams();
 
   const getCurrentDashboardId = useCallback((): string => {
+    // First, try to get dashboardId from route params
+    if (dashboardId) {
+      console.log("useDashboardContext - dashboardId from params:", dashboardId);
+      return dashboardId;
+    }
+
+    // Fallback to pathname parsing if no params
     const pathParts = location.pathname.split('/');
-    
-    // Log pour déboguer
     console.log("useDashboardContext - pathname:", location.pathname);
     console.log("useDashboardContext - pathParts:", pathParts);
     
     const dashboardIndex = pathParts.indexOf('dashboard');
     if (dashboardIndex !== -1 && pathParts[dashboardIndex + 1]) {
-      // Les cas spéciaux à traiter - ces routes ne sont pas des IDs de dashboard
       const specialRoutes = ['budget', 'expenses', 'income', 'recurring-expenses', 'recurring-income', 'categories'];
       
       const potentialId = decodeURIComponent(pathParts[dashboardIndex + 1]);
       console.log("useDashboardContext - potential dashboardId:", potentialId);
       
-      // Si c'est une route spéciale, retourner l'ID par défaut
+      // If it's a special route, return default
       if (specialRoutes.includes(potentialId)) {
         console.log("useDashboardContext - special route detected, returning default");
         return "default";
@@ -31,8 +36,8 @@ export const useDashboardContext = () => {
     }
     
     console.log("useDashboardContext - could not extract dashboardId, returning default");
-    return "default";  // Retourner l'ID du dashboard par défaut si aucun n'est trouvé
-  }, [location]);
+    return "default";
+  }, [location, dashboardId]);
 
   const currentDashboardId = getCurrentDashboardId();
   console.log("useDashboardContext - final currentDashboardId:", currentDashboardId);

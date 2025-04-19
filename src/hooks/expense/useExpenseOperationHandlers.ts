@@ -37,7 +37,7 @@ export const useExpenseOperationHandlers = (
           linkedBudgetId: envelope.linkedBudgetId || budgetId || undefined,
           date: envelope.date || new Date().toISOString().split('T')[0],
           isRecurring: false,
-          dashboardId: dashboardId || "default"
+          dashboardId: dashboardId || "default"  // Ensure dashboardId is always set
         };
         
         console.log("useExpenseOperationHandlers - Constructed expense object:", expense);
