@@ -9,17 +9,32 @@ import { DatabaseManagerFactory } from './database-manager-factory';
 import { IDatabaseManager } from './interfaces/IDatabaseManager';
 import { InitializationDatabaseManager } from './managers/initialization-manager';
 import { DataOperationsManager } from './managers/data-operations-manager';
+import { BudgetOperationsManager } from './managers/budget-operations-manager';
+import { ExpenseOperationsManager } from './managers/expense-operations-manager';
+import { IncomeOperationsManager } from './managers/income-operations-manager';
+import { CategoryOperationsManager } from './managers/category-operations-manager';
+import { DashboardOperationsManager } from './managers/dashboard-operations-manager';
 
 export class DatabaseManager extends DatabaseManagerImpl implements IDatabaseManager {
   private managerFactory: DatabaseManagerFactory;
   private customInitManager: InitializationDatabaseManager;
   private dataManager: DataOperationsManager;
+  private budgetManager: BudgetOperationsManager;
+  private expenseManager: ExpenseOperationsManager;
+  private incomeManager: IncomeOperationsManager;
+  private categoryManager: CategoryOperationsManager;
+  private dashboardManager: DashboardOperationsManager;
 
   constructor() {
     super();
     this.managerFactory = new DatabaseManagerFactory();
     this.customInitManager = new InitializationDatabaseManager();
     this.dataManager = new DataOperationsManager();
+    this.budgetManager = new BudgetOperationsManager(this.ensureInitialized.bind(this), this.managerFactory);
+    this.expenseManager = new ExpenseOperationsManager(this.ensureInitialized.bind(this), this.managerFactory);
+    this.incomeManager = new IncomeOperationsManager(this.ensureInitialized.bind(this), this.managerFactory);
+    this.categoryManager = new CategoryOperationsManager(this.ensureInitialized.bind(this), this.managerFactory);
+    this.dashboardManager = new DashboardOperationsManager(this.ensureInitialized.bind(this), this.managerFactory);
   }
 
   async init(): Promise<boolean> {
@@ -49,257 +64,110 @@ export class DatabaseManager extends DatabaseManagerImpl implements IDatabaseMan
 
   // Dashboard methods
   async getDashboards(): Promise<Dashboard[]> {
-    try {
-      const initialized = await this.ensureInitialized();
-      if (!initialized) {
-        console.error("Database not initialized in getDashboards");
-        return [];
-      }
-      return this.managerFactory.getDashboardManager().getDashboards();
-    } catch (error) {
-      console.error("Error in getDashboards:", error);
-      return [];
-    }
+    return this.dashboardManager.getDashboards();
   }
 
   async getDashboardById(id: string): Promise<Dashboard | null> {
-    const initialized = await this.ensureInitialized();
-    if (!initialized) {
-      console.error("Database not initialized in getDashboardById");
-      return null;
-    }
-    return this.managerFactory.getDashboardManager().getDashboardById(id);
+    return this.dashboardManager.getDashboardById(id);
   }
 
   async addDashboard(dashboard: Dashboard): Promise<void> {
-    const initialized = await this.ensureInitialized();
-    if (!initialized) {
-      throw new Error("Database not initialized in addDashboard");
-    }
-    await this.managerFactory.getDashboardManager().addDashboard(dashboard);
+    return this.dashboardManager.addDashboard(dashboard);
   }
 
   async updateDashboard(dashboard: Dashboard): Promise<void> {
-    const initialized = await this.ensureInitialized();
-    if (!initialized) {
-      throw new Error("Database not initialized in updateDashboard");
-    }
-    await this.managerFactory.getDashboardManager().updateDashboard(dashboard);
+    return this.dashboardManager.updateDashboard(dashboard);
   }
 
   async deleteDashboard(id: string): Promise<void> {
-    const initialized = await this.ensureInitialized();
-    if (!initialized) {
-      throw new Error("Database not initialized in deleteDashboard");
-    }
-    await this.managerFactory.getDashboardManager().deleteDashboard(id);
+    return this.dashboardManager.deleteDashboard(id);
   }
 
   // Budget methods
   async getBudgets(): Promise<Budget[]> {
-    try {
-      const initialized = await this.ensureInitialized();
-      if (!initialized) {
-        console.error("Database not initialized in getBudgets");
-        return [];
-      }
-      return this.managerFactory.getBudgetManager().getBudgets();
-    } catch (error) {
-      console.error("Error in getBudgets:", error);
-      return [];
-    }
+    return this.budgetManager.getBudgets();
   }
 
   async addBudget(budget: Budget): Promise<void> {
-    const initialized = await this.ensureInitialized();
-    if (!initialized) {
-      throw new Error("Database not initialized in addBudget");
-    }
-    await this.managerFactory.getBudgetManager().addBudget(budget);
+    return this.budgetManager.addBudget(budget);
   }
 
   async updateBudget(budget: Budget): Promise<void> {
-    const initialized = await this.ensureInitialized();
-    if (!initialized) {
-      throw new Error("Database not initialized in updateBudget");
-    }
-    await this.managerFactory.getBudgetManager().updateBudget(budget);
+    return this.budgetManager.updateBudget(budget);
   }
 
   async deleteBudget(id: string): Promise<void> {
-    const initialized = await this.ensureInitialized();
-    if (!initialized) {
-      throw new Error("Database not initialized in deleteBudget");
-    }
-    await this.managerFactory.getBudgetManager().deleteBudget(id);
+    return this.budgetManager.deleteBudget(id);
   }
 
   // Expense methods
   async getExpenses(): Promise<Expense[]> {
-    try {
-      const initialized = await this.ensureInitialized();
-      if (!initialized) {
-        console.error("Database not initialized in getExpenses");
-        return [];
-      }
-      return this.managerFactory.getExpenseManager().getExpenses();
-    } catch (error) {
-      console.error("Error in getExpenses:", error);
-      return [];
-    }
+    return this.expenseManager.getExpenses();
   }
 
   async getRecurringExpenses(): Promise<Expense[]> {
-    try {
-      const initialized = await this.ensureInitialized();
-      if (!initialized) {
-        console.error("Database not initialized in getRecurringExpenses");
-        return [];
-      }
-      return this.managerFactory.getExpenseManager().getRecurringExpenses();
-    } catch (error) {
-      console.error("Error in getRecurringExpenses:", error);
-      return [];
-    }
+    return this.expenseManager.getRecurringExpenses();
   }
 
   async addExpense(expense: Expense): Promise<void> {
-    const initialized = await this.ensureInitialized();
-    if (!initialized) {
-      throw new Error("Database not initialized in addExpense");
-    }
-    await this.managerFactory.getExpenseManager().addExpense(expense);
+    return this.expenseManager.addExpense(expense);
   }
 
   async updateExpense(expense: Expense): Promise<void> {
-    const initialized = await this.ensureInitialized();
-    if (!initialized) {
-      throw new Error("Database not initialized in updateExpense");
-    }
-    await this.managerFactory.getExpenseManager().updateExpense(expense);
+    return this.expenseManager.updateExpense(expense);
   }
 
   async deleteExpense(id: string): Promise<void> {
-    const initialized = await this.ensureInitialized();
-    if (!initialized) {
-      throw new Error("Database not initialized in deleteExpense");
-    }
-    await this.managerFactory.getExpenseManager().deleteExpense(id);
+    return this.expenseManager.deleteExpense(id);
   }
 
   async copyRecurringExpenseToMonth(expenseId: string, targetDate: string): Promise<void> {
-    const initialized = await this.ensureInitialized();
-    if (!initialized) {
-      throw new Error("Database not initialized in copyRecurringExpenseToMonth");
-    }
-    await this.managerFactory.getExpenseManager().copyRecurringExpenseToMonth(expenseId, targetDate);
+    return this.expenseManager.copyRecurringExpenseToMonth(expenseId, targetDate);
   }
 
   // Income methods
   async getIncomes(): Promise<Income[]> {
-    try {
-      const initialized = await this.ensureInitialized();
-      if (!initialized) {
-        console.error("Database not initialized in getIncomes");
-        return [];
-      }
-      return this.managerFactory.getIncomeManager().getIncomes();
-    } catch (error) {
-      console.error("Error in getIncomes:", error);
-      return [];
-    }
+    return this.incomeManager.getIncomes();
   }
 
   async getRecurringIncomes(): Promise<Income[]> {
-    try {
-      const initialized = await this.ensureInitialized();
-      if (!initialized) {
-        console.error("Database not initialized in getRecurringIncomes");
-        return [];
-      }
-      return this.managerFactory.getIncomeManager().getRecurringIncomes();
-    } catch (error) {
-      console.error("Error in getRecurringIncomes:", error);
-      return [];
-    }
+    return this.incomeManager.getRecurringIncomes();
   }
 
   async addIncome(income: Income): Promise<void> {
-    const initialized = await this.ensureInitialized();
-    if (!initialized) {
-      throw new Error("Database not initialized in addIncome");
-    }
-    await this.managerFactory.getIncomeManager().addIncome(income);
+    return this.incomeManager.addIncome(income);
   }
 
   async updateIncome(income: Income): Promise<void> {
-    const initialized = await this.ensureInitialized();
-    if (!initialized) {
-      throw new Error("Database not initialized in updateIncome");
-    }
-    await this.managerFactory.getIncomeManager().updateIncome(income);
+    return this.incomeManager.updateIncome(income);
   }
 
   async deleteIncome(id: string): Promise<void> {
-    const initialized = await this.ensureInitialized();
-    if (!initialized) {
-      throw new Error("Database not initialized in deleteIncome");
-    }
-    await this.managerFactory.getIncomeManager().deleteIncome(id);
+    return this.incomeManager.deleteIncome(id);
   }
 
   async copyRecurringIncomeToMonth(incomeId: string, targetDate: string): Promise<void> {
-    const initialized = await this.ensureInitialized();
-    if (!initialized) {
-      throw new Error("Database not initialized in copyRecurringIncomeToMonth");
-    }
-    await this.managerFactory.getIncomeManager().copyRecurringIncomeToMonth(incomeId, targetDate);
+    return this.incomeManager.copyRecurringIncomeToMonth(incomeId, targetDate);
   }
 
   // Category methods
   async getCategories(): Promise<Category[]> {
-    try {
-      const initialized = await this.ensureInitialized();
-      if (!initialized) {
-        console.error("Database not initialized in getCategories");
-        return [];
-      }
-      return this.managerFactory.getCategoryManager().getCategories();
-    } catch (error) {
-      console.error("Error in getCategories:", error);
-      return [];
-    }
+    return this.categoryManager.getCategories();
   }
 
   async addCategory(category: Category): Promise<void> {
-    const initialized = await this.ensureInitialized();
-    if (!initialized) {
-      throw new Error("Database not initialized in addCategory");
-    }
-    await this.managerFactory.getCategoryManager().addCategory(category);
+    return this.categoryManager.addCategory(category);
   }
 
   async updateCategory(category: Category): Promise<void> {
-    const initialized = await this.ensureInitialized();
-    if (!initialized) {
-      throw new Error("Database not initialized in updateCategory");
-    }
-    await this.managerFactory.getCategoryManager().updateCategory(category);
+    return this.categoryManager.updateCategory(category);
   }
 
   async deleteCategory(id: string): Promise<void> {
-    const initialized = await this.ensureInitialized();
-    if (!initialized) {
-      throw new Error("Database not initialized in deleteCategory");
-    }
-    await this.managerFactory.getCategoryManager().deleteCategory(id);
+    return this.categoryManager.deleteCategory(id);
   }
 
   async resetCategoryExpenses(categoryId: string): Promise<void> {
-    const initialized = await this.ensureInitialized();
-    if (!initialized) {
-      throw new Error("Database not initialized in resetCategoryExpenses");
-    }
-    await this.managerFactory.getCategoryManager().resetCategoryExpenses(categoryId);
+    return this.categoryManager.resetCategoryExpenses(categoryId);
   }
 }
