@@ -6,6 +6,7 @@ import { db } from "@/services/database";
 import { Expense } from "@/services/database/models/expense";
 import { Budget } from "@/services/database/models/budget";
 import { useDashboardContext } from "@/hooks/useDashboardContext";
+import { v4 as uuidv4 } from 'uuid';
 
 export const useRecurringExpenses = () => {
   const { toast } = useToast();
@@ -22,14 +23,26 @@ export const useRecurringExpenses = () => {
       const expenses = await db.getRecurringExpenses();
       const budgets = await db.getBudgets();
       
+      console.log("useRecurringExpenses - All recurring expenses:", expenses);
+      console.log("useRecurringExpenses - Current dashboardId:", currentDashboardId);
+      
       // Filtrer les dépenses récurrentes par dashboardId
       const filteredExpenses = expenses.filter(expense => {
-        if (expense.dashboardId) {
-          return expense.dashboardId === currentDashboardId;
+        // Si le dashboard actuel est "budget", montrer les dépenses sans dashboardId
+        // ou avec dashboardId "default" ou "budget"
+        if (currentDashboardId === "budget") {
+          return !expense.dashboardId || 
+                 expense.dashboardId === "default" || 
+                 expense.dashboardId === "budget";
         }
-        return currentDashboardId === "default";
+        
+        // Pour les autres dashboards, ne montrer que les dépenses correspondantes
+        // ou les dépenses sans dashboardId si on est sur le dashboard par défaut
+        return expense.dashboardId === currentDashboardId || 
+               (!expense.dashboardId && currentDashboardId === "default");
       });
       
+      console.log("useRecurringExpenses - Filtered recurring expenses:", filteredExpenses);
       setRecurringExpenses(filteredExpenses);
       setAvailableBudgets(budgets);
     } catch (error) {
@@ -61,13 +74,16 @@ export const useRecurringExpenses = () => {
         throw new Error("Type must be 'expense'");
       }
       
+      const dashboardToUse = currentDashboardId === "budget" ? "default" : currentDashboardId;
+      console.log("useRecurringExpenses - Adding recurring expense with dashboardId:", dashboardToUse);
+      
       const expense: Expense = {
-        id: Date.now().toString(),
+        id: uuidv4(), // Utiliser UUID pour garantir l'unicité
         ...newExpense,
         type: "expense",
         spent: 0,
         isRecurring: true,
-        dashboardId: currentDashboardId || "default" // Ajouter le dashboardId actuel
+        dashboardId: dashboardToUse
       };
       
       await db.addExpense(expense);
@@ -96,9 +112,13 @@ export const useRecurringExpenses = () => {
       const expense: Expense = {
         ...updatedExpense,
         type: "expense",
-        isRecurring: true
+        isRecurring: true,
+        // Conserver le dashboardId existant ou utiliser celui du contexte actuel
+        dashboardId: updatedExpense.dashboardId || 
+                    (currentDashboardId === "budget" ? "default" : currentDashboardId)
       };
       
+      console.log("useRecurringExpenses - Updating expense with data:", expense);
       await db.updateExpense(expense);
       
       // Update the local state
@@ -148,6 +168,9 @@ export const useRecurringExpenses = () => {
     try {
       console.log(`Ajout de la dépense récurrente ${id} au mois courant (${currentDate})...`);
       await db.copyRecurringExpenseToMonth(id, currentDate);
+      
+      // Force reload to display the new monthly expense
+      await loadData();
       
       toast({
         title: "Succès",

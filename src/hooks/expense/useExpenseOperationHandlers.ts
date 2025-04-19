@@ -13,7 +13,12 @@ export const useExpenseOperationHandlers = (
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
   
-  console.log("useExpenseOperationHandlers - initialized with dashboardId:", dashboardId, "budgetId:", budgetId);
+  // Normaliser dashboardId pour les cas "budget"
+  const normalizedDashboardId = dashboardId === "budget" ? "default" : dashboardId;
+  
+  console.log("useExpenseOperationHandlers - initialized with dashboardId:", dashboardId, 
+              "normalized to:", normalizedDashboardId, 
+              "budgetId:", budgetId);
 
   const handleAddEnvelope = useCallback(
     async (envelope: {
@@ -27,9 +32,11 @@ export const useExpenseOperationHandlers = (
 
       setIsProcessing(true);
       try {
-        console.log("useExpenseOperationHandlers - Adding expense with data:", envelope, "dashboardId:", dashboardId);
+        console.log("useExpenseOperationHandlers - Adding expense with data:", envelope, 
+                    "normalized dashboardId:", normalizedDashboardId);
+        
         const expense: Expense = {
-          id: uuidv4(),
+          id: uuidv4(), // Utiliser UUID pour garantir l'unicité
           title: envelope.title,
           budget: envelope.budget,
           spent: envelope.budget, // Pour une dépense, spent == budget
@@ -37,7 +44,7 @@ export const useExpenseOperationHandlers = (
           linkedBudgetId: envelope.linkedBudgetId || budgetId || undefined,
           date: envelope.date || new Date().toISOString().split('T')[0],
           isRecurring: false,
-          dashboardId: dashboardId // S'assurer que le dashboardId est toujours défini
+          dashboardId: normalizedDashboardId || "default" // S'assurer que le dashboardId est toujours défini
         };
         
         console.log("useExpenseOperationHandlers - Constructed expense object:", expense);
@@ -60,7 +67,7 @@ export const useExpenseOperationHandlers = (
         setIsProcessing(false);
       }
     },
-    [budgetId, onSuccessCallback, toast, dashboardId]
+    [budgetId, onSuccessCallback, toast, normalizedDashboardId]
   );
 
   const handleDeleteExpense = useCallback(
@@ -95,10 +102,15 @@ export const useExpenseOperationHandlers = (
       setIsProcessing(true);
       try {
         console.log("useExpenseOperationHandlers - Updating expense:", expense);
+        
+        // Normaliser le dashboardId pour le cas "budget"
+        const dashboardToUse = expense.dashboardId === "budget" ? "default" : 
+                               expense.dashboardId || normalizedDashboardId || "default";
+        
         // S'assurer que le dashboardId est préservé lors de la mise à jour
         const updatedExpense: Expense = {
           ...expense,
-          dashboardId: expense.dashboardId || dashboardId || "default"
+          dashboardId: dashboardToUse
         };
         
         console.log("useExpenseOperationHandlers - Final updated expense:", updatedExpense);
@@ -121,7 +133,7 @@ export const useExpenseOperationHandlers = (
         setIsProcessing(false);
       }
     },
-    [onSuccessCallback, toast, dashboardId]
+    [onSuccessCallback, toast, normalizedDashboardId]
   );
 
   return {

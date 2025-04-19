@@ -4,6 +4,7 @@ import { BaseDatabaseManager } from '../base-database-manager';
 import { IExpenseManager } from '../interfaces/IExpenseManager';
 import { IQueryManager } from '../interfaces/IQueryManager';
 import { toast } from "@/components/ui/use-toast";
+import { v4 as uuidv4 } from 'uuid';
 
 /**
  * Responsible for handling expense-related database operations
@@ -66,14 +67,15 @@ export class ExpenseManager extends BaseDatabaseManager implements IExpenseManag
       
       // Create a new expense based on the recurring one
       const newExpense: Expense = {
-        id: `${recurringExpense.id}_copy_${Date.now()}`,
+        id: uuidv4(), // Utiliser UUID pour garantir l'unicité
         title: recurringExpense.title,
         budget: recurringExpense.budget,
-        spent: 0, // Initialize spent to 0
+        spent: recurringExpense.budget, // Définir spent = budget
         type: 'expense',
         linkedBudgetId: recurringExpense.linkedBudgetId,
         date: targetDate,
-        isRecurring: false // The copy is not recurring
+        isRecurring: false, // The copy is not recurring
+        dashboardId: recurringExpense.dashboardId // Conserver le même dashboardId
       };
       
       await this.addExpense(newExpense);

@@ -2,6 +2,7 @@
 import { Expense } from '../models/expense';
 import { BaseService } from './base-service';
 import { toast } from "@/components/ui/use-toast";
+import { v4 as uuidv4 } from 'uuid';
 
 /**
  * Service for handling expense-related database operations
@@ -123,12 +124,12 @@ export class ExpenseService extends BaseService {
       
       console.log(`Copie de la dépense récurrente "${recurringExpense.title}" au mois actuel...`);
       
-      // Create a new expense based on the recurring one
+      // Create a new expense based on the recurring one with a guaranteed unique ID
       const newExpense: Expense = {
-        id: `${recurringExpense.id}_copy_${Date.now()}`,
+        id: uuidv4(), // Utiliser UUID pour garantir l'unicité
         title: recurringExpense.title,
         budget: recurringExpense.budget,
-        spent: recurringExpense.budget, // Modifier pour définir spent = budget
+        spent: recurringExpense.budget, // Définir spent = budget
         type: 'expense',
         linkedBudgetId: recurringExpense.linkedBudgetId,
         date: targetDate,
