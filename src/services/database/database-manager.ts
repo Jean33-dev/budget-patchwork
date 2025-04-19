@@ -12,11 +12,12 @@ import { InitializationManager } from './initialization-manager';
 import { DatabaseInitManager } from './database-init-manager';
 
 export class DatabaseManager extends DatabaseManagerImpl implements IDatabaseManager {
-  private initManager: DatabaseInitManager;
+  // Rename to localInitManager to avoid conflict with parent class
+  private localInitManager: DatabaseInitManager;
 
   constructor() {
     super();
-    this.initManager = new DatabaseInitManager();
+    this.localInitManager = new DatabaseInitManager();
   }
 
   async init(): Promise<boolean> {
@@ -27,7 +28,7 @@ export class DatabaseManager extends DatabaseManagerImpl implements IDatabaseMan
       if (initialized) {
         // Initialize sample data after database is created
         console.log("Database initialized, checking and adding sample data...");
-        const initManager = new InitializationManager(this.initManager.getAdapter()!);
+        const initManager = new InitializationManager(this.localInitManager.getAdapter()!);
         
         try {
           // Verify tables exist
