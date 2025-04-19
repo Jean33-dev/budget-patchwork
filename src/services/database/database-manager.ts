@@ -1,3 +1,4 @@
+
 import { Income } from './models/income';
 import { Expense } from './models/expense';
 import { Budget } from './models/budget';
@@ -8,10 +9,14 @@ import { DatabaseManagerImpl } from './database-manager-impl';
 import { DatabaseManagerFactory } from './database-manager-factory';
 import { IDatabaseManager } from './interfaces/IDatabaseManager';
 import { InitializationManager } from './initialization-manager';
+import { DatabaseInitManager } from './database-init-manager';
 
 export class DatabaseManager extends DatabaseManagerImpl implements IDatabaseManager {
+  private initManager: DatabaseInitManager;
+
   constructor() {
     super();
+    this.initManager = new DatabaseInitManager();
   }
 
   async init(): Promise<boolean> {
@@ -22,7 +27,7 @@ export class DatabaseManager extends DatabaseManagerImpl implements IDatabaseMan
       if (initialized) {
         // Initialize sample data after database is created
         console.log("Database initialized, checking and adding sample data...");
-        const initManager = new InitializationManager(this.getInitManager().getAdapter()!);
+        const initManager = new InitializationManager(this.initManager.getAdapter()!);
         
         try {
           // Verify tables exist
