@@ -1,4 +1,3 @@
-
 import { SQLiteAdapter } from './sqlite-adapter';
 import { toast } from "@/components/ui/use-toast";
 
@@ -83,9 +82,17 @@ export class InitializationManager {
       
       if (budgetCount === 0) {
         const currentDate = new Date().toISOString().split('T')[0];
+        const defaultDashboardTitle = 'Budget Personnel';
         const defaultDashboardId = 'default';
         
-        // Ajouter des budgets d'exemple
+        // Ajouter le budget du tableau de bord par défaut
+        await this.adapter.run(
+          `INSERT OR IGNORE INTO budgets (id, title, budget, spent, type, carriedOver, dashboardId)
+           VALUES ('dashboard_title', ?, 0, 0, 'budget', 0, ?)`,
+          [defaultDashboardTitle, defaultDashboardId]
+        );
+        
+        // Ajouter des budgets d'exemple avec le dashboardId par défaut
         const budgetQueries = [
           `INSERT OR IGNORE INTO budgets (id, title, budget, spent, type, carriedOver, dashboardId)
           VALUES 
@@ -98,7 +105,7 @@ export class InitializationManager {
         
         await this.adapter.executeSet(budgetQueries);
         
-        // Ajouter des dépenses d'exemple liées aux budgets
+        // Ajouter des dépenses d'exemple liées aux budgets avec le dashboardId par défaut
         await this.adapter.run(
           `INSERT OR IGNORE INTO expenses (id, title, budget, spent, type, linkedBudgetId, date, isRecurring, dashboardId)
           VALUES 
@@ -112,7 +119,7 @@ export class InitializationManager {
            currentDate, defaultDashboardId, currentDate, defaultDashboardId, currentDate, defaultDashboardId]
         );
         
-        // Ajouter des revenus d'exemple
+        // Ajouter des revenus d'exemple avec le dashboardId par défaut
         await this.adapter.run(
           `INSERT OR IGNORE INTO incomes (id, title, budget, spent, type, date, isRecurring, dashboardId)
           VALUES 
@@ -121,7 +128,7 @@ export class InitializationManager {
           [currentDate, defaultDashboardId, currentDate, defaultDashboardId]
         );
         
-        console.log("Données d'exemple ajoutées avec succès");
+        console.log("Données d'exemple ajoutées avec succès pour le dashboard par défaut");
       } else {
         console.log(`${budgetCount} budgets trouvés, pas besoin d'ajouter des données d'exemple`);
       }
