@@ -26,11 +26,11 @@ export class InitializationManager {
       // Create the tables for budgets, expenses, incomes, and categories
       this.db.exec(budgetQueries.createTable);
       this.db.exec(categoryQueries.createTable);
-      expenseQueries.create(this.db);
+      this.db.exec(expenseQueries.createTable); // Changed from create() to exec(createTable)
       this.db.exec(incomeQueries.createTable);
       
       // Create dashboard table
-      dashboardQueries.create(this.db);
+      this.db.exec(dashboardQueries.createTable);
       
       console.log("All database tables created successfully");
       return true;
