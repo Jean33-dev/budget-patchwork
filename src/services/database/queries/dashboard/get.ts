@@ -1,34 +1,27 @@
 
+import { Dashboard } from '../../models/dashboard';
+
 export const dashboardGetQueries = {
-  getAll: (db: any): any[] => {
-    if (!db) {
-      console.error("Database is null in dashboardQueries.getAll");
-      return [];
-    }
-    
+  getAll: (db: any): Dashboard[] => {
     try {
       console.log("Getting all dashboards...");
+      const result = db.exec('SELECT * FROM dashboards');
       
-      // First check if the table exists
-      const tableExists = db.exec(`
-        SELECT name FROM sqlite_master 
-        WHERE type='table' AND name='dashboards'
-      `);
-      
-      if (!tableExists || tableExists.length === 0) {
-        console.log("Dashboards table doesn't exist yet");
+      if (!result || result.length === 0 || !result[0]?.values) {
+        console.log("No dashboards found");
         return [];
       }
       
-      const stmt = db.prepare("SELECT * FROM dashboards");
-      const dashboards = [];
+      const dashboards = result[0].values.map((row: any[]) => ({
+        id: row[0],
+        title: row[1],
+        createdAt: row[2],
+        updatedAt: row[3],
+        description: row[4] || null,
+        icon: row[5] || null,
+        color: row[6] || null
+      }));
       
-      while (stmt.step()) {
-        const row = stmt.getAsObject();
-        dashboards.push(row);
-      }
-      
-      stmt.free();
       console.log(`Found ${dashboards.length} dashboards`);
       return dashboards;
     } catch (error) {
@@ -37,35 +30,31 @@ export const dashboardGetQueries = {
     }
   },
   
-  getById: (db: any, id: string): any | null => {
-    if (!db) {
-      console.error("Database is null in dashboardQueries.getById");
-      return null;
-    }
-    
+  getById: (db: any, id: string): Dashboard | null => {
     try {
-      console.log(`Getting dashboard with ID ${id}...`);
+      console.log(`Getting dashboard with id ${id}...`);
+      const result = db.exec('SELECT * FROM dashboards WHERE id = ?', [id]);
       
-      // First check if the table exists
-      const tableExists = db.exec(`
-        SELECT name FROM sqlite_master 
-        WHERE type='table' AND name='dashboards'
-      `);
-      
-      if (!tableExists || tableExists.length === 0) {
-        console.log("Dashboards table doesn't exist yet");
+      if (!result || result.length === 0 || !result[0]?.values?.length === 0) {
+        console.log(`No dashboard found with id ${id}`);
         return null;
       }
       
-      const stmt = db.prepare("SELECT * FROM dashboards WHERE id = ?");
-      stmt.bind([id]);
+      const row = result[0].values[0];
+      const dashboard: Dashboard = {
+        id: row[0],
+        title: row[1],
+        createdAt: row[2],
+        updatedAt: row[3],
+        description: row[4] || null,
+        icon: row[5] || null,
+        color: row[6] || null
+      };
       
-      const result = stmt.step() ? stmt.getAsObject() : null;
-      stmt.free();
-      
-      return result;
+      console.log(`Found dashboard: ${dashboard.title}`);
+      return dashboard;
     } catch (error) {
-      console.error(`Error getting dashboard with ID ${id}:`, error);
+      console.error(`Error getting dashboard with id ${id}:`, error);
       return null;
     }
   }

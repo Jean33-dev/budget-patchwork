@@ -1,10 +1,10 @@
 
 import { DatabaseManagerCore } from './database-manager-core';
-import { budgetTableQueries } from './queries/budget/table';
-import { categoryTableQueries } from './queries/category/table';
+import { budgetQueries } from './queries/budget-queries';
+import { categoryQueries } from './queries/category-queries';
 import { expenseQueries } from './queries/expense';
 import { incomeQueries } from './queries/income-queries';
-import { dashboardTableQueries } from './queries/dashboard/table';
+import { dashboardQueries } from './queries/dashboard';
 
 export class InitializationManager {
   private db: any;
@@ -24,13 +24,13 @@ export class InitializationManager {
       console.log("Creating database tables...");
       
       // Create the tables for budgets, expenses, incomes, and categories
-      budgetTableQueries.create(this.db);
-      categoryTableQueries.create(this.db);
+      this.db.exec(budgetQueries.createTable);
+      this.db.exec(categoryQueries.createTable);
       expenseQueries.create(this.db);
-      incomeQueries.createTable(this.db);
+      this.db.exec(incomeQueries.createTable);
       
       // Create dashboard table
-      dashboardTableQueries.create(this.db);
+      dashboardQueries.create(this.db);
       
       console.log("All database tables created successfully");
       return true;
