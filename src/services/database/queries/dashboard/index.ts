@@ -1,10 +1,9 @@
 
-import { dashboardTableQueries } from "./table";
-import { dashboardGetQueries } from "./get";
-import { dashboardMutationQueries } from "./mutations";
+import { dashboardTableQueries } from './table';
+import { dashboardGetQueries } from './get';
 
 export const dashboardQueries = {
-  ...dashboardTableQueries,
-  ...dashboardGetQueries,
-  ...dashboardMutationQueries
+  createTable: dashboardTableQueries.createTable,
+  getAll: dashboardGetQueries.getAll,
+  getById: dashboardGetQueries.getById
 };

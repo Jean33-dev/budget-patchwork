@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { PlusCircle, LineChart, Settings } from "lucide-react";
@@ -16,7 +17,9 @@ const Home = () => {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [dashboardTitle, setDashboardTitle] = useState("Budget Personnel");
   const [isLoading, setIsLoading] = useState(true);
+  const [dashboards, setDashboards] = useState<Array<{id: string, title: string}>>([]);
 
+  // Charger le titre du dashboard principal
   useEffect(() => {
     const loadDashboardTitle = async () => {
       try {
@@ -53,6 +56,28 @@ const Home = () => {
     loadDashboardTitle();
   }, []);
 
+  // Charger tous les tableaux de bord
+  useEffect(() => {
+    const loadDashboards = async () => {
+      try {
+        await db.init();
+        console.log("Chargement des tableaux de bord...");
+        const dashboardsData = await db.getDashboards();
+        console.log("Tableaux de bord chargés:", dashboardsData);
+        setDashboards(dashboardsData);
+      } catch (error) {
+        console.error("Erreur lors du chargement des tableaux de bord:", error);
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Impossible de charger les tableaux de bord"
+        });
+      }
+    };
+
+    loadDashboards();
+  }, [toast]);
+
   const handleCreateDashboard = () => {
     setIsCreateDialogOpen(true);
   };
@@ -66,7 +91,13 @@ const Home = () => {
         updatedAt: new Date().toISOString()
       };
 
+      console.log("Création d'un nouveau tableau de bord:", newDashboard);
       await db.addDashboard(newDashboard);
+      
+      // Rafraîchir la liste des dashboards
+      const updatedDashboards = await db.getDashboards();
+      setDashboards(updatedDashboards);
+      
       navigate(`/dashboard/${newDashboard.id}`);
       
       toast({
@@ -124,12 +155,33 @@ const Home = () => {
       });
     }
   };
+  
+  const handleDeleteDashboard = async (id: string) => {
+    try {
+      await db.deleteDashboard(id);
+      // Rafraîchir la liste des dashboards
+      const updatedDashboards = await db.getDashboards();
+      setDashboards(updatedDashboards);
+      toast({
+        title: "Succès",
+        description: "Le tableau de bord a été supprimé",
+      });
+    } catch (error) {
+      console.error("Erreur lors de la suppression du tableau de bord:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible de supprimer le tableau de bord"
+      });
+    }
+  };
 
   return (
     <div className="container mx-auto py-8 space-y-8">
       <h1 className="text-4xl font-bold">Mes Tableaux de Bord</h1>
       
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {/* Dashboard principal */}
         <Card 
           className="cursor-pointer hover:shadow-lg transition-shadow" 
           onClick={() => navigate(`/dashboard/${encodeURIComponent(dashboardTitle)}`)}
@@ -154,10 +206,43 @@ const Home = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {/* Contenu de la carte supprimé comme demandé */}
+            {/* Contenu de la carte */}
           </CardContent>
         </Card>
 
+        {/* Autres tableaux de bord */}
+        {dashboards.filter(d => d.id !== "dashboard_title").map((dashboard) => (
+          <Card 
+            key={dashboard.id}
+            className="cursor-pointer hover:shadow-lg transition-shadow" 
+            onClick={() => navigate(`/dashboard/${dashboard.id}`)}
+          >
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <LineChart className="h-6 w-6" />
+                  {dashboard.title}
+                </div>
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  className="h-8 w-8" 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteDashboard(dashboard.id);
+                  }}
+                >
+                  <Settings className="h-4 w-4" />
+                </Button>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {/* Contenu de la carte */}
+            </CardContent>
+          </Card>
+        ))}
+
+        {/* Carte pour créer un nouveau tableau de bord */}
         <Card 
           className="border-dashed cursor-pointer hover:shadow-lg transition-shadow"
           onClick={handleCreateDashboard}

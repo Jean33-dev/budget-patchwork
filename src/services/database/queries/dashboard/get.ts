@@ -36,7 +36,6 @@ export const dashboardGetQueries = {
       const result = db.exec('SELECT * FROM dashboards WHERE id = ?', [id]);
       
       if (!result || result.length === 0 || !result[0]?.values || result[0].values.length === 0) {
-        // Changed comparison from "=== 0" to "=== 0" to fix type error
         console.log(`No dashboard found with id ${id}`);
         return null;
       }
