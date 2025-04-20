@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
 import { EditDashboardDialog } from "@/components/dashboard/EditDashboardDialog";
+import { CreateDashboardDialog } from "@/components/dashboard/CreateDashboardDialog";
 import { db } from "@/services/database";
 import { v4 as uuidv4 } from 'uuid';
 
@@ -12,6 +13,7 @@ const Home = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [dashboardTitle, setDashboardTitle] = useState("Budget Personnel");
   const [isLoading, setIsLoading] = useState(true);
 
@@ -51,11 +53,15 @@ const Home = () => {
     loadDashboardTitle();
   }, []);
 
-  const handleCreateDashboard = async () => {
+  const handleCreateDashboard = () => {
+    setIsCreateDialogOpen(true);
+  };
+
+  const handleSaveDashboard = async (name: string) => {
     try {
       const newDashboard = {
         id: uuidv4(),
-        title: "Nouveau tableau de bord",
+        title: name,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
@@ -67,6 +73,7 @@ const Home = () => {
         title: "Succès",
         description: "Le tableau de bord a été créé",
       });
+      setIsCreateDialogOpen(false);
     } catch (error) {
       console.error("Erreur lors de la création du tableau de bord:", error);
       toast({
@@ -151,7 +158,10 @@ const Home = () => {
           </CardContent>
         </Card>
 
-        <Card className="border-dashed">
+        <Card 
+          className="border-dashed cursor-pointer hover:shadow-lg transition-shadow"
+          onClick={handleCreateDashboard}
+        >
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <PlusCircle className="h-6 w-6" />
@@ -159,7 +169,7 @@ const Home = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <Button variant="outline" className="w-full" onClick={handleCreateDashboard}>
+            <Button variant="outline" className="w-full">
               Créer
             </Button>
           </CardContent>
@@ -171,6 +181,12 @@ const Home = () => {
         onOpenChange={setIsEditDialogOpen}
         currentName={dashboardTitle}
         onSave={handleSaveDashboardName}
+      />
+
+      <CreateDashboardDialog
+        open={isCreateDialogOpen}
+        onOpenChange={setIsCreateDialogOpen}
+        onSave={handleSaveDashboard}
       />
     </div>
   );
