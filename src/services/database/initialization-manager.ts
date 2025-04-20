@@ -1,140 +1,129 @@
-import { SQLiteAdapter } from './sqlite-adapter';
-import { toast } from "@/components/ui/use-toast";
+import { BaseDatabaseManager } from '../base-database-manager';
+import { budgetTableQueries } from './queries/budget';
+import { categoryTableQueries } from './queries/category';
+import { expenseTableQueries } from './queries/expense';
+import { incomeTableQueries } from './queries/income';
+import { dashboardQueries } from './queries/dashboard';
 
-/**
- * Class responsible for initializing the database tables and sample data
- */
-export class InitializationManager {
-  private adapter: SQLiteAdapter;
-  
-  constructor(adapter: SQLiteAdapter) {
-    this.adapter = adapter;
-  }
+export class InitializationDatabaseManager extends BaseDatabaseManager {
+  private initializationAttempts = 0;
+  private maxInitializationAttempts = 3;
 
-  /**
-   * Create all required database tables
-   */
-  async createTables(): Promise<void> {
-    if (!this.adapter) throw new Error("Adaptateur SQLite non initialisé");
-    
-    const queries = [
-      // Table des revenus
-      `CREATE TABLE IF NOT EXISTS incomes (
-        id TEXT PRIMARY KEY,
-        title TEXT,
-        budget REAL DEFAULT 0,
-        spent REAL DEFAULT 0,
-        type TEXT,
-        date TEXT,
-        isRecurring INTEGER DEFAULT 0,
-        dashboardId TEXT
-      )`,
-      
-      // Table des dépenses
-      `CREATE TABLE IF NOT EXISTS expenses (
-        id TEXT PRIMARY KEY,
-        title TEXT,
-        budget REAL DEFAULT 0,
-        spent REAL DEFAULT 0,
-        type TEXT,
-        linkedBudgetId TEXT,
-        date TEXT,
-        isRecurring INTEGER DEFAULT 0,
-        dashboardId TEXT
-      )`,
-      
-      // Table des budgets
-      `CREATE TABLE IF NOT EXISTS budgets (
-        id TEXT PRIMARY KEY,
-        title TEXT,
-        budget REAL DEFAULT 0,
-        spent REAL DEFAULT 0,
-        type TEXT,
-        carriedOver REAL DEFAULT 0,
-        dashboardId TEXT
-      )`,
-      
-      // Table des catégories
-      `CREATE TABLE IF NOT EXISTS categories (
-        id TEXT PRIMARY KEY,
-        name TEXT,
-        budgets TEXT,
-        total REAL DEFAULT 0,
-        spent REAL DEFAULT 0,
-        description TEXT,
-        dashboardId TEXT
-      )`
-    ];
-    
-    await this.adapter.executeSet(queries);
-  }
+  async init(): Promise<boolean> {
+    if (this.initializationAttempts >= this.maxInitializationAttempts) {
+      console.error("Max database initialization attempts reached.");
+      return false;
+    }
 
-  /**
-   * Check if sample data needs to be added and add it if necessary
-   */
-  async checkAndAddSampleData(): Promise<void> {
-    if (!this.adapter) throw new Error("Adaptateur SQLite non initialisé");
-    
+    this.initializationAttempts++;
+    console.log(`Database initialization attempt ${this.initializationAttempts}...`);
+
     try {
-      // Vérifier si des budgets existent déjà
-      const budgets = await this.adapter.query("SELECT COUNT(*) as count FROM budgets");
-      const budgetCount = budgets[0]?.count || 0;
-      
-      if (budgetCount === 0) {
-        const currentDate = new Date().toISOString().split('T')[0];
-        const defaultDashboardTitle = 'Budget Personnel';
-        const defaultDashboardId = 'default';
-        
-        // Ajouter le budget du tableau de bord par défaut
-        await this.adapter.run(
-          `INSERT OR IGNORE INTO budgets (id, title, budget, spent, type, carriedOver, dashboardId)
-           VALUES ('dashboard_title', ?, 0, 0, 'budget', 0, ?)`,
-          [defaultDashboardTitle, defaultDashboardId]
-        );
-        
-        // Ajouter des budgets d'exemple avec le dashboardId par défaut
-        const budgetQueries = [
-          `INSERT OR IGNORE INTO budgets (id, title, budget, spent, type, carriedOver, dashboardId)
-          VALUES 
-          ('bud_1', 'Courses', 500.00, 600.00, 'budget', 0, '${defaultDashboardId}'),
-          ('bud_2', 'Transport', 200.00, 0.00, 'budget', 0, '${defaultDashboardId}'),
-          ('bud_3', 'Loisirs', 150.00, 0.00, 'budget', 0, '${defaultDashboardId}'),
-          ('bud_4', 'Restaurant', 300.00, 150.00, 'budget', 0, '${defaultDashboardId}'),
-          ('bud_5', 'Shopping', 250.00, 100.00, 'budget', 0, '${defaultDashboardId}')`
-        ];
-        
-        await this.adapter.executeSet(budgetQueries);
-        
-        // Ajouter des dépenses d'exemple liées aux budgets avec le dashboardId par défaut
-        await this.adapter.run(
-          `INSERT OR IGNORE INTO expenses (id, title, budget, spent, type, linkedBudgetId, date, isRecurring, dashboardId)
-          VALUES 
-          ('exp_1', 'Courses Carrefour', 350.00, 0, 'expense', 'bud_1', ?, 0, ?),
-          ('exp_2', 'Courses Lidl', 250.00, 0, 'expense', 'bud_1', ?, 0, ?),
-          ('exp_3', 'Restaurant italien', 150.00, 0, 'expense', 'bud_4', ?, 0, ?),
-          ('exp_4', 'Vêtements', 100.00, 0, 'expense', 'bud_5', ?, 0, ?),
-          ('exp_5', 'Loyer', 500.00, 0, 'expense', 'bud_1', ?, 1, ?),
-          ('exp_6', 'Abonnement Transport', 75.00, 0, 'expense', 'bud_2', ?, 1, ?)`,
-          [currentDate, defaultDashboardId, currentDate, defaultDashboardId, currentDate, defaultDashboardId, 
-           currentDate, defaultDashboardId, currentDate, defaultDashboardId, currentDate, defaultDashboardId]
-        );
-        
-        // Ajouter des revenus d'exemple avec le dashboardId par défaut
-        await this.adapter.run(
-          `INSERT OR IGNORE INTO incomes (id, title, budget, spent, type, date, isRecurring, dashboardId)
-          VALUES 
-          ('inc_1', 'Salaire', 2000.00, 2000.00, 'income', ?, 1, ?),
-          ('inc_2', 'Prime', 500.00, 500.00, 'income', ?, 0, ?)`,
-          [currentDate, defaultDashboardId, currentDate, defaultDashboardId]
-        );
-        
-        console.log("Données d'exemple ajoutées avec succès pour le dashboard par défaut");
+      const db = await this.getDb();
+      if (!db) {
+        console.error("Database is null or undefined.");
+        return false;
+      }
+
+      const success = await this.initializeDatabase();
+      if (success) {
+        this.initializationAttempts = 0; // Reset attempts on success
+        this.setInitialized(true);
+        console.log("Database initialized successfully.");
+        return true;
       } else {
-        console.log(`${budgetCount} budgets trouvés, pas besoin d'ajouter des données d'exemple`);
+        console.error("Database initialization failed.");
+        return false;
       }
     } catch (error) {
-      console.error("Erreur lors de la vérification ou de l'ajout de données d'exemple:", error);
-      // Continue même en cas d'erreur avec les données d'exemple
+      console.error("Error initializing database:", error);
+      return false;
+    }
+  }
+
+  async initializeDatabase(): Promise<boolean> {
+    try {
+      const db = await this.getDb();
+      if (!db) {
+        console.error("Database connection is not available.");
+        return false;
+      }
+      
+      // Create tables
+      console.log("Creating database tables...");
+      if (this.db) {
+        // Create the tables for budgets, expenses, incomes, and categories
+        budgetTableQueries.create(this.db);
+        categoryTableQueries.create(this.db);
+        expenseTableQueries.create(this.db);
+        incomeTableQueries.create(this.db);
+        
+        // Create dashboard table
+        dashboardQueries.create(this.db);
+        
+        console.log("All database tables created successfully");
+        return true;
+      }
+      
+      console.error("Database instance is null or undefined.");
+      return false;
+    } catch (error) {
+      console.error("Error initializing database:", error);
+      return false;
+    }
+  }
+
+  resetInitializationAttempts(): void {
+    this.initializationAttempts = 0;
+  }
+
+  async migrateFromLocalStorage(): Promise<boolean> {
+    try {
+      const db = await this.getDb();
+      if (!db) {
+        console.error("Database connection is not available for migration.");
+        return false;
+      }
+
+      console.log("Starting migration from local storage...");
+
+      // Migrate budgets
+      const budgets = JSON.parse(localStorage.getItem('budgets') || '[]');
+      budgets.forEach((budget: any) => {
+        budgetTableQueries.add(db, budget);
+      });
+      localStorage.removeItem('budgets');
+      console.log(`Migrated ${budgets.length} budgets.`);
+
+      // Migrate expenses
+      const expenses = JSON.parse(localStorage.getItem('expenses') || '[]');
+      expenses.forEach((expense: any) => {
+        expenseTableQueries.add(db, expense);
+      });
+      localStorage.removeItem('expenses');
+      console.log(`Migrated ${expenses.length} expenses.`);
+
+      // Migrate incomes
+      const incomes = JSON.parse(localStorage.getItem('incomes') || '[]');
+      incomes.forEach((income: any) => {
+        incomeTableQueries.add(db, income);
+      });
+      localStorage.removeItem('incomes');
+      console.log(`Migrated ${incomes.length} incomes.`);
+
+      // Migrate categories
+      const categories = JSON.parse(localStorage.getItem('categories') || '[]');
+      categories.forEach((category: any) => {
+        categoryTableQueries.add(db, category);
+      });
+      localStorage.removeItem('categories');
+      console.log(`Migrated ${categories.length} categories.`);
+
+      console.log("Migration from local storage completed.");
+      return true;
+    } catch (error) {
+      console.error("Error during migration from local storage:", error);
+      return false;
     }
   }
 }
