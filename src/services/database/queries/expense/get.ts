@@ -31,7 +31,7 @@ export const expenseGetQueries = {
         
         if (!hasDashboardIdColumn) {
           console.log("🔍 Adding dashboardId column to expenses table");
-          db.exec("ALTER TABLE expenses ADD COLUMN dashboardId TEXT");
+          db.exec("ALTER TABLE expenses ADD COLUMN dashboardId TEXT DEFAULT 'default'");
           hasDashboardIdColumn = true;
         }
       } catch (e) {
@@ -56,7 +56,8 @@ export const expenseGetQueries = {
       
       // Map database results to Expense objects
       const expenses = result[0].values.map((row: any[]) => {
-        const dashboardId = hasDashboardIdColumn && row[8] ? String(row[8]) : undefined;
+        // Assurer que dashboardId a toujours une valeur, même pour les anciennes données
+        const dashboardId = hasDashboardIdColumn && row[8] ? String(row[8]) : "default";
         console.log(`🔍 Row dashboardId at index 8: ${row[8]} -> converted to: ${dashboardId}`);
         
         const expense = {
@@ -68,7 +69,7 @@ export const expenseGetQueries = {
           linkedBudgetId: row[5] ? String(row[5]) : undefined,
           date: String(row[6] || new Date().toISOString().split('T')[0]),
           isRecurring: hasIsRecurringColumn ? Boolean(row[7]) : false,
-          dashboardId: dashboardId
+          dashboardId: dashboardId // Toujours une valeur
         };
         console.log(`🔍 Mapped expense for ${expense.id} (${expense.title}): dashboardId=${expense.dashboardId}`);
         return expense;
@@ -101,7 +102,8 @@ export const expenseGetQueries = {
       
       // Map database results to Expense objects
       const expenses = result[0].values.map((row: any[]) => {
-        const dashboardId = row[8] ? String(row[8]) : undefined;
+        // Assurer que dashboardId a toujours une valeur, même pour les anciennes données
+        const dashboardId = row[8] ? String(row[8]) : "default";
         console.log(`🔍 RecurringExpense row dashboardId at index 8: ${row[8]} -> converted to: ${dashboardId}`);
         
         const expense = {
@@ -113,7 +115,7 @@ export const expenseGetQueries = {
           linkedBudgetId: row[5] ? String(row[5]) : undefined,
           date: String(row[6] || new Date().toISOString().split('T')[0]),
           isRecurring: true,
-          dashboardId: dashboardId
+          dashboardId: dashboardId // Toujours une valeur
         };
         console.log(`🔍 Mapped recurring expense for ${expense.id} (${expense.title}): dashboardId=${expense.dashboardId}`);
         return expense;

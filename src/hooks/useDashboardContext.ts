@@ -12,6 +12,12 @@ export const useDashboardContext = () => {
     console.log("🔍 useDashboardContext - location pathname:", location.pathname);
     
     if (dashboardId) {
+      // Traiter les cas spéciaux comme "budget" directement
+      if (dashboardId === "budget") {
+        console.log("🔍 useDashboardContext - Special 'budget' route detected");
+        return "budget";
+      }
+      
       console.log("🔍 useDashboardContext - Using dashboardId from params:", dashboardId);
       return dashboardId;
     }
@@ -27,18 +33,19 @@ export const useDashboardContext = () => {
       
       if (specialRoutes.includes(potentialId)) {
         console.log("🔍 useDashboardContext - This is a special route:", potentialId);
-        // Generate a unique ID for the default dashboard if it doesn't exist
+        
+        if (potentialId === 'budget') {
+          console.log("🔍 useDashboardContext - On budget route, returning 'budget'");
+          return 'budget';
+        }
+        
+        // Pour les autres routes spéciales, utiliser le dashboardId par défaut
         const defaultId = localStorage.getItem('defaultDashboardId') || uuidv4();
         if (!localStorage.getItem('defaultDashboardId')) {
           console.log("🔍 useDashboardContext - Creating new defaultDashboardId:", defaultId);
           localStorage.setItem('defaultDashboardId', defaultId);
         } else {
           console.log("🔍 useDashboardContext - Using existing defaultDashboardId:", defaultId);
-        }
-        
-        if (potentialId === 'budget') {
-          console.log("🔍 useDashboardContext - On budget route, returning special value 'budget'");
-          return 'budget';
         }
         
         return defaultId;

@@ -14,6 +14,7 @@ export const expenseMutationQueries = {
         'INSERT INTO expenses (id, title, budget, spent, type, linkedBudgetId, date, isRecurring, dashboardId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
       );
       
+      // Assurer que dashboardId n'est jamais undefined ou null pour éviter les problèmes de filtrage
       const dashboardIdToUse = expense.dashboardId ? String(expense.dashboardId) : "default";
       console.log(`🔍 Using dashboardId for insert: ${dashboardIdToUse}`);
       
@@ -26,7 +27,7 @@ export const expenseMutationQueries = {
         expense.linkedBudgetId ? String(expense.linkedBudgetId) : null, 
         String(expense.date || new Date().toISOString().split('T')[0]),
         expense.isRecurring ? 1 : 0,
-        dashboardIdToUse
+        dashboardIdToUse  // Toujours utiliser une valeur pour dashboardId
       ];
       console.log("🔍 Insert params:", params);
       
@@ -51,7 +52,8 @@ export const expenseMutationQueries = {
         'UPDATE expenses SET title = ?, budget = ?, spent = ?, linkedBudgetId = ?, date = ?, isRecurring = ?, dashboardId = ? WHERE id = ?'
       );
       
-      const dashboardIdToUse = expense.dashboardId ? String(expense.dashboardId) : null;
+      // Assurer que dashboardId n'est jamais null lors de la mise à jour
+      const dashboardIdToUse = expense.dashboardId ? String(expense.dashboardId) : "default";
       console.log(`🔍 Using dashboardId for update: ${dashboardIdToUse}`);
       
       const params = [
@@ -61,7 +63,7 @@ export const expenseMutationQueries = {
         expense.linkedBudgetId ? String(expense.linkedBudgetId) : null, 
         String(expense.date || new Date().toISOString().split('T')[0]),
         expense.isRecurring ? 1 : 0,
-        dashboardIdToUse,
+        dashboardIdToUse,  // Toujours utiliser une valeur pour dashboardId
         String(expense.id)
       ];
       console.log("🔍 Update params:", params);

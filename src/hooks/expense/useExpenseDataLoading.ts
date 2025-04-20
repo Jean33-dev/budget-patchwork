@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { db } from "@/services/database";
@@ -28,9 +27,13 @@ export const useExpenseDataLoading = (dashboardId: string | null) => {
       const loadedBudgets = await db.getBudgets();
       console.log(`🔍 useExpenseDataLoading - All budgets loaded from database (${loadedBudgets.length}):`, loadedBudgets);
       
-      const filteredBudgets = loadedBudgets.filter(b => 
-        !b.dashboardId || b.dashboardId === useDashboardId
-      );
+      // Filter budgets for the current dashboard
+      const filteredBudgets = useDashboardId === "budget" 
+        // Special handling for "budget" - show all budgets with no dashboardId or with default dashboardId
+        ? loadedBudgets.filter(b => !b.dashboardId || b.dashboardId === "default")
+        // Otherwise, show only budgets for the current dashboard
+        : loadedBudgets.filter(b => b.dashboardId === useDashboardId);
+      
       console.log(`🔍 useExpenseDataLoading - Filtered budgets for dashboard ${useDashboardId}:`, filteredBudgets);
       setAvailableBudgets(filteredBudgets);
       
@@ -39,28 +42,30 @@ export const useExpenseDataLoading = (dashboardId: string | null) => {
       const loadedExpenses = await db.getExpenses();
       console.log(`🔍 useExpenseDataLoading - All expenses loaded from database (${loadedExpenses.length}):`, loadedExpenses);
       
-      // Filtrer les dépenses qui ne sont pas récurrentes
+      // Filter out recurring expenses
       const nonRecurringExpenses = loadedExpenses.filter(expense => !expense.isRecurring);
       console.log(`🔍 useExpenseDataLoading - Non-recurring expenses (${nonRecurringExpenses.length}):`, nonRecurringExpenses);
       
-      // Simplifier la logique de filtrage par dashboardId
-      console.log(`🔍 useExpenseDataLoading - Filtering expenses for dashboard: ${useDashboardId}`);
-      const filteredExpenses = nonRecurringExpenses.filter(expense => {
-        // Si le dashboardId demandé est "budget", traiter comme un cas spécial
-        if (useDashboardId === "budget") {
-          const shouldInclude = !expense.dashboardId || expense.dashboardId === "default" || expense.dashboardId === "budget";
+      // Filter expenses for the current dashboard
+      let filteredExpenses;
+      
+      if (useDashboardId === "budget") {
+        // For "budget" route, show expenses with no dashboardId, default dashboardId, or budget dashboardId
+        filteredExpenses = nonRecurringExpenses.filter(expense => {
+          const shouldInclude = !expense.dashboardId || 
+                      expense.dashboardId === "default" || 
+                      expense.dashboardId === "budget";
           console.log(`🔍 Expense ${expense.id} (${expense.title}) with dashboardId=${expense.dashboardId} on budget route: include=${shouldInclude}`);
-          // Pour "budget", montrer toutes les dépenses sans dashboardId ou avec dashboardId="default"
           return shouldInclude;
-        }
-        
-        // Sinon, montrer uniquement les dépenses qui correspondent au dashboardId demandé
-        // ou les dépenses sans dashboardId si on est sur le dashboard par défaut
-        const shouldInclude = expense.dashboardId === useDashboardId || 
-               (!expense.dashboardId && useDashboardId === "default");
-        console.log(`🔍 Expense ${expense.id} (${expense.title}) with dashboardId=${expense.dashboardId} on dashboard ${useDashboardId}: include=${shouldInclude}`);
-        return shouldInclude;
-      });
+        });
+      } else {
+        // For other dashboards, show only expenses for that specific dashboard
+        filteredExpenses = nonRecurringExpenses.filter(expense => {
+          const shouldInclude = expense.dashboardId === useDashboardId;
+          console.log(`🔍 Expense ${expense.id} (${expense.title}) with dashboardId=${expense.dashboardId} on dashboard ${useDashboardId}: include=${shouldInclude}`);
+          return shouldInclude;
+        });
+      }
       
       console.log(`🔍 useExpenseDataLoading - Filtered expenses for dashboard ${useDashboardId} (${filteredExpenses.length}):`, filteredExpenses);
       setExpenses(filteredExpenses);

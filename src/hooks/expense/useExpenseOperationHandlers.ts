@@ -13,7 +13,7 @@ export const useExpenseOperationHandlers = (
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
   
-  // Normaliser dashboardId pour les cas "budget"
+  // Gestion spéciale pour le cas "budget"
   const normalizedDashboardId = dashboardId === "budget" ? "default" : dashboardId;
   
   console.log("🔍 useExpenseOperationHandlers - initialized with dashboardId:", dashboardId, 
@@ -36,7 +36,7 @@ export const useExpenseOperationHandlers = (
                     "normalized dashboardId:", normalizedDashboardId);
         
         const expense: Expense = {
-          id: uuidv4(), // Utiliser UUID pour garantir l'unicité
+          id: uuidv4(),
           title: envelope.title,
           budget: envelope.budget,
           spent: envelope.budget, // Pour une dépense, spent == budget
@@ -44,7 +44,8 @@ export const useExpenseOperationHandlers = (
           linkedBudgetId: envelope.linkedBudgetId || budgetId || undefined,
           date: envelope.date || new Date().toISOString().split('T')[0],
           isRecurring: false,
-          dashboardId: normalizedDashboardId || "default" // S'assurer que le dashboardId est toujours défini
+          // S'assurer que le dashboardId est toujours défini, en préférant le dashboardId normalisé
+          dashboardId: normalizedDashboardId || "default"
         };
         
         console.log("🔍 useExpenseOperationHandlers - Constructed expense object:", expense);
@@ -103,9 +104,8 @@ export const useExpenseOperationHandlers = (
       try {
         console.log("🔍 useExpenseOperationHandlers - Updating expense:", expense);
         
-        // Normaliser le dashboardId pour le cas "budget"
-        const dashboardToUse = expense.dashboardId === "budget" ? "default" : 
-                               expense.dashboardId || normalizedDashboardId || "default";
+        // Toujours préserver le dashboardId original ou utiliser le dashboardId normalisé
+        const dashboardToUse = expense.dashboardId || normalizedDashboardId || "default";
         
         // S'assurer que le dashboardId est préservé lors de la mise à jour
         const updatedExpense: Expense = {
