@@ -1,32 +1,36 @@
 
+import React from "react";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { ExpenseActionMenu } from "./ExpenseActionMenu";
 
-interface ExpenseRowProps {
-  envelope: {
+interface ExpenseTableRowProps {
+  expense: {
     id: string;
     title: string;
     budget: number;
     spent: number;
-    type: "income" | "expense" | "budget";
+    type: string;
     linkedBudgetId?: string;
     date?: string;
+    dashboardId?: string;
   };
-  onEnvelopeClick: (envelope: ExpenseRowProps["envelope"]) => void;
-  onEditClick: (envelope: ExpenseRowProps["envelope"]) => void;
-  onDeleteClick: (envelope: ExpenseRowProps["envelope"]) => void;
-  getBudgetTitle: (budgetId?: string) => string;
+  isExpanded: boolean;
+  toggleRow: (id: string) => void;
+  onDelete?: (() => void) | undefined;
+  availableBudgets: Array<{ id: string; title: string }>;
+  onUpdate: (updatedExpense: any) => void;
 }
 
 export const ExpenseTableRow = ({
-  envelope,
-  onEnvelopeClick,
-  onEditClick,
-  onDeleteClick,
-  getBudgetTitle
-}: ExpenseRowProps) => {
+  expense,
+  isExpanded,
+  toggleRow,
+  onDelete,
+  availableBudgets,
+  onUpdate
+}: ExpenseTableRowProps) => {
   const formatDate = (dateString?: string) => {
     if (!dateString) return "Non spécifiée";
     try {
@@ -38,59 +42,37 @@ export const ExpenseTableRow = ({
     }
   };
 
-  const handleRowClick = () => {
-    console.log("Row clicked for expense:", envelope);
-    // Now when a row is clicked, we directly open the edit dialog
-    onEditClick(envelope);
+  const getBudgetTitle = (budgetId?: string): string => {
+    if (!budgetId) return "Non catégorisé";
+    const budget = availableBudgets.find(b => b.id === budgetId);
+    return budget ? budget.title : "Catégorie inconnue";
   };
 
-  const handleDeleteButtonClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    console.log("Delete button clicked for expense:", envelope);
-    onDeleteClick(envelope);
+  const handleRowClick = () => {
+    toggleRow(expense.id);
   };
 
   return (
     <TableRow 
-      key={envelope.id}
-      className="cursor-pointer hover:bg-muted"
+      key={expense.id}
+      className={`cursor-pointer hover:bg-muted ${isExpanded ? 'bg-muted' : ''}`}
+      onClick={handleRowClick}
     >
-      <TableCell 
-        className="font-medium"
-        onClick={handleRowClick}
-      >
-        <div>
-          {envelope.title}
-          <div className="sm:hidden text-sm text-muted-foreground">
-            {formatDate(envelope.date)}
-          </div>
-          <div className="sm:hidden text-sm text-muted-foreground">
-            {getBudgetTitle(envelope.linkedBudgetId)}
-          </div>
-        </div>
+      <TableCell className="font-medium">
+        {expense.title}
       </TableCell>
-      <TableCell 
-        className="hidden sm:table-cell"
-        onClick={handleRowClick}
-      >
-        {formatDate(envelope.date)}
-      </TableCell>
-      <TableCell 
-        className="hidden sm:table-cell"
-        onClick={handleRowClick}
-      >
-        {getBudgetTitle(envelope.linkedBudgetId)}
-      </TableCell>
-      <TableCell 
-        className="text-right"
-        onClick={handleRowClick}
-      >
-        {Number(envelope.budget).toFixed(2)} €
+      <TableCell className="text-right">
+        {Number(expense.budget).toFixed(2)} €
       </TableCell>
       <TableCell>
-        <ExpenseActionMenu
-          onDeleteClick={handleDeleteButtonClick}
-        />
+        {onDelete && (
+          <ExpenseActionMenu
+            onDeleteClick={(e) => {
+              e.stopPropagation();
+              onDelete();
+            }}
+          />
+        )}
       </TableCell>
     </TableRow>
   );
