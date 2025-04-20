@@ -1,5 +1,4 @@
 
-import { toast } from "@/components/ui/use-toast";
 import { Dashboard } from '../models/dashboard';
 import { DatabaseManagerFactory } from '../database-manager-factory';
 
@@ -8,57 +7,65 @@ export class DashboardOperationsManager {
   private managerFactory: DatabaseManagerFactory;
 
   constructor(
-    ensureInitialized: () => Promise<boolean>,
+    ensureInitializedFn: () => Promise<boolean>,
     managerFactory: DatabaseManagerFactory
   ) {
-    this.ensureInitialized = ensureInitialized;
+    this.ensureInitialized = ensureInitializedFn;
     this.managerFactory = managerFactory;
   }
 
   async getDashboards(): Promise<Dashboard[]> {
-    try {
-      const initialized = await this.ensureInitialized();
-      if (!initialized) {
-        console.error("Database not initialized in getDashboards");
-        return [];
-      }
-      return this.managerFactory.getDashboardManager().getDashboards();
-    } catch (error) {
-      console.error("Error in getDashboards:", error);
+    const initialized = await this.ensureInitialized();
+    if (!initialized) {
+      console.error("Database not initialized for getDashboards operation");
       return [];
     }
+
+    const dashboardManager = this.managerFactory.getDashboardManager();
+    return dashboardManager.getDashboards();
   }
 
   async getDashboardById(id: string): Promise<Dashboard | null> {
     const initialized = await this.ensureInitialized();
     if (!initialized) {
-      console.error("Database not initialized in getDashboardById");
+      console.error("Database not initialized for getDashboardById operation");
       return null;
     }
-    return this.managerFactory.getDashboardManager().getDashboardById(id);
+
+    const dashboardManager = this.managerFactory.getDashboardManager();
+    return dashboardManager.getDashboardById(id);
   }
 
   async addDashboard(dashboard: Dashboard): Promise<void> {
     const initialized = await this.ensureInitialized();
     if (!initialized) {
-      throw new Error("Database not initialized in addDashboard");
+      console.error("Database not initialized for addDashboard operation");
+      return;
     }
-    await this.managerFactory.getDashboardManager().addDashboard(dashboard);
+
+    const dashboardManager = this.managerFactory.getDashboardManager();
+    await dashboardManager.addDashboard(dashboard);
   }
 
   async updateDashboard(dashboard: Dashboard): Promise<void> {
     const initialized = await this.ensureInitialized();
     if (!initialized) {
-      throw new Error("Database not initialized in updateDashboard");
+      console.error("Database not initialized for updateDashboard operation");
+      return;
     }
-    await this.managerFactory.getDashboardManager().updateDashboard(dashboard);
+
+    const dashboardManager = this.managerFactory.getDashboardManager();
+    await dashboardManager.updateDashboard(dashboard);
   }
 
   async deleteDashboard(id: string): Promise<void> {
     const initialized = await this.ensureInitialized();
     if (!initialized) {
-      throw new Error("Database not initialized in deleteDashboard");
+      console.error("Database not initialized for deleteDashboard operation");
+      return;
     }
-    await this.managerFactory.getDashboardManager().deleteDashboard(id);
+
+    const dashboardManager = this.managerFactory.getDashboardManager();
+    await dashboardManager.deleteDashboard(id);
   }
 }
