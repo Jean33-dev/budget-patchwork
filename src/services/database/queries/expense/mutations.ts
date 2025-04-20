@@ -14,9 +14,10 @@ export const expenseMutationQueries = {
         'INSERT INTO expenses (id, title, budget, spent, type, linkedBudgetId, date, isRecurring, dashboardId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
       );
       
-      // Assurer que dashboardId n'est jamais undefined ou null pour éviter les problèmes de filtrage
+      // S'assurer que le dashboardId n'est jamais null ou undefined
+      // Mais préserver sa valeur exacte au lieu de la transformer
       const dashboardIdToUse = expense.dashboardId ? String(expense.dashboardId) : "default";
-      console.log(`🔍 Using dashboardId for insert: ${dashboardIdToUse}`);
+      console.log(`🔍 Using dashboardId for insert: ${dashboardIdToUse}, original value: ${expense.dashboardId}`);
       
       const params = [
         String(expense.id), 
@@ -27,7 +28,7 @@ export const expenseMutationQueries = {
         expense.linkedBudgetId ? String(expense.linkedBudgetId) : null, 
         String(expense.date || new Date().toISOString().split('T')[0]),
         expense.isRecurring ? 1 : 0,
-        dashboardIdToUse  // Toujours utiliser une valeur pour dashboardId
+        dashboardIdToUse  // Utiliser exactement la valeur fournie, ou "default" si non définie
       ];
       console.log("🔍 Insert params:", params);
       
@@ -52,9 +53,10 @@ export const expenseMutationQueries = {
         'UPDATE expenses SET title = ?, budget = ?, spent = ?, linkedBudgetId = ?, date = ?, isRecurring = ?, dashboardId = ? WHERE id = ?'
       );
       
-      // Assurer que dashboardId n'est jamais null lors de la mise à jour
+      // Préserver la valeur exacte du dashboardId lors des mises à jour
+      // Ne pas normaliser à "default" si une valeur spécifique est fournie
       const dashboardIdToUse = expense.dashboardId ? String(expense.dashboardId) : "default";
-      console.log(`🔍 Using dashboardId for update: ${dashboardIdToUse}`);
+      console.log(`🔍 Using dashboardId for update: ${dashboardIdToUse}, original value: ${expense.dashboardId}`);
       
       const params = [
         String(expense.title || 'Sans titre'),
@@ -63,7 +65,7 @@ export const expenseMutationQueries = {
         expense.linkedBudgetId ? String(expense.linkedBudgetId) : null, 
         String(expense.date || new Date().toISOString().split('T')[0]),
         expense.isRecurring ? 1 : 0,
-        dashboardIdToUse,  // Toujours utiliser une valeur pour dashboardId
+        dashboardIdToUse,
         String(expense.id)
       ];
       console.log("🔍 Update params:", params);

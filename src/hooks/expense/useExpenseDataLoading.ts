@@ -47,7 +47,7 @@ export const useExpenseDataLoading = (dashboardId: string | null) => {
       const nonRecurringExpenses = loadedExpenses.filter(expense => !expense.isRecurring);
       console.log(`🔍 useExpenseDataLoading - Non-recurring expenses (${nonRecurringExpenses.length}):`, nonRecurringExpenses);
       
-      // Filter expenses for the current dashboard - CORRECTED LOGIC
+      // Filter expenses for the current dashboard - STRICT EQUAL COMPARISON
       let filteredExpenses;
       
       if (useDashboardId === "budget") {
@@ -61,11 +61,12 @@ export const useExpenseDataLoading = (dashboardId: string | null) => {
         });
       } else {
         // For other dashboards, show ONLY expenses for that specific dashboard
-        // This is the key fix - strict equality check for dashboard ID
+        // USING STRICT EQUALITY for dashboard ID comparison
         filteredExpenses = nonRecurringExpenses.filter(expense => {
-          const shouldInclude = expense.dashboardId === useDashboardId;
-          console.log(`🔍 Expense ${expense.id} (${expense.title}) with dashboardId=${expense.dashboardId} on dashboard ${useDashboardId}: include=${shouldInclude}`);
-          return shouldInclude;
+          // Utilisons une comparaison stricte pour le dashboardId
+          const exactMatch = expense.dashboardId === useDashboardId;
+          console.log(`🔍 Expense ${expense.id} (${expense.title}) with dashboardId=${expense.dashboardId} comparing with ${useDashboardId}: exactMatch=${exactMatch}`);
+          return exactMatch;
         });
       }
       

@@ -13,8 +13,9 @@ export const useExpenseOperationHandlers = (
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
   
-  // Gestion spéciale pour le cas "budget"
-  const normalizedDashboardId = dashboardId === "budget" ? "default" : dashboardId;
+  // Modification de la logique de normalisation pour le cas "budget"
+  // dashboardId pour "budget" reste "budget" plutôt que de devenir "default"
+  const normalizedDashboardId = dashboardId || "default";
   
   console.log("🔍 useExpenseOperationHandlers - initialized with dashboardId:", dashboardId, 
               "normalized to:", normalizedDashboardId, 
@@ -45,7 +46,7 @@ export const useExpenseOperationHandlers = (
           date: envelope.date || new Date().toISOString().split('T')[0],
           isRecurring: false,
           // S'assurer que le dashboardId est TOUJOURS défini et correct
-          dashboardId: normalizedDashboardId || "default"
+          dashboardId: normalizedDashboardId
         };
         
         console.log("🔍 useExpenseOperationHandlers - Constructed expense object:", expense);
@@ -105,12 +106,11 @@ export const useExpenseOperationHandlers = (
         console.log("🔍 useExpenseOperationHandlers - Updating expense:", expense);
         
         // IMPORTANT: Préserver le dashboardId existant lors des mises à jour
-        // Cela empêche une dépense de changer de tableau de bord lors de la mise à jour
-        const dashboardToUse = expense.dashboardId || normalizedDashboardId || "default";
-        
+        // Ne pas modifier le dashboardId d'une dépense
         const updatedExpense: Expense = {
           ...expense,
-          dashboardId: dashboardToUse
+          // Si l'expense a déjà un dashboardId, on le conserve, sinon on utilise celui du contexte actuel
+          dashboardId: expense.dashboardId || normalizedDashboardId
         };
         
         console.log("🔍 useExpenseOperationHandlers - Final updated expense:", updatedExpense);
