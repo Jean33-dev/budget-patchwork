@@ -1,4 +1,3 @@
-
 import { Expense } from '../models/expense';
 import { BaseService } from './base-service';
 import { toast } from "@/components/ui/use-toast";
@@ -33,10 +32,15 @@ export class ExpenseService extends BaseService {
         linkedBudgetId: row.linkedBudgetId,
         date: row.date,
         isRecurring: Boolean(row.isRecurring),
-        dashboardId: row.dashboardId || null
+        dashboardId: row.dashboardId ? String(row.dashboardId) : "default"
       }));
       
       console.log(`ExpenseService.getExpenses: Mapped ${expenses.length} expense objects`);
+      
+      // Loguer les dashboardIds pour débogage
+      const dashboardIds = new Set(expenses.map(e => e.dashboardId));
+      console.log(`ExpenseService.getExpenses: Found expenses with dashboardIds: ${Array.from(dashboardIds).join(', ')}`);
+      
       return expenses;
     } catch (error) {
       console.error("Erreur lors de la récupération des dépenses:", error);
@@ -77,10 +81,13 @@ export class ExpenseService extends BaseService {
   async addExpense(expense: Expense): Promise<void> {
     if (!await this.ensureInitialized()) return;
     
+    const dashboardId = expense.dashboardId ? String(expense.dashboardId) : "default";
+    console.log(`ExpenseService.addExpense: Adding expense with dashboardId: ${dashboardId}`);
+    
     const adapter = this.initManager.getAdapter();
     await adapter!.run(
       'INSERT INTO expenses (id, title, budget, spent, type, linkedBudgetId, date, isRecurring, dashboardId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      [expense.id, expense.title, expense.budget, expense.spent, expense.type, expense.linkedBudgetId, expense.date, expense.isRecurring ? 1 : 0, expense.dashboardId || null]
+      [expense.id, expense.title, expense.budget, expense.spent, expense.type, expense.linkedBudgetId, expense.date, expense.isRecurring ? 1 : 0, dashboardId]
     );
   }
 
@@ -90,10 +97,13 @@ export class ExpenseService extends BaseService {
   async updateExpense(expense: Expense): Promise<void> {
     if (!await this.ensureInitialized()) return;
     
+    const dashboardId = expense.dashboardId ? String(expense.dashboardId) : "default";
+    console.log(`ExpenseService.updateExpense: Updating expense with dashboardId: ${dashboardId}`);
+    
     const adapter = this.initManager.getAdapter();
     await adapter!.run(
       'UPDATE expenses SET title = ?, budget = ?, spent = ?, linkedBudgetId = ?, date = ?, isRecurring = ?, dashboardId = ? WHERE id = ?',
-      [expense.title, expense.budget, expense.spent, expense.linkedBudgetId, expense.date, expense.isRecurring ? 1 : 0, expense.dashboardId || null, expense.id]
+      [expense.title, expense.budget, expense.spent, expense.linkedBudgetId, expense.date, expense.isRecurring ? 1 : 0, dashboardId, expense.id]
     );
   }
 

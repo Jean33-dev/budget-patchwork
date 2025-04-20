@@ -1,120 +1,95 @@
 
-import {
-  Table,
-  TableBody,
-  TableHead,
-  TableHeader,
-  TableRow,
-  TableCell
-} from "@/components/ui/table";
+import React, { useState } from "react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ExpenseTableRow } from "./ExpenseTableRow";
-import { ExpenseDialogs, useExpenseDialogState } from "./ExpenseDialogs";
-import { useEffect } from "react";
-
-interface Envelope {
-  id: string;
-  title: string;
-  budget: number;
-  spent: number;
-  type: "income" | "expense" | "budget";
-  linkedBudgetId?: string;
-  date?: string;
-}
+import { ExpenseActionMenu } from "./ExpenseActionMenu";
 
 interface ExpenseTableProps {
-  expenses: Envelope[];
-  onEnvelopeClick: (envelope: Envelope) => void;
+  expenses: Array<{
+    id: string;
+    title: string;
+    budget: number;
+    spent: number;
+    type: string;
+    linkedBudgetId?: string;
+    date?: string;
+    dashboardId?: string;
+  }>;
+  onEnvelopeClick?: (envelope: any) => void;
   availableBudgets?: Array<{ id: string; title: string }>;
   onDeleteExpense?: (id: string) => void;
-  onUpdateExpense?: (expense: Envelope) => void;
+  onUpdateExpense?: (expense: any) => void;
+  showDebugInfo?: boolean;
 }
 
-export const ExpenseTable = ({ 
+export const ExpenseTable = ({
   expenses,
   onEnvelopeClick,
   availableBudgets = [],
   onDeleteExpense,
-  onUpdateExpense
+  onUpdateExpense,
+  showDebugInfo = false
 }: ExpenseTableProps) => {
-  const {
-    selectedExpense,
-    isEditDialogOpen,
-    setIsEditDialogOpen,
-    editableTitle,
-    setEditableTitle,
-    editableBudget,
-    setEditableBudget,
-    editableDate,
-    setEditableDate,
-    handleEditClick,
-    handleDeleteClick,
-    handleConfirmEdit
-  } = useExpenseDialogState(onUpdateExpense, onDeleteExpense);
-  
-  // Log pour déboguer
-  useEffect(() => {
-    console.log("ExpenseTable - expenses count:", expenses.length);
-    if (expenses.length === 0) {
-      console.log("ExpenseTable - No expenses to display");
-    }
-  }, [expenses]);
-  
-  const getBudgetTitle = (budgetId?: string) => {
-    if (!budgetId) return "Non assigné";
-    const budget = availableBudgets.find(b => b.id === budgetId);
-    return budget ? budget.title : "Budget inconnu";
+  const [expandedRow, setExpandedRow] = useState<string | null>(null);
+
+  const toggleRow = (id: string) => {
+    setExpandedRow(expandedRow === id ? null : id);
   };
 
-  return (
-    <>
-      <div className="rounded-md border overflow-hidden">
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Nom</TableHead>
-                <TableHead className="hidden sm:table-cell">Date</TableHead>
-                <TableHead className="hidden sm:table-cell">Budget associé</TableHead>
-                <TableHead className="text-right">Montant</TableHead>
-                <TableHead className="w-[80px]"></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {expenses.length > 0 ? (
-                expenses.map((envelope) => (
-                  <ExpenseTableRow
-                    key={envelope.id}
-                    envelope={envelope}
-                    onEnvelopeClick={onEnvelopeClick}
-                    onEditClick={handleEditClick}
-                    onDeleteClick={handleDeleteClick}
-                    getBudgetTitle={getBudgetTitle}
-                  />
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={5} className="text-center py-6">
-                    Aucune dépense trouvée
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
-      </div>
+  const handleUpdate = (updatedExpense: any) => {
+    if (onUpdateExpense) {
+      onUpdateExpense(updatedExpense);
+    }
+    setExpandedRow(null);
+  };
 
-      <ExpenseDialogs 
-        selectedExpense={selectedExpense}
-        isEditDialogOpen={isEditDialogOpen}
-        setIsEditDialogOpen={setIsEditDialogOpen}
-        editableTitle={editableTitle}
-        setEditableTitle={setEditableTitle}
-        editableBudget={editableBudget}
-        setEditableBudget={setEditableBudget}
-        editableDate={editableDate}
-        setEditableDate={setEditableDate}
-        onConfirmEdit={handleConfirmEdit}
-      />
-    </>
+  // Débogage - Afficher les IDs des tableaux de bord de chaque dépense
+  if (process.env.NODE_ENV === 'development') {
+    console.log("ExpenseTable - Expenses with dashboardIds:", 
+      expenses.map(e => ({ id: e.id, title: e.title, dashboardId: e.dashboardId }))
+    );
+  }
+
+  return (
+    <div className="rounded-md border">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Libellé</TableHead>
+            <TableHead className="text-right w-24">Montant</TableHead>
+            <TableHead className="w-16"></TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {expenses.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={3} className="text-center py-8 text-gray-500">
+                Aucune dépense
+              </TableCell>
+            </TableRow>
+          ) : (
+            expenses.map((expense) => (
+              <React.Fragment key={expense.id}>
+                <ExpenseTableRow
+                  expense={expense}
+                  isExpanded={expandedRow === expense.id}
+                  toggleRow={toggleRow}
+                  onDelete={onDeleteExpense ? () => onDeleteExpense(expense.id) : undefined}
+                  availableBudgets={availableBudgets}
+                  onUpdate={handleUpdate}
+                />
+                {showDebugInfo && process.env.NODE_ENV === 'development' && (
+                  <TableRow>
+                    <TableCell colSpan={3} className="text-xs text-gray-500">
+                      {`Dashboard: ${expense.dashboardId || 'none'}`}
+                    </TableCell>
+                  </TableRow>
+                )}
+              </React.Fragment>
+            ))
+          )}
+        </TableBody>
+      </Table>
+    </div>
   );
 };

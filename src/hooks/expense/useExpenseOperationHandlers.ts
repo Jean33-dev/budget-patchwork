@@ -44,7 +44,7 @@ export const useExpenseOperationHandlers = (
           linkedBudgetId: envelope.linkedBudgetId || budgetId || undefined,
           date: envelope.date || new Date().toISOString().split('T')[0],
           isRecurring: false,
-          // S'assurer que le dashboardId est toujours défini, en préférant le dashboardId normalisé
+          // S'assurer que le dashboardId est TOUJOURS défini et correct
           dashboardId: normalizedDashboardId || "default"
         };
         
@@ -104,10 +104,10 @@ export const useExpenseOperationHandlers = (
       try {
         console.log("🔍 useExpenseOperationHandlers - Updating expense:", expense);
         
-        // Toujours préserver le dashboardId original ou utiliser le dashboardId normalisé
+        // IMPORTANT: Préserver le dashboardId existant lors des mises à jour
+        // Cela empêche une dépense de changer de tableau de bord lors de la mise à jour
         const dashboardToUse = expense.dashboardId || normalizedDashboardId || "default";
         
-        // S'assurer que le dashboardId est préservé lors de la mise à jour
         const updatedExpense: Expense = {
           ...expense,
           dashboardId: dashboardToUse

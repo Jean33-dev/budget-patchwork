@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { db } from "@/services/database";
@@ -46,7 +47,7 @@ export const useExpenseDataLoading = (dashboardId: string | null) => {
       const nonRecurringExpenses = loadedExpenses.filter(expense => !expense.isRecurring);
       console.log(`🔍 useExpenseDataLoading - Non-recurring expenses (${nonRecurringExpenses.length}):`, nonRecurringExpenses);
       
-      // Filter expenses for the current dashboard
+      // Filter expenses for the current dashboard - CORRECTED LOGIC
       let filteredExpenses;
       
       if (useDashboardId === "budget") {
@@ -59,7 +60,8 @@ export const useExpenseDataLoading = (dashboardId: string | null) => {
           return shouldInclude;
         });
       } else {
-        // For other dashboards, show only expenses for that specific dashboard
+        // For other dashboards, show ONLY expenses for that specific dashboard
+        // This is the key fix - strict equality check for dashboard ID
         filteredExpenses = nonRecurringExpenses.filter(expense => {
           const shouldInclude = expense.dashboardId === useDashboardId;
           console.log(`🔍 Expense ${expense.id} (${expense.title}) with dashboardId=${expense.dashboardId} on dashboard ${useDashboardId}: include=${shouldInclude}`);
