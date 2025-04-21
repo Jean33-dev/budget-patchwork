@@ -79,6 +79,10 @@ export const useRecurringExpenses = () => {
         throw new Error("Type must be 'expense'");
       }
       
+      if (!newExpense.linkedBudgetId) {
+        throw new Error("Le budget associé est obligatoire pour une dépense");
+      }
+      
       const dashboardToUse = currentDashboardId === "budget" ? "default" : currentDashboardId;
       console.log("useRecurringExpenses - Adding recurring expense with dashboardId:", dashboardToUse);
       
@@ -88,7 +92,8 @@ export const useRecurringExpenses = () => {
         type: "expense",
         spent: 0,
         isRecurring: true,
-        dashboardId: dashboardToUse
+        dashboardId: dashboardToUse,
+        linkedBudgetId: newExpense.linkedBudgetId // Ensure this is always set
       };
       
       await db.addExpense(expense);

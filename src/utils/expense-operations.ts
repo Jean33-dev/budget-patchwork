@@ -6,7 +6,7 @@ export type ExpenseFormData = {
   title: string;
   budget: number;
   type: "expense";
-  linkedBudgetId: string; // Maintenant obligatoire
+  linkedBudgetId: string; // Already marked as required
   date: string;
   dashboardId?: string;
 };

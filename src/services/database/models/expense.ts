@@ -5,7 +5,7 @@ export interface Expense {
   budget: number;
   spent: number;
   type: 'expense';
-  linkedBudgetId: string; // Désormais obligatoire
+  linkedBudgetId: string; // Required - correctly defined
   date: string;
   isRecurring?: boolean;
   dashboardId?: string;
