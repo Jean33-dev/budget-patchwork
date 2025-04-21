@@ -8,8 +8,11 @@ export const debugDatabase = {
       // Initialize the database first
       await db.init();
       
-      // Get adapter through the database service
-      const adapter = await db.incomeService?.getAdapter?.();
+      // Use direct SQL query from BudgetService to get adapter
+      const budgetService = new (await import('@/services/database/services/budget-service')).BudgetService();
+      await budgetService.init();
+      const adapter = budgetService.getAdapter();
+      
       if (!adapter) {
         console.error("Database adapter not available");
         return;
@@ -37,8 +40,11 @@ export const debugDatabase = {
         return;
       }
       
-      // Get adapter through the database service
-      const adapter = await db.incomeService?.getAdapter?.();
+      // Use direct SQL query from BudgetService to get adapter
+      const budgetService = new (await import('@/services/database/services/budget-service')).BudgetService();
+      await budgetService.init();
+      const adapter = budgetService.getAdapter();
+      
       if (!adapter) {
         console.error("Database adapter not available");
         return;
@@ -81,8 +87,11 @@ export const debugDatabase = {
         return;
       }
       
-      // Get adapter through the database service
-      const adapter = await db.incomeService?.getAdapter?.();
+      // Use direct SQL query from BudgetService to get adapter
+      const budgetService = new (await import('@/services/database/services/budget-service')).BudgetService();
+      await budgetService.init();
+      const adapter = budgetService.getAdapter();
+      
       if (!adapter) {
         console.error("Database adapter not available");
         return;
