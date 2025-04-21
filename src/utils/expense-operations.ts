@@ -6,7 +6,7 @@ export type ExpenseFormData = {
   title: string;
   budget: number;
   type: "expense";
-  linkedBudgetId?: string;
+  linkedBudgetId: string; // Maintenant obligatoire
   date: string;
   dashboardId?: string;
 };
@@ -15,13 +15,19 @@ export const expenseOperations = {
   async addExpense(data: ExpenseFormData): Promise<boolean> {
     try {
       console.log("expenseOperations.addExpense: Starting with data:", data);
+      
+      if (!data.linkedBudgetId) {
+        console.error("expenseOperations.addExpense: Erreur - linkedBudgetId manquant");
+        throw new Error("Le budget associé est obligatoire pour une dépense");
+      }
+      
       const newExpense: Expense = {
         id: Date.now().toString(),
         title: data.title || "Sans titre",
         budget: Number(data.budget) || 0,
         spent: Number(data.budget) || 0,
         type: "expense",
-        linkedBudgetId: data.linkedBudgetId || null,
+        linkedBudgetId: data.linkedBudgetId, // Maintenant obligatoire
         date: data.date || new Date().toISOString().split('T')[0],
         dashboardId: data.dashboardId || null
       };
@@ -45,13 +51,18 @@ export const expenseOperations = {
         return false;
       }
       
+      if (!expenseToUpdate.linkedBudgetId) {
+        console.error("expenseOperations.updateExpense: Erreur - linkedBudgetId manquant");
+        throw new Error("Le budget associé est obligatoire pour une dépense");
+      }
+      
       const validatedExpense: Expense = {
         id: String(expenseToUpdate.id),
         title: String(expenseToUpdate.title || "Sans titre"),
         budget: Number(expenseToUpdate.budget) || 0,
         spent: Number(expenseToUpdate.spent) || Number(expenseToUpdate.budget) || 0,
         type: "expense",
-        linkedBudgetId: expenseToUpdate.linkedBudgetId ? String(expenseToUpdate.linkedBudgetId) : null,
+        linkedBudgetId: String(expenseToUpdate.linkedBudgetId), // Maintenant obligatoire
         date: String(expenseToUpdate.date || new Date().toISOString().split('T')[0]),
         dashboardId: expenseToUpdate.dashboardId || null
       };

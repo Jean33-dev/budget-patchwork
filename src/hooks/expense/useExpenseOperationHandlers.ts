@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { v4 as uuidv4 } from 'uuid';
@@ -36,13 +35,18 @@ export const useExpenseOperationHandlers = (
         console.log("🔍 useExpenseOperationHandlers - Adding expense with data:", envelope, 
                     "normalized dashboardId:", normalizedDashboardId);
         
+        // Vérifier que le budget est bien sélectionné
+        if (!envelope.linkedBudgetId && !budgetId) {
+          throw new Error("Un budget doit être sélectionné pour cette dépense");
+        }
+        
         const expense: Expense = {
           id: uuidv4(),
           title: envelope.title,
           budget: envelope.budget,
           spent: envelope.budget, // Pour une dépense, spent == budget
           type: 'expense',
-          linkedBudgetId: envelope.linkedBudgetId || budgetId || undefined,
+          linkedBudgetId: envelope.linkedBudgetId || budgetId || '', // Utiliser une chaîne vide comme fallback
           date: envelope.date || new Date().toISOString().split('T')[0],
           isRecurring: false,
           // S'assurer que le dashboardId est TOUJOURS défini et correct
@@ -63,13 +67,59 @@ export const useExpenseOperationHandlers = (
         toast({
           variant: 'destructive',
           title: 'Erreur',
-          description: "Une erreur est survenue lors de l'ajout de la dépense"
+          description: error instanceof Error 
+            ? error.message 
+            : "Une erreur est survenue lors de l'ajout de la dépense"
         });
       } finally {
         setIsProcessing(false);
       }
     },
     [budgetId, onSuccessCallback, toast, normalizedDashboardId]
+  );
+
+  const handleUpdateExpense = useCallback(
+    async (expense: Expense) => {
+      setIsProcessing(true);
+      try {
+        console.log("🔍 useExpenseOperationHandlers - Updating expense:", expense);
+        
+        // Vérifier que le budget est bien sélectionné
+        if (!expense.linkedBudgetId) {
+          throw new Error("Un budget doit être sélectionné pour cette dépense");
+        }
+        
+        // IMPORTANT: Préserver le dashboardId existant lors des mises à jour
+        // Ne pas modifier le dashboardId d'une dépense
+        const updatedExpense: Expense = {
+          ...expense,
+          // Si l'expense a déjà un dashboardId, on le conserve, sinon on utilise celui du contexte actuel
+          dashboardId: expense.dashboardId || normalizedDashboardId
+        };
+        
+        console.log("🔍 useExpenseOperationHandlers - Final updated expense:", updatedExpense);
+        await db.updateExpense(updatedExpense);
+        
+        toast({
+          title: 'Succès',
+          description: 'Dépense mise à jour avec succès'
+        });
+        
+        await onSuccessCallback();
+      } catch (error) {
+        console.error('🔍 Error updating expense:', error);
+        toast({
+          variant: 'destructive',
+          title: 'Erreur',
+          description: error instanceof Error 
+            ? error.message
+            : 'Une erreur est survenue lors de la mise à jour de la dépense'
+        });
+      } finally {
+        setIsProcessing(false);
+      }
+    },
+    [onSuccessCallback, toast, normalizedDashboardId]
   );
 
   const handleDeleteExpense = useCallback(
@@ -97,43 +147,6 @@ export const useExpenseOperationHandlers = (
       }
     },
     [onSuccessCallback, toast]
-  );
-
-  const handleUpdateExpense = useCallback(
-    async (expense: Expense) => {
-      setIsProcessing(true);
-      try {
-        console.log("🔍 useExpenseOperationHandlers - Updating expense:", expense);
-        
-        // IMPORTANT: Préserver le dashboardId existant lors des mises à jour
-        // Ne pas modifier le dashboardId d'une dépense
-        const updatedExpense: Expense = {
-          ...expense,
-          // Si l'expense a déjà un dashboardId, on le conserve, sinon on utilise celui du contexte actuel
-          dashboardId: expense.dashboardId || normalizedDashboardId
-        };
-        
-        console.log("🔍 useExpenseOperationHandlers - Final updated expense:", updatedExpense);
-        await db.updateExpense(updatedExpense);
-        
-        toast({
-          title: 'Succès',
-          description: 'Dépense mise à jour avec succès'
-        });
-        
-        await onSuccessCallback();
-      } catch (error) {
-        console.error('🔍 Error updating expense:', error);
-        toast({
-          variant: 'destructive',
-          title: 'Erreur',
-          description: 'Une erreur est survenue lors de la mise à jour de la dépense'
-        });
-      } finally {
-        setIsProcessing(false);
-      }
-    },
-    [onSuccessCallback, toast, normalizedDashboardId]
   );
 
   return {
