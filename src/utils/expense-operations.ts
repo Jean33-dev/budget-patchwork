@@ -21,19 +21,15 @@ export const expenseOperations = {
         throw new Error("Le budget associé est obligatoire pour une dépense");
       }
       
-      // Assurer qu'un dashboardId est toujours défini
-      const dashboardId = data.dashboardId || "default";
-      console.log(`expenseOperations.addExpense: Utilisation du dashboardId: ${dashboardId}`);
-      
       const newExpense: Expense = {
         id: Date.now().toString(),
         title: data.title || "Sans titre",
         budget: Number(data.budget) || 0,
         spent: Number(data.budget) || 0,
         type: "expense",
-        linkedBudgetId: data.linkedBudgetId,
+        linkedBudgetId: data.linkedBudgetId, // Maintenant obligatoire
         date: data.date || new Date().toISOString().split('T')[0],
-        dashboardId: dashboardId
+        dashboardId: data.dashboardId || null
       };
 
       console.log("expenseOperations.addExpense: Created expense object:", newExpense);
@@ -60,20 +56,15 @@ export const expenseOperations = {
         throw new Error("Le budget associé est obligatoire pour une dépense");
       }
       
-      // Assurer qu'un dashboardId est toujours défini
-      const dashboardId = expenseToUpdate.dashboardId || "default";
-      console.log(`expenseOperations.updateExpense: Utilisation du dashboardId: ${dashboardId}`);
-      
       const validatedExpense: Expense = {
         id: String(expenseToUpdate.id),
         title: String(expenseToUpdate.title || "Sans titre"),
         budget: Number(expenseToUpdate.budget) || 0,
         spent: Number(expenseToUpdate.spent) || Number(expenseToUpdate.budget) || 0,
         type: "expense",
-        linkedBudgetId: String(expenseToUpdate.linkedBudgetId),
+        linkedBudgetId: String(expenseToUpdate.linkedBudgetId), // Maintenant obligatoire
         date: String(expenseToUpdate.date || new Date().toISOString().split('T')[0]),
-        dashboardId: dashboardId,
-        isRecurring: expenseToUpdate.isRecurring
+        dashboardId: expenseToUpdate.dashboardId || null
       };
 
       console.log("expenseOperations.updateExpense: Validated expense:", validatedExpense);

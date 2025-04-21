@@ -1,3 +1,4 @@
+
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { BudgetsHeader } from "@/components/budget/BudgetsHeader";
@@ -11,8 +12,7 @@ import { toast } from "@/components/ui/use-toast";
 import { useBudgetInitialization } from "@/hooks/useBudgetInitialization";
 import { useBudgetInteractions } from "@/hooks/useBudgetInteractions";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, Bug, RefreshCw } from "lucide-react";
-import { debugDatabase } from "@/utils/debug-utils";
+import { AlertCircle, RefreshCw } from "lucide-react";
 
 const BudgetsPage = () => {
   const navigate = useNavigate();
@@ -52,6 +52,7 @@ const BudgetsPage = () => {
     handleDeleteConfirm
   } = useBudgetInteractions(navigate);
 
+  // Afficher un message de diagnostic si l'initialisation échoue
   useEffect(() => {
     console.log("BudgetsPage: initialization status changed:", initializationSuccess);
     if (initializationSuccess === false) {
@@ -59,6 +60,7 @@ const BudgetsPage = () => {
     }
   }, [initializationSuccess]);
 
+  // Réessayer l'initialisation si elle échoue
   useEffect(() => {
     if (initializationSuccess === false && retryCount < 2) {
       console.log(`Auto-retry initialization (${retryCount + 1}/2)...`);
@@ -71,35 +73,44 @@ const BudgetsPage = () => {
     }
   }, [initializationSuccess, retryCount, initializeDatabase]);
 
+  // Fonction pour forcer une réinitialisation complète
   const handleForceReset = async () => {
     setRetryCount(0);
     localStorage.clear(); // Effacer toutes les données du localStorage
     await handleManualRefresh();
   };
 
-  const handleDebugData = async () => {
-    await debugDatabase.showAllTables();
-    await debugDatabase.debugDashboards();
-    await debugDatabase.debugBudgets();
-    toast({
-      title: "Débogage lancé",
-      description: "Consultez la console pour voir les informations détaillées.",
-    });
-  };
-
+  // Afficher l'état de chargement tant que nous chargeons ou que nous n'avons pas encore essayé d'initialiser
   if (isLoading || initializationSuccess === null || isRefreshing) {
     return <BudgetLoadingState attempt={attempt} maxAttempts={maxAttempts} />;
   }
 
+  // Afficher l'état d'erreur si l'initialisation a échoué ou s'il y a une erreur
   if (error || initializationSuccess === false) {
     return (
       <div className="container mx-auto px-4 py-6 space-y-6">
         <BudgetsHeader onNavigate={navigate} />
-        <BudgetErrorState 
-          onRefresh={handleManualRefresh}
-          isRefreshing={isRefreshing}
-          onReset={handleForceReset}
-        />
+        <div className="bg-destructive/10 border border-destructive rounded-lg p-4 mb-4">
+          <div className="flex items-start">
+            <AlertCircle className="h-5 w-5 text-destructive mr-2 mt-0.5" />
+            <div>
+              <h3 className="font-semibold text-destructive">Erreur de chargement</h3>
+              <p className="text-sm mt-1">
+                Impossible de charger la base de données. Veuillez essayer l'une des solutions suivantes:
+              </p>
+              <div className="mt-4 space-y-2">
+                <Button onClick={handleManualRefresh} className="mr-2" variant="outline">
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Réessayer simplement
+                </Button>
+                <Button onClick={handleForceReset} variant="destructive">
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Réinitialiser complètement
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -107,7 +118,7 @@ const BudgetsPage = () => {
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
       <BudgetsHeader onNavigate={navigate} />
-      
+
       <RemainingAmountAlert remainingAmount={remainingAmount} />
 
       {budgets.length === 0 ? (

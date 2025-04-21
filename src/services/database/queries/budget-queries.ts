@@ -1,6 +1,6 @@
 
-import { toast } from "@/components/ui/use-toast";
 import { Budget } from '../models/budget';
+import { toast } from "@/components/ui/use-toast";
 
 export const budgetQueries = {
   createTable: `
@@ -10,19 +10,18 @@ export const budgetQueries = {
       budget REAL DEFAULT 0,
       spent REAL DEFAULT 0,
       type TEXT,
-      carriedOver REAL DEFAULT 0,
-      dashboardId TEXT
+      carriedOver REAL DEFAULT 0
     )
   `,
   
   sampleData: (currentDate: string) => `
-    INSERT OR IGNORE INTO budgets (id, title, budget, spent, type, carriedOver, dashboardId)
+    INSERT OR IGNORE INTO budgets (id, title, budget, spent, type, carriedOver)
     VALUES 
-    ('bud_1', 'Courses', 500.00, 600.00, 'budget', 0, 'default'),
-    ('bud_2', 'Transport', 200.00, 0.00, 'budget', 0, 'default'),
-    ('bud_3', 'Loisirs', 150.00, 0.00, 'budget', 0, 'default'),
-    ('bud_4', 'Restaurant', 300.00, 150.00, 'budget', 0, 'default'),
-    ('bud_5', 'Shopping', 250.00, 100.00, 'budget', 0, 'default')
+    ('bud_1', 'Courses', 500.00, 600.00, 'budget', 0),
+    ('bud_2', 'Transport', 200.00, 0.00, 'budget', 0),
+    ('bud_3', 'Loisirs', 150.00, 0.00, 'budget', 0),
+    ('bud_4', 'Restaurant', 300.00, 150.00, 'budget', 0),
+    ('bud_5', 'Shopping', 250.00, 100.00, 'budget', 0)
   `,
   
   expenseSampleData: (currentDate: string) => `
@@ -55,8 +54,7 @@ export const budgetQueries = {
         budget: row[2],
         spent: row[3],
         type: row[4] as 'budget',
-        carriedOver: row[5] || 0,
-        dashboardId: row[6] || 'default' // Ajout du dashboardId avec une valeur par défaut
+        carriedOver: row[5] || 0
       })) || [];
       
       console.log(`${budgets.length} budgets récupérés avec succès`);
@@ -81,7 +79,7 @@ export const budgetQueries = {
       }
       
       const stmt = db.prepare(
-        'INSERT INTO budgets (id, title, budget, spent, type, carriedOver, dashboardId) VALUES (?, ?, ?, ?, ?, ?, ?)'
+        'INSERT INTO budgets (id, title, budget, spent, type, carriedOver) VALUES (?, ?, ?, ?, ?, ?)'
       );
       
       stmt.run([
@@ -90,8 +88,7 @@ export const budgetQueries = {
         budget.budget || 0,
         budget.spent || 0,
         budget.type || 'budget',
-        budget.carriedOver || 0,
-        budget.dashboardId || 'default' // Ajout du dashboardId avec une valeur par défaut
+        budget.carriedOver || 0
       ]);
       
       stmt.free();
@@ -111,7 +108,7 @@ export const budgetQueries = {
       }
       
       const stmt = db.prepare(
-        'UPDATE budgets SET title = ?, budget = ?, spent = ?, carriedOver = ?, dashboardId = ? WHERE id = ?'
+        'UPDATE budgets SET title = ?, budget = ?, spent = ?, carriedOver = ? WHERE id = ?'
       );
       
       stmt.run([
@@ -119,7 +116,6 @@ export const budgetQueries = {
         budget.budget || 0,
         budget.spent || 0,
         budget.carriedOver || 0,
-        budget.dashboardId || 'default', // Ajout du dashboardId avec une valeur par défaut
         budget.id
       ]);
       

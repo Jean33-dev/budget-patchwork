@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
 interface EnvelopeListHeaderProps {
@@ -34,7 +33,7 @@ export const EnvelopeListHeader = ({
     }
   };
   return <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-      <h2 className="text-xl font-semibold">{getTypeLabel(type)}</h2>
+      
       <Button onClick={onAddClick} variant="outline" size="sm" className="w-full sm:w-auto">
         <PlusCircle className="h-4 w-4 mr-2" />
         Ajouter {getAddButtonLabel(type)}

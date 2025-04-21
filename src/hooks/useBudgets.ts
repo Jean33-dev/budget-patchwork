@@ -1,14 +1,12 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useBudgetData } from "./useBudgetData";
 import { budgetOperations } from "@/utils/budget-operations";
 import { Budget } from "@/types/categories";
-import { useDashboardContext } from "./useDashboardContext";
 
 export type { Budget };
 
 export const useBudgets = () => {
-  const { currentDashboardId } = useDashboardContext();
   const { 
     budgets, 
     totalRevenues, 
@@ -21,23 +19,12 @@ export const useBudgets = () => {
   const [localBudgets, setLocalBudgets] = useState<Budget[]>([]);
 
   // Update local state whenever the fetched budgets change
-  useEffect(() => {
-    if (budgets && budgets.length > 0) {
-      console.log("useBudgets - Setting local budgets:", budgets);
-      setLocalBudgets(budgets);
-    }
-  }, [budgets]);
+  if (budgets !== localBudgets && budgets.length > 0) {
+    setLocalBudgets(budgets);
+  }
 
-  const addBudget = async (newBudget: Omit<Budget, "id" | "spent" | "dashboardId">) => {
-    // Toujours utiliser le dashboardId courant pour les nouveaux budgets
-    const budgetWithDashboard = {
-      ...newBudget,
-      dashboardId: currentDashboardId
-    };
-    
-    console.log(`useBudgets - Adding budget with dashboardId: ${currentDashboardId}`);
-    
-    const success = await budgetOperations.addBudget(budgetWithDashboard);
+  const addBudget = async (newBudget: Omit<Budget, "id" | "spent">) => {
+    const success = await budgetOperations.addBudget(newBudget);
     if (success) {
       // Refresh data to include the new budget
       await loadData();
@@ -46,11 +33,6 @@ export const useBudgets = () => {
   };
 
   const updateBudget = async (budget: Budget) => {
-    // S'assurer que le dashboardId est préservé ou défini
-    if (!budget.dashboardId) {
-      budget.dashboardId = currentDashboardId;
-    }
-    
     const success = await budgetOperations.updateBudget(budget);
     if (success) {
       // Update local state immediately for better UX

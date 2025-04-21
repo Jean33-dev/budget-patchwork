@@ -7,11 +7,10 @@ import { useNavigate } from "react-router-dom";
 
 interface BudgetErrorStateProps {
   onRefresh: () => Promise<void>;
-  isRefreshing?: boolean;
-  onReset?: () => void;
+  isRefreshing: boolean;
 }
 
-export const BudgetErrorState = ({ onRefresh, isRefreshing = false, onReset }: BudgetErrorStateProps) => {
+export const BudgetErrorState = ({ onRefresh, isRefreshing }: BudgetErrorStateProps) => {
   const navigate = useNavigate();
   
   return (
@@ -22,36 +21,24 @@ export const BudgetErrorState = ({ onRefresh, isRefreshing = false, onReset }: B
           Erreur lors du chargement des budgets. Veuillez rafraîchir la page.
         </AlertDescription>
       </Alert>
-      <div className="mt-4 space-x-2">
-        <Button 
-          onClick={onRefresh} 
-          className="mr-2"
-          variant="outline"
-          disabled={isRefreshing}
-        >
-          {isRefreshing ? (
-            <>
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              Rafraîchissement...
-            </>
-          ) : (
-            <>
-              <RotateCw className="h-4 w-4 mr-2" />
-              Réessayer
-            </>
-          )}
-        </Button>
-        
-        {onReset && (
-          <Button 
-            onClick={onReset} 
-            variant="destructive"
-          >
+      <Button 
+        onClick={onRefresh} 
+        className="mt-4"
+        variant="outline"
+        disabled={isRefreshing}
+      >
+        {isRefreshing ? (
+          <>
+            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            Rafraîchissement...
+          </>
+        ) : (
+          <>
             <RotateCw className="h-4 w-4 mr-2" />
-            Réinitialiser
-          </Button>
+            Réessayer
+          </>
         )}
-      </div>
+      </Button>
     </div>
   );
 };

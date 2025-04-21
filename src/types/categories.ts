@@ -15,5 +15,5 @@ export interface Budget {
   spent: number;
   type: "budget";
   carriedOver?: number;
-  dashboardId: string; // Maintenant obligatoire
+  dashboardId?: string; // Ajout de la propriété dashboardId
 }

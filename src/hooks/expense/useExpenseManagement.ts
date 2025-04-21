@@ -41,38 +41,19 @@ export const useExpenseManagement = (budgetId: string | null) => {
   // Data reloading
   const { forceReload } = useDataReloader(isProcessing, isLoading, loadData);
 
-  // Filter expenses by budgetId and dashboardId
+  // Filter expenses by budgetId if specified
   const filteredExpenses = useCallback(() => {
-    console.log("useExpenseManagement - Filtering expenses. Total:", expenses.length, "budgetId:", budgetId, "dashboardId:", currentDashboardId);
+    console.log("useExpenseManagement - Filtering expenses. Total:", expenses.length, "budgetId:", budgetId);
     
-    // Premier niveau de filtrage par dashboard
-    const dashboardFiltered = expenses.filter(expense => {
-      // Si on est sur la vue budget (budget route)
-      if (currentDashboardId === "budget") {
-        // Inclure les dépenses sans dashboardId ou avec dashboardId default/budget
-        return !expense.dashboardId || 
-               expense.dashboardId === "default" || 
-               expense.dashboardId === "budget";
-      }
-      
-      // Pour les autres dashboards, ne montrer que les dépenses correspondantes
-      // ou les dépenses sans dashboardId si on est sur le dashboard par défaut
-      return expense.dashboardId === currentDashboardId || 
-             (!expense.dashboardId && currentDashboardId === "default");
-    });
-    
-    console.log(`useExpenseManagement - After dashboard filtering: ${dashboardFiltered.length} expenses`);
-    
-    // Deuxième niveau de filtrage par budget si un budgetId est spécifié
     if (!budgetId) {
-      console.log("useExpenseManagement - No budgetId filter, returning dashboard filtered expenses");
-      return dashboardFiltered;
+      console.log("useExpenseManagement - No budgetId filter, returning all expenses");
+      return expenses;
     }
     
-    const filtered = dashboardFiltered.filter(expense => expense.linkedBudgetId === budgetId);
+    const filtered = expenses.filter(expense => expense.linkedBudgetId === budgetId);
     console.log(`useExpenseManagement - Filtered by budgetId ${budgetId}, returning ${filtered.length} expenses`);
     return filtered;
-  }, [expenses, budgetId, currentDashboardId]);
+  }, [expenses, budgetId]);
 
   // Calculer les dépenses filtrées une seule fois et les stocker
   const filteredExpensesResult = filteredExpenses();

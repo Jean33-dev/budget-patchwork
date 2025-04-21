@@ -37,8 +37,7 @@ const Home = () => {
             budget: 0,
             spent: 0,
             type: 'budget',
-            carriedOver: 0,
-            dashboardId: "default" // Ajout de dashboardId requis
+            carriedOver: 0
           });
           setDashboardTitle(defaultTitle);
           localStorage.removeItem("dashboardTitle");
@@ -137,8 +136,7 @@ const Home = () => {
           budget: 0,
           spent: 0,
           type: 'budget',
-          carriedOver: 0,
-          dashboardId: "default" // Ajout de dashboardId requis
+          carriedOver: 0
         });
       }
       

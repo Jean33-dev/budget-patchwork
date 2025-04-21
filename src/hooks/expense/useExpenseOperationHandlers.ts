@@ -1,151 +1,153 @@
-
-import { useState } from "react";
-import { useToast } from "@/components/ui/use-toast";
-import { expenseOperations } from "@/utils/expense-operations";
-import { Expense } from "@/services/database/models/expense";
+import { useState, useCallback } from 'react';
+import { useToast } from '@/components/ui/use-toast';
+import { v4 as uuidv4 } from 'uuid';
+import { db } from '@/services/database';
+import { Expense } from '@/services/database/models/expense';
 
 export const useExpenseOperationHandlers = (
   budgetId: string | null,
-  loadData: () => Promise<void>,
-  dashboardId: string
+  onSuccessCallback: () => Promise<void>,
+  dashboardId: string | null
 ) => {
-  const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
+  const { toast } = useToast();
+  
+  // Modification de la logique de normalisation pour le cas "budget"
+  // dashboardId pour "budget" reste "budget" plutôt que de devenir "default"
+  const normalizedDashboardId = dashboardId || "default";
+  
+  console.log("🔍 useExpenseOperationHandlers - initialized with dashboardId:", dashboardId, 
+              "normalized to:", normalizedDashboardId, 
+              "budgetId:", budgetId);
 
-  const handleAddEnvelope = async (envelope: {
-    title: string;
-    budget: number;
-    type: "income" | "expense" | "budget";
-    linkedBudgetId?: string;
-    date: string;
-  }) => {
-    if (envelope.type !== "expense") {
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Type d'enveloppe invalide"
-      });
-      return;
-    }
+  const handleAddEnvelope = useCallback(
+    async (envelope: {
+      title: string;
+      budget: number;
+      type: 'income' | 'expense' | 'budget';
+      linkedBudgetId?: string;
+      date: string;
+    }) => {
+      if (envelope.type !== 'expense') return;
 
-    if (!envelope.linkedBudgetId) {
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Veuillez sélectionner un budget"
-      });
-      return;
-    }
-
-    setIsProcessing(true);
-    try {
-      console.log("useExpenseOperationHandlers - Adding new expense with dashboardId:", dashboardId);
-      
-      // Utiliser le bon dashboardId en fonction du contexte
-      const dashboardToUse = dashboardId === "budget" ? "default" : dashboardId;
-      
-      const success = await expenseOperations.addExpense({
-        title: envelope.title,
-        budget: envelope.budget,
-        type: "expense",
-        linkedBudgetId: envelope.linkedBudgetId,
-        date: envelope.date,
-        dashboardId: dashboardToUse
-      });
-
-      if (success) {
+      setIsProcessing(true);
+      try {
+        console.log("🔍 useExpenseOperationHandlers - Adding expense with data:", envelope, 
+                    "normalized dashboardId:", normalizedDashboardId);
+        
+        // Vérifier que le budget est bien sélectionné
+        if (!envelope.linkedBudgetId && !budgetId) {
+          throw new Error("Un budget doit être sélectionné pour cette dépense");
+        }
+        
+        const expense: Expense = {
+          id: uuidv4(),
+          title: envelope.title,
+          budget: envelope.budget,
+          spent: envelope.budget, // Pour une dépense, spent == budget
+          type: 'expense',
+          linkedBudgetId: envelope.linkedBudgetId || budgetId || '', // Utiliser une chaîne vide comme fallback
+          date: envelope.date || new Date().toISOString().split('T')[0],
+          isRecurring: false,
+          // S'assurer que le dashboardId est TOUJOURS défini et correct
+          dashboardId: normalizedDashboardId
+        };
+        
+        console.log("🔍 useExpenseOperationHandlers - Constructed expense object:", expense);
+        await db.addExpense(expense);
+        
         toast({
-          title: "Succès",
-          description: "Dépense ajoutée avec succès"
+          title: 'Succès',
+          description: 'Dépense ajoutée avec succès'
         });
-        await loadData();
-      } else {
+        
+        await onSuccessCallback();
+      } catch (error) {
+        console.error('🔍 Error adding expense:', error);
         toast({
-          variant: "destructive",
-          title: "Erreur",
-          description: "Impossible d'ajouter la dépense"
+          variant: 'destructive',
+          title: 'Erreur',
+          description: error instanceof Error 
+            ? error.message 
+            : "Une erreur est survenue lors de l'ajout de la dépense"
         });
+      } finally {
+        setIsProcessing(false);
       }
-    } catch (error) {
-      console.error("Error adding expense:", error);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Une erreur s'est produite lors de l'ajout de la dépense"
-      });
-    } finally {
-      setIsProcessing(false);
-    }
-  };
+    },
+    [budgetId, onSuccessCallback, toast, normalizedDashboardId]
+  );
 
-  const handleDeleteExpense = async (id: string) => {
-    setIsProcessing(true);
-    try {
-      console.log("useExpenseOperationHandlers - Deleting expense:", id);
-      const success = await expenseOperations.deleteExpense(id);
-
-      if (success) {
+  const handleUpdateExpense = useCallback(
+    async (expense: Expense) => {
+      setIsProcessing(true);
+      try {
+        console.log("🔍 useExpenseOperationHandlers - Updating expense:", expense);
+        
+        // Vérifier que le budget est bien sélectionné
+        if (!expense.linkedBudgetId) {
+          throw new Error("Un budget doit être sélectionné pour cette dépense");
+        }
+        
+        // IMPORTANT: Préserver le dashboardId existant lors des mises à jour
+        // Ne pas modifier le dashboardId d'une dépense
+        const updatedExpense: Expense = {
+          ...expense,
+          // Si l'expense a déjà un dashboardId, on le conserve, sinon on utilise celui du contexte actuel
+          dashboardId: expense.dashboardId || normalizedDashboardId
+        };
+        
+        console.log("🔍 useExpenseOperationHandlers - Final updated expense:", updatedExpense);
+        await db.updateExpense(updatedExpense);
+        
         toast({
-          title: "Succès",
-          description: "Dépense supprimée avec succès"
+          title: 'Succès',
+          description: 'Dépense mise à jour avec succès'
         });
-        await loadData();
-      } else {
+        
+        await onSuccessCallback();
+      } catch (error) {
+        console.error('🔍 Error updating expense:', error);
         toast({
-          variant: "destructive",
-          title: "Erreur",
-          description: "Impossible de supprimer la dépense"
+          variant: 'destructive',
+          title: 'Erreur',
+          description: error instanceof Error 
+            ? error.message
+            : 'Une erreur est survenue lors de la mise à jour de la dépense'
         });
+      } finally {
+        setIsProcessing(false);
       }
-    } catch (error) {
-      console.error("Error deleting expense:", error);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Une erreur s'est produite lors de la suppression de la dépense"
-      });
-    } finally {
-      setIsProcessing(false);
-    }
-  };
+    },
+    [onSuccessCallback, toast, normalizedDashboardId]
+  );
 
-  const handleUpdateExpense = async (updatedExpense: Expense) => {
-    setIsProcessing(true);
-    try {
-      console.log("useExpenseOperationHandlers - Updating expense with dashboardId:", updatedExpense.dashboardId);
-      
-      // Préserver le dashboardId existant ou utiliser celui du contexte actuel
-      if (!updatedExpense.dashboardId) {
-        const dashboardToUse = dashboardId === "budget" ? "default" : dashboardId;
-        updatedExpense.dashboardId = dashboardToUse;
-      }
-      
-      const success = await expenseOperations.updateExpense(updatedExpense);
-
-      if (success) {
+  const handleDeleteExpense = useCallback(
+    async (id: string) => {
+      setIsProcessing(true);
+      try {
+        console.log(`🔍 useExpenseOperationHandlers - Deleting expense with ID: ${id}`);
+        await db.deleteExpense(id);
+        
         toast({
-          title: "Succès",
-          description: "Dépense mise à jour avec succès"
+          title: 'Succès',
+          description: 'Dépense supprimée avec succès'
         });
-        await loadData();
-      } else {
+        
+        await onSuccessCallback();
+      } catch (error) {
+        console.error('🔍 Error deleting expense:', error);
         toast({
-          variant: "destructive",
-          title: "Erreur",
-          description: "Impossible de mettre à jour la dépense"
+          variant: 'destructive',
+          title: 'Erreur',
+          description: 'Une erreur est survenue lors de la suppression de la dépense'
         });
+      } finally {
+        setIsProcessing(false);
       }
-    } catch (error) {
-      console.error("Error updating expense:", error);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Une erreur s'est produite lors de la mise à jour de la dépense"
-      });
-    } finally {
-      setIsProcessing(false);
-    }
-  };
+    },
+    [onSuccessCallback, toast]
+  );
 
   return {
     isProcessing,

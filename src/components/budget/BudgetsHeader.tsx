@@ -8,16 +8,12 @@ interface BudgetsHeaderProps {
 
 export const BudgetsHeader = ({ onNavigate }: BudgetsHeaderProps) => {
   return (
-    <div className="flex items-center justify-between">
-      <div>
-        <h1 className="text-2xl font-bold mb-1">Gestion des budgets</h1>
-        <p className="text-sm text-muted-foreground">
-          Configurez vos budgets mensuels et suivez vos dépenses
-        </p>
-      </div>
+    <div className="flex items-center gap-4 sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-10 pb-4 border-b">
       <Button variant="outline" size="icon" onClick={() => onNavigate("/dashboard/budget")}>
         <ArrowLeft className="h-4 w-4" />
       </Button>
+
+      <h1 className="text-xl">Gestion des Budgets</h1>
     </div>
   );
 };

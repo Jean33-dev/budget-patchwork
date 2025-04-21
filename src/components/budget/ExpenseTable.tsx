@@ -15,7 +15,7 @@ interface ExpenseTableProps {
     dashboardId?: string;
   }>;
   onEnvelopeClick?: (envelope: any) => void;
-  availableBudgets?: Array<{ id: string; title: string; dashboardId?: string }>;
+  availableBudgets?: Array<{ id: string; title: string }>;
   onDeleteExpense?: (id: string) => void;
   onUpdateExpense?: (expense: any) => void;
   showDebugInfo?: boolean;
@@ -42,13 +42,10 @@ export const ExpenseTable = ({
     setExpandedRow(null);
   };
 
-  // Débogage - Afficher les IDs des tableaux de bord de chaque dépense et budget
+  // Débogage - Afficher les IDs des tableaux de bord de chaque dépense
   if (process.env.NODE_ENV === 'development') {
     console.log("ExpenseTable - Expenses with dashboardIds:", 
       expenses.map(e => ({ id: e.id, title: e.title, dashboardId: e.dashboardId }))
-    );
-    console.log("ExpenseTable - Available budgets with dashboardIds:", 
-      availableBudgets.map(b => ({ id: b.id, title: b.title, dashboardId: b.dashboardId }))
     );
   }
 
@@ -80,10 +77,10 @@ export const ExpenseTable = ({
                   availableBudgets={availableBudgets}
                   onUpdate={handleUpdate}
                 />
-                {(showDebugInfo || process.env.NODE_ENV === 'development') && (
+                {showDebugInfo && process.env.NODE_ENV === 'development' && (
                   <TableRow>
                     <TableCell colSpan={3} className="text-xs text-gray-500">
-                      {`Dashboard: ${expense.dashboardId || 'none'}, Budget: ${expense.linkedBudgetId || 'none'}`}
+                      {`Dashboard: ${expense.dashboardId || 'none'}`}
                     </TableCell>
                   </TableRow>
                 )}
