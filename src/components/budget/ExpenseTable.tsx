@@ -15,7 +15,7 @@ interface ExpenseTableProps {
     dashboardId?: string;
   }>;
   onEnvelopeClick?: (envelope: any) => void;
-  availableBudgets?: Array<{ id: string; title: string }>;
+  availableBudgets?: Array<{ id: string; title: string; dashboardId?: string }>;
   onDeleteExpense?: (id: string) => void;
   onUpdateExpense?: (expense: any) => void;
   showDebugInfo?: boolean;
@@ -42,10 +42,13 @@ export const ExpenseTable = ({
     setExpandedRow(null);
   };
 
-  // Débogage - Afficher les IDs des tableaux de bord de chaque dépense
+  // Débogage - Afficher les IDs des tableaux de bord de chaque dépense et budget
   if (process.env.NODE_ENV === 'development') {
     console.log("ExpenseTable - Expenses with dashboardIds:", 
       expenses.map(e => ({ id: e.id, title: e.title, dashboardId: e.dashboardId }))
+    );
+    console.log("ExpenseTable - Available budgets with dashboardIds:", 
+      availableBudgets.map(b => ({ id: b.id, title: b.title, dashboardId: b.dashboardId }))
     );
   }
 

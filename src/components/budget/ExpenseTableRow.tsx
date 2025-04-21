@@ -19,7 +19,7 @@ interface ExpenseTableRowProps {
   isExpanded: boolean;
   toggleRow: (id: string) => void;
   onDelete?: (() => void) | undefined;
-  availableBudgets: Array<{ id: string; title: string }>;
+  availableBudgets: Array<{ id: string; title: string; dashboardId?: string }>;
   onUpdate: (updatedExpense: any) => void;
 }
 
@@ -45,7 +45,13 @@ export const ExpenseTableRow = ({
   const getBudgetTitle = (budgetId?: string): string => {
     if (!budgetId) return "Non catégorisé";
     const budget = availableBudgets.find(b => b.id === budgetId);
-    return budget ? budget.title : "Catégorie inconnue";
+    
+    if (budget) {
+      const dashboardInfo = budget.dashboardId ? ` (Dashboard: ${budget.dashboardId})` : '';
+      return `${budget.title}${dashboardInfo}`;
+    }
+    
+    return "Catégorie inconnue";
   };
 
   const handleRowClick = () => {
@@ -60,6 +66,9 @@ export const ExpenseTableRow = ({
     >
       <TableCell className="font-medium">
         {expense.title}
+        <div className="text-xs text-gray-500 mt-1">
+          {getBudgetTitle(expense.linkedBudgetId)}
+        </div>
       </TableCell>
       <TableCell className="text-right">
         {Number(expense.budget).toFixed(2)} €

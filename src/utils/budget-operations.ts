@@ -2,16 +2,28 @@
 import { toast } from "@/components/ui/use-toast";
 import { db } from "@/services/database";
 import { Budget } from "@/types/categories";
+import { useDashboardContext } from "@/hooks/useDashboardContext";
 
 export const budgetOperations = {
-  async addBudget(newBudget: Omit<Budget, "id" | "spent">): Promise<boolean> {
+  async addBudget(newBudget: Omit<Budget, "id" | "spent"> & { dashboardId?: string }): Promise<boolean> {
     try {
+      // Récupérer le dashboardId ou utiliser celui fourni
+      let dashboardId = newBudget.dashboardId;
+      
+      // Si aucun dashboardId n'est fourni, utiliser "default"
+      if (!dashboardId) {
+        dashboardId = "default";
+      }
+      
+      console.log(`budgetOperations.addBudget: Création d'un budget avec dashboardId: ${dashboardId}`);
+      
       const budgetToAdd: Budget = {
         id: Date.now().toString(),
         title: newBudget.title,
         budget: newBudget.budget,
         spent: 0,
-        type: "budget"
+        type: "budget",
+        dashboardId: dashboardId
       };
 
       console.log("Ajout d'un nouveau budget:", budgetToAdd);
@@ -36,6 +48,11 @@ export const budgetOperations = {
 
   async updateBudget(budgetToUpdate: Budget): Promise<boolean> {
     try {
+      // S'assurer qu'un dashboardId est toujours défini
+      if (!budgetToUpdate.dashboardId) {
+        budgetToUpdate.dashboardId = "default";
+      }
+      
       await db.updateBudget(budgetToUpdate);
       
       toast({
