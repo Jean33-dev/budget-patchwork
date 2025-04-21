@@ -96,50 +96,26 @@ const BudgetsPage = () => {
     return <BudgetLoadingState attempt={attempt} maxAttempts={maxAttempts} />;
   }
 
-  // Afficher l'état d'erreur si l'initialisation a échoué ou s'il y a une erreur
   if (error || initializationSuccess === false) {
     return (
       <div className="container mx-auto px-4 py-6 space-y-6">
         <BudgetsHeader onNavigate={navigate} />
-        <div className="bg-destructive/10 border border-destructive rounded-lg p-4 mb-4">
-          <div className="flex items-start">
-            <AlertCircle className="h-5 w-5 text-destructive mr-2 mt-0.5" />
-            <div>
-              <h3 className="font-semibold text-destructive">Erreur de chargement</h3>
-              <p className="text-sm mt-1">
-                Impossible de charger la base de données. Veuillez essayer l'une des solutions suivantes:
-              </p>
-              <div className="mt-4 space-y-2">
-                <Button onClick={handleManualRefresh} className="mr-2" variant="outline">
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  Réessayer simplement
-                </Button>
-                <Button onClick={handleForceReset} variant="destructive">
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  Réinitialiser complètement
-                </Button>
-                <Button onClick={handleDebugData} variant="secondary">
-                  <Bug className="h-4 w-4 mr-2" />
-                  Déboguer les données
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <BudgetErrorState 
+          onRetry={handleManualRefresh} 
+          onReset={() => {
+            setRetryCount(0);
+            localStorage.clear();
+            handleManualRefresh();
+          }} 
+        />
       </div>
     );
   }
 
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <BudgetsHeader onNavigate={navigate} />
-        <Button onClick={handleDebugData} variant="outline" size="sm">
-          <Bug className="h-4 w-4 mr-2" />
-          Déboguer
-        </Button>
-      </div>
-
+      <BudgetsHeader onNavigate={navigate} />
+      
       <RemainingAmountAlert remainingAmount={remainingAmount} />
 
       {budgets.length === 0 ? (
