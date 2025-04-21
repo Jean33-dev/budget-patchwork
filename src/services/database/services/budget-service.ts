@@ -16,6 +16,8 @@ export class BudgetService extends BaseService {
       const adapter = this.initManager.getAdapter();
       const results = await adapter!.query("SELECT * FROM budgets");
       
+      console.log("Budget service - Raw budget data from database:", results);
+      
       return results.map(row => ({
         id: row.id,
         title: row.title,
@@ -23,7 +25,7 @@ export class BudgetService extends BaseService {
         spent: Number(row.spent),
         type: 'budget' as const,
         carriedOver: Number(row.carriedOver || 0),
-        dashboardId: row.dashboardId || "default" // Ajout du dashboardId avec une valeur par défaut
+        dashboardId: row.dashboardId || "default"
       }));
     } catch (error) {
       console.error("Erreur lors de la récupération des budgets:", error);

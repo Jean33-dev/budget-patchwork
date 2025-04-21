@@ -1,4 +1,3 @@
-
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { BudgetsHeader } from "@/components/budget/BudgetsHeader";
@@ -12,7 +11,8 @@ import { toast } from "@/components/ui/use-toast";
 import { useBudgetInitialization } from "@/hooks/useBudgetInitialization";
 import { useBudgetInteractions } from "@/hooks/useBudgetInteractions";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, RefreshCw } from "lucide-react";
+import { AlertCircle, Bug, RefreshCw } from "lucide-react";
+import { debugDatabase } from "@/utils/debug-utils";
 
 const BudgetsPage = () => {
   const navigate = useNavigate();
@@ -80,6 +80,17 @@ const BudgetsPage = () => {
     await handleManualRefresh();
   };
 
+  // Fonction pour déboguer les données de budget
+  const handleDebugData = async () => {
+    await debugDatabase.showAllTables();
+    await debugDatabase.debugDashboards();
+    await debugDatabase.debugBudgets();
+    toast({
+      title: "Débogage lancé",
+      description: "Consultez la console pour voir les informations détaillées.",
+    });
+  };
+
   // Afficher l'état de chargement tant que nous chargeons ou que nous n'avons pas encore essayé d'initialiser
   if (isLoading || initializationSuccess === null || isRefreshing) {
     return <BudgetLoadingState attempt={attempt} maxAttempts={maxAttempts} />;
@@ -107,6 +118,10 @@ const BudgetsPage = () => {
                   <RefreshCw className="h-4 w-4 mr-2" />
                   Réinitialiser complètement
                 </Button>
+                <Button onClick={handleDebugData} variant="secondary">
+                  <Bug className="h-4 w-4 mr-2" />
+                  Déboguer les données
+                </Button>
               </div>
             </div>
           </div>
@@ -117,7 +132,13 @@ const BudgetsPage = () => {
 
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
-      <BudgetsHeader onNavigate={navigate} />
+      <div className="flex justify-between items-center">
+        <BudgetsHeader onNavigate={navigate} />
+        <Button onClick={handleDebugData} variant="outline" size="sm">
+          <Bug className="h-4 w-4 mr-2" />
+          Déboguer
+        </Button>
+      </div>
 
       <RemainingAmountAlert remainingAmount={remainingAmount} />
 
