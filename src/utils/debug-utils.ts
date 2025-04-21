@@ -5,7 +5,11 @@ import { toast } from "@/components/ui/use-toast";
 export const debugDatabase = {
   async showAllTables(): Promise<void> {
     try {
-      const adapter = await db.getAdapter();
+      // Initialize the database first
+      await db.init();
+      
+      // Get adapter through the database service
+      const adapter = await db.incomeService?.getAdapter?.();
       if (!adapter) {
         console.error("Database adapter not available");
         return;
@@ -33,7 +37,8 @@ export const debugDatabase = {
         return;
       }
       
-      const adapter = await db.getAdapter();
+      // Get adapter through the database service
+      const adapter = await db.incomeService?.getAdapter?.();
       if (!adapter) {
         console.error("Database adapter not available");
         return;
@@ -76,7 +81,8 @@ export const debugDatabase = {
         return;
       }
       
-      const adapter = await db.getAdapter();
+      // Get adapter through the database service
+      const adapter = await db.incomeService?.getAdapter?.();
       if (!adapter) {
         console.error("Database adapter not available");
         return;
