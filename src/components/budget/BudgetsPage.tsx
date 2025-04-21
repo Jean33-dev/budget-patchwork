@@ -52,7 +52,6 @@ const BudgetsPage = () => {
     handleDeleteConfirm
   } = useBudgetInteractions(navigate);
 
-  // Afficher un message de diagnostic si l'initialisation échoue
   useEffect(() => {
     console.log("BudgetsPage: initialization status changed:", initializationSuccess);
     if (initializationSuccess === false) {
@@ -60,7 +59,6 @@ const BudgetsPage = () => {
     }
   }, [initializationSuccess]);
 
-  // Réessayer l'initialisation si elle échoue
   useEffect(() => {
     if (initializationSuccess === false && retryCount < 2) {
       console.log(`Auto-retry initialization (${retryCount + 1}/2)...`);
@@ -73,14 +71,12 @@ const BudgetsPage = () => {
     }
   }, [initializationSuccess, retryCount, initializeDatabase]);
 
-  // Fonction pour forcer une réinitialisation complète
   const handleForceReset = async () => {
     setRetryCount(0);
     localStorage.clear(); // Effacer toutes les données du localStorage
     await handleManualRefresh();
   };
 
-  // Fonction pour déboguer les données de budget
   const handleDebugData = async () => {
     await debugDatabase.showAllTables();
     await debugDatabase.debugDashboards();
@@ -91,7 +87,6 @@ const BudgetsPage = () => {
     });
   };
 
-  // Afficher l'état de chargement tant que nous chargeons ou que nous n'avons pas encore essayé d'initialiser
   if (isLoading || initializationSuccess === null || isRefreshing) {
     return <BudgetLoadingState attempt={attempt} maxAttempts={maxAttempts} />;
   }
@@ -101,12 +96,9 @@ const BudgetsPage = () => {
       <div className="container mx-auto px-4 py-6 space-y-6">
         <BudgetsHeader onNavigate={navigate} />
         <BudgetErrorState 
-          onRetry={handleManualRefresh} 
-          onReset={() => {
-            setRetryCount(0);
-            localStorage.clear();
-            handleManualRefresh();
-          }} 
+          onRefresh={handleManualRefresh}
+          isRefreshing={isRefreshing}
+          onReset={handleForceReset}
         />
       </div>
     );
