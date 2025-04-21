@@ -1,3 +1,4 @@
+
 import { Expense } from '../models/expense';
 import { BaseService } from './base-service';
 import { toast } from "@/components/ui/use-toast";
@@ -32,7 +33,7 @@ export class ExpenseService extends BaseService {
         linkedBudgetId: row.linkedBudgetId,
         date: row.date,
         isRecurring: Boolean(row.isRecurring),
-        dashboardId: row.dashboardId ? String(row.dashboardId) : "default"
+        dashboardId: row.dashboardId || "default" // Assurer une valeur par défaut
       }));
       
       console.log(`ExpenseService.getExpenses: Mapped ${expenses.length} expense objects`);
@@ -67,7 +68,7 @@ export class ExpenseService extends BaseService {
         linkedBudgetId: row.linkedBudgetId,
         date: row.date,
         isRecurring: true,
-        dashboardId: row.dashboardId || null
+        dashboardId: row.dashboardId || "default" // Assurer une valeur par défaut
       }));
     } catch (error) {
       console.error("Erreur lors de la récupération des dépenses récurrentes:", error);

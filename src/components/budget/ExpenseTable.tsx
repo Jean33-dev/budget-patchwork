@@ -77,10 +77,10 @@ export const ExpenseTable = ({
                   availableBudgets={availableBudgets}
                   onUpdate={handleUpdate}
                 />
-                {showDebugInfo && process.env.NODE_ENV === 'development' && (
+                {(showDebugInfo || process.env.NODE_ENV === 'development') && (
                   <TableRow>
                     <TableCell colSpan={3} className="text-xs text-gray-500">
-                      {`Dashboard: ${expense.dashboardId || 'none'}`}
+                      {`Dashboard: ${expense.dashboardId || 'none'}, Budget: ${expense.linkedBudgetId || 'none'}`}
                     </TableCell>
                   </TableRow>
                 )}
