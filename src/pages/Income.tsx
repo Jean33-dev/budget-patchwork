@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useRecurringIncome } from "@/hooks/useRecurringIncome";
 import { AddEnvelopeDialog } from "@/components/budget/AddEnvelopeDialog";
@@ -10,6 +11,7 @@ import { RecurringIncomeEmptyState } from "@/components/recurring/RecurringIncom
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
 import { AddButton } from "@/components/budget/AddButton";
+import { EditIncomeDialog } from "@/components/income/EditIncomeDialog";
 
 const Income = () => {
   const [activeTab, setActiveTab] = useState("ponctuel");
