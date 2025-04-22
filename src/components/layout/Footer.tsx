@@ -1,5 +1,5 @@
 
-import { Home, Clock, CreditCard, DollarSign, Calendar } from "lucide-react";
+import { Home, Clock, CreditCard, CirclePlus, Calendar } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export const Footer = () => {
@@ -39,7 +39,7 @@ export const Footer = () => {
               to="/dashboard/budget/income" 
               className="flex flex-col items-center gap-1 text-muted-foreground hover:text-primary"
             >
-              <DollarSign className="h-6 w-6" />
+              <CirclePlus className="h-6 w-6" />
               <span className="text-xs">Revenus</span>
             </Link>
           </li>
