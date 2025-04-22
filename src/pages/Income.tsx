@@ -1,15 +1,13 @@
-
+import { useState } from "react";
+import { useRecurringIncome } from "@/hooks/useRecurringIncome";
 import { AddEnvelopeDialog } from "@/components/budget/AddEnvelopeDialog";
-import { EditIncomeDialog } from "@/components/income/EditIncomeDialog";
 import { IncomeHeader } from "@/components/income/IncomeHeader";
 import { useIncomeManagement } from "@/hooks/useIncomeManagement";
-import { useRecurringIncome } from "@/hooks/useRecurringIncome";
 import { IncomeGrid } from "@/components/income/IncomeGrid";
 import { IncomeEmptyState } from "@/components/income/IncomeEmptyState";
 import { RecurringIncomeGrid } from "@/components/recurring/RecurringIncomeGrid";
 import { RecurringIncomeEmptyState } from "@/components/recurring/RecurringIncomeEmptyState";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { AddButton } from "@/components/budget/AddButton";
 
