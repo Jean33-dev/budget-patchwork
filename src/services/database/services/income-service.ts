@@ -1,6 +1,7 @@
 import { Income } from '../models/income';
 import { BaseService } from './base-service';
 import { toast } from "@/components/ui/use-toast";
+import { v4 as uuidv4 } from 'uuid';
 
 /**
  * Service for handling income-related database operations
@@ -65,9 +66,10 @@ export class IncomeService extends BaseService {
     if (!await this.ensureInitialized()) return;
     
     const adapter = this.initManager.getAdapter();
+    const idToUse = income.id || uuidv4();
     await adapter!.run(
       'INSERT INTO incomes (id, title, budget, spent, type, date, isRecurring, dashboardId) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-      [income.id, income.title, income.budget, income.spent, income.type, income.date, income.isRecurring ? 1 : 0, income.dashboardId || null]
+      [idToUse, income.title, income.budget, income.spent, income.type, income.date, income.isRecurring ? 1 : 0, income.dashboardId || null]
     );
   }
 

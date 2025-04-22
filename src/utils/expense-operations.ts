@@ -1,6 +1,7 @@
 
 import { db } from "@/services/database";
 import { Expense } from "@/services/database/models/expense";
+import { v4 as uuidv4 } from "uuid";
 
 export type ExpenseFormData = {
   title: string;
@@ -22,7 +23,7 @@ export const expenseOperations = {
       }
       
       const newExpense: Expense = {
-        id: Date.now().toString(),
+        id: uuidv4(),
         title: data.title || "Sans titre",
         budget: Number(data.budget) || 0,
         spent: Number(data.budget) || 0,

@@ -2,12 +2,13 @@
 import { toast } from "@/components/ui/use-toast";
 import { db } from "@/services/database";
 import { Budget } from "@/types/categories";
+import { v4 as uuidv4 } from "uuid";
 
 export const budgetOperations = {
   async addBudget(newBudget: Omit<Budget, "id" | "spent">): Promise<boolean> {
     try {
       const budgetToAdd: Budget = {
-        id: Date.now().toString(),
+        id: uuidv4(),
         title: newBudget.title,
         budget: newBudget.budget,
         spent: 0,
