@@ -22,7 +22,8 @@ export class BudgetService extends BaseService {
         budget: Number(row.budget),
         spent: Number(row.spent),
         type: 'budget' as const,
-        carriedOver: Number(row.carriedOver || 0)
+        carriedOver: Number(row.carriedOver || 0),
+        dashboardId: row.dashboardId || 'default' // Ajout du dashboardId avec valeur par défaut
       }));
     } catch (error) {
       console.error("Erreur lors de la récupération des budgets:", error);
@@ -38,8 +39,8 @@ export class BudgetService extends BaseService {
     
     const adapter = this.initManager.getAdapter();
     await adapter!.run(
-      'INSERT INTO budgets (id, title, budget, spent, type, carriedOver) VALUES (?, ?, ?, ?, ?, ?)',
-      [budget.id, budget.title, budget.budget, budget.spent, budget.type, budget.carriedOver || 0]
+      'INSERT INTO budgets (id, title, budget, spent, type, carriedOver, dashboardId) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [budget.id, budget.title, budget.budget, budget.spent, budget.type, budget.carriedOver || 0, budget.dashboardId]
     );
   }
 
@@ -51,8 +52,8 @@ export class BudgetService extends BaseService {
     
     const adapter = this.initManager.getAdapter();
     await adapter!.run(
-      'UPDATE budgets SET title = ?, budget = ?, spent = ?, carriedOver = ? WHERE id = ?',
-      [budget.title, budget.budget, budget.spent, budget.carriedOver || 0, budget.id]
+      'UPDATE budgets SET title = ?, budget = ?, spent = ?, carriedOver = ?, dashboardId = ? WHERE id = ?',
+      [budget.title, budget.budget, budget.spent, budget.carriedOver || 0, budget.dashboardId, budget.id]
     );
   }
 

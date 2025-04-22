@@ -1,9 +1,7 @@
-
 import { toast } from "@/components/ui/use-toast";
 import { db } from "@/services/database";
-import { Budget } from "@/types/categories";
+import { Budget } from "@/services/database/models/budget";
 import { v4 as uuidv4 } from "uuid";
-import { useDashboardContext } from "@/hooks/useDashboardContext";
 
 export const budgetOperations = {
   async addBudget(newBudget: Omit<Budget, "id" | "spent">, dashboardId?: string): Promise<boolean> {
