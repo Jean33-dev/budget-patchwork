@@ -4,9 +4,11 @@ import { NavigateFunction } from "react-router-dom";
 import { useBudgets, Budget } from "@/hooks/useBudgets";
 import { db } from "@/services/database";
 import { toast } from "@/components/ui/use-toast";
+import { useDashboardContext } from "./useDashboardContext";
 
 export const useBudgetInteractions = (navigate: NavigateFunction) => {
   const { budgets, remainingAmount, addBudget, updateBudget, deleteBudget, isLoading, error, refreshData } = useBudgets();
+  const { currentDashboardId } = useDashboardContext();
   
   // Define all state variables first to maintain consistent hook order
   const [addDialogOpen, setAddDialogOpen] = useState(false);
@@ -124,7 +126,8 @@ export const useBudgetInteractions = (navigate: NavigateFunction) => {
     const budgetData = {
       title: envelope.title,
       budget: envelope.budget,
-      type: "budget" as const
+      type: "budget" as const,
+      dashboardId: currentDashboardId // Add the dashboardId property
     };
     
     console.log("Ajout d'un nouveau budget:", budgetData);
@@ -132,7 +135,7 @@ export const useBudgetInteractions = (navigate: NavigateFunction) => {
     if (success) {
       setAddDialogOpen(false);
     }
-  }, [addBudget]);
+  }, [addBudget, currentDashboardId]); // Add currentDashboardId to dependencies
 
   const handleDeleteClick = useCallback(async (envelope: Budget) => {
     setSelectedBudget(envelope);
