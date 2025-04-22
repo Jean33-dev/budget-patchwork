@@ -10,7 +10,8 @@ export const incomeQueries = {
       spent REAL DEFAULT 0,
       type TEXT,
       date TEXT,
-      isRecurring INTEGER DEFAULT 0
+      isRecurring INTEGER DEFAULT 0,
+      dashboardId TEXT
     )
   `,
   
@@ -23,19 +24,26 @@ export const incomeQueries = {
       
       // Check if isRecurring column exists
       let hasIsRecurringColumn = false;
+      let hasDashboardIdColumn = false;
       try {
-        // Try to query for the column in the table info
+        // Try to query for the columns in the table info
         const tableInfo = db.exec("PRAGMA table_info(incomes)");
         if (tableInfo && tableInfo.length > 0 && tableInfo[0].values) {
           hasIsRecurringColumn = tableInfo[0].values.some((col: any) => col[1] === 'isRecurring');
+          hasDashboardIdColumn = tableInfo[0].values.some((col: any) => col[1] === 'dashboardId');
         }
         
         if (!hasIsRecurringColumn) {
           console.log("Adding isRecurring column to incomes table");
           db.exec("ALTER TABLE incomes ADD COLUMN isRecurring INTEGER DEFAULT 0");
         }
+        
+        if (!hasDashboardIdColumn) {
+          console.log("Adding dashboardId column to incomes table");
+          db.exec("ALTER TABLE incomes ADD COLUMN dashboardId TEXT");
+        }
       } catch (e) {
-        console.error("Error checking or adding isRecurring column:", e);
+        console.error("Error checking or adding columns:", e);
       }
       
       const result = db.exec('SELECT * FROM incomes');
@@ -50,7 +58,8 @@ export const incomeQueries = {
         spent: Number(row[3] || 0),
         type: row[4] as 'income',
         date: String(row[5] || new Date().toISOString().split('T')[0]),
-        isRecurring: hasIsRecurringColumn ? Boolean(row[6]) : false
+        isRecurring: hasIsRecurringColumn ? Boolean(row[6]) : false,
+        dashboardId: hasDashboardIdColumn ? (row[7] || null) : null
       }));
     } catch (error) {
       console.error("Erreur lors de la récupération des revenus:", error);
@@ -67,11 +76,13 @@ export const incomeQueries = {
       
       // Check if isRecurring column exists
       let hasIsRecurringColumn = false;
+      let hasDashboardIdColumn = false;
       try {
-        // Try to query for the column in the table info
+        // Try to query for the columns in the table info
         const tableInfo = db.exec("PRAGMA table_info(incomes)");
         if (tableInfo && tableInfo.length > 0 && tableInfo[0].values) {
           hasIsRecurringColumn = tableInfo[0].values.some((col: any) => col[1] === 'isRecurring');
+          hasDashboardIdColumn = tableInfo[0].values.some((col: any) => col[1] === 'dashboardId');
         }
         
         if (!hasIsRecurringColumn) {
@@ -79,8 +90,13 @@ export const incomeQueries = {
           db.exec("ALTER TABLE incomes ADD COLUMN isRecurring INTEGER DEFAULT 0");
           return []; // Return empty list since we just created the column
         }
+        
+        if (!hasDashboardIdColumn) {
+          console.log("Adding dashboardId column to incomes table");
+          db.exec("ALTER TABLE incomes ADD COLUMN dashboardId TEXT");
+        }
       } catch (e) {
-        console.error("Error checking or adding isRecurring column:", e);
+        console.error("Error checking or adding columns:", e);
         throw e; // Rethrow to handle in the outer catch
       }
       
@@ -96,7 +112,8 @@ export const incomeQueries = {
         spent: Number(row[3] || 0),
         type: row[4] as 'income',
         date: String(row[5] || new Date().toISOString().split('T')[0]),
-        isRecurring: true
+        isRecurring: true,
+        dashboardId: hasDashboardIdColumn ? (row[7] || null) : null
       }));
     } catch (error) {
       console.error("Erreur lors de la récupération des revenus récurrents:", error);

@@ -72,7 +72,8 @@ export class IncomeManager extends BaseDatabaseManager implements IIncomeManager
         spent: recurringIncome.budget, // Set spent to budget for income
         type: 'income',
         date: targetDate,
-        isRecurring: false // The copy is not recurring
+        isRecurring: false, // The copy is not recurring
+        dashboardId: recurringIncome.dashboardId || null
       };
       
       await this.addIncome(newIncome);
