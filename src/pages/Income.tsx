@@ -86,7 +86,7 @@ const Income = () => {
           {isNonRecurringLoading ? (
             <div className="text-center py-8">Chargement des revenus...</div>
           ) : filteredNonRecurringIncomes.length === 0 ? (
-            <IncomeEmptyState onAddClick={() => setAddNonRecurringDialogOpen(true)} />
+            <IncomeEmptyState />
           ) : (
             <IncomeGrid
               incomes={filteredNonRecurringIncomes}
@@ -151,3 +151,4 @@ const Income = () => {
 };
 
 export default Income;
+
