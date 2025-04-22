@@ -1,4 +1,3 @@
-
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ExpensesHeader } from "@/components/budget/ExpensesHeader";
 import { useExpenseManagement } from "@/hooks/useExpenseManagement";
@@ -9,6 +8,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PontualExpensesTab } from "@/components/expense/PontualExpensesTab";
 import { RecurringExpensesTab } from "@/components/expense/RecurringExpensesTab";
 import { ProcessingIndicator } from "@/components/expense/ProcessingIndicator";
+import { Button } from "@/components/ui/button";
+import { PlusCircle } from "lucide-react";
 
 const Expenses = () => {
   const navigate = useNavigate();
@@ -70,6 +71,18 @@ const Expenses = () => {
         </TabsList>
 
         <TabsContent value="ponctuel" className="mt-4">
+          <div className="text-center mb-4">
+            <Button 
+              onClick={() => setAddDialogOpen(true)} 
+              variant="outline" 
+              size="lg" 
+              className="mx-auto flex items-center"
+            >
+              <PlusCircle className="mr-2 h-5 w-5" />
+              Ajouter une dépense
+            </Button>
+          </div>
+
           <PontualExpensesTab
             isLoading={isLoading}
             error={error}

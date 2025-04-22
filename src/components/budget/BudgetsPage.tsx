@@ -1,4 +1,3 @@
-
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { BudgetsHeader } from "@/components/budget/BudgetsHeader";
@@ -12,7 +11,7 @@ import { toast } from "@/components/ui/use-toast";
 import { useBudgetInitialization } from "@/hooks/useBudgetInitialization";
 import { useBudgetInteractions } from "@/hooks/useBudgetInteractions";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, RefreshCw } from "lucide-react";
+import { AlertCircle, RefreshCw, PlusCircle } from "lucide-react";
 
 const BudgetsPage = () => {
   const navigate = useNavigate();
@@ -52,7 +51,6 @@ const BudgetsPage = () => {
     handleDeleteConfirm
   } = useBudgetInteractions(navigate);
 
-  // Afficher un message de diagnostic si l'initialisation échoue
   useEffect(() => {
     console.log("BudgetsPage: initialization status changed:", initializationSuccess);
     if (initializationSuccess === false) {
@@ -60,7 +58,6 @@ const BudgetsPage = () => {
     }
   }, [initializationSuccess]);
 
-  // Réessayer l'initialisation si elle échoue
   useEffect(() => {
     if (initializationSuccess === false && retryCount < 2) {
       console.log(`Auto-retry initialization (${retryCount + 1}/2)...`);
@@ -73,19 +70,16 @@ const BudgetsPage = () => {
     }
   }, [initializationSuccess, retryCount, initializeDatabase]);
 
-  // Fonction pour forcer une réinitialisation complète
   const handleForceReset = async () => {
     setRetryCount(0);
-    localStorage.clear(); // Effacer toutes les données du localStorage
+    localStorage.clear();
     await handleManualRefresh();
   };
 
-  // Afficher l'état de chargement tant que nous chargeons ou que nous n'avons pas encore essayé d'initialiser
   if (isLoading || initializationSuccess === null || isRefreshing) {
     return <BudgetLoadingState attempt={attempt} maxAttempts={maxAttempts} />;
   }
 
-  // Afficher l'état d'erreur si l'initialisation a échoué ou s'il y a une erreur
   if (error || initializationSuccess === false) {
     return (
       <div className="container mx-auto px-4 py-6 space-y-6">
@@ -119,7 +113,17 @@ const BudgetsPage = () => {
     <div className="container mx-auto px-4 py-6 space-y-6">
       <BudgetsHeader onNavigate={navigate} />
 
-      <RemainingAmountAlert remainingAmount={remainingAmount} />
+      <div className="text-center">
+        <Button 
+          onClick={() => setAddDialogOpen(true)} 
+          variant="outline" 
+          size="lg" 
+          className="mx-auto flex items-center"
+        >
+          <PlusCircle className="mr-2 h-5 w-5" />
+          Ajouter un budget
+        </Button>
+      </div>
 
       {budgets.length === 0 ? (
         <EmptyBudgetState />
