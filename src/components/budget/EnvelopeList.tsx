@@ -1,59 +1,37 @@
 
+import React from 'react';
 import { EnvelopeListHeader } from "./EnvelopeListHeader";
-import { ExpenseTable } from "./ExpenseTable";
 import { EnvelopeGrid } from "./EnvelopeGrid";
-
-interface Envelope {
-  id: string;
-  title: string;
-  budget: number;
-  spent: number;
-  type: "income" | "expense" | "budget";
-  linkedBudgetId?: string;
-  date?: string;
-}
+import { Budget } from "@/hooks/useBudgets";
 
 interface EnvelopeListProps {
-  envelopes: Envelope[];
+  envelopes: Budget[];
   type: "income" | "expense" | "budget";
   onAddClick: () => void;
-  onEnvelopeClick: (envelope: Envelope) => void;
-  onDeleteClick?: (envelope: Envelope) => void;
-  onViewExpenses?: (envelope: Envelope) => void;
-  onDeleteEnvelope?: (id: string) => void;
-  availableBudgets?: Array<{ id: string; title: string }>;
+  onEnvelopeClick: (envelope: Budget) => void;
+  onViewExpenses?: (envelope: Budget) => void;
+  onDeleteClick?: (envelope: Budget) => void;
 }
 
-export const EnvelopeList = ({ 
-  envelopes, 
-  type, 
-  onAddClick, 
+export const EnvelopeList: React.FC<EnvelopeListProps> = ({
+  envelopes,
+  type,
+  onAddClick,
   onEnvelopeClick,
-  onDeleteClick,
   onViewExpenses,
-  onDeleteEnvelope,
-  availableBudgets = []
-}: EnvelopeListProps) => {
-  const filteredEnvelopes = envelopes.filter((env) => env.type === type);
-
+  onDeleteClick
+}) => {
   return (
     <div className="space-y-4">
       <EnvelopeListHeader type={type} onAddClick={onAddClick} />
-      
-      {type === "expense" ? (
-        <ExpenseTable 
-          expenses={filteredEnvelopes}
-          onEnvelopeClick={onEnvelopeClick}
-          availableBudgets={availableBudgets}
-        />
-      ) : (
-        <EnvelopeGrid 
-          envelopes={filteredEnvelopes}
-          onEnvelopeClick={onEnvelopeClick}
-          onViewExpenses={onViewExpenses}
-          onDeleteEnvelope={onDeleteEnvelope}
-        />
-      )}
+      <EnvelopeGrid
+        envelopes={envelopes}
+        type={type}
+        onEnvelopeClick={onEnvelopeClick}
+        onViewExpenses={onViewExpenses}
+        onDeleteClick={onDeleteClick}
+      />
     </div>
   );
 };
+

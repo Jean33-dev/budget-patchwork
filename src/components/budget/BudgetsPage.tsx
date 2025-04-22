@@ -1,3 +1,4 @@
+
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { BudgetsHeader } from "@/components/budget/BudgetsHeader";
@@ -12,7 +13,6 @@ import { useBudgetInitialization } from "@/hooks/useBudgetInitialization";
 import { useBudgetInteractions } from "@/hooks/useBudgetInteractions";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, RefreshCw, PlusCircle } from "lucide-react";
-import { AddButton } from "@/components/budget/AddButton";
 
 const BudgetsPage = () => {
   const navigate = useNavigate();
@@ -114,11 +114,6 @@ const BudgetsPage = () => {
     <div className="container mx-auto px-4 py-6 space-y-6">
       <BudgetsHeader onNavigate={navigate} />
 
-      <AddButton 
-        onClick={() => setAddDialogOpen(true)}
-        label="Ajouter un budget"
-      />
-
       {budgets.length === 0 ? (
         <EmptyBudgetState />
       ) : (
@@ -154,3 +149,4 @@ const BudgetsPage = () => {
 };
 
 export default BudgetsPage;
+
