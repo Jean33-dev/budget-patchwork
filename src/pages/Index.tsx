@@ -10,7 +10,7 @@ interface Envelope {
   title: string;
   budget: number;
   spent: number;
-  type: "income" | "expense" | "budget";
+  type: "income" | "expense";
   category?: string;
   date: string;
 }
@@ -109,9 +109,6 @@ const Index = () => {
     setAddDialogOpen(true);
   };
 
-  const incomeEnvelopes = envelopes.filter((env) => env.type === "income");
-  const expenseEnvelopes = envelopes.filter((env) => env.type === "expense");
-
   return (
     <div className="container mx-auto py-8 space-y-8">
       <h1 className="text-4xl font-bold">Tableau de Bord Budget</h1>
@@ -124,14 +121,14 @@ const Index = () => {
       
       <div className="space-y-8">
         <EnvelopeList
-          envelopes={incomeEnvelopes}
+          envelopes={envelopes}
           type="income"
           onAddClick={() => handleAddClick("income")}
           onEnvelopeClick={handleEnvelopeClick}
         />
         
         <EnvelopeList
-          envelopes={expenseEnvelopes}
+          envelopes={envelopes}
           type="expense"
           onAddClick={() => handleAddClick("expense")}
           onEnvelopeClick={handleEnvelopeClick}

@@ -1,48 +1,59 @@
 
-import React from 'react';
 import { EnvelopeListHeader } from "./EnvelopeListHeader";
+import { ExpenseTable } from "./ExpenseTable";
 import { EnvelopeGrid } from "./EnvelopeGrid";
 
-// Creating a more generic type that works for both Envelope and Budget
-interface EnvelopeItem {
+interface Envelope {
   id: string;
   title: string;
   budget: number;
   spent: number;
   type: "income" | "expense" | "budget";
-  category?: string;
+  linkedBudgetId?: string;
   date?: string;
-  carriedOver?: number;
-  dashboardId?: string;
 }
 
 interface EnvelopeListProps {
-  envelopes: EnvelopeItem[];
+  envelopes: Envelope[];
   type: "income" | "expense" | "budget";
   onAddClick: () => void;
-  onEnvelopeClick: (envelope: EnvelopeItem) => void;
-  onViewExpenses?: (envelope: EnvelopeItem) => void;
-  onDeleteClick?: (envelope: EnvelopeItem) => void;
+  onEnvelopeClick: (envelope: Envelope) => void;
+  onDeleteClick?: (envelope: Envelope) => void;
+  onViewExpenses?: (envelope: Envelope) => void;
+  onDeleteEnvelope?: (id: string) => void;
+  availableBudgets?: Array<{ id: string; title: string }>;
 }
 
-export const EnvelopeList: React.FC<EnvelopeListProps> = ({
-  envelopes,
-  type,
-  onAddClick,
+export const EnvelopeList = ({ 
+  envelopes, 
+  type, 
+  onAddClick, 
   onEnvelopeClick,
+  onDeleteClick,
   onViewExpenses,
-  onDeleteClick
-}) => {
+  onDeleteEnvelope,
+  availableBudgets = []
+}: EnvelopeListProps) => {
+  const filteredEnvelopes = envelopes.filter((env) => env.type === type);
+
   return (
     <div className="space-y-4">
       <EnvelopeListHeader type={type} onAddClick={onAddClick} />
-      <EnvelopeGrid
-        envelopes={envelopes}
-        type={type}
-        onEnvelopeClick={onEnvelopeClick}
-        onViewExpenses={onViewExpenses}
-        onDeleteClick={onDeleteClick}
-      />
+      
+      {type === "expense" ? (
+        <ExpenseTable 
+          expenses={filteredEnvelopes}
+          onEnvelopeClick={onEnvelopeClick}
+          availableBudgets={availableBudgets}
+        />
+      ) : (
+        <EnvelopeGrid 
+          envelopes={filteredEnvelopes}
+          onEnvelopeClick={onEnvelopeClick}
+          onViewExpenses={onViewExpenses}
+          onDeleteEnvelope={onDeleteEnvelope}
+        />
+      )}
     </div>
   );
 };
