@@ -31,18 +31,7 @@ const RecurringIncome = () => {
         onAdd={() => setAddDialogOpen(true)}
       />
 
-      {isLoading ? (
-        <div className="text-center py-8">Chargement des revenus récurrents...</div>
-      ) : recurringIncomes.length === 0 ? (
-        <RecurringIncomeEmptyState onAddClick={() => setAddDialogOpen(true)} />
-      ) : (
-        <RecurringIncomeGrid 
-          incomes={recurringIncomes}
-          onDelete={handleDeleteIncome}
-          onIncomeClick={handleIncomeClick}
-        />
-      )}
-
+      {/* Garder uniquement ce bouton en haut */}
       <AddEnvelopeDialog
         type="income"
         open={addDialogOpen}
@@ -57,6 +46,18 @@ const RecurringIncome = () => {
         setSelectedIncome={setSelectedIncome}
         onEditIncome={handleEditIncome}
       />
+
+      {isLoading ? (
+        <div className="text-center py-8">Chargement des revenus récurrents...</div>
+      ) : recurringIncomes.length === 0 ? (
+        <RecurringIncomeEmptyState onAddClick={() => setAddDialogOpen(true)} />
+      ) : (
+        <RecurringIncomeGrid 
+          incomes={recurringIncomes}
+          onDelete={handleDeleteIncome}
+          onIncomeClick={handleIncomeClick}
+        />
+      )}
     </div>
   );
 };

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useRecurringExpenses } from "@/hooks/useRecurringExpenses";
 import { AddEnvelopeDialog } from "@/components/budget/AddEnvelopeDialog";
@@ -58,6 +59,7 @@ const RecurringExpenses = () => {
         onAdd={openAddDialog}
       />
 
+      {/* Garder uniquement ce bouton en haut */}
       <AddButton 
         onClick={openAddDialog} 
         label="Ajouter une dépense récurrente" 
