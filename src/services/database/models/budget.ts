@@ -6,5 +6,5 @@ export interface Budget {
   spent: number;
   type: 'budget';
   carriedOver?: number;
-  dashboardId?: string;
+  dashboardId: string; // Maintenant obligatoire
 }

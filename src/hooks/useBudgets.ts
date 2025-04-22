@@ -1,8 +1,9 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useBudgetData } from "./useBudgetData";
 import { budgetOperations } from "@/utils/budget-operations";
 import { Budget } from "@/types/categories";
+import { useDashboardContext } from "./useDashboardContext";
 
 export type { Budget };
 
@@ -17,6 +18,14 @@ export const useBudgets = () => {
   } = useBudgetData();
   
   const [localBudgets, setLocalBudgets] = useState<Budget[]>([]);
+  const { currentDashboardId } = useDashboardContext();
+
+  // Stocker le dashboardId courant dans localStorage pour accès global
+  useEffect(() => {
+    if (currentDashboardId) {
+      localStorage.setItem('currentDashboardId', currentDashboardId);
+    }
+  }, [currentDashboardId]);
 
   // Update local state whenever the fetched budgets change
   if (budgets !== localBudgets && budgets.length > 0) {
@@ -24,7 +33,8 @@ export const useBudgets = () => {
   }
 
   const addBudget = async (newBudget: Omit<Budget, "id" | "spent">) => {
-    const success = await budgetOperations.addBudget(newBudget);
+    console.log("useBudgets - Adding budget with dashboardId:", currentDashboardId);
+    const success = await budgetOperations.addBudget(newBudget, currentDashboardId);
     if (success) {
       // Refresh data to include the new budget
       await loadData();
@@ -33,11 +43,17 @@ export const useBudgets = () => {
   };
 
   const updateBudget = async (budget: Budget) => {
-    const success = await budgetOperations.updateBudget(budget);
+    // S'assurer que le dashboardId est présent
+    const budgetWithDashboard = {
+      ...budget,
+      dashboardId: budget.dashboardId || currentDashboardId
+    };
+    
+    const success = await budgetOperations.updateBudget(budgetWithDashboard);
     if (success) {
       // Update local state immediately for better UX
       setLocalBudgets(prevBudgets => 
-        prevBudgets.map(b => b.id === budget.id ? budget : b)
+        prevBudgets.map(b => b.id === budget.id ? budgetWithDashboard : b)
       );
       
       // Also refresh data to ensure consistency
@@ -72,6 +88,7 @@ export const useBudgets = () => {
     addBudget,
     updateBudget,
     deleteBudget,
-    refreshData: loadData
+    refreshData: loadData,
+    dashboardId: currentDashboardId
   };
 };
