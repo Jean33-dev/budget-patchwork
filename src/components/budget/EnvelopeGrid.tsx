@@ -3,7 +3,8 @@ import { EnvelopeCard } from "./EnvelopeCard";
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
 
-interface Envelope {
+// Creating a more generic type that works for both Envelope and Budget
+interface EnvelopeItem {
   id: string;
   title: string;
   budget: number;
@@ -14,11 +15,11 @@ interface Envelope {
 }
 
 interface EnvelopeGridProps {
-  envelopes: Envelope[];
+  envelopes: EnvelopeItem[];
   type: "income" | "expense" | "budget";
-  onEnvelopeClick: (envelope: Envelope) => void;
-  onViewExpenses?: (envelope: Envelope) => void;
-  onDeleteClick?: (envelope: Envelope) => void;
+  onEnvelopeClick: (envelope: EnvelopeItem) => void;
+  onViewExpenses?: (envelope: EnvelopeItem) => void;
+  onDeleteClick?: (envelope: EnvelopeItem) => void;
 }
 
 export const EnvelopeGrid = ({
