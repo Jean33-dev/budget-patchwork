@@ -1,14 +1,15 @@
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useBudgetInteractions } from '@/hooks/useBudgetInteractions';
 import { BudgetsHeader } from './BudgetsHeader';
 import { EnvelopeManager } from '@/components/dashboard/EnvelopeManager';
 import { AddEnvelopeDialog } from './AddEnvelopeDialog';
-import { AddButton } from './AddButton';
-import { Button } from '../ui/button';
 import { BudgetDialogs } from './BudgetDialogs';
 
 const BudgetsPage = () => {
+  const navigate = useNavigate();
+  
   const {
     budgets,
     remainingAmount,
@@ -30,11 +31,11 @@ const BudgetsPage = () => {
     handleAddEnvelope,
     handleDeleteClick,
     handleDeleteConfirm
-  } = useBudgetInteractions();
+  } = useBudgetInteractions(navigate);
 
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
-      <BudgetsHeader />
+      <BudgetsHeader onNavigate={navigate} />
 
       <EnvelopeManager 
         envelopes={budgets} 
@@ -52,20 +53,21 @@ const BudgetsPage = () => {
       />
 
       <BudgetDialogs 
-        budgets={budgets}
-        selectedBudget={selectedBudget}
+        addDialogOpen={addDialogOpen}
+        setAddDialogOpen={setAddDialogOpen}
         editDialogOpen={editDialogOpen}
         setEditDialogOpen={setEditDialogOpen}
         deleteDialogOpen={deleteDialogOpen}
         setDeleteDialogOpen={setDeleteDialogOpen}
+        selectedBudget={selectedBudget}
         editTitle={editTitle}
         setEditTitle={setEditTitle}
         editBudget={editBudget}
         setEditBudget={setEditBudget}
         hasLinkedExpenses={hasLinkedExpenses}
+        handleAddEnvelope={handleAddEnvelope}
         handleEditSubmit={handleEditSubmit}
         handleDeleteConfirm={handleDeleteConfirm}
-        handleViewExpenses={handleViewExpenses}
       />
     </div>
   );
