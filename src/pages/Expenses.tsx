@@ -1,3 +1,4 @@
+
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ExpensesHeader } from "@/components/budget/ExpensesHeader";
 import { useExpenseManagement } from "@/hooks/useExpenseManagement";
@@ -8,8 +9,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PontualExpensesTab } from "@/components/expense/PontualExpensesTab";
 import { RecurringExpensesTab } from "@/components/expense/RecurringExpensesTab";
 import { ProcessingIndicator } from "@/components/expense/ProcessingIndicator";
-import { Button } from "@/components/ui/button";
-import { PlusCircle } from "lucide-react";
 import { AddButton } from "@/components/budget/AddButton";
 
 const Expenses = () => {
