@@ -10,6 +10,7 @@ import { RecurringExpensesTab } from "@/components/expense/RecurringExpensesTab"
 import { ProcessingIndicator } from "@/components/expense/ProcessingIndicator";
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
+import { AddButton } from "@/components/budget/AddButton";
 
 const Expenses = () => {
   const navigate = useNavigate();
@@ -71,17 +72,10 @@ const Expenses = () => {
         </TabsList>
 
         <TabsContent value="ponctuel" className="mt-4">
-          <div className="text-center mb-4">
-            <Button 
-              onClick={() => setAddDialogOpen(true)} 
-              variant="outline" 
-              size="lg" 
-              className="mx-auto flex items-center"
-            >
-              <PlusCircle className="mr-2 h-5 w-5" />
-              Ajouter une dépense
-            </Button>
-          </div>
+          <AddButton 
+            onClick={() => setAddDialogOpen(true)}
+            label="Ajouter une dépense"
+          />
 
           <PontualExpensesTab
             isLoading={isLoading}
