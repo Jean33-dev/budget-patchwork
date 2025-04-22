@@ -12,4 +12,3 @@ export const IncomeEmptyState = ({ onAddClick }: IncomeEmptyStateProps) => {
     </div>
   );
 };
-
