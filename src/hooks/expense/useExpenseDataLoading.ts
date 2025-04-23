@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { db } from "@/services/database";
@@ -28,14 +27,21 @@ export const useExpenseDataLoading = (dashboardId: string | null) => {
       const loadedBudgets = await db.getBudgets();
       console.log(`🔍 useExpenseDataLoading - All budgets loaded from database (${loadedBudgets.length}):`, loadedBudgets);
       
-      // Filter budgets for the current dashboard
-      const filteredBudgets = useDashboardId === "budget" 
-        // Special handling for "budget" - show all budgets with no dashboardId or with default dashboardId
-        ? loadedBudgets.filter(b => !b.dashboardId || b.dashboardId === "default")
-        // Otherwise, show only budgets for the current dashboard
-        : loadedBudgets.filter(b => b.dashboardId === useDashboardId);
+      // Filter budgets for the current dashboard - IMPROVED FILTERING LOGIC
+      let filteredBudgets;
       
-      console.log(`🔍 useExpenseDataLoading - Filtered budgets for dashboard ${useDashboardId}:`, filteredBudgets);
+      if (useDashboardId === "budget") {
+        // For "budget" route, include all budgets regardless of dashboardId
+        // This ensures all budgets are available when on the budget route
+        filteredBudgets = loadedBudgets;
+        console.log(`🔍 useExpenseDataLoading - On budget route: including ALL ${filteredBudgets.length} budgets`);
+      } else {
+        // Otherwise, show only budgets for the current dashboard
+        filteredBudgets = loadedBudgets.filter(b => b.dashboardId === useDashboardId);
+        console.log(`🔍 useExpenseDataLoading - Filtered ${filteredBudgets.length} budgets for dashboard ${useDashboardId}`);
+      }
+      
+      console.log(`🔍 useExpenseDataLoading - Final filtered budgets:`, filteredBudgets);
       setAvailableBudgets(filteredBudgets);
       
       // Load expenses
