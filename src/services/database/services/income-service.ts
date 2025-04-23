@@ -1,3 +1,4 @@
+
 import { Income } from '../models/income';
 import { BaseService } from './base-service';
 import { toast } from "@/components/ui/use-toast";
@@ -17,6 +18,10 @@ export class IncomeService extends BaseService {
       const adapter = this.initManager.getAdapter();
       const results = await adapter!.query("SELECT * FROM incomes");
       
+      // Log all dashboard IDs found in the income records
+      const dashboardIds = results.map(row => row.dashboardId || 'null').join(', ');
+      console.log(`IncomeService.getIncomes: Found dashboardIds: [${dashboardIds}]`);
+      
       return results.map(row => ({
         id: row.id,
         title: row.title,
@@ -25,7 +30,7 @@ export class IncomeService extends BaseService {
         type: 'income' as const,
         date: row.date,
         isRecurring: Boolean(row.isRecurring),
-        dashboardId: row.dashboardId || null
+        dashboardId: row.dashboardId ? String(row.dashboardId) : null
       }));
     } catch (error) {
       console.error("Erreur lors de la récupération des revenus:", error);
@@ -51,7 +56,7 @@ export class IncomeService extends BaseService {
         type: 'income' as const,
         date: row.date,
         isRecurring: true,
-        dashboardId: row.dashboardId || null
+        dashboardId: row.dashboardId ? String(row.dashboardId) : null
       }));
     } catch (error) {
       console.error("Erreur lors de la récupération des revenus récurrents:", error);
@@ -65,12 +70,17 @@ export class IncomeService extends BaseService {
   async addIncome(income: Income): Promise<void> {
     if (!await this.ensureInitialized()) return;
     
+    const dashboardId = income.dashboardId ? String(income.dashboardId) : null;
+    console.log(`IncomeService.addIncome: Adding income with dashboardId: ${dashboardId}`);
+    
     const adapter = this.initManager.getAdapter();
     const idToUse = income.id || uuidv4();
     await adapter!.run(
       'INSERT INTO incomes (id, title, budget, spent, type, date, isRecurring, dashboardId) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-      [idToUse, income.title, income.budget, income.spent, income.type, income.date, income.isRecurring ? 1 : 0, income.dashboardId || null]
+      [idToUse, income.title, income.budget, income.spent, income.type, income.date, income.isRecurring ? 1 : 0, dashboardId]
     );
+    
+    console.log(`IncomeService.addIncome: Income added with dashboardId: ${dashboardId}`);
   }
 
   /**
@@ -79,11 +89,16 @@ export class IncomeService extends BaseService {
   async updateIncome(income: Income): Promise<void> {
     if (!await this.ensureInitialized()) return;
     
+    const dashboardId = income.dashboardId ? String(income.dashboardId) : null;
+    console.log(`IncomeService.updateIncome: Updating income with dashboardId: ${dashboardId}`);
+    
     const adapter = this.initManager.getAdapter();
     await adapter!.run(
       'UPDATE incomes SET title = ?, budget = ?, spent = ?, isRecurring = ?, dashboardId = ? WHERE id = ?',
-      [income.title, income.budget, income.spent, income.isRecurring ? 1 : 0, income.dashboardId || null, income.id]
+      [income.title, income.budget, income.spent, income.isRecurring ? 1 : 0, dashboardId, income.id]
     );
+    
+    console.log(`IncomeService.updateIncome: Income updated with dashboardId: ${dashboardId}`);
   }
 
   /**
@@ -113,14 +128,14 @@ export class IncomeService extends BaseService {
       
       // Create a new income based on the recurring one
       const newIncome: Income = {
-        id: `${recurringIncome.id}_copy_${Date.now()}`,
+        id: uuidv4(), // Utiliser UUID pour garantir l'unicité
         title: recurringIncome.title,
         budget: recurringIncome.budget,
         spent: recurringIncome.budget, // Set spent to budget for income
         type: 'income',
         date: targetDate,
         isRecurring: false, // The copy is not recurring
-        dashboardId: recurringIncome.dashboardId || null
+        dashboardId: recurringIncome.dashboardId // Conserver le même dashboardId
       };
       
       await this.addIncome(newIncome);

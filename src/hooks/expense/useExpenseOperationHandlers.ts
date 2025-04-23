@@ -138,6 +138,11 @@ export const useExpenseOperationHandlers = (
         dashboardId: expense.dashboardId || dashboardId
       };
       
+      // Log the expense before and after modification
+      console.log("Original expense dashboardId:", expense.dashboardId);
+      console.log("Current context dashboardId:", dashboardId);
+      console.log("Final expense with dashboardId:", expenseWithDashboard.dashboardId);
+      
       const success = await expenseOperations.updateExpense(expenseWithDashboard);
       
       if (success) {

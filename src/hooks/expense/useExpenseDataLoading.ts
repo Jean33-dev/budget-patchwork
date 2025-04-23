@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { db } from "@/services/database";
@@ -37,7 +38,10 @@ export const useExpenseDataLoading = (dashboardId: string | null) => {
       } else {
         // Otherwise, show ONLY budgets for the current dashboard
         // Using strict equality for proper filtering
-        filteredBudgets = loadedBudgets.filter(b => b.dashboardId === useDashboardId);
+        filteredBudgets = loadedBudgets.filter(b => {
+          console.log(`🔍 Comparing budget dashboardId "${b.dashboardId}" with current "${useDashboardId}": ${b.dashboardId === useDashboardId}`);
+          return b.dashboardId === useDashboardId;
+        });
         console.log(`🔍 useExpenseDataLoading - Filtered ${filteredBudgets.length} budgets for dashboard ${useDashboardId}`);
       }
       
@@ -57,16 +61,18 @@ export const useExpenseDataLoading = (dashboardId: string | null) => {
       let filteredExpenses;
       
       if (useDashboardId === "budget") {
-        // For "budget" route, show only expenses with budget dashboardId
-        filteredExpenses = nonRecurringExpenses.filter(expense => 
-          expense.dashboardId === "budget"
-        );
+        // Pour la route "budget", montrer uniquement les dépenses avec dashboardId "budget"
+        filteredExpenses = nonRecurringExpenses.filter(expense => {
+          console.log(`🔍 Comparing expense dashboardId "${expense.dashboardId}" with "budget": ${expense.dashboardId === "budget"}`);
+          return expense.dashboardId === "budget";
+        });
         console.log(`🔍 useExpenseDataLoading - Filtered budget expenses: ${filteredExpenses.length}`);
       } else {
-        // For other dashboards, show ONLY expenses for that specific dashboard
-        filteredExpenses = nonRecurringExpenses.filter(expense => 
-          expense.dashboardId === useDashboardId
-        );
+        // Pour les autres dashboards, montrer UNIQUEMENT les dépenses pour ce dashboard spécifique
+        filteredExpenses = nonRecurringExpenses.filter(expense => {
+          console.log(`🔍 Comparing expense dashboardId "${expense.dashboardId}" with current "${useDashboardId}": ${expense.dashboardId === useDashboardId}`);
+          return expense.dashboardId === useDashboardId;
+        });
         console.log(`🔍 useExpenseDataLoading - Filtered dashboard expenses: ${filteredExpenses.length} for ${useDashboardId}`);
       }
       

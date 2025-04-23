@@ -33,11 +33,14 @@ export const useIncomeManagement = () => {
         console.log("useIncomeManagement - Current dashboardId:", currentDashboardId);
         
         // Filter incomes for the current dashboard
-        const filteredIncomes = allIncomes.filter(income => 
-          currentDashboardId === "budget" 
-            ? income.dashboardId === "budget"
-            : income.dashboardId === currentDashboardId
-        );
+        const filteredIncomes = allIncomes.filter(income => {
+          console.log(`🔍 Comparing income dashboardId "${income.dashboardId}" with current "${currentDashboardId}": ${income.dashboardId === currentDashboardId}`);
+          
+          if (currentDashboardId === "budget") {
+            return income.dashboardId === "budget";
+          }
+          return income.dashboardId === currentDashboardId;
+        });
         
         console.log("useIncomeManagement - Filtered incomes:", filteredIncomes);
         setEnvelopes(filteredIncomes);
@@ -62,7 +65,7 @@ export const useIncomeManagement = () => {
       ...newIncome,
       spent: newIncome.budget,
       isRecurring: false,
-      dashboardId: currentDashboardId // Always add the current dashboard ID
+      dashboardId: currentDashboardId // Toujours ajouter le dashboard ID actuel
     };
     
     console.log("useIncomeManagement - Adding new income with dashboardId:", currentDashboardId);
@@ -84,7 +87,7 @@ export const useIncomeManagement = () => {
       budget: editedIncome.budget,
       spent: editedIncome.budget,
       date: editedIncome.date,
-      dashboardId: currentDashboardId // Ensure dashboard ID is preserved
+      dashboardId: currentDashboardId // S'assurer que le dashboard ID est préservé
     };
 
     await db.updateIncome(updatedIncome);

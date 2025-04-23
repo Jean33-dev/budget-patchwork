@@ -1,3 +1,4 @@
+
 import { Expense } from '../models/expense';
 import { BaseService } from './base-service';
 import { toast } from "@/components/ui/use-toast";
@@ -23,6 +24,10 @@ export class ExpenseService extends BaseService {
       const results = await adapter!.query("SELECT * FROM expenses");
       console.log(`ExpenseService.getExpenses: Got ${results.length} results`, results);
       
+      // Log all dashboard IDs found in the expense records
+      const dashboardIds = results.map(row => row.dashboardId || 'null').join(', ');
+      console.log(`ExpenseService.getExpenses: Found dashboardIds: [${dashboardIds}]`);
+      
       const expenses = results.map(row => ({
         id: row.id,
         title: row.title,
@@ -32,14 +37,17 @@ export class ExpenseService extends BaseService {
         linkedBudgetId: row.linkedBudgetId,
         date: row.date,
         isRecurring: Boolean(row.isRecurring),
-        dashboardId: row.dashboardId ? String(row.dashboardId) : "default"
+        dashboardId: row.dashboardId ? String(row.dashboardId) : null
       }));
       
       console.log(`ExpenseService.getExpenses: Mapped ${expenses.length} expense objects`);
       
-      // Loguer les dashboardIds pour débogage
-      const dashboardIds = new Set(expenses.map(e => e.dashboardId));
-      console.log(`ExpenseService.getExpenses: Found expenses with dashboardIds: ${Array.from(dashboardIds).join(', ')}`);
+      // Detailed logging for debugging
+      expenses.forEach((expense, idx) => {
+        if (idx < 5) { // Limit logging to first 5 for brevity
+          console.log(`ExpenseService.getExpenses: Expense ${idx+1} - ID: ${expense.id}, Title: ${expense.title}, DashboardId: ${expense.dashboardId}`);
+        }
+      });
       
       return expenses;
     } catch (error) {
@@ -81,7 +89,7 @@ export class ExpenseService extends BaseService {
   async addExpense(expense: Expense): Promise<void> {
     if (!await this.ensureInitialized()) return;
     
-    const dashboardId = expense.dashboardId ? String(expense.dashboardId) : "default";
+    const dashboardId = expense.dashboardId ? String(expense.dashboardId) : null;
     console.log(`ExpenseService.addExpense: Adding expense with dashboardId: ${dashboardId}`);
     
     const adapter = this.initManager.getAdapter();
@@ -89,6 +97,8 @@ export class ExpenseService extends BaseService {
       'INSERT INTO expenses (id, title, budget, spent, type, linkedBudgetId, date, isRecurring, dashboardId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
       [expense.id, expense.title, expense.budget, expense.spent, expense.type, expense.linkedBudgetId, expense.date, expense.isRecurring ? 1 : 0, dashboardId]
     );
+    
+    console.log(`ExpenseService.addExpense: Expense added with dashboardId: ${dashboardId}`);
   }
 
   /**
@@ -97,7 +107,7 @@ export class ExpenseService extends BaseService {
   async updateExpense(expense: Expense): Promise<void> {
     if (!await this.ensureInitialized()) return;
     
-    const dashboardId = expense.dashboardId ? String(expense.dashboardId) : "default";
+    const dashboardId = expense.dashboardId ? String(expense.dashboardId) : null;
     console.log(`ExpenseService.updateExpense: Updating expense with dashboardId: ${dashboardId}`);
     
     const adapter = this.initManager.getAdapter();
@@ -105,6 +115,8 @@ export class ExpenseService extends BaseService {
       'UPDATE expenses SET title = ?, budget = ?, spent = ?, linkedBudgetId = ?, date = ?, isRecurring = ?, dashboardId = ? WHERE id = ?',
       [expense.title, expense.budget, expense.spent, expense.linkedBudgetId, expense.date, expense.isRecurring ? 1 : 0, dashboardId, expense.id]
     );
+    
+    console.log(`ExpenseService.updateExpense: Expense updated with dashboardId: ${dashboardId}`);
   }
 
   /**
