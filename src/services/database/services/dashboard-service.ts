@@ -14,14 +14,20 @@ export class DashboardService extends BaseService {
       if (!await this.ensureInitialized()) return [];
       
       const adapter = this.initManager.getAdapter();
-      if (!adapter) {
-        console.error("Database adapter is not initialized");
-        return [];
-      }
+      console.log("DashboardService.getDashboards: Executing query...");
+      const results = await adapter!.query("SELECT * FROM dashboards");
       
-      console.log("DashboardService: Retrieving all dashboards...");
-      const results = await adapter.query("SELECT * FROM dashboards");
-      console.log("DashboardService: Found dashboards:", results);
+      console.log("DashboardService.getDashboards: Raw results:", results);
+      
+      // Log all dashboard details for debugging
+      results.forEach(row => {
+        console.log("DashboardService.getDashboards: Dashboard details:", {
+          id: row.id,
+          title: row.title,
+          createdAt: row.createdAt,
+          updatedAt: row.updatedAt
+        });
+      });
       
       return results.map(row => ({
         id: row.id,
@@ -46,20 +52,21 @@ export class DashboardService extends BaseService {
       if (!await this.ensureInitialized()) return null;
       
       const adapter = this.initManager.getAdapter();
-      if (!adapter) {
-        console.error("Database adapter is not initialized");
-        return null;
-      }
+      console.log(`DashboardService.getDashboardById: Recherche du dashboard ${id}`);
       
-      console.log(`DashboardService: Retrieving dashboard with ID ${id}...`);
-      const results = await adapter.query("SELECT * FROM dashboards WHERE id = ?", [id]);
+      const results = await adapter!.query("SELECT * FROM dashboards WHERE id = ?", [id]);
       
       if (results.length === 0) {
-        console.log(`DashboardService: No dashboard found with ID ${id}`);
+        console.log(`DashboardService.getDashboardById: Aucun dashboard trouvé avec l'ID ${id}`);
         return null;
       }
       
       const row = results[0];
+      console.log("DashboardService.getDashboardById: Dashboard trouvé:", {
+        id: row.id,
+        title: row.title
+      });
+      
       return {
         id: row.id,
         title: row.title,
@@ -70,7 +77,7 @@ export class DashboardService extends BaseService {
         color: row.color || ''
       };
     } catch (error) {
-      console.error(`Erreur lors de la récupération du tableau de bord avec l'ID ${id}:`, error);
+      console.error("Erreur lors de la récupération du tableau de bord:", error);
       return null;
     }
   }
