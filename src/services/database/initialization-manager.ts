@@ -43,9 +43,6 @@ export class InitializationManager {
         return false;
       }
       
-      // First clear all existing data
-      await this.clearAllData();
-      
       // Create tables
       console.log("Creating database tables...");
       
