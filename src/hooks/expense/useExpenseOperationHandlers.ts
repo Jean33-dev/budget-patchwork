@@ -43,13 +43,17 @@ export const useExpenseOperationHandlers = (
 
       console.log(`useExpenseOperationHandlers - Adding expense with linkedBudgetId: ${linkedBudgetId}`);
       
+      // Ensure the dashboardId is always set and correctly passed
+      const currentDashboardId = dashboardId || "default";
+      console.log("useExpenseOperationHandlers - Setting expense dashboardId to:", currentDashboardId);
+      
       const expenseData: ExpenseFormData = {
         title: envelope.title,
         budget: envelope.budget,
         type: "expense",
         linkedBudgetId: linkedBudgetId,
         date: envelope.date,
-        dashboardId: dashboardId || undefined
+        dashboardId: currentDashboardId
       };
 
       console.log("useExpenseOperationHandlers - Expense data to add:", expenseData);

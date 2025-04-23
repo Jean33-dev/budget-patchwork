@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
@@ -26,29 +25,22 @@ export const useRecurringExpenses = () => {
       console.log("🔍 useRecurringExpenses - All recurring expenses:", expenses);
       console.log("🔍 useRecurringExpenses - Current dashboardId:", currentDashboardId);
       
-      // Filtrer les dépenses récurrentes par dashboardId
+      // Strict filtering by dashboardId
       const filteredExpenses = expenses.filter(expense => {
-        // Si le dashboard actuel est "budget", montrer les dépenses sans dashboardId
-        // ou avec dashboardId "default" ou "budget"
         if (currentDashboardId === "budget") {
-          const shouldInclude = !expense.dashboardId || 
-                 expense.dashboardId === "default" || 
-                 expense.dashboardId === "budget";
-          console.log(`🔍 Recurring Expense ${expense.id} (${expense.title}) with dashboardId=${expense.dashboardId} on budget route: include=${shouldInclude}`);
-          return shouldInclude;
+          return expense.dashboardId === "budget";
         }
-        
-        // Pour les autres dashboards, ne montrer que les dépenses correspondantes
-        // ou les dépenses sans dashboardId si on est sur le dashboard par défaut
-        const shouldInclude = expense.dashboardId === currentDashboardId || 
-               (!expense.dashboardId && currentDashboardId === "default");
-        console.log(`🔍 Recurring Expense ${expense.id} (${expense.title}) with dashboardId=${expense.dashboardId} on dashboard ${currentDashboardId}: include=${shouldInclude}`);
-        return shouldInclude;
+        return expense.dashboardId === currentDashboardId;
       });
+      
+      // Filter budgets for the current dashboard
+      const filteredBudgets = currentDashboardId === "budget" 
+        ? budgets 
+        : budgets.filter(budget => budget.dashboardId === currentDashboardId);
       
       console.log("🔍 useRecurringExpenses - Filtered recurring expenses:", filteredExpenses);
       setRecurringExpenses(filteredExpenses);
-      setAvailableBudgets(budgets);
+      setAvailableBudgets(filteredBudgets);
     } catch (error) {
       console.error("🔍 Erreur lors du chargement des dépenses récurrentes:", error);
       toast({
@@ -83,17 +75,17 @@ export const useRecurringExpenses = () => {
         throw new Error("Le budget associé est obligatoire pour une dépense");
       }
       
-      const dashboardToUse = currentDashboardId === "budget" ? "default" : currentDashboardId;
-      console.log("useRecurringExpenses - Adding recurring expense with dashboardId:", dashboardToUse);
+      // Always use the current dashboard ID
+      console.log("useRecurringExpenses - Adding recurring expense with dashboardId:", currentDashboardId);
       
       const expense: Expense = {
-        id: uuidv4(), // Utiliser UUID pour garantir l'unicité
+        id: uuidv4(), 
         ...newExpense,
         type: "expense",
         spent: 0,
         isRecurring: true,
-        dashboardId: dashboardToUse,
-        linkedBudgetId: newExpense.linkedBudgetId // Ensure this is always set
+        dashboardId: currentDashboardId,
+        linkedBudgetId: newExpense.linkedBudgetId
       };
       
       await db.addExpense(expense);

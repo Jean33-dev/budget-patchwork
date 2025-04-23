@@ -27,16 +27,16 @@ export const useExpenseDataLoading = (dashboardId: string | null) => {
       const loadedBudgets = await db.getBudgets();
       console.log(`🔍 useExpenseDataLoading - All budgets loaded from database (${loadedBudgets.length}):`, loadedBudgets);
       
-      // Filter budgets for the current dashboard - IMPROVED FILTERING LOGIC
+      // Filter budgets for the current dashboard
       let filteredBudgets;
       
       if (useDashboardId === "budget") {
-        // For "budget" route, include all budgets regardless of dashboardId
-        // This ensures all budgets are available when on the budget route
+        // For "budget" route, include all budgets
         filteredBudgets = loadedBudgets;
         console.log(`🔍 useExpenseDataLoading - On budget route: including ALL ${filteredBudgets.length} budgets`);
       } else {
-        // Otherwise, show only budgets for the current dashboard
+        // Otherwise, show ONLY budgets for the current dashboard
+        // Using strict equality for proper filtering
         filteredBudgets = loadedBudgets.filter(b => b.dashboardId === useDashboardId);
         console.log(`🔍 useExpenseDataLoading - Filtered ${filteredBudgets.length} budgets for dashboard ${useDashboardId}`);
       }
@@ -53,30 +53,24 @@ export const useExpenseDataLoading = (dashboardId: string | null) => {
       const nonRecurringExpenses = loadedExpenses.filter(expense => !expense.isRecurring);
       console.log(`🔍 useExpenseDataLoading - Non-recurring expenses (${nonRecurringExpenses.length}):`, nonRecurringExpenses);
       
-      // Filter expenses for the current dashboard - STRICT EQUAL COMPARISON
+      // Filter expenses for the current dashboard - STRICT COMPARISON
       let filteredExpenses;
       
       if (useDashboardId === "budget") {
-        // For "budget" route, show expenses with no dashboardId, default dashboardId, or budget dashboardId
-        filteredExpenses = nonRecurringExpenses.filter(expense => {
-          const shouldInclude = !expense.dashboardId || 
-                      expense.dashboardId === "default" || 
-                      expense.dashboardId === "budget";
-          console.log(`🔍 Expense ${expense.id} (${expense.title}) with dashboardId=${expense.dashboardId} on budget route: include=${shouldInclude}`);
-          return shouldInclude;
-        });
+        // For "budget" route, show only expenses with budget dashboardId
+        filteredExpenses = nonRecurringExpenses.filter(expense => 
+          expense.dashboardId === "budget"
+        );
+        console.log(`🔍 useExpenseDataLoading - Filtered budget expenses: ${filteredExpenses.length}`);
       } else {
         // For other dashboards, show ONLY expenses for that specific dashboard
-        // USING STRICT EQUALITY for dashboard ID comparison
-        filteredExpenses = nonRecurringExpenses.filter(expense => {
-          // Utilisons une comparaison stricte pour le dashboardId
-          const exactMatch = expense.dashboardId === useDashboardId;
-          console.log(`🔍 Expense ${expense.id} (${expense.title}) with dashboardId=${expense.dashboardId} comparing with ${useDashboardId}: exactMatch=${exactMatch}`);
-          return exactMatch;
-        });
+        filteredExpenses = nonRecurringExpenses.filter(expense => 
+          expense.dashboardId === useDashboardId
+        );
+        console.log(`🔍 useExpenseDataLoading - Filtered dashboard expenses: ${filteredExpenses.length} for ${useDashboardId}`);
       }
       
-      console.log(`🔍 useExpenseDataLoading - Filtered expenses for dashboard ${useDashboardId} (${filteredExpenses.length}):`, filteredExpenses);
+      console.log(`🔍 useExpenseDataLoading - Final filtered expenses for dashboard ${useDashboardId} (${filteredExpenses.length}):`, filteredExpenses);
       setExpenses(filteredExpenses);
       
       setInitAttempted(true);
