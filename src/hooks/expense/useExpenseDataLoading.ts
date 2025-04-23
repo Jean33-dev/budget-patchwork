@@ -28,24 +28,17 @@ export const useExpenseDataLoading = (dashboardId: string | null) => {
       const loadedBudgets = await db.getBudgets();
       console.log(`🔍 useExpenseDataLoading - All budgets loaded from database (${loadedBudgets.length}):`, loadedBudgets);
       
-      // Filter budgets for the current dashboard
-      let filteredBudgets;
+      // Filter budgets strictly by dashboardId
+      const filteredBudgets = loadedBudgets.filter(budget => {
+        const budgetDashboardId = budget.dashboardId ? String(budget.dashboardId) : null;
+        const currentDashboardId = String(useDashboardId);
+        const match = budgetDashboardId === currentDashboardId;
+        
+        console.log(`🔍 Budget filter: "${budget.title}" (${budgetDashboardId}) vs current "${currentDashboardId}" = ${match}`);
+        return match;
+      });
       
-      if (useDashboardId === "budget") {
-        // For "budget" route, include all budgets
-        filteredBudgets = loadedBudgets;
-        console.log(`🔍 useExpenseDataLoading - On budget route: including ALL ${filteredBudgets.length} budgets`);
-      } else {
-        // Otherwise, show ONLY budgets for the current dashboard
-        // Using strict equality for proper filtering
-        filteredBudgets = loadedBudgets.filter(b => {
-          console.log(`🔍 Comparing budget dashboardId "${b.dashboardId}" with current "${useDashboardId}": ${b.dashboardId === useDashboardId}`);
-          return b.dashboardId === useDashboardId;
-        });
-        console.log(`🔍 useExpenseDataLoading - Filtered ${filteredBudgets.length} budgets for dashboard ${useDashboardId}`);
-      }
-      
-      console.log(`🔍 useExpenseDataLoading - Final filtered budgets:`, filteredBudgets);
+      console.log(`🔍 useExpenseDataLoading - Filtered ${filteredBudgets.length} budgets for dashboard ${useDashboardId}`);
       setAvailableBudgets(filteredBudgets);
       
       // Load expenses
@@ -57,26 +50,17 @@ export const useExpenseDataLoading = (dashboardId: string | null) => {
       const nonRecurringExpenses = loadedExpenses.filter(expense => !expense.isRecurring);
       console.log(`🔍 useExpenseDataLoading - Non-recurring expenses (${nonRecurringExpenses.length}):`, nonRecurringExpenses);
       
-      // Filter expenses for the current dashboard - STRICT COMPARISON
-      let filteredExpenses;
+      // Filter expenses strictly by dashboardId
+      const filteredExpenses = nonRecurringExpenses.filter(expense => {
+        const expenseDashboardId = expense.dashboardId ? String(expense.dashboardId) : null;
+        const currentDashboardId = String(useDashboardId);
+        const match = expenseDashboardId === currentDashboardId;
+        
+        console.log(`🔍 Expense filter: "${expense.title}" (${expenseDashboardId}) vs current "${currentDashboardId}" = ${match}`);
+        return match;
+      });
       
-      if (useDashboardId === "budget") {
-        // Pour la route "budget", montrer uniquement les dépenses avec dashboardId "budget"
-        filteredExpenses = nonRecurringExpenses.filter(expense => {
-          console.log(`🔍 Comparing expense dashboardId "${expense.dashboardId}" with "budget": ${expense.dashboardId === "budget"}`);
-          return expense.dashboardId === "budget";
-        });
-        console.log(`🔍 useExpenseDataLoading - Filtered budget expenses: ${filteredExpenses.length}`);
-      } else {
-        // Pour les autres dashboards, montrer UNIQUEMENT les dépenses pour ce dashboard spécifique
-        filteredExpenses = nonRecurringExpenses.filter(expense => {
-          console.log(`🔍 Comparing expense dashboardId "${expense.dashboardId}" with current "${useDashboardId}": ${expense.dashboardId === useDashboardId}`);
-          return expense.dashboardId === useDashboardId;
-        });
-        console.log(`🔍 useExpenseDataLoading - Filtered dashboard expenses: ${filteredExpenses.length} for ${useDashboardId}`);
-      }
-      
-      console.log(`🔍 useExpenseDataLoading - Final filtered expenses for dashboard ${useDashboardId} (${filteredExpenses.length}):`, filteredExpenses);
+      console.log(`🔍 useExpenseDataLoading - Final filtered expenses (${filteredExpenses.length}):`, filteredExpenses);
       setExpenses(filteredExpenses);
       
       setInitAttempted(true);

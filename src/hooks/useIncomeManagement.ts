@@ -32,14 +32,14 @@ export const useIncomeManagement = () => {
         console.log("useIncomeManagement - All incomes loaded:", allIncomes);
         console.log("useIncomeManagement - Current dashboardId:", currentDashboardId);
         
-        // Filter incomes for the current dashboard
+        // Filter incomes for the current dashboard with strict string comparison
         const filteredIncomes = allIncomes.filter(income => {
-          console.log(`🔍 Comparing income dashboardId "${income.dashboardId}" with current "${currentDashboardId}": ${income.dashboardId === currentDashboardId}`);
+          const incomeDashboardId = income.dashboardId ? String(income.dashboardId) : null;
+          const currentDashId = String(currentDashboardId);
+          const match = incomeDashboardId === currentDashId;
           
-          if (currentDashboardId === "budget") {
-            return income.dashboardId === "budget";
-          }
-          return income.dashboardId === currentDashboardId;
+          console.log(`🔍 Income filter: "${income.title}" (${incomeDashboardId}) vs current "${currentDashId}" = ${match}`);
+          return match;
         });
         
         console.log("useIncomeManagement - Filtered incomes:", filteredIncomes);
@@ -65,10 +65,10 @@ export const useIncomeManagement = () => {
       ...newIncome,
       spent: newIncome.budget,
       isRecurring: false,
-      dashboardId: currentDashboardId // Toujours ajouter le dashboard ID actuel
+      dashboardId: String(currentDashboardId) // Convertir en string
     };
     
-    console.log("useIncomeManagement - Adding new income with dashboardId:", currentDashboardId);
+    console.log("useIncomeManagement - Adding new income with dashboardId:", income.dashboardId);
     await db.addIncome(income);
     setEnvelopes(prev => [...prev, income]);
     
@@ -87,7 +87,7 @@ export const useIncomeManagement = () => {
       budget: editedIncome.budget,
       spent: editedIncome.budget,
       date: editedIncome.date,
-      dashboardId: currentDashboardId // S'assurer que le dashboard ID est préservé
+      dashboardId: String(currentDashboardId) // Convertir en string
     };
 
     await db.updateIncome(updatedIncome);

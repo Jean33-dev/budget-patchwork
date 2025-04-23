@@ -1,4 +1,3 @@
-
 import { Expense } from '../models/expense';
 import { BaseService } from './base-service';
 import { toast } from "@/components/ui/use-toast";
@@ -24,8 +23,8 @@ export class ExpenseService extends BaseService {
       const results = await adapter!.query("SELECT * FROM expenses");
       console.log(`ExpenseService.getExpenses: Got ${results.length} results`, results);
       
-      // Log all dashboard IDs found in the expense records
-      const dashboardIds = results.map(row => row.dashboardId || 'null').join(', ');
+      // Log all dashboard IDs found in the expense records for debugging
+      const dashboardIds = results.map(row => String(row.dashboardId || 'null')).join(', ');
       console.log(`ExpenseService.getExpenses: Found dashboardIds: [${dashboardIds}]`);
       
       const expenses = results.map(row => ({
@@ -45,7 +44,7 @@ export class ExpenseService extends BaseService {
       // Detailed logging for debugging
       expenses.forEach((expense, idx) => {
         if (idx < 5) { // Limit logging to first 5 for brevity
-          console.log(`ExpenseService.getExpenses: Expense ${idx+1} - ID: ${expense.id}, Title: ${expense.title}, DashboardId: ${expense.dashboardId}`);
+          console.log(`ExpenseService.getExpenses: Expense ${idx+1} - ID: ${expense.id}, Title: ${expense.title}, DashboardId: ${String(expense.dashboardId)}`);
         }
       });
       
@@ -90,7 +89,7 @@ export class ExpenseService extends BaseService {
     if (!await this.ensureInitialized()) return;
     
     const dashboardId = expense.dashboardId ? String(expense.dashboardId) : null;
-    console.log(`ExpenseService.addExpense: Adding expense with dashboardId: ${dashboardId}`);
+    console.log(`ExpenseService.addExpense: Adding expense "${expense.title}" with dashboardId: "${dashboardId}"`);
     
     const adapter = this.initManager.getAdapter();
     await adapter!.run(
@@ -98,7 +97,7 @@ export class ExpenseService extends BaseService {
       [expense.id, expense.title, expense.budget, expense.spent, expense.type, expense.linkedBudgetId, expense.date, expense.isRecurring ? 1 : 0, dashboardId]
     );
     
-    console.log(`ExpenseService.addExpense: Expense added with dashboardId: ${dashboardId}`);
+    console.log(`ExpenseService.addExpense: Expense "${expense.title}" added with dashboardId: "${dashboardId}"`);
   }
 
   /**
@@ -108,7 +107,7 @@ export class ExpenseService extends BaseService {
     if (!await this.ensureInitialized()) return;
     
     const dashboardId = expense.dashboardId ? String(expense.dashboardId) : null;
-    console.log(`ExpenseService.updateExpense: Updating expense with dashboardId: ${dashboardId}`);
+    console.log(`ExpenseService.updateExpense: Updating expense "${expense.title}" with dashboardId: "${dashboardId}"`);
     
     const adapter = this.initManager.getAdapter();
     await adapter!.run(
@@ -116,7 +115,7 @@ export class ExpenseService extends BaseService {
       [expense.title, expense.budget, expense.spent, expense.linkedBudgetId, expense.date, expense.isRecurring ? 1 : 0, dashboardId, expense.id]
     );
     
-    console.log(`ExpenseService.updateExpense: Expense updated with dashboardId: ${dashboardId}`);
+    console.log(`ExpenseService.updateExpense: Expense "${expense.title}" updated with dashboardId: "${dashboardId}"`);
   }
 
   /**
