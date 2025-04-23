@@ -12,6 +12,29 @@ export class InitializationManager {
   constructor(adapter: any) {
     this.db = adapter.db;
   }
+
+  async clearAllData(): Promise<boolean> {
+    try {
+      if (!this.db) {
+        console.error("Database connection is not available.");
+        return false;
+      }
+
+      // Delete all data from each table
+      console.log("Clearing all data from database...");
+      this.db.exec('DELETE FROM budgets');
+      this.db.exec('DELETE FROM categories');
+      this.db.exec('DELETE FROM expenses');
+      this.db.exec('DELETE FROM incomes');
+      this.db.exec('DELETE FROM dashboards');
+
+      console.log("All data cleared successfully");
+      return true;
+    } catch (error) {
+      console.error("Error clearing database data:", error);
+      return false;
+    }
+  }
   
   async createTables(): Promise<boolean> {
     try {
@@ -20,13 +43,16 @@ export class InitializationManager {
         return false;
       }
       
+      // First clear all existing data
+      await this.clearAllData();
+      
       // Create tables
       console.log("Creating database tables...");
       
       // Create the tables for budgets, expenses, incomes, and categories
       this.db.exec(budgetQueries.createTable);
       this.db.exec(categoryQueries.createTable);
-      this.db.exec(expenseQueries.createTable); // Changed from create() to exec(createTable)
+      this.db.exec(expenseQueries.createTable);
       this.db.exec(incomeQueries.createTable);
       
       // Create dashboard table
@@ -41,13 +67,7 @@ export class InitializationManager {
   }
   
   async checkAndAddSampleData(): Promise<boolean> {
-    try {
-      // Sample implementation for adding sample data if needed
-      console.log("Checking if sample data needs to be added...");
-      return true;
-    } catch (error) {
-      console.error("Error adding sample data:", error);
-      return false;
-    }
+    // Remove sample data initialization to start with empty database
+    return true;
   }
 }
