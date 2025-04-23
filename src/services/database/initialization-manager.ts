@@ -64,7 +64,7 @@ export class InitializationManager {
   }
   
   async checkAndAddSampleData(): Promise<boolean> {
-    // Remove sample data initialization to start with empty database
+    // Remove sample data initialization completely
     return true;
   }
 }
