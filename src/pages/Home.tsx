@@ -13,50 +13,9 @@ import { v4 as uuidv4 } from 'uuid';
 const Home = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [dashboardTitle, setDashboardTitle] = useState("Budget Personnel");
   const [isLoading, setIsLoading] = useState(true);
   const [dashboards, setDashboards] = useState<Array<{id: string, title: string}>>([]);
-
-  // Charger le titre du dashboard principal
-  useEffect(() => {
-    const loadDashboardTitle = async () => {
-      try {
-        await db.init();
-        const budgets = await db.getBudgets();
-        const dashboardTitleBudget = budgets.find(b => b.id === "dashboard_title");
-        
-        if (dashboardTitleBudget) {
-          setDashboardTitle(dashboardTitleBudget.title);
-        } else {
-          const defaultTitle = localStorage.getItem("dashboardTitle") || "Budget Personnel";
-          const defaultDashboardId = "default"; // ID par défaut pour le dashboard principal
-          await db.addBudget({
-            id: "dashboard_title",
-            title: defaultTitle,
-            budget: 0,
-            spent: 0,
-            type: 'budget',
-            carriedOver: 0,
-            dashboardId: defaultDashboardId
-          });
-          setDashboardTitle(defaultTitle);
-          localStorage.removeItem("dashboardTitle");
-        }
-      } catch (error) {
-        console.error("Erreur lors du chargement du titre:", error);
-        const localTitle = localStorage.getItem("dashboardTitle");
-        if (localTitle) {
-          setDashboardTitle(localTitle);
-        }
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadDashboardTitle();
-  }, []);
 
   // Charger tous les tableaux de bord
   useEffect(() => {
@@ -74,6 +33,8 @@ const Home = () => {
           title: "Erreur",
           description: "Impossible de charger les tableaux de bord"
         });
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -116,50 +77,6 @@ const Home = () => {
       });
     }
   };
-
-  const handleEditDashboard = () => {
-    setIsEditDialogOpen(true);
-  };
-
-  const handleSaveDashboardName = async (newName: string) => {
-    try {
-      const budgets = await db.getBudgets();
-      const dashboardTitleBudget = budgets.find(b => b.id === "dashboard_title");
-      const defaultDashboardId = "default"; // ID par défaut pour le dashboard principal
-      
-      if (dashboardTitleBudget) {
-        await db.updateBudget({
-          ...dashboardTitleBudget,
-          title: newName,
-          dashboardId: dashboardTitleBudget.dashboardId || defaultDashboardId
-        });
-      } else {
-        await db.addBudget({
-          id: "dashboard_title",
-          title: newName,
-          budget: 0,
-          spent: 0,
-          type: 'budget',
-          carriedOver: 0,
-          dashboardId: defaultDashboardId
-        });
-      }
-      
-      setDashboardTitle(newName);
-      setIsEditDialogOpen(false);
-      toast({
-        title: "Nom modifié",
-        description: "Le nom du tableau de bord a été mis à jour.",
-      });
-    } catch (error) {
-      console.error("Erreur lors de la mise à jour du titre:", error);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Impossible de mettre à jour le nom du tableau de bord."
-      });
-    }
-  };
   
   const handleDeleteDashboard = async (id: string) => {
     try {
@@ -186,37 +103,8 @@ const Home = () => {
       <h1 className="text-4xl font-bold">Mes Tableaux de Bord</h1>
       
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {/* Dashboard principal */}
-        <Card 
-          className="cursor-pointer hover:shadow-lg transition-shadow" 
-          onClick={() => navigate(`/dashboard/${encodeURIComponent(dashboardTitle)}`)}
-        >
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <LineChart className="h-6 w-6" />
-                {isLoading ? "Chargement..." : dashboardTitle}
-              </div>
-              <Button 
-                variant="ghost" 
-                size="icon"
-                className="h-8 w-8" 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleEditDashboard();
-                }}
-              >
-                <Settings className="h-4 w-4" />
-              </Button>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {/* Contenu de la carte */}
-          </CardContent>
-        </Card>
-
-        {/* Autres tableaux de bord */}
-        {dashboards.filter(d => d.id !== "dashboard_title").map((dashboard) => (
+        {/* Liste des tableaux de bord existants */}
+        {dashboards.map((dashboard) => (
           <Card 
             key={dashboard.id}
             className="cursor-pointer hover:shadow-lg transition-shadow" 
@@ -265,13 +153,6 @@ const Home = () => {
           </CardContent>
         </Card>
       </div>
-
-      <EditDashboardDialog 
-        open={isEditDialogOpen}
-        onOpenChange={setIsEditDialogOpen}
-        currentName={dashboardTitle}
-        onSave={handleSaveDashboardName}
-      />
 
       <CreateDashboardDialog
         open={isCreateDialogOpen}
