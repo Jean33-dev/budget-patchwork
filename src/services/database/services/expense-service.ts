@@ -1,3 +1,4 @@
+
 import { Expense } from '../models/expense';
 import { BaseService } from './base-service';
 import { toast } from "@/components/ui/use-toast";
@@ -36,7 +37,7 @@ export class ExpenseService extends BaseService {
         linkedBudgetId: row.linkedBudgetId,
         date: row.date,
         isRecurring: Boolean(row.isRecurring),
-        dashboardId: row.dashboardId ? String(row.dashboardId) : null
+        dashboardId: row.dashboardId ? String(row.dashboardId) : "" // Toujours convertir en string ou vide
       }));
       
       console.log(`ExpenseService.getExpenses: Mapped ${expenses.length} expense objects`);
@@ -74,7 +75,7 @@ export class ExpenseService extends BaseService {
         linkedBudgetId: row.linkedBudgetId,
         date: row.date,
         isRecurring: true,
-        dashboardId: row.dashboardId || null
+        dashboardId: row.dashboardId ? String(row.dashboardId) : "" // Toujours convertir en string ou vide
       }));
     } catch (error) {
       console.error("Erreur lors de la récupération des dépenses récurrentes:", error);
@@ -88,7 +89,7 @@ export class ExpenseService extends BaseService {
   async addExpense(expense: Expense): Promise<void> {
     if (!await this.ensureInitialized()) return;
     
-    const dashboardId = expense.dashboardId ? String(expense.dashboardId) : null;
+    const dashboardId = expense.dashboardId ? String(expense.dashboardId) : "";
     console.log(`ExpenseService.addExpense: Adding expense "${expense.title}" with dashboardId: "${dashboardId}"`);
     
     const adapter = this.initManager.getAdapter();
@@ -106,7 +107,7 @@ export class ExpenseService extends BaseService {
   async updateExpense(expense: Expense): Promise<void> {
     if (!await this.ensureInitialized()) return;
     
-    const dashboardId = expense.dashboardId ? String(expense.dashboardId) : null;
+    const dashboardId = expense.dashboardId ? String(expense.dashboardId) : "";
     console.log(`ExpenseService.updateExpense: Updating expense "${expense.title}" with dashboardId: "${dashboardId}"`);
     
     const adapter = this.initManager.getAdapter();
@@ -155,7 +156,7 @@ export class ExpenseService extends BaseService {
         linkedBudgetId: recurringExpense.linkedBudgetId,
         date: targetDate,
         isRecurring: false, // The copy is not recurring
-        dashboardId: recurringExpense.dashboardId // Conserver le même dashboardId
+        dashboardId: recurringExpense.dashboardId ? String(recurringExpense.dashboardId) : "" // Convertir en string ou vide
       };
       
       console.log("Nouvelle dépense à ajouter:", newExpense);

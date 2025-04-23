@@ -34,11 +34,12 @@ export const useIncomeManagement = () => {
         
         // Filter incomes for the current dashboard with strict string comparison
         const filteredIncomes = allIncomes.filter(income => {
-          const incomeDashboardId = income.dashboardId ? String(income.dashboardId) : null;
+          // Normaliser les deux dashboardIds en strings
+          const incomeDashboardId = income.dashboardId ? String(income.dashboardId) : "";
           const currentDashId = String(currentDashboardId);
           const match = incomeDashboardId === currentDashId;
           
-          console.log(`🔍 Income filter: "${income.title}" (${incomeDashboardId}) vs current "${currentDashId}" = ${match}`);
+          console.log(`🔍 Income filter: "${income.title}" (${incomeDashboardId || 'null'}) vs current "${currentDashId}" = ${match}`);
           return match;
         });
         

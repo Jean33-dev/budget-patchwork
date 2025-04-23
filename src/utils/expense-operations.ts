@@ -26,7 +26,7 @@ export const expenseOperations = {
         console.error("expenseOperations.addExpense: Warning - dashboardId is missing, using default");
       }
       
-      // Enforce dashboardId as string
+      // Enforce dashboardId as string, never undefined or null
       const dashboardId = data.dashboardId ? String(data.dashboardId) : "default";
       
       const newExpense: Expense = {
@@ -37,7 +37,7 @@ export const expenseOperations = {
         type: "expense",
         linkedBudgetId: data.linkedBudgetId, // Maintenant obligatoire
         date: data.date || new Date().toISOString().split('T')[0],
-        dashboardId: dashboardId
+        dashboardId: dashboardId // Toujours une string
       };
 
       console.log("expenseOperations.addExpense: Created expense object:", newExpense);
@@ -70,7 +70,7 @@ export const expenseOperations = {
         console.error("expenseOperations.updateExpense: Warning - dashboardId is missing, using default");
       }
       
-      // Enforce dashboardId as string
+      // Enforce dashboardId as string, never undefined or null
       const dashboardId = expenseToUpdate.dashboardId ? String(expenseToUpdate.dashboardId) : "default";
       
       const validatedExpense: Expense = {
@@ -81,7 +81,7 @@ export const expenseOperations = {
         type: "expense",
         linkedBudgetId: String(expenseToUpdate.linkedBudgetId), // Maintenant obligatoire
         date: String(expenseToUpdate.date || new Date().toISOString().split('T')[0]),
-        dashboardId: dashboardId
+        dashboardId: dashboardId // Toujours une string
       };
 
       console.log("expenseOperations.updateExpense: Validated expense:", validatedExpense);

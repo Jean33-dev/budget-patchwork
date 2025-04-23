@@ -17,13 +17,13 @@ export class BudgetService extends BaseService {
       const results = await adapter!.query("SELECT * FROM budgets");
       
       // Log all dashboard IDs found in the budget records
-      const dashboardIds = results.map(row => row.dashboardId || 'null').join(', ');
+      const dashboardIds = results.map(row => row.dashboardId ? String(row.dashboardId) : 'empty').join(', ');
       console.log(`BudgetService.getBudgets: Found dashboardIds: [${dashboardIds}]`);
       
       // Detailed logging for debugging
       results.forEach((budget, idx) => {
         if (idx < 5) { // Limit logging to first 5 for brevity
-          console.log(`BudgetService.getBudgets: Budget ${idx+1} - ID: ${budget.id}, Title: ${budget.title}, DashboardId: ${String(budget.dashboardId)}`);
+          console.log(`BudgetService.getBudgets: Budget ${idx+1} - ID: ${budget.id}, Title: ${budget.title}, DashboardId: ${budget.dashboardId ? String(budget.dashboardId) : 'empty'}`);
         }
       });
       
@@ -34,7 +34,7 @@ export class BudgetService extends BaseService {
         spent: Number(row.spent),
         type: 'budget' as const,
         carriedOver: Number(row.carriedOver || 0),
-        dashboardId: row.dashboardId ? String(row.dashboardId) : null
+        dashboardId: row.dashboardId ? String(row.dashboardId) : "" // Toujours convertir en string ou vide
       }));
     } catch (error) {
       console.error("Erreur lors de la récupération des budgets:", error);
@@ -56,7 +56,9 @@ export class BudgetService extends BaseService {
       }
       
       const now = new Date().toISOString();
-      console.log(`BudgetService: Adding new budget "${budget.title}" with dashboardId "${budget.dashboardId}"...`);
+      // Normaliser le dashboardId en string
+      const dashboardId = budget.dashboardId ? String(budget.dashboardId) : "";
+      console.log(`BudgetService: Adding new budget "${budget.title}" with dashboardId "${dashboardId}"...`);
       
       await adapter.run(
         'INSERT INTO budgets (id, title, budget, spent, type, carriedOver, dashboardId) VALUES (?, ?, ?, ?, ?, ?, ?)',
@@ -67,11 +69,11 @@ export class BudgetService extends BaseService {
           budget.spent, 
           budget.type, 
           budget.carriedOver || 0,
-          budget.dashboardId
+          dashboardId
         ]
       );
       
-      console.log(`BudgetService: Budget "${budget.title}" added successfully with dashboardId "${budget.dashboardId}"`);
+      console.log(`BudgetService: Budget "${budget.title}" added successfully with dashboardId "${dashboardId}"`);
     } catch (error) {
       console.error("Erreur lors de l'ajout du tableau de bord:", error);
       throw error;
@@ -92,7 +94,9 @@ export class BudgetService extends BaseService {
       }
       
       const now = new Date().toISOString();
-      console.log(`BudgetService: Updating budget with ID ${budget.id} and dashboardId "${budget.dashboardId}"...`);
+      // Normaliser le dashboardId en string
+      const dashboardId = budget.dashboardId ? String(budget.dashboardId) : "";
+      console.log(`BudgetService: Updating budget with ID ${budget.id} and dashboardId "${dashboardId}"...`);
       
       await adapter.run(
         'UPDATE budgets SET title = ?, budget = ?, spent = ?, carriedOver = ?, dashboardId = ? WHERE id = ?',
@@ -101,12 +105,12 @@ export class BudgetService extends BaseService {
           budget.budget, 
           budget.spent, 
           budget.carriedOver || 0,
-          budget.dashboardId,
+          dashboardId,
           budget.id
         ]
       );
       
-      console.log(`BudgetService: Budget with ID ${budget.id} updated successfully with dashboardId "${budget.dashboardId}"`);
+      console.log(`BudgetService: Budget with ID ${budget.id} updated successfully with dashboardId "${dashboardId}"`);
     } catch (error) {
       console.error("Erreur lors de la mise à jour du tableau de bord:", error);
       throw error;

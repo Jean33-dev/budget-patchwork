@@ -30,11 +30,12 @@ export const useExpenseDataLoading = (dashboardId: string | null) => {
       
       // Filter budgets strictly by dashboardId
       const filteredBudgets = loadedBudgets.filter(budget => {
-        const budgetDashboardId = budget.dashboardId ? String(budget.dashboardId) : null;
+        // Normaliser les deux dashboardIds en strings
+        const budgetDashboardId = budget.dashboardId ? String(budget.dashboardId) : "";
         const currentDashboardId = String(useDashboardId);
         const match = budgetDashboardId === currentDashboardId;
         
-        console.log(`🔍 Budget filter: "${budget.title}" (${budgetDashboardId}) vs current "${currentDashboardId}" = ${match}`);
+        console.log(`🔍 Budget filter: "${budget.title}" (${budgetDashboardId || 'null'}) vs current "${currentDashboardId}" = ${match}`);
         return match;
       });
       
@@ -52,11 +53,12 @@ export const useExpenseDataLoading = (dashboardId: string | null) => {
       
       // Filter expenses strictly by dashboardId
       const filteredExpenses = nonRecurringExpenses.filter(expense => {
-        const expenseDashboardId = expense.dashboardId ? String(expense.dashboardId) : null;
+        // Normaliser les deux dashboardIds en strings
+        const expenseDashboardId = expense.dashboardId ? String(expense.dashboardId) : "";
         const currentDashboardId = String(useDashboardId);
         const match = expenseDashboardId === currentDashboardId;
         
-        console.log(`🔍 Expense filter: "${expense.title}" (${expenseDashboardId}) vs current "${currentDashboardId}" = ${match}`);
+        console.log(`🔍 Expense filter: "${expense.title}" (${expenseDashboardId || 'null'}) vs current "${currentDashboardId}" = ${match}`);
         return match;
       });
       
