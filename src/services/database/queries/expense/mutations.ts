@@ -14,10 +14,12 @@ export const expenseMutationQueries = {
         'INSERT INTO expenses (id, title, budget, spent, type, linkedBudgetId, date, isRecurring, dashboardId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
       );
       
-      // S'assurer que le dashboardId n'est jamais null ou undefined
-      // Mais préserver sa valeur exacte au lieu de la transformer
-      const dashboardIdToUse = expense.dashboardId ? String(expense.dashboardId) : "default";
-      console.log(`🔍 Using dashboardId for insert: ${dashboardIdToUse}, original value: ${expense.dashboardId}`);
+      // Garantir que le dashboardId est toujours une chaîne non vide
+      const dashboardIdToUse = expense.dashboardId && expense.dashboardId.trim() !== "" 
+        ? String(expense.dashboardId) 
+        : "default";
+        
+      console.log(`🔍 Using dashboardId for insert: "${dashboardIdToUse}", original value: "${expense.dashboardId || 'undefined'}"`);
       
       // Vérifier que linkedBudgetId est défini
       if (!expense.linkedBudgetId) {
@@ -31,10 +33,10 @@ export const expenseMutationQueries = {
         Number(expense.budget || 0), 
         Number(expense.spent || 0), 
         'expense', 
-        String(expense.linkedBudgetId), // Toujours présent maintenant 
+        String(expense.linkedBudgetId), 
         String(expense.date || new Date().toISOString().split('T')[0]),
         expense.isRecurring ? 1 : 0,
-        dashboardIdToUse  // Utiliser exactement la valeur fournie, ou "default" si non définie
+        dashboardIdToUse  // Toujours une chaîne non vide
       ];
       console.log("🔍 Insert params:", params);
       
@@ -67,16 +69,18 @@ export const expenseMutationQueries = {
         'UPDATE expenses SET title = ?, budget = ?, spent = ?, linkedBudgetId = ?, date = ?, isRecurring = ?, dashboardId = ? WHERE id = ?'
       );
       
-      // Préserver la valeur exacte du dashboardId lors des mises à jour
-      // Ne pas normaliser à "default" si une valeur spécifique est fournie
-      const dashboardIdToUse = expense.dashboardId ? String(expense.dashboardId) : "default";
-      console.log(`🔍 Using dashboardId for update: ${dashboardIdToUse}, original value: ${expense.dashboardId}`);
+      // Garantir que le dashboardId est toujours une chaîne non vide
+      const dashboardIdToUse = expense.dashboardId && expense.dashboardId.trim() !== "" 
+        ? String(expense.dashboardId) 
+        : "default";
+        
+      console.log(`🔍 Using dashboardId for update: "${dashboardIdToUse}", original value: "${expense.dashboardId || 'undefined'}"`);
       
       const params = [
         String(expense.title || 'Sans titre'),
         Number(expense.budget || 0),
         Number(expense.spent || expense.budget || 0),
-        String(expense.linkedBudgetId), // Toujours présent maintenant
+        String(expense.linkedBudgetId),
         String(expense.date || new Date().toISOString().split('T')[0]),
         expense.isRecurring ? 1 : 0,
         dashboardIdToUse,

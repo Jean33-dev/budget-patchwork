@@ -43,8 +43,10 @@ export const useExpenseOperationHandlers = (
 
       console.log(`useExpenseOperationHandlers - Adding expense with linkedBudgetId: ${linkedBudgetId}`);
       
-      // Ensure the dashboardId is always set and stored as a string
-      const currentDashboardId = dashboardId ? String(dashboardId) : "default";
+      // Ensure the dashboardId is always set as a non-empty string
+      const currentDashboardId = dashboardId && dashboardId.trim() !== "" ? 
+        String(dashboardId) : "default";
+        
       console.log("useExpenseOperationHandlers - Setting expense dashboardId to:", currentDashboardId);
       
       const expenseData: ExpenseFormData = {
@@ -132,8 +134,10 @@ export const useExpenseOperationHandlers = (
     
     setIsProcessing(true);
     try {
-      // Ensure the expense has the current dashboardId as a string
-      const currentDashboardId = dashboardId ? String(dashboardId) : "default";
+      // Ensure the expense has a valid dashboardId
+      const currentDashboardId = dashboardId && dashboardId.trim() !== "" ? 
+        String(dashboardId) : "default";
+        
       const expenseWithDashboard = {
         ...expense,
         dashboardId: currentDashboardId

@@ -28,24 +28,31 @@ export class ExpenseService extends BaseService {
       const dashboardIds = results.map(row => String(row.dashboardId || 'null')).join(', ');
       console.log(`ExpenseService.getExpenses: Found dashboardIds: [${dashboardIds}]`);
       
-      const expenses = results.map(row => ({
-        id: row.id,
-        title: row.title,
-        budget: Number(row.budget),
-        spent: Number(row.spent),
-        type: 'expense' as const,
-        linkedBudgetId: row.linkedBudgetId,
-        date: row.date,
-        isRecurring: Boolean(row.isRecurring),
-        dashboardId: row.dashboardId ? String(row.dashboardId) : "" // Toujours convertir en string ou vide
-      }));
+      const expenses = results.map(row => {
+        // Normalize dashboardId as a non-empty string
+        const dashboardId = row.dashboardId && String(row.dashboardId).trim() !== "" 
+          ? String(row.dashboardId) 
+          : "default";
+          
+        return {
+          id: row.id,
+          title: row.title,
+          budget: Number(row.budget),
+          spent: Number(row.spent),
+          type: 'expense' as const,
+          linkedBudgetId: row.linkedBudgetId,
+          date: row.date,
+          isRecurring: Boolean(row.isRecurring),
+          dashboardId: dashboardId // Toujours une chaîne non vide
+        };
+      });
       
       console.log(`ExpenseService.getExpenses: Mapped ${expenses.length} expense objects`);
       
       // Detailed logging for debugging
       expenses.forEach((expense, idx) => {
         if (idx < 5) { // Limit logging to first 5 for brevity
-          console.log(`ExpenseService.getExpenses: Expense ${idx+1} - ID: ${expense.id}, Title: ${expense.title}, DashboardId: ${String(expense.dashboardId)}`);
+          console.log(`ExpenseService.getExpenses: Expense ${idx+1} - ID: ${expense.id}, Title: ${expense.title}, DashboardId: "${expense.dashboardId}"`);
         }
       });
       
@@ -66,17 +73,24 @@ export class ExpenseService extends BaseService {
       const adapter = this.initManager.getAdapter();
       const results = await adapter!.query("SELECT * FROM expenses WHERE isRecurring = 1");
       
-      return results.map(row => ({
-        id: row.id,
-        title: row.title,
-        budget: Number(row.budget),
-        spent: Number(row.spent),
-        type: 'expense' as const,
-        linkedBudgetId: row.linkedBudgetId,
-        date: row.date,
-        isRecurring: true,
-        dashboardId: row.dashboardId ? String(row.dashboardId) : "" // Toujours convertir en string ou vide
-      }));
+      return results.map(row => {
+        // Normalize dashboardId as a non-empty string
+        const dashboardId = row.dashboardId && String(row.dashboardId).trim() !== "" 
+          ? String(row.dashboardId) 
+          : "default";
+          
+        return {
+          id: row.id,
+          title: row.title,
+          budget: Number(row.budget),
+          spent: Number(row.spent),
+          type: 'expense' as const,
+          linkedBudgetId: row.linkedBudgetId,
+          date: row.date,
+          isRecurring: true,
+          dashboardId: dashboardId // Toujours une chaîne non vide
+        };
+      });
     } catch (error) {
       console.error("Erreur lors de la récupération des dépenses récurrentes:", error);
       return [];
@@ -89,7 +103,11 @@ export class ExpenseService extends BaseService {
   async addExpense(expense: Expense): Promise<void> {
     if (!await this.ensureInitialized()) return;
     
-    const dashboardId = expense.dashboardId ? String(expense.dashboardId) : "";
+    // Normalize dashboardId as a non-empty string
+    const dashboardId = expense.dashboardId && String(expense.dashboardId).trim() !== "" 
+      ? String(expense.dashboardId) 
+      : "default";
+      
     console.log(`ExpenseService.addExpense: Adding expense "${expense.title}" with dashboardId: "${dashboardId}"`);
     
     const adapter = this.initManager.getAdapter();
@@ -107,7 +125,11 @@ export class ExpenseService extends BaseService {
   async updateExpense(expense: Expense): Promise<void> {
     if (!await this.ensureInitialized()) return;
     
-    const dashboardId = expense.dashboardId ? String(expense.dashboardId) : "";
+    // Normalize dashboardId as a non-empty string
+    const dashboardId = expense.dashboardId && String(expense.dashboardId).trim() !== "" 
+      ? String(expense.dashboardId) 
+      : "default";
+      
     console.log(`ExpenseService.updateExpense: Updating expense "${expense.title}" with dashboardId: "${dashboardId}"`);
     
     const adapter = this.initManager.getAdapter();
@@ -146,6 +168,11 @@ export class ExpenseService extends BaseService {
       
       console.log(`Copie de la dépense récurrente "${recurringExpense.title}" au mois actuel...`);
       
+      // Normalize dashboardId as a non-empty string
+      const dashboardId = recurringExpense.dashboardId && String(recurringExpense.dashboardId).trim() !== "" 
+        ? String(recurringExpense.dashboardId) 
+        : "default";
+      
       // Create a new expense based on the recurring one with a guaranteed unique ID
       const newExpense: Expense = {
         id: uuidv4(), // Utiliser UUID pour garantir l'unicité
@@ -156,7 +183,7 @@ export class ExpenseService extends BaseService {
         linkedBudgetId: recurringExpense.linkedBudgetId,
         date: targetDate,
         isRecurring: false, // The copy is not recurring
-        dashboardId: recurringExpense.dashboardId ? String(recurringExpense.dashboardId) : "" // Convertir en string ou vide
+        dashboardId: dashboardId // Toujours une chaîne non vide
       };
       
       console.log("Nouvelle dépense à ajouter:", newExpense);

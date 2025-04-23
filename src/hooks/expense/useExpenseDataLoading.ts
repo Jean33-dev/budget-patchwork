@@ -14,8 +14,11 @@ export const useExpenseDataLoading = (dashboardId: string | null) => {
   const [initAttempted, setInitAttempted] = useState(false);
 
   const loadData = useCallback(async () => {
-    const useDashboardId = dashboardId || "default";
-    console.log(`🔍 useExpenseDataLoading - Beginning data load for dashboard: ${useDashboardId}`);
+    // Ensure we have a non-empty string for dashboardId
+    const useDashboardId = dashboardId && dashboardId.trim() !== "" ? 
+      String(dashboardId) : "default";
+      
+    console.log(`🔍 useExpenseDataLoading - Beginning data load for dashboard: "${useDashboardId}"`);
     
     setIsLoading(true);
     setError(null);
@@ -28,18 +31,20 @@ export const useExpenseDataLoading = (dashboardId: string | null) => {
       const loadedBudgets = await db.getBudgets();
       console.log(`🔍 useExpenseDataLoading - All budgets loaded from database (${loadedBudgets.length}):`, loadedBudgets);
       
-      // Filter budgets strictly by dashboardId
+      // Filter budgets strictly by dashboardId with detailed logging
       const filteredBudgets = loadedBudgets.filter(budget => {
-        // Normaliser les deux dashboardIds en strings
-        const budgetDashboardId = budget.dashboardId ? String(budget.dashboardId) : "";
+        // Normaliser les dashboardIds en strings non vides
+        const budgetDashboardId = budget.dashboardId && budget.dashboardId.trim() !== "" ? 
+          String(budget.dashboardId) : "default";
+          
         const currentDashboardId = String(useDashboardId);
         const match = budgetDashboardId === currentDashboardId;
         
-        console.log(`🔍 Budget filter: "${budget.title}" (${budgetDashboardId || 'null'}) vs current "${currentDashboardId}" = ${match}`);
+        console.log(`🔍 Budget filter: "${budget.title}" (dashboardId: "${budgetDashboardId}") vs current "${currentDashboardId}" = ${match ? "MATCH" : "NO MATCH"}`);
         return match;
       });
       
-      console.log(`🔍 useExpenseDataLoading - Filtered ${filteredBudgets.length} budgets for dashboard ${useDashboardId}`);
+      console.log(`🔍 useExpenseDataLoading - Filtered ${filteredBudgets.length} budgets for dashboard "${useDashboardId}" from ${loadedBudgets.length} total budgets`);
       setAvailableBudgets(filteredBudgets);
       
       // Load expenses
@@ -53,16 +58,23 @@ export const useExpenseDataLoading = (dashboardId: string | null) => {
       
       // Filter expenses strictly by dashboardId
       const filteredExpenses = nonRecurringExpenses.filter(expense => {
-        // Normaliser les deux dashboardIds en strings
-        const expenseDashboardId = expense.dashboardId ? String(expense.dashboardId) : "";
+        // Normaliser les dashboardIds en strings non vides
+        const expenseDashboardId = expense.dashboardId && expense.dashboardId.trim() !== "" ? 
+          String(expense.dashboardId) : "default";
+          
         const currentDashboardId = String(useDashboardId);
         const match = expenseDashboardId === currentDashboardId;
         
-        console.log(`🔍 Expense filter: "${expense.title}" (${expenseDashboardId || 'null'}) vs current "${currentDashboardId}" = ${match}`);
+        console.log(`🔍 Expense filter: "${expense.title}" (dashboardId: "${expenseDashboardId}") vs current "${currentDashboardId}" = ${match ? "MATCH" : "NO MATCH"}`);
         return match;
       });
       
-      console.log(`🔍 useExpenseDataLoading - Final filtered expenses (${filteredExpenses.length}):`, filteredExpenses);
+      console.log(`🔍 useExpenseDataLoading - Final filtered expenses (${filteredExpenses.length}) for dashboard "${useDashboardId}" from ${loadedExpenses.length} total expenses:`);
+      filteredExpenses.forEach((expense, idx) => {
+        if (idx < 5) { // Limit logging to first 5 for brevity
+          console.log(`🔍   - Expense ${idx+1}: "${expense.title}", dashboardId: "${expense.dashboardId}"`);
+        }
+      });
       setExpenses(filteredExpenses);
       
       setInitAttempted(true);
@@ -80,7 +92,7 @@ export const useExpenseDataLoading = (dashboardId: string | null) => {
   }, [dashboardId, toast]);
 
   useEffect(() => {
-    console.log(`🔍 useExpenseDataLoading - Effect triggered with dashboardId: ${dashboardId}`);
+    console.log(`🔍 useExpenseDataLoading - Effect triggered with dashboardId: ${dashboardId || 'null'}`);
     loadData();
   }, [loadData, dashboardId]);
 

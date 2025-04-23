@@ -22,12 +22,9 @@ export const expenseOperations = {
         throw new Error("Le budget associé est obligatoire pour une dépense");
       }
       
-      if (!data.dashboardId) {
-        console.error("expenseOperations.addExpense: Warning - dashboardId is missing, using default");
-      }
-      
-      // Enforce dashboardId as string, never undefined or null
+      // Ensure dashboardId is always a non-empty string
       const dashboardId = data.dashboardId ? String(data.dashboardId) : "default";
+      console.log(`expenseOperations.addExpense: Using dashboardId: "${dashboardId}"`);
       
       const newExpense: Expense = {
         id: uuidv4(),
@@ -35,9 +32,9 @@ export const expenseOperations = {
         budget: Number(data.budget) || 0,
         spent: Number(data.budget) || 0,
         type: "expense",
-        linkedBudgetId: data.linkedBudgetId, // Maintenant obligatoire
+        linkedBudgetId: data.linkedBudgetId,
         date: data.date || new Date().toISOString().split('T')[0],
-        dashboardId: dashboardId // Toujours une string
+        dashboardId: dashboardId // Always a non-empty string
       };
 
       console.log("expenseOperations.addExpense: Created expense object:", newExpense);
@@ -66,12 +63,9 @@ export const expenseOperations = {
         throw new Error("Le budget associé est obligatoire pour une dépense");
       }
       
-      if (!expenseToUpdate.dashboardId) {
-        console.error("expenseOperations.updateExpense: Warning - dashboardId is missing, using default");
-      }
-      
-      // Enforce dashboardId as string, never undefined or null
+      // Ensure dashboardId is always a non-empty string
       const dashboardId = expenseToUpdate.dashboardId ? String(expenseToUpdate.dashboardId) : "default";
+      console.log(`expenseOperations.updateExpense: Using dashboardId: "${dashboardId}"`);
       
       const validatedExpense: Expense = {
         id: String(expenseToUpdate.id),
@@ -79,9 +73,9 @@ export const expenseOperations = {
         budget: Number(expenseToUpdate.budget) || 0,
         spent: Number(expenseToUpdate.spent) || Number(expenseToUpdate.budget) || 0,
         type: "expense",
-        linkedBudgetId: String(expenseToUpdate.linkedBudgetId), // Maintenant obligatoire
+        linkedBudgetId: String(expenseToUpdate.linkedBudgetId),
         date: String(expenseToUpdate.date || new Date().toISOString().split('T')[0]),
-        dashboardId: dashboardId // Toujours une string
+        dashboardId: dashboardId
       };
 
       console.log("expenseOperations.updateExpense: Validated expense:", validatedExpense);
