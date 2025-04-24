@@ -37,10 +37,9 @@ export const useExpenseDataLoading = (dashboardId: string | null) => {
         const budgetDashboardId = budget.dashboardId && budget.dashboardId.trim() !== "" ? 
           String(budget.dashboardId) : "default";
           
-        const currentDashboardId = String(useDashboardId);
-        const match = budgetDashboardId === currentDashboardId;
+        const match = budgetDashboardId === useDashboardId;
         
-        console.log(`🔍 Budget filter: "${budget.title}" (dashboardId: "${budgetDashboardId}") vs current "${currentDashboardId}" = ${match ? "MATCH" : "NO MATCH"}`);
+        console.log(`🔍 Budget filter: "${budget.title}" (dashboardId: "${budgetDashboardId}") vs current "${useDashboardId}" = ${match ? "MATCH" : "NO MATCH"}`);
         return match;
       });
       
@@ -62,17 +61,18 @@ export const useExpenseDataLoading = (dashboardId: string | null) => {
         const expenseDashboardId = expense.dashboardId && expense.dashboardId.trim() !== "" ? 
           String(expense.dashboardId) : "default";
           
-        const currentDashboardId = String(useDashboardId);
-        const match = expenseDashboardId === currentDashboardId;
+        const match = expenseDashboardId === useDashboardId;
         
-        console.log(`🔍 Expense filter: "${expense.title}" (dashboardId: "${expenseDashboardId}") vs current "${currentDashboardId}" = ${match ? "MATCH" : "NO MATCH"}`);
+        console.log(`🔍 Expense filter: "${expense.title}" (dashboardId: "${expenseDashboardId}") vs current "${useDashboardId}" = ${match ? "MATCH" : "NO MATCH"}`);
         return match;
       });
       
       console.log(`🔍 useExpenseDataLoading - Final filtered expenses (${filteredExpenses.length}) for dashboard "${useDashboardId}" from ${loadedExpenses.length} total expenses:`);
       filteredExpenses.forEach((expense, idx) => {
         if (idx < 5) { // Limit logging to first 5 for brevity
-          console.log(`🔍   - Expense ${idx+1}: "${expense.title}", dashboardId: "${expense.dashboardId}"`);
+          const expenseDashboardId = expense.dashboardId && expense.dashboardId.trim() !== "" ? 
+            String(expense.dashboardId) : "default";
+          console.log(`🔍   - Expense ${idx+1}: "${expense.title}", dashboardId: "${expenseDashboardId}"`);
         }
       });
       setExpenses(filteredExpenses);
