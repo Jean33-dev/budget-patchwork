@@ -68,7 +68,7 @@ export const useExpenseDataLoading = (dashboardId: string | null) => {
       console.log(`🔍 useExpenseDataLoading - Final filtered expenses (${filteredExpenses.length}) for dashboard "${useDashboardId}" from ${loadedExpenses.length} total expenses:`);
       filteredExpenses.forEach((expense, idx) => {
         if (idx < 5) { // Limit logging to first 5 for brevity
-          console.log(`🔍   - Expense ${idx+1}: "${expense.title}", dashboardId: "${expenseDashboardId}"`);
+          console.log(`🔍   - Expense ${idx+1}: "${expense.title}", dashboardId: "${expense.dashboardId || 'null'}"`);
         }
       });
       setExpenses(filteredExpenses);
