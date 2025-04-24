@@ -51,16 +51,20 @@ export const incomeQueries = {
         return [];
       }
       
-      return result[0].values.map((row: any[]) => ({
-        id: String(row[0]),
-        title: String(row[1] || ''),
-        budget: Number(row[2] || 0),
-        spent: Number(row[3] || 0),
-        type: row[4] as 'income',
-        date: String(row[5] || new Date().toISOString().split('T')[0]),
-        isRecurring: hasIsRecurringColumn ? Boolean(row[6]) : false,
-        dashboardId: hasDashboardIdColumn ? (row[7] || null) : null
-      }));
+      return result[0].values.map((row: any[]) => {
+        const dashboardId = hasDashboardIdColumn ? String(row[7] || "") : "";
+        
+        return {
+          id: String(row[0]),
+          title: String(row[1] || ''),
+          budget: Number(row[2] || 0),
+          spent: Number(row[3] || 0),
+          type: row[4] as 'income',
+          date: String(row[5] || new Date().toISOString().split('T')[0]),
+          isRecurring: hasIsRecurringColumn ? Boolean(row[6]) : false,
+          dashboardId: dashboardId
+        };
+      });
     } catch (error) {
       console.error("Erreur lors de la récupération des revenus:", error);
       return [];
@@ -105,16 +109,20 @@ export const incomeQueries = {
         return [];
       }
       
-      return result[0].values.map((row: any[]) => ({
-        id: String(row[0]),
-        title: String(row[1] || ''),
-        budget: Number(row[2] || 0),
-        spent: Number(row[3] || 0),
-        type: row[4] as 'income',
-        date: String(row[5] || new Date().toISOString().split('T')[0]),
-        isRecurring: true,
-        dashboardId: hasDashboardIdColumn ? (row[7] || null) : null
-      }));
+      return result[0].values.map((row: any[]) => {
+        const dashboardId = hasDashboardIdColumn ? String(row[7] || "") : "";
+        
+        return {
+          id: String(row[0]),
+          title: String(row[1] || ''),
+          budget: Number(row[2] || 0),
+          spent: Number(row[3] || 0),
+          type: row[4] as 'income',
+          date: String(row[5] || new Date().toISOString().split('T')[0]),
+          isRecurring: true,
+          dashboardId: dashboardId
+        };
+      });
     } catch (error) {
       console.error("Erreur lors de la récupération des revenus récurrents:", error);
       throw error; // Rethrow to handle in the outer try/catch
@@ -128,9 +136,12 @@ export const incomeQueries = {
     }
     
     try {
+      console.log("Adding income with dashboardId:", income.dashboardId);
       const stmt = db.prepare(
-        'INSERT INTO incomes (id, title, budget, spent, type, date, isRecurring) VALUES (?, ?, ?, ?, ?, ?, ?)'
+        'INSERT INTO incomes (id, title, budget, spent, type, date, isRecurring, dashboardId) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
       );
+      
+      const dashboardId = income.dashboardId ? String(income.dashboardId) : "";
       
       stmt.run([
         String(income.id), 
@@ -139,7 +150,8 @@ export const incomeQueries = {
         Number(income.spent || 0), 
         'income', 
         String(income.date || new Date().toISOString().split('T')[0]),
-        income.isRecurring ? 1 : 0
+        income.isRecurring ? 1 : 0,
+        dashboardId
       ]);
       
       stmt.free();
@@ -155,15 +167,19 @@ export const incomeQueries = {
     }
     
     try {
+      console.log("Updating income with dashboardId:", income.dashboardId);
       const stmt = db.prepare(
-        'UPDATE incomes SET title = ?, budget = ?, spent = ?, isRecurring = ? WHERE id = ?'
+        'UPDATE incomes SET title = ?, budget = ?, spent = ?, isRecurring = ?, dashboardId = ? WHERE id = ?'
       );
+      
+      const dashboardId = income.dashboardId ? String(income.dashboardId) : "";
       
       stmt.run([
         String(income.title || 'Sans titre'),
         Number(income.budget || 0),
         Number(income.spent || income.budget || 0),
         income.isRecurring ? 1 : 0,
+        dashboardId,
         String(income.id)
       ]);
       

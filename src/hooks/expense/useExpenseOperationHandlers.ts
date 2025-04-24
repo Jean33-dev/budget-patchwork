@@ -43,13 +43,22 @@ export const useExpenseOperationHandlers = (
 
       console.log(`useExpenseOperationHandlers - Adding expense with linkedBudgetId: ${linkedBudgetId}`);
       
-      // Ensure the dashboardId is always set as a non-empty string
-      const currentDashboardId = dashboardId && dashboardId.trim() !== "" ? 
-        String(dashboardId) : "default";
-        
-      console.log("useExpenseOperationHandlers - Setting expense dashboardId to:", currentDashboardId);
+      if (!dashboardId) {
+        console.error("Cannot add expense: No dashboard ID specified");
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "ID du tableau de bord manquant"
+        });
+        return;
+      }
       
-      const expenseData: ExpenseFormData = {
+      // Ensure the dashboardId is always set as a non-empty string
+      const currentDashboardId = String(dashboardId);
+        
+      console.log(`useExpenseOperationHandlers - Adding expense with dashboardId: ${currentDashboardId}`);
+      
+      const formData: ExpenseFormData = {
         title: envelope.title,
         budget: envelope.budget,
         type: "expense",
@@ -57,22 +66,18 @@ export const useExpenseOperationHandlers = (
         date: envelope.date,
         dashboardId: currentDashboardId
       };
-
-      console.log("useExpenseOperationHandlers - Expense data to add:", expenseData);
       
-      const success = await expenseOperations.addExpense(expenseData);
+      const success = await expenseOperations.addExpense(formData);
       
       if (success) {
-        console.log("useExpenseOperationHandlers - Expense added successfully");
         toast({
           title: "Succès",
-          description: "La dépense a été ajoutée"
+          description: "Dépense ajoutée"
         });
         
-        // Refresh data
+        // Reload data to update the UI
         await reloadData();
       } else {
-        console.error("useExpenseOperationHandlers - Failed to add expense");
         toast({
           variant: "destructive",
           title: "Erreur",
@@ -80,87 +85,50 @@ export const useExpenseOperationHandlers = (
         });
       }
     } catch (error) {
-      console.error("useExpenseOperationHandlers - Error adding expense:", error);
+      console.error("Error adding expense:", error);
       toast({
         variant: "destructive",
         title: "Erreur",
-        description: "Une erreur est survenue lors de l'ajout de la dépense"
+        description: "Une erreur est survenue lors de l'ajout"
       });
     } finally {
       setIsProcessing(false);
     }
-  }, [budgetId, dashboardId, reloadData, toast]);
-
-  // Handle deleting an expense
-  const handleDeleteExpense = useCallback(async (id: string) => {
-    console.log(`useExpenseOperationHandlers - Deleting expense ${id}`);
+  }, [budgetId, toast, reloadData, dashboardId]);
+  
+  // Handle updating an expense
+  const handleUpdateExpense = useCallback(async (expense: Expense) => {
+    console.log("useExpenseOperationHandlers - handleUpdateExpense called with:", expense);
     
     setIsProcessing(true);
     try {
-      const success = await expenseOperations.deleteExpense(id);
+      // Ensure dashboardId is carried forward
+      if (dashboardId && !expense.dashboardId) {
+        expense.dashboardId = String(dashboardId);
+        console.log(`useExpenseOperationHandlers - Setting missing dashboardId to: ${expense.dashboardId}`);
+      }
       
-      if (success) {
-        console.log(`useExpenseOperationHandlers - Expense ${id} deleted successfully`);
-        toast({
-          title: "Succès",
-          description: "La dépense a été supprimée"
-        });
-        
-        // Refresh data
-        await reloadData();
-      } else {
-        console.error(`useExpenseOperationHandlers - Failed to delete expense ${id}`);
+      if (!expense.dashboardId) {
+        console.error("Cannot update expense: No dashboard ID specified");
         toast({
           variant: "destructive",
           title: "Erreur",
-          description: "Impossible de supprimer la dépense"
+          description: "ID du tableau de bord manquant"
         });
+        return;
       }
-    } catch (error) {
-      console.error(`useExpenseOperationHandlers - Error deleting expense ${id}:`, error);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Une erreur est survenue lors de la suppression de la dépense"
-      });
-    } finally {
-      setIsProcessing(false);
-    }
-  }, [reloadData, toast]);
-
-  // Handle updating an expense
-  const handleUpdateExpense = useCallback(async (expense: Expense) => {
-    console.log("useExpenseOperationHandlers - Updating expense:", expense);
-    
-    setIsProcessing(true);
-    try {
-      // Ensure the expense has a valid dashboardId
-      const currentDashboardId = dashboardId && dashboardId.trim() !== "" ? 
-        String(dashboardId) : "default";
-        
-      const expenseWithDashboard = {
-        ...expense,
-        dashboardId: currentDashboardId
-      };
       
-      // Log the expense before and after modification
-      console.log("Original expense dashboardId:", expense.dashboardId);
-      console.log("Current context dashboardId:", dashboardId);
-      console.log("Final expense with dashboardId:", expenseWithDashboard.dashboardId);
-      
-      const success = await expenseOperations.updateExpense(expenseWithDashboard);
+      const success = await expenseOperations.updateExpense(expense);
       
       if (success) {
-        console.log("useExpenseOperationHandlers - Expense updated successfully");
         toast({
           title: "Succès",
-          description: "La dépense a été mise à jour"
+          description: "Dépense mise à jour"
         });
         
-        // Refresh data
+        // Reload data to update the UI
         await reloadData();
       } else {
-        console.error("useExpenseOperationHandlers - Failed to update expense");
         toast({
           variant: "destructive",
           title: "Erreur",
@@ -168,16 +136,51 @@ export const useExpenseOperationHandlers = (
         });
       }
     } catch (error) {
-      console.error("useExpenseOperationHandlers - Error updating expense:", error);
+      console.error("Error updating expense:", error);
       toast({
         variant: "destructive",
         title: "Erreur",
-        description: "Une erreur est survenue lors de la mise à jour de la dépense"
+        description: "Une erreur est survenue lors de la mise à jour"
       });
     } finally {
       setIsProcessing(false);
     }
-  }, [dashboardId, reloadData, toast]);
+  }, [toast, reloadData, dashboardId]);
+  
+  // Handle deleting an expense
+  const handleDeleteExpense = useCallback(async (expenseId: string) => {
+    console.log(`useExpenseOperationHandlers - handleDeleteExpense called for ID: ${expenseId}`);
+    
+    setIsProcessing(true);
+    try {
+      const success = await expenseOperations.deleteExpense(expenseId);
+      
+      if (success) {
+        toast({
+          title: "Succès",
+          description: "Dépense supprimée"
+        });
+        
+        // Reload data to update the UI
+        await reloadData();
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Impossible de supprimer la dépense"
+        });
+      }
+    } catch (error) {
+      console.error("Error deleting expense:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la suppression"
+      });
+    } finally {
+      setIsProcessing(false);
+    }
+  }, [toast, reloadData]);
 
   return {
     isProcessing,
