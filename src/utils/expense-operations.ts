@@ -1,4 +1,3 @@
-
 import { db } from "@/services/database";
 import { Expense } from "@/services/database/models/expense";
 import { v4 as uuidv4 } from "uuid";
@@ -7,7 +6,7 @@ export type ExpenseFormData = {
   title: string;
   budget: number;
   type: "expense";
-  linkedBudgetId: string; // Already marked as required
+  linkedBudgetId: string;
   date: string;
   dashboardId?: string;
 };
@@ -22,8 +21,12 @@ export const expenseOperations = {
         throw new Error("Le budget associé est obligatoire pour une dépense");
       }
       
-      // Ensure dashboardId is always a non-empty string
-      const dashboardId = data.dashboardId ? String(data.dashboardId) : "default";
+      if (!data.dashboardId) {
+        console.error("expenseOperations.addExpense: Erreur - dashboardId manquant");
+        throw new Error("L'ID du tableau de bord est obligatoire pour une dépense");
+      }
+      
+      const dashboardId = String(data.dashboardId);
       console.log(`expenseOperations.addExpense: Using dashboardId: "${dashboardId}"`);
       
       const newExpense: Expense = {
@@ -34,7 +37,7 @@ export const expenseOperations = {
         type: "expense",
         linkedBudgetId: data.linkedBudgetId,
         date: data.date || new Date().toISOString().split('T')[0],
-        dashboardId: dashboardId // Always a non-empty string
+        dashboardId: dashboardId
       };
 
       console.log("expenseOperations.addExpense: Created expense object:", newExpense);
@@ -63,8 +66,12 @@ export const expenseOperations = {
         throw new Error("Le budget associé est obligatoire pour une dépense");
       }
       
-      // Ensure dashboardId is always a non-empty string
-      const dashboardId = expenseToUpdate.dashboardId ? String(expenseToUpdate.dashboardId) : "default";
+      if (!expenseToUpdate.dashboardId) {
+        console.error("expenseOperations.updateExpense: Erreur - dashboardId manquant");
+        throw new Error("L'ID du tableau de bord est obligatoire pour une dépense");
+      }
+      
+      const dashboardId = String(expenseToUpdate.dashboardId);
       console.log(`expenseOperations.updateExpense: Using dashboardId: "${dashboardId}"`);
       
       const validatedExpense: Expense = {

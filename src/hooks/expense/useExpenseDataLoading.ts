@@ -14,10 +14,14 @@ export const useExpenseDataLoading = (dashboardId: string | null) => {
   const [initAttempted, setInitAttempted] = useState(false);
 
   const loadData = useCallback(async () => {
-    // Ensure we have a non-empty string for dashboardId
-    const useDashboardId = dashboardId && dashboardId.trim() !== "" ? 
-      String(dashboardId) : "default";
-      
+    // Ensure we have a non-null, non-empty string for dashboardId
+    if (!dashboardId) {
+      console.log("🔍 useExpenseDataLoading - No dashboardId provided, skipping data load");
+      setIsLoading(false);
+      return;
+    }
+    
+    const useDashboardId = String(dashboardId);
     console.log(`🔍 useExpenseDataLoading - Beginning data load for dashboard: "${useDashboardId}"`);
     
     setIsLoading(true);
@@ -33,10 +37,7 @@ export const useExpenseDataLoading = (dashboardId: string | null) => {
       
       // Filter budgets strictly by dashboardId with detailed logging
       const filteredBudgets = loadedBudgets.filter(budget => {
-        // Normaliser les dashboardIds en strings non vides
-        const budgetDashboardId = budget.dashboardId && budget.dashboardId.trim() !== "" ? 
-          String(budget.dashboardId) : "default";
-          
+        const budgetDashboardId = budget.dashboardId ? String(budget.dashboardId) : "";
         const match = budgetDashboardId === useDashboardId;
         
         console.log(`🔍 Budget filter: "${budget.title}" (dashboardId: "${budgetDashboardId}") vs current "${useDashboardId}" = ${match ? "MATCH" : "NO MATCH"}`);
@@ -57,10 +58,7 @@ export const useExpenseDataLoading = (dashboardId: string | null) => {
       
       // Filter expenses strictly by dashboardId
       const filteredExpenses = nonRecurringExpenses.filter(expense => {
-        // Normaliser les dashboardIds en strings non vides
-        const expenseDashboardId = expense.dashboardId && expense.dashboardId.trim() !== "" ? 
-          String(expense.dashboardId) : "default";
-          
+        const expenseDashboardId = expense.dashboardId ? String(expense.dashboardId) : "";
         const match = expenseDashboardId === useDashboardId;
         
         console.log(`🔍 Expense filter: "${expense.title}" (dashboardId: "${expenseDashboardId}") vs current "${useDashboardId}" = ${match ? "MATCH" : "NO MATCH"}`);
@@ -70,8 +68,6 @@ export const useExpenseDataLoading = (dashboardId: string | null) => {
       console.log(`🔍 useExpenseDataLoading - Final filtered expenses (${filteredExpenses.length}) for dashboard "${useDashboardId}" from ${loadedExpenses.length} total expenses:`);
       filteredExpenses.forEach((expense, idx) => {
         if (idx < 5) { // Limit logging to first 5 for brevity
-          const expenseDashboardId = expense.dashboardId && expense.dashboardId.trim() !== "" ? 
-            String(expense.dashboardId) : "default";
           console.log(`🔍   - Expense ${idx+1}: "${expense.title}", dashboardId: "${expenseDashboardId}"`);
         }
       });

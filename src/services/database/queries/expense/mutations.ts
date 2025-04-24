@@ -1,4 +1,3 @@
-
 import { Expense } from '../../models/expense';
 
 export const expenseMutationQueries = {
@@ -14,14 +13,10 @@ export const expenseMutationQueries = {
         'INSERT INTO expenses (id, title, budget, spent, type, linkedBudgetId, date, isRecurring, dashboardId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
       );
       
-      // Garantir que le dashboardId est toujours une chaîne non vide
-      const dashboardIdToUse = expense.dashboardId && expense.dashboardId.trim() !== "" 
-        ? String(expense.dashboardId) 
-        : "default";
+      const dashboardIdToUse = expense.dashboardId ? String(expense.dashboardId) : "";
         
       console.log(`🔍 Using dashboardId for insert: "${dashboardIdToUse}", original value: "${expense.dashboardId || 'undefined'}"`);
       
-      // Vérifier que linkedBudgetId est défini
       if (!expense.linkedBudgetId) {
         console.error("🔍 Erreur: linkedBudgetId obligatoire mais non fourni");
         throw new Error("Le budget associé est obligatoire pour une dépense");
@@ -36,17 +31,15 @@ export const expenseMutationQueries = {
         String(expense.linkedBudgetId), 
         String(expense.date || new Date().toISOString().split('T')[0]),
         expense.isRecurring ? 1 : 0,
-        dashboardIdToUse  // Toujours une chaîne non vide
+        dashboardIdToUse
       ];
-      console.log("🔍 Insert params:", params);
       
       stmt.run(params);
       console.log("🔍 Expense inserted successfully");
-      
       stmt.free();
     } catch (error) {
       console.error("🔍 Erreur lors de l'ajout d'une dépense:", error);
-      throw error; // Propager l'erreur pour permettre sa gestion en amont
+      throw error;
     }
   },
 
@@ -59,7 +52,6 @@ export const expenseMutationQueries = {
     try {
       console.log("🔍 expenseMutationQueries.update - Updating expense:", expense);
       
-      // Vérifier que linkedBudgetId est défini
       if (!expense.linkedBudgetId) {
         console.error("🔍 Erreur: linkedBudgetId obligatoire mais non fourni pour mise à jour");
         throw new Error("Le budget associé est obligatoire pour une dépense");
@@ -69,10 +61,7 @@ export const expenseMutationQueries = {
         'UPDATE expenses SET title = ?, budget = ?, spent = ?, linkedBudgetId = ?, date = ?, isRecurring = ?, dashboardId = ? WHERE id = ?'
       );
       
-      // Garantir que le dashboardId est toujours une chaîne non vide
-      const dashboardIdToUse = expense.dashboardId && expense.dashboardId.trim() !== "" 
-        ? String(expense.dashboardId) 
-        : "default";
+      const dashboardIdToUse = expense.dashboardId ? String(expense.dashboardId) : "";
         
       console.log(`🔍 Using dashboardId for update: "${dashboardIdToUse}", original value: "${expense.dashboardId || 'undefined'}"`);
       
@@ -86,15 +75,13 @@ export const expenseMutationQueries = {
         dashboardIdToUse,
         String(expense.id)
       ];
-      console.log("🔍 Update params:", params);
       
       stmt.run(params);
       console.log("🔍 Expense updated successfully");
-      
       stmt.free();
     } catch (error) {
       console.error("🔍 Erreur lors de la mise à jour d'une dépense:", error);
-      throw error; // Propager l'erreur pour permettre sa gestion en amont
+      throw error;
     }
   },
 
