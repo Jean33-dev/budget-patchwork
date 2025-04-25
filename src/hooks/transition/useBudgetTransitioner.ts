@@ -1,6 +1,5 @@
-
 import { db } from "@/services/database";
-import { TransitionEnvelope, MultiTransfer } from "@/types/transition";
+import { TransitionEnvelope, TransitionOption, MultiTransfer } from "@/types/transition";
 import { toast } from "@/components/ui/use-toast";
 import { Budget } from "@/types/categories";
 
