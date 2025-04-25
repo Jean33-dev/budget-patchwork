@@ -20,13 +20,21 @@ import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { AlertTriangle, FileText } from "lucide-react";
 import { BudgetPDFDownload } from "@/components/pdf/BudgetPDF";
 import { useBudgets } from "@/hooks/useBudgets";
-import { Button } from "@/components/ui/button";
+import { useDashboardContext } from "@/hooks/useDashboardContext";
 
 export const BudgetTransition = () => {
   const navigate = useNavigate();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [pdfExported, setPdfExported] = useState(false);
-  const { totalRevenues, totalExpenses, budgets } = useBudgets();
+  const { totalRevenues, totalExpenses, budgets, dashboardId } = useBudgets();
+  const { currentDashboardId } = useDashboardContext();
+  
+  // Vérifier que nous avons bien un dashboard actif
+  if (!currentDashboardId) {
+    console.error("BudgetTransition: Aucun dashboard sélectionné");
+  } else {
+    console.log(`BudgetTransition: Opération sur le dashboard ${currentDashboardId}`);
+  }
   
   const {
     envelopes,
@@ -57,8 +65,8 @@ export const BudgetTransition = () => {
     setShowConfirmDialog(false);
   };
   
-  // Génération du nom du fichier PDF
-  const pdfFileName = `rapport-budget-avant-transition-${new Date().toISOString().slice(0, 10)}.pdf`;
+  // Génération du nom du fichier PDF avec l'ID du dashboard
+  const pdfFileName = `rapport-budget-${currentDashboardId}-avant-transition-${new Date().toISOString().slice(0, 10)}.pdf`;
   
   // Marqueur lorsque le PDF est exporté
   const handlePDFExported = () => {
@@ -67,6 +75,14 @@ export const BudgetTransition = () => {
 
   // Add debug logs
   console.log("BudgetTransition rendering with envelopes:", envelopes);
+  console.log(`BudgetTransition pour le dashboard: ${currentDashboardId}`);
+
+  // Filter only the budgets for the current dashboard
+  const dashboardBudgets = budgets.filter(budget => 
+    String(budget.dashboardId) === String(currentDashboardId)
+  );
+  
+  console.log(`BudgetTransition: ${dashboardBudgets.length} budgets filtrés pour le dashboard ${currentDashboardId}`);
 
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
@@ -101,7 +117,8 @@ export const BudgetTransition = () => {
                 <AlertTitle>Sauvegardez vos données avant de continuer</AlertTitle>
                 <AlertDescription>
                   <p className="text-sm">
-                    La transition vers un nouveau mois va réinitialiser toutes vos dépenses et revenus.
+                    La transition vers un nouveau mois va réinitialiser toutes vos dépenses et revenus 
+                    du dashboard actuel ({currentDashboardId}).
                     Une fois cette opération effectuée, les données du mois actuel seront définitivement perdues.
                   </p>
                   
@@ -124,7 +141,7 @@ export const BudgetTransition = () => {
               fileName={pdfFileName}
               totalIncome={totalRevenues}
               totalExpenses={totalExpenses}
-              budgets={budgets}
+              budgets={dashboardBudgets} // Use filtered budgets
               className="w-full"
               onClick={handlePDFExported}
             />
