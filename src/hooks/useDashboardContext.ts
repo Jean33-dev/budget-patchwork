@@ -11,17 +11,26 @@ export const useDashboardContext = () => {
     console.log("🔍 useDashboardContext - Starting with dashboardId param:", dashboardId);
     console.log("🔍 useDashboardContext - location pathname:", location.pathname);
     
+    // Priorité 1: Utiliser l'ID du dashboard des paramètres d'URL
     if (dashboardId) {
       // Traiter les cas spéciaux comme "budget" directement
       if (dashboardId === "budget") {
         console.log("🔍 useDashboardContext - Special 'budget' route detected");
-        return "budget";
+        // Dans ce cas, on utilise l'ID stocké dans localStorage
+        const storedId = localStorage.getItem('currentDashboardId');
+        if (storedId) {
+          console.log("🔍 useDashboardContext - Using stored dashboardId:", storedId);
+          return storedId;
+        }
+      } else {
+        console.log("🔍 useDashboardContext - Using dashboardId from params:", dashboardId);
+        // Stocker l'ID courant pour référence future
+        localStorage.setItem('currentDashboardId', dashboardId);
+        return dashboardId;
       }
-      
-      console.log("🔍 useDashboardContext - Using dashboardId from params:", dashboardId);
-      return dashboardId;
     }
 
+    // Priorité 2: Extraire l'ID du dashboard du chemin URL
     const pathParts = location.pathname.split('/');
     console.log("🔍 useDashboardContext - pathname parts:", pathParts);
     
@@ -34,38 +43,33 @@ export const useDashboardContext = () => {
       if (specialRoutes.includes(potentialId)) {
         console.log("🔍 useDashboardContext - This is a special route:", potentialId);
         
-        if (potentialId === 'budget') {
-          console.log("🔍 useDashboardContext - On budget route, returning 'budget'");
-          return 'budget';
+        // Pour les routes spéciales, utiliser l'ID stocké précédemment
+        const storedId = localStorage.getItem('currentDashboardId');
+        if (storedId) {
+          console.log("🔍 useDashboardContext - Using stored dashboardId:", storedId);
+          return storedId;
         }
-        
-        // Pour les autres routes spéciales, utiliser le dashboardId par défaut
-        const defaultId = localStorage.getItem('defaultDashboardId') || uuidv4();
-        if (!localStorage.getItem('defaultDashboardId')) {
-          console.log("🔍 useDashboardContext - Creating new defaultDashboardId:", defaultId);
-          localStorage.setItem('defaultDashboardId', defaultId);
-        } else {
-          console.log("🔍 useDashboardContext - Using existing defaultDashboardId:", defaultId);
-        }
-        
-        return defaultId;
+      } else {
+        // Stocker l'ID courant pour référence future
+        localStorage.setItem('currentDashboardId', potentialId);
+        console.log("🔍 useDashboardContext - Returning ID from path:", potentialId);
+        return potentialId;
       }
-      
-      console.log("🔍 useDashboardContext - Returning ID from path:", potentialId);
-      return potentialId;
     }
     
-    // Generate a unique ID for the default dashboard if it doesn't exist
-    const defaultId = localStorage.getItem('defaultDashboardId') || uuidv4();
-    if (!localStorage.getItem('defaultDashboardId')) {
-      console.log("🔍 useDashboardContext - Creating new defaultDashboardId:", defaultId);
-      localStorage.setItem('defaultDashboardId', defaultId);
-    } else {
-      console.log("🔍 useDashboardContext - Using existing defaultDashboardId:", defaultId);
+    // Priorité 3: Utiliser l'ID stocké dans localStorage
+    const storedId = localStorage.getItem('currentDashboardId');
+    if (storedId) {
+      console.log("🔍 useDashboardContext - Using previously stored dashboardId:", storedId);
+      return storedId;
     }
     
-    console.log("🔍 useDashboardContext - No dashboardId found in path, using default:", defaultId);
-    return defaultId;
+    // Priorité 4: Générer un nouvel ID si aucun n'est disponible
+    const newId = uuidv4();
+    console.log("🔍 useDashboardContext - Creating new dashboardId:", newId);
+    localStorage.setItem('currentDashboardId', newId);
+    
+    return newId;
   }, [location, dashboardId]);
 
   const currentDashboardId = getCurrentDashboardId();

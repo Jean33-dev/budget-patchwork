@@ -102,8 +102,8 @@ export const useExpenseOperationHandlers = (
     
     setIsProcessing(true);
     try {
-      // Ensure dashboardId is carried forward
-      if (dashboardId && !expense.dashboardId) {
+      // Ensure dashboardId is always present and valid
+      if (!expense.dashboardId && dashboardId) {
         expense.dashboardId = String(dashboardId);
         console.log(`useExpenseOperationHandlers - Setting missing dashboardId to: ${expense.dashboardId}`);
       }

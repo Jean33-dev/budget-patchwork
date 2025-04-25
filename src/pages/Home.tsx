@@ -5,7 +5,6 @@ import { PlusCircle, LineChart, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
-import { EditDashboardDialog } from "@/components/dashboard/EditDashboardDialog";
 import { CreateDashboardDialog } from "@/components/dashboard/CreateDashboardDialog";
 import { db } from "@/services/database";
 import { v4 as uuidv4 } from 'uuid';
@@ -47,21 +46,29 @@ const Home = () => {
 
   const handleSaveDashboard = async (name: string) => {
     try {
+      // Génération d'un UUID pour garantir l'unicité
+      const newDashboardId = uuidv4();
+      console.log(`Création d'un nouveau tableau de bord avec ID: ${newDashboardId}`);
+      
       const newDashboard = {
-        id: uuidv4(),
+        id: newDashboardId,
         title: name,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
 
-      console.log("Création d'un nouveau tableau de bord:", newDashboard);
+      console.log("Nouveau dashboard:", newDashboard);
       await db.addDashboard(newDashboard);
       
       // Rafraîchir la liste des dashboards
       const updatedDashboards = await db.getDashboards();
       setDashboards(updatedDashboards);
       
-      navigate(`/dashboard/${newDashboard.id}`);
+      // Stocker l'ID de dashboard actuel dans localStorage pour référence globale
+      localStorage.setItem('currentDashboardId', newDashboardId);
+      
+      // Rediriger vers le nouveau dashboard
+      navigate(`/dashboard/${newDashboardId}`);
       
       toast({
         title: "Succès",
@@ -103,37 +110,48 @@ const Home = () => {
       <h1 className="text-4xl font-bold">Mes Tableaux de Bord</h1>
       
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {/* Liste des tableaux de bord existants */}
-        {dashboards.map((dashboard) => (
-          <Card 
-            key={dashboard.id}
-            className="cursor-pointer hover:shadow-lg transition-shadow" 
-            onClick={() => navigate(`/dashboard/${dashboard.id}`)}
-          >
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <LineChart className="h-6 w-6" />
-                  {dashboard.title}
+        {dashboards.length > 0 ? (
+          // Liste des tableaux de bord existants
+          dashboards.map((dashboard) => (
+            <Card 
+              key={dashboard.id}
+              className="cursor-pointer hover:shadow-lg transition-shadow" 
+              onClick={() => {
+                localStorage.setItem('currentDashboardId', dashboard.id);
+                navigate(`/dashboard/${dashboard.id}`);
+              }}
+            >
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <LineChart className="h-6 w-6" />
+                    {dashboard.title}
+                  </div>
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    className="h-8 w-8" 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteDashboard(dashboard.id);
+                    }}
+                  >
+                    <Settings className="h-4 w-4" />
+                  </Button>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-sm text-gray-500">
+                  ID: {dashboard.id.substring(0, 8)}...
                 </div>
-                <Button 
-                  variant="ghost" 
-                  size="icon"
-                  className="h-8 w-8" 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDeleteDashboard(dashboard.id);
-                  }}
-                >
-                  <Settings className="h-4 w-4" />
-                </Button>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {/* Contenu de la carte */}
-            </CardContent>
-          </Card>
-        ))}
+              </CardContent>
+            </Card>
+          ))
+        ) : !isLoading ? (
+          <div className="col-span-full text-center py-8 text-gray-500">
+            Aucun tableau de bord trouvé. Créez votre premier tableau de bord!
+          </div>
+        ) : null}
 
         {/* Carte pour créer un nouveau tableau de bord */}
         <Card 

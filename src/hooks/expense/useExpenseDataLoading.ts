@@ -68,9 +68,8 @@ export const useExpenseDataLoading = (dashboardId: string | null) => {
       console.log(`🔍 useExpenseDataLoading - Final filtered expenses (${filteredExpenses.length}) for dashboard "${useDashboardId}" from ${loadedExpenses.length} total expenses:`);
       filteredExpenses.forEach((expense, idx) => {
         if (idx < 5) { // Limit logging to first 5 for brevity
-          // Correctement référencer le dashboardId de chaque dépense
-          const expenseDashboardId = expense.dashboardId ? String(expense.dashboardId) : "";
-          console.log(`🔍   - Expense ${idx+1}: "${expense.title}", dashboardId: "${expenseDashboardId}"`);
+          const logDashboardId = expense.dashboardId ? String(expense.dashboardId) : "undefined";
+          console.log(`🔍   - Expense ${idx+1}: "${expense.title}", dashboardId: "${logDashboardId}"`);
         }
       });
       setExpenses(filteredExpenses);

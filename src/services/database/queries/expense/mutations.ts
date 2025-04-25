@@ -14,9 +14,15 @@ export const expenseMutationQueries = {
         'INSERT INTO expenses (id, title, budget, spent, type, linkedBudgetId, date, isRecurring, dashboardId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
       );
       
-      const dashboardIdToUse = expense.dashboardId ? String(expense.dashboardId) : "";
+      // Vérifie que le dashboardId est non-vide et le convertit en string
+      if (!expense.dashboardId) {
+        console.error("🔍 Erreur: dashboardId manquant lors de l'ajout d'une dépense");
+        throw new Error("Le dashboard associé est obligatoire pour une dépense");
+      }
+      
+      const dashboardIdToUse = String(expense.dashboardId);
         
-      console.log(`🔍 Using dashboardId for insert: "${dashboardIdToUse}", original value: "${expense.dashboardId || 'undefined'}"`);
+      console.log(`🔍 Using dashboardId for insert: "${dashboardIdToUse}"`);
       
       if (!expense.linkedBudgetId) {
         console.error("🔍 Erreur: linkedBudgetId obligatoire mais non fourni");
@@ -32,11 +38,11 @@ export const expenseMutationQueries = {
         String(expense.linkedBudgetId), 
         String(expense.date || new Date().toISOString().split('T')[0]),
         expense.isRecurring ? 1 : 0,
-        dashboardIdToUse
+        dashboardIdToUse // Dashboardid obligatoire
       ];
       
       stmt.run(params);
-      console.log("🔍 Expense inserted successfully");
+      console.log("🔍 Expense inserted successfully with dashboardId: " + dashboardIdToUse);
       stmt.free();
     } catch (error) {
       console.error("🔍 Erreur lors de l'ajout d'une dépense:", error);
@@ -58,13 +64,18 @@ export const expenseMutationQueries = {
         throw new Error("Le budget associé est obligatoire pour une dépense");
       }
       
+      // Vérifie que le dashboardId est non-vide et le convertit en string
+      if (!expense.dashboardId) {
+        console.error("🔍 Erreur: dashboardId manquant lors de la mise à jour d'une dépense");
+        throw new Error("Le dashboard associé est obligatoire pour une dépense");
+      }
+      
+      const dashboardIdToUse = String(expense.dashboardId);
+      console.log(`🔍 Using dashboardId for update: "${dashboardIdToUse}"`);
+      
       const stmt = db.prepare(
         'UPDATE expenses SET title = ?, budget = ?, spent = ?, linkedBudgetId = ?, date = ?, isRecurring = ?, dashboardId = ? WHERE id = ?'
       );
-      
-      const dashboardIdToUse = expense.dashboardId ? String(expense.dashboardId) : "";
-        
-      console.log(`🔍 Using dashboardId for update: "${dashboardIdToUse}", original value: "${expense.dashboardId || 'undefined'}"`);
       
       const params = [
         String(expense.title || 'Sans titre'),
@@ -73,12 +84,12 @@ export const expenseMutationQueries = {
         String(expense.linkedBudgetId),
         String(expense.date || new Date().toISOString().split('T')[0]),
         expense.isRecurring ? 1 : 0,
-        dashboardIdToUse,
+        dashboardIdToUse, // Dashboardid obligatoire
         String(expense.id)
       ];
       
       stmt.run(params);
-      console.log("🔍 Expense updated successfully");
+      console.log("🔍 Expense updated successfully with dashboardId: " + dashboardIdToUse);
       stmt.free();
     } catch (error) {
       console.error("🔍 Erreur lors de la mise à jour d'une dépense:", error);

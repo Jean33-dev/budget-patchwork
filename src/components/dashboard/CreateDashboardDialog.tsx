@@ -17,13 +17,18 @@ export const CreateDashboardDialog = ({
   onSave,
 }: CreateDashboardDialogProps) => {
   const [name, setName] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (name.trim()) {
-      onSave(name);
-      setName("");
+    if (!name.trim()) {
+      setError("Le nom du tableau de bord est requis");
+      return;
     }
+    
+    setError(null);
+    onSave(name);
+    setName("");
   };
 
   return (
@@ -41,7 +46,9 @@ export const CreateDashboardDialog = ({
               onChange={(e) => setName(e.target.value)}
               placeholder="Entrez le nom du tableau de bord"
               autoFocus
+              className={error ? "border-red-500" : ""}
             />
+            {error && <p className="text-sm text-red-500">{error}</p>}
           </div>
           <DialogFooter>
             <Button 
@@ -50,6 +57,7 @@ export const CreateDashboardDialog = ({
               onClick={() => {
                 onOpenChange(false);
                 setName("");
+                setError(null);
               }}
               className="mr-2"
             >
