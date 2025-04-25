@@ -3,6 +3,8 @@ import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { db } from "@/services/database";
 import { Income } from "@/services/database/models/income";
+import { useDashboardContext } from "@/hooks/useDashboardContext";
+import { incomeOperations, IncomeFormData } from "@/utils/income-operations";
 
 export const useRecurringIncome = () => {
   const { toast } = useToast();
@@ -18,17 +20,30 @@ export const useRecurringIncome = () => {
     date: string;
     isRecurring?: boolean;
   } | null>(null);
+  const { currentDashboardId } = useDashboardContext();
 
   useEffect(() => {
     loadRecurringIncomes();
-  }, []);
+  }, [currentDashboardId]);
 
   const loadRecurringIncomes = async () => {
     setIsLoading(true);
     try {
       await db.init();
-      const incomes = await db.getRecurringIncomes();
-      setRecurringIncomes(incomes);
+      const allIncomes = await db.getRecurringIncomes();
+      
+      // Filtrer par dashboardId
+      const filteredIncomes = allIncomes.filter(income => {
+        const incomeDashboardId = income.dashboardId ? String(income.dashboardId) : "";
+        const currentDashId = String(currentDashboardId || "");
+        const match = incomeDashboardId === currentDashId;
+        
+        console.log(`🔍 Recurring Income filter: "${income.title}" (${incomeDashboardId || 'null'}) vs current "${currentDashId}" = ${match}`);
+        return match;
+      });
+      
+      setRecurringIncomes(filteredIncomes);
+      console.log("useRecurringIncome - Filtered recurring incomes:", filteredIncomes.length);
     } catch (error) {
       console.error("Erreur lors du chargement des revenus récurrents:", error);
       toast({
@@ -53,23 +68,43 @@ export const useRecurringIncome = () => {
         throw new Error("Type must be 'income'");
       }
       
-      const income = {
-        id: Date.now().toString(),
-        ...newIncome,
-        type: "income" as const,
-        spent: newIncome.budget,
-        isRecurring: true
+      if (!currentDashboardId) {
+        console.error("useRecurringIncome - Aucun dashboardId trouvé pour l'ajout d'un revenu récurrent");
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Impossible d'ajouter le revenu: ID du tableau de bord manquant"
+        });
+        return;
+      }
+      
+      const incomeData: IncomeFormData = {
+        title: newIncome.title,
+        budget: newIncome.budget,
+        type: "income",
+        date: newIncome.date,
+        isRecurring: true,
+        dashboardId: currentDashboardId
       };
       
-      await db.addIncome(income);
-      setRecurringIncomes(prev => [...prev, income]);
+      const success = await incomeOperations.addIncome(incomeData);
       
-      toast({
-        title: "Succès",
-        description: "Nouveau revenu récurrent ajouté"
-      });
-      
-      setAddDialogOpen(false);
+      if (success) {
+        await loadRecurringIncomes(); // Recharger pour obtenir la liste à jour
+        
+        toast({
+          title: "Succès",
+          description: "Nouveau revenu récurrent ajouté"
+        });
+        
+        setAddDialogOpen(false);
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Impossible d'ajouter le revenu récurrent"
+        });
+      }
     } catch (error) {
       console.error("Erreur lors de l'ajout du revenu récurrent:", error);
       toast({
@@ -87,31 +122,46 @@ export const useRecurringIncome = () => {
     date: string 
   }) => {
     if (!selectedIncome) return;
+    if (!currentDashboardId) {
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "ID du tableau de bord manquant"
+      });
+      return;
+    }
 
     try {
-      const updatedIncome = {
-        ...selectedIncome,
+      const updatedIncome: Income = {
+        id: selectedIncome.id,
         title: editedIncome.title,
         budget: editedIncome.budget,
         spent: editedIncome.budget,
+        type: "income",
         date: editedIncome.date,
-        isRecurring: true
+        isRecurring: true,
+        dashboardId: currentDashboardId
       };
 
-      await db.updateIncome(updatedIncome);
-      setRecurringIncomes(prev => prev.map(income => 
-        income.id === selectedIncome.id 
-          ? { ...income, ...updatedIncome }
-          : income
-      ));
-
-      setEditDialogOpen(false);
-      setSelectedIncome(null);
+      const success = await incomeOperations.updateIncome(updatedIncome);
       
-      toast({
-        title: "Succès",
-        description: "Revenu récurrent modifié"
-      });
+      if (success) {
+        await loadRecurringIncomes(); // Recharger pour obtenir la liste à jour
+        
+        setEditDialogOpen(false);
+        setSelectedIncome(null);
+        
+        toast({
+          title: "Succès",
+          description: "Revenu récurrent modifié"
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Impossible de modifier le revenu récurrent"
+        });
+      }
     } catch (error) {
       console.error("Erreur lors de la modification du revenu récurrent:", error);
       toast({
@@ -124,13 +174,22 @@ export const useRecurringIncome = () => {
 
   const handleDeleteIncome = async (id: string) => {
     try {
-      await db.deleteIncome(id);
-      setRecurringIncomes(prev => prev.filter(income => income.id !== id));
+      const success = await incomeOperations.deleteIncome(id);
       
-      toast({
-        title: "Succès",
-        description: "Revenu récurrent supprimé"
-      });
+      if (success) {
+        setRecurringIncomes(prev => prev.filter(income => income.id !== id));
+        
+        toast({
+          title: "Succès",
+          description: "Revenu récurrent supprimé"
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Impossible de supprimer le revenu récurrent"
+        });
+      }
     } catch (error) {
       console.error("Erreur lors de la suppression du revenu récurrent:", error);
       toast({

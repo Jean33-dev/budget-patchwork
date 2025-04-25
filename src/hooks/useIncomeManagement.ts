@@ -4,6 +4,7 @@ import { db } from "@/services/database";
 import { Income } from "@/services/database/models/income";
 import { useToast } from "@/hooks/use-toast";
 import { useDashboardContext } from "@/hooks/useDashboardContext";
+import { incomeOperations, IncomeFormData } from "@/utils/income-operations";
 
 export const useIncomeManagement = () => {
   const { toast } = useToast();
@@ -36,7 +37,7 @@ export const useIncomeManagement = () => {
         const filteredIncomes = allIncomes.filter(income => {
           // Normaliser les deux dashboardIds en strings
           const incomeDashboardId = income.dashboardId ? String(income.dashboardId) : "";
-          const currentDashId = String(currentDashboardId);
+          const currentDashId = String(currentDashboardId || "");
           const match = incomeDashboardId === currentDashId;
           
           console.log(`🔍 Income filter: "${income.title}" (${incomeDashboardId || 'null'}) vs current "${currentDashId}" = ${match}`);
@@ -61,60 +62,138 @@ export const useIncomeManagement = () => {
   }, [toast, currentDashboardId]);
 
   const handleAddIncome = async (newIncome: { title: string; budget: number; type: "income"; date: string }) => {
-    const income = {
-      id: Date.now().toString(),
-      ...newIncome,
-      spent: newIncome.budget,
-      isRecurring: false,
-      dashboardId: String(currentDashboardId) // Convertir en string
-    };
+    try {
+      if (!currentDashboardId) {
+        console.error("useIncomeManagement - Aucun dashboardId trouvé pour l'ajout d'un revenu");
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Impossible d'ajouter le revenu: ID du tableau de bord manquant"
+        });
+        return;
+      }
+      
+      const incomeData: IncomeFormData = {
+        ...newIncome,
+        dashboardId: currentDashboardId,
+        isRecurring: false
+      };
     
-    console.log("useIncomeManagement - Adding new income with dashboardId:", income.dashboardId);
-    await db.addIncome(income);
-    setEnvelopes(prev => [...prev, income]);
-    
-    toast({
-      title: "Succès",
-      description: "Nouveau revenu ajouté",
-    });
+      console.log("useIncomeManagement - Adding new income with dashboardId:", incomeData.dashboardId);
+      const success = await incomeOperations.addIncome(incomeData);
+      
+      if (success) {
+        // Recharger les données pour obtenir l'ID correct et autres détails
+        const allIncomes = await db.getIncomes();
+        const filteredIncomes = allIncomes.filter(income => 
+          String(income.dashboardId || "") === String(currentDashboardId || "")
+        );
+        setEnvelopes(filteredIncomes);
+        
+        toast({
+          title: "Succès",
+          description: "Nouveau revenu ajouté",
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Impossible d'ajouter le revenu"
+        });
+      }
+    } catch (error) {
+      console.error("Erreur lors de l'ajout du revenu:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Une erreur est survenue lors de l'ajout du revenu"
+      });
+    }
   };
 
   const handleEditIncome = async (editedIncome: { title: string; budget: number; type: "income"; date: string }) => {
     if (!selectedIncome) return;
+    if (!currentDashboardId) {
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "ID du tableau de bord manquant"
+      });
+      return;
+    }
 
-    const updatedIncome = {
-      ...selectedIncome,
-      title: editedIncome.title,
-      budget: editedIncome.budget,
-      spent: editedIncome.budget,
-      date: editedIncome.date,
-      dashboardId: String(currentDashboardId) // Convertir en string
-    };
+    try {
+      const updatedIncome: Income = {
+        id: selectedIncome.id,
+        title: editedIncome.title,
+        budget: editedIncome.budget,
+        spent: editedIncome.budget,
+        type: "income",
+        date: editedIncome.date,
+        isRecurring: selectedIncome.isRecurring,
+        dashboardId: currentDashboardId
+      };
 
-    await db.updateIncome(updatedIncome);
-    setEnvelopes(prev => prev.map(env => 
-      env.id === selectedIncome.id 
-        ? updatedIncome
-        : env
-    ));
-
-    setEditDialogOpen(false);
-    setSelectedIncome(null);
-    
-    toast({
-      title: "Succès",
-      description: "Revenu modifié",
-    });
+      const success = await incomeOperations.updateIncome(updatedIncome);
+      
+      if (success) {
+        // Recharger les données pour s'assurer d'avoir les données à jour
+        const allIncomes = await db.getIncomes();
+        const filteredIncomes = allIncomes.filter(income => 
+          String(income.dashboardId || "") === String(currentDashboardId || "")
+        );
+        setEnvelopes(filteredIncomes);
+        
+        setEditDialogOpen(false);
+        setSelectedIncome(null);
+        
+        toast({
+          title: "Succès",
+          description: "Revenu modifié",
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Impossible de modifier le revenu"
+        });
+      }
+    } catch (error) {
+      console.error("Erreur lors de la modification du revenu:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la modification du revenu"
+      });
+    }
   };
 
   const handleDeleteIncome = async (incomeId: string) => {
-    await db.deleteIncome(incomeId);
-    setEnvelopes(prev => prev.filter(env => env.id !== incomeId));
-    
-    toast({
-      title: "Succès",
-      description: "Revenu supprimé",
-    });
+    try {
+      const success = await incomeOperations.deleteIncome(incomeId);
+      
+      if (success) {
+        setEnvelopes(prev => prev.filter(env => env.id !== incomeId));
+        
+        toast({
+          title: "Succès",
+          description: "Revenu supprimé",
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Impossible de supprimer le revenu"
+        });
+      }
+    } catch (error) {
+      console.error("Erreur lors de la suppression du revenu:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la suppression du revenu"
+      });
+    }
   };
 
   const handleIncomeClick = (envelope: Income) => {

@@ -1,3 +1,4 @@
+
 import { toast } from "@/components/ui/use-toast";
 import { db } from "@/services/database";
 import { Budget } from "@/services/database/models/budget";
@@ -9,8 +10,17 @@ export const budgetOperations = {
       // Récupérer le dashboardId du contexte si non fourni explicitement
       const actualDashboardId = dashboardId || 
         (typeof window !== 'undefined' ? 
-          localStorage.getItem('currentDashboardId') || 'default' : 
-          'default');
+          localStorage.getItem('currentDashboardId') : null);
+          
+      if (!actualDashboardId) {
+        console.error("Budget operation - Aucun dashboardId trouvé pour l'ajout d'un budget");
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Impossible d'ajouter le budget: ID du tableau de bord manquant"
+        });
+        return false;
+      }
 
       console.log("Budget operation - Using dashboardId:", actualDashboardId);
       
@@ -46,11 +56,22 @@ export const budgetOperations = {
   async updateBudget(budgetToUpdate: Budget): Promise<boolean> {
     try {
       // S'assurer que le dashboardId est préservé
+      const dashboardId = budgetToUpdate.dashboardId || 
+        (typeof window !== 'undefined' ? localStorage.getItem('currentDashboardId') : null);
+        
+      if (!dashboardId) {
+        console.error("Budget operation - Aucun dashboardId trouvé pour la mise à jour d'un budget");
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Impossible de modifier le budget: ID du tableau de bord manquant"
+        });
+        return false;
+      }
+      
       const budget = {
         ...budgetToUpdate,
-        dashboardId: budgetToUpdate.dashboardId || (typeof window !== 'undefined' ? 
-          localStorage.getItem('currentDashboardId') || 'default' : 
-          'default')
+        dashboardId: dashboardId
       };
       
       await db.updateBudget(budget);

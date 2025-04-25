@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { expenseOperations, type ExpenseFormData } from "@/utils/expense-operations";
@@ -185,7 +184,39 @@ export const useExpenseOperationHandlers = (
   return {
     isProcessing,
     handleAddEnvelope,
-    handleDeleteExpense,
+    handleDeleteExpense: useCallback(async (expenseId: string) => {
+      console.log(`useExpenseOperationHandlers - handleDeleteExpense called for ID: ${expenseId}`);
+      
+      setIsProcessing(true);
+      try {
+        const success = await expenseOperations.deleteExpense(expenseId);
+        
+        if (success) {
+          toast({
+            title: "Succès",
+            description: "Dépense supprimée"
+          });
+          
+          // Reload data to update the UI
+          await reloadData();
+        } else {
+          toast({
+            variant: "destructive",
+            title: "Erreur",
+            description: "Impossible de supprimer la dépense"
+          });
+        }
+      } catch (error) {
+        console.error("Error deleting expense:", error);
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Une erreur est survenue lors de la suppression"
+        });
+      } finally {
+        setIsProcessing(false);
+      }
+    }, [toast, reloadData]),
     handleUpdateExpense
   };
 };
