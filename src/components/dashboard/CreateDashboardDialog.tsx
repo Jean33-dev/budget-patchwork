@@ -8,7 +8,7 @@ import { useState } from "react";
 interface CreateDashboardDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSave: (name: string) => void;
+  onSave: (name: string) => Promise<void>;
 }
 
 export const CreateDashboardDialog = ({
@@ -18,8 +18,9 @@ export const CreateDashboardDialog = ({
 }: CreateDashboardDialogProps) => {
   const [name, setName] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) {
       setError("Le nom du tableau de bord est requis");
@@ -27,8 +28,14 @@ export const CreateDashboardDialog = ({
     }
     
     setError(null);
-    onSave(name);
-    setName("");
+    setIsLoading(true);
+    
+    try {
+      await onSave(name);
+      setName("");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -47,6 +54,7 @@ export const CreateDashboardDialog = ({
               placeholder="Entrez le nom du tableau de bord"
               autoFocus
               className={error ? "border-red-500" : ""}
+              disabled={isLoading}
             />
             {error && <p className="text-sm text-red-500">{error}</p>}
           </div>
@@ -60,10 +68,13 @@ export const CreateDashboardDialog = ({
                 setError(null);
               }}
               className="mr-2"
+              disabled={isLoading}
             >
               Annuler
             </Button>
-            <Button type="submit">Créer</Button>
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? "Création..." : "Créer"}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>
