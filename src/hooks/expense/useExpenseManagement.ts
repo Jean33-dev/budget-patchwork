@@ -1,5 +1,5 @@
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { Budget } from "@/types/categories";
 import { Expense } from "@/services/database/models/expense"; 
