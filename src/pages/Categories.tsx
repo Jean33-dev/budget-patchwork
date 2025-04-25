@@ -11,11 +11,13 @@ import { EditCategoryDialog } from "@/components/categories/EditCategoryDialog";
 import { useCategories } from "@/hooks/useCategories";
 import { db } from "@/services/database";
 import { useToast } from "@/hooks/use-toast";
+import { useDashboardContext } from "@/hooks/useDashboardContext";
 
 const Categories = () => {
   const navigate = useNavigate();
   const [availableBudgets, setAvailableBudgets] = useState<Budget[]>([]);
   const { toast } = useToast();
+  const { currentDashboardId } = useDashboardContext();
 
   const { 
     categories, 
@@ -32,9 +34,16 @@ const Categories = () => {
 
   const loadBudgets = async () => {
     try {
-      const budgets = await db.getBudgets();
-      console.log('État actuel des budgets:', budgets);
-      setAvailableBudgets(budgets);
+      const allBudgets = await db.getBudgets();
+      console.log('Tous les budgets récupérés:', allBudgets);
+      
+      // Filtrer les budgets par dashboardId
+      const filteredBudgets = allBudgets.filter(budget => 
+        String(budget.dashboardId) === String(currentDashboardId)
+      );
+      
+      console.log(`Budgets filtrés pour le dashboard ${currentDashboardId}:`, filteredBudgets);
+      setAvailableBudgets(filteredBudgets);
     } catch (error) {
       console.error("Erreur lors du chargement des budgets:", error);
       toast({
@@ -46,8 +55,9 @@ const Categories = () => {
   };
 
   useEffect(() => {
+    console.log("Categories: chargement des budgets pour le dashboard:", currentDashboardId);
     loadBudgets();
-  }, []);
+  }, [currentDashboardId]);
 
   const handleEditCategory = (category: Category) => {
     setEditingCategory(category);

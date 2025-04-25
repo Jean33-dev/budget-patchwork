@@ -7,6 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import { db } from "@/services/database";
 import { useEffect, useState } from "react";
+import { useDashboardContext } from "@/hooks/useDashboardContext";
 
 interface CategoryCardProps {
   category: Category;
@@ -15,19 +16,26 @@ interface CategoryCardProps {
 
 export const CategoryCard = ({ category, onEdit }: CategoryCardProps) => {
   const [budgetNames, setBudgetNames] = useState<string[]>([]);
+  const { currentDashboardId } = useDashboardContext();
 
   useEffect(() => {
     const loadBudgetNames = async () => {
       const allBudgets = await db.getBudgets();
+      
+      // Filtrer les budgets par dashboardId
+      const filteredBudgets = allBudgets.filter(budget => 
+        String(budget.dashboardId) === String(currentDashboardId)
+      );
+      
       const names = category.budgets.map(budgetId => {
-        const budget = allBudgets.find(b => b.id === budgetId);
+        const budget = filteredBudgets.find(b => b.id === budgetId);
         return budget ? budget.title : budgetId;
       });
       setBudgetNames(names);
     };
 
     loadBudgetNames();
-  }, [category.budgets]);
+  }, [category.budgets, currentDashboardId]);
 
   const percentage = category.total > 0 ? (category.spent / category.total) * 100 : 0;
   const isOverBudget = percentage > 100;

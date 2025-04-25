@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { Category } from "@/types/categories";
 import { useToast } from "@/hooks/use-toast";
 import { db } from "@/services/database";
+import { useDashboardContext } from "./useDashboardContext";
 
 const defaultCategories: Category[] = [
   { 
@@ -34,10 +35,11 @@ const defaultCategories: Category[] = [
 export const useCategoryManagement = () => {
   const { toast } = useToast();
   const [categories, setCategories] = useState<Category[]>([]);
+  const { currentDashboardId } = useDashboardContext();
 
   const loadCategories = async () => {
     try {
-      console.log("Début du chargement des catégories...");
+      console.log("Début du chargement des catégories pour le dashboard:", currentDashboardId);
       let dbCategories = await db.getCategories();
       console.log("Catégories chargées depuis la DB:", dbCategories);
       
@@ -62,7 +64,7 @@ export const useCategoryManagement = () => {
         description: category.description || ''
       }));
       
-      console.log("Catégories finales après traitement:", dbCategories);
+      console.log("Catégories finales après traitement pour le dashboard", currentDashboardId, ":", dbCategories);
       setCategories(dbCategories);
     } catch (error) {
       console.error("Erreur lors du chargement des catégories:", error);
@@ -74,14 +76,14 @@ export const useCategoryManagement = () => {
     }
   };
 
-  // Charger les catégories au montage du composant
+  // Charger les catégories au montage du composant ou quand le dashboardId change
   useEffect(() => {
-    console.log("useEffect: Chargement initial des catégories");
+    console.log("useEffect: Chargement des catégories pour le dashboard:", currentDashboardId);
     loadCategories();
-  }, []);
+  }, [currentDashboardId]);
 
   const refreshCategories = async () => {
-    console.log("Début du rafraîchissement des catégories");
+    console.log("Début du rafraîchissement des catégories pour le dashboard:", currentDashboardId);
     await loadCategories();
     console.log("Rafraîchissement des catégories terminé");
   };
@@ -135,7 +137,7 @@ export const useCategoryManagement = () => {
   return {
     categories,
     updateCategoryName,
-    setCategories, // Make sure we're exporting setCategories
+    setCategories,
     refreshCategories
   };
 };
