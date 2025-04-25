@@ -1,4 +1,5 @@
 
+import { toast } from "@/components/ui/use-toast";
 import { db } from "@/services/database";
 import { Expense } from "@/services/database/models/expense";
 import { v4 as uuidv4 } from "uuid";
@@ -10,6 +11,7 @@ export type ExpenseFormData = {
   linkedBudgetId: string;
   date: string;
   dashboardId?: string;
+  isRecurring?: boolean;
 };
 
 export const expenseOperations = {
@@ -19,7 +21,12 @@ export const expenseOperations = {
       
       if (!data.linkedBudgetId) {
         console.error("expenseOperations.addExpense: Erreur - linkedBudgetId manquant");
-        throw new Error("Le budget associé est obligatoire pour une dépense");
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Le budget associé est obligatoire pour une dépense"
+        });
+        return false;
       }
       
       // Récupérer le dashboardId du contexte si non fourni explicitement
@@ -28,7 +35,12 @@ export const expenseOperations = {
         
       if (!dashboardId) {
         console.error("expenseOperations.addExpense: Erreur - dashboardId manquant");
-        throw new Error("L'ID du tableau de bord est obligatoire pour une dépense");
+        toast({
+          variant: "destructive",
+          title: "Erreur", 
+          description: "L'ID du tableau de bord est obligatoire pour une dépense"
+        });
+        return false;
       }
       
       console.log(`expenseOperations.addExpense: Using dashboardId: "${dashboardId}"`);
@@ -41,6 +53,7 @@ export const expenseOperations = {
         type: "expense",
         linkedBudgetId: data.linkedBudgetId,
         date: data.date || new Date().toISOString().split('T')[0],
+        isRecurring: !!data.isRecurring,
         dashboardId: dashboardId
       };
 
@@ -50,9 +63,19 @@ export const expenseOperations = {
       await db.addExpense(newExpense);
       console.log("expenseOperations.addExpense: Expense added successfully");
       
+      toast({
+        title: "Dépense ajoutée",
+        description: `La dépense "${data.title}" a été ajoutée avec succès.`
+      });
+      
       return true;
     } catch (error) {
       console.error("Error adding expense:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible d'ajouter la dépense"
+      });
       return false;
     }
   },
@@ -67,7 +90,12 @@ export const expenseOperations = {
       
       if (!expenseToUpdate.linkedBudgetId) {
         console.error("expenseOperations.updateExpense: Erreur - linkedBudgetId manquant");
-        throw new Error("Le budget associé est obligatoire pour une dépense");
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Le budget associé est obligatoire pour une dépense"
+        });
+        return false;
       }
       
       // Récupérer le dashboardId du contexte si non fourni explicitement
@@ -76,7 +104,12 @@ export const expenseOperations = {
         
       if (!dashboardId) {
         console.error("expenseOperations.updateExpense: Erreur - dashboardId manquant");
-        throw new Error("L'ID du tableau de bord est obligatoire pour une dépense");
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "L'ID du tableau de bord est obligatoire pour une dépense"
+        });
+        return false;
       }
       
       console.log(`expenseOperations.updateExpense: Using dashboardId: "${dashboardId}"`);
@@ -89,6 +122,7 @@ export const expenseOperations = {
         type: "expense",
         linkedBudgetId: String(expenseToUpdate.linkedBudgetId),
         date: String(expenseToUpdate.date || new Date().toISOString().split('T')[0]),
+        isRecurring: !!expenseToUpdate.isRecurring,
         dashboardId: dashboardId
       };
 
@@ -98,9 +132,19 @@ export const expenseOperations = {
       await db.updateExpense(validatedExpense);
       console.log("expenseOperations.updateExpense: Expense updated successfully");
       
+      toast({
+        title: "Dépense modifiée",
+        description: `La dépense "${expenseToUpdate.title}" a été mise à jour.`
+      });
+      
       return true;
     } catch (error) {
       console.error("Error updating expense:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible de modifier la dépense"
+      });
       return false;
     }
   },
@@ -116,9 +160,19 @@ export const expenseOperations = {
       await db.deleteExpense(String(expenseId));
       console.log(`expenseOperations.deleteExpense: Expense ${expenseId} deleted successfully`);
       
+      toast({
+        title: "Dépense supprimée",
+        description: "La dépense a été supprimée avec succès."
+      });
+      
       return true;
     } catch (error) {
       console.error(`Error deleting expense ${expenseId}:`, error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible de supprimer la dépense"
+      });
       return false;
     }
   }

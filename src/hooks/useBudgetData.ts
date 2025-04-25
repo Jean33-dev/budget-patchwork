@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { toast } from "@/components/ui/use-toast";
 import { db } from "@/services/database";
 import { Budget } from "@/types/categories";
+import { useDashboardContext } from "./useDashboardContext";
 
 export const useBudgetData = () => {
   const [budgets, setBudgets] = useState<Budget[]>([]);
@@ -10,13 +11,14 @@ export const useBudgetData = () => {
   const [totalExpenses, setTotalExpenses] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const { currentDashboardId } = useDashboardContext();
 
   const loadData = async () => {
     setIsLoading(true);
     setError(null);
     
     try {
-      console.log("Loading budget data...");
+      console.log("Loading budget data for dashboardId:", currentDashboardId);
       
       // Force database initialization
       const dbInitialized = await db.init();
@@ -28,22 +30,38 @@ export const useBudgetData = () => {
       console.log("Database initialized, loading budgets...");
       
       // Load budgets
-      const budgetsData = await db.getBudgets();
-      console.log("Budgets loaded:", budgetsData);
+      const allBudgets = await db.getBudgets();
+      console.log("All budgets loaded:", allBudgets);
+      
+      // Filter budgets by dashboardId
+      const filteredBudgets = allBudgets.filter(budget => {
+        const match = String(budget.dashboardId) === String(currentDashboardId);
+        console.log(`Budget ${budget.title} has dashboardId ${budget.dashboardId}, match with current ${currentDashboardId}: ${match}`);
+        return match;
+      });
+      console.log("Filtered budgets by dashboardId:", filteredBudgets);
       
       // Load expenses
-      const expenses = await db.getExpenses();
-      console.log("Total expenses loaded:", expenses);
+      const allExpenses = await db.getExpenses();
+      console.log("All expenses loaded:", allExpenses);
+      
+      // Filter expenses by dashboardId
+      const filteredExpenses = allExpenses.filter(expense => {
+        const match = String(expense.dashboardId) === String(currentDashboardId);
+        console.log(`Expense ${expense.title} has dashboardId ${expense.dashboardId}, match with current ${currentDashboardId}: ${match}`);
+        return match;
+      });
+      console.log("Filtered expenses by dashboardId:", filteredExpenses);
       
       // Calculate total expenses
-      const totalSpent = expenses.reduce((sum, expense) => 
+      const totalSpent = filteredExpenses.reduce((sum, expense) => 
         sum + (Number(expense.budget) || 0), 0
       );
       setTotalExpenses(totalSpent);
       
       // Update budgets with their associated expenses
-      const validatedBudgets = budgetsData.map(budget => {
-        const budgetExpenses = expenses.filter(expense => 
+      const validatedBudgets = filteredBudgets.map(budget => {
+        const budgetExpenses = filteredExpenses.filter(expense => 
           expense.linkedBudgetId === budget.id
         );
         const budgetSpent = budgetExpenses.reduce((sum, expense) => 
@@ -62,8 +80,18 @@ export const useBudgetData = () => {
       console.log("Budgets updated with expenses:", validatedBudgets);
 
       // Load and calculate incomes
-      const incomesData = await db.getIncomes();
-      const totalIncome = incomesData.reduce((sum, income) => 
+      const allIncomes = await db.getIncomes();
+      console.log("All incomes loaded:", allIncomes);
+      
+      // Filter incomes by dashboardId
+      const filteredIncomes = allIncomes.filter(income => {
+        const match = String(income.dashboardId) === String(currentDashboardId);
+        console.log(`Income ${income.title} has dashboardId ${income.dashboardId}, match with current ${currentDashboardId}: ${match}`);
+        return match;
+      });
+      console.log("Filtered incomes by dashboardId:", filteredIncomes);
+      
+      const totalIncome = filteredIncomes.reduce((sum, income) => 
         sum + (Number(income.budget) || 0), 0
       );
       
@@ -83,10 +111,10 @@ export const useBudgetData = () => {
     }
   };
 
-  // Load data on component mount
+  // Load data on component mount or when dashboardId changes
   useEffect(() => {
     loadData();
-  }, []);
+  }, [currentDashboardId]);
 
   return {
     budgets,

@@ -29,6 +29,15 @@ export const useExpenseManagement = (budgetId: string | null) => {
   
   console.log("useExpenseManagement - loaded expenses count:", expenses.length);
   console.log("useExpenseManagement - expense sample:", expenses.slice(0, 2));
+  console.log("useExpenseManagement - available budgets:", availableBudgets);
+
+  // Store current dashboardId in localStorage
+  useEffect(() => {
+    if (currentDashboardId) {
+      console.log("useExpenseManagement: Setting currentDashboardId in localStorage:", currentDashboardId);
+      localStorage.setItem('currentDashboardId', currentDashboardId);
+    }
+  }, [currentDashboardId]);
 
   // Operation handlers with dashboard context
   const { 

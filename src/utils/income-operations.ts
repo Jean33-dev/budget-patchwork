@@ -1,4 +1,5 @@
 
+import { toast } from "@/components/ui/use-toast";
 import { db } from "@/services/database";
 import { Income } from "@/services/database/models/income";
 import { v4 as uuidv4 } from "uuid";
@@ -23,7 +24,12 @@ export const incomeOperations = {
         
       if (!dashboardId) {
         console.error("incomeOperations.addIncome: Erreur - dashboardId manquant");
-        throw new Error("L'ID du tableau de bord est obligatoire pour un revenu");
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "L'ID du tableau de bord est obligatoire pour un revenu"
+        });
+        return false;
       }
       
       console.log(`incomeOperations.addIncome: Using dashboardId: "${dashboardId}"`);
@@ -45,9 +51,19 @@ export const incomeOperations = {
       await db.addIncome(newIncome);
       console.log("incomeOperations.addIncome: Income added successfully");
       
+      toast({
+        title: "Revenu ajouté",
+        description: `Le revenu "${data.title}" a été ajouté avec succès.`
+      });
+      
       return true;
     } catch (error) {
       console.error("Error adding income:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible d'ajouter le revenu"
+      });
       return false;
     }
   },
@@ -66,7 +82,12 @@ export const incomeOperations = {
         
       if (!dashboardId) {
         console.error("incomeOperations.updateIncome: Erreur - dashboardId manquant");
-        throw new Error("L'ID du tableau de bord est obligatoire pour un revenu");
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "L'ID du tableau de bord est obligatoire pour un revenu"
+        });
+        return false;
       }
       
       console.log(`incomeOperations.updateIncome: Using dashboardId: "${dashboardId}"`);
@@ -88,9 +109,19 @@ export const incomeOperations = {
       await db.updateIncome(validatedIncome);
       console.log("incomeOperations.updateIncome: Income updated successfully");
       
+      toast({
+        title: "Revenu modifié",
+        description: `Le revenu "${incomeToUpdate.title}" a été mis à jour.`
+      });
+      
       return true;
     } catch (error) {
       console.error("Error updating income:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible de modifier le revenu"
+      });
       return false;
     }
   },
@@ -106,9 +137,19 @@ export const incomeOperations = {
       await db.deleteIncome(String(incomeId));
       console.log(`incomeOperations.deleteIncome: Income ${incomeId} deleted successfully`);
       
+      toast({
+        title: "Revenu supprimé",
+        description: "Le revenu a été supprimé avec succès."
+      });
+      
       return true;
     } catch (error) {
       console.error(`Error deleting income ${incomeId}:`, error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible de supprimer le revenu"
+      });
       return false;
     }
   }
