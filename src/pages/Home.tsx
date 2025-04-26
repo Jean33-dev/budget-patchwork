@@ -7,6 +7,7 @@ import { CreateDashboardDialog } from "@/components/dashboard/CreateDashboardDia
 import { EditDashboardDialog } from "@/components/dashboard/EditDashboardDialog";
 import { ErrorBoundary } from "@/components/error-boundary/ErrorBoundary";
 import { DashboardGridErrorBoundary } from "@/components/dashboard/DashboardGridErrorBoundary";
+import { DashboardCardSkeleton } from "@/components/dashboard/DashboardCardSkeleton";
 
 const Home = () => {
   const { dashboards, isLoading, createDashboard, updateDashboard, deleteDashboard } = useDashboardManagement();
@@ -32,7 +33,12 @@ const Home = () => {
         
         <DashboardGridErrorBoundary>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {dashboards.length > 0 ? (
+            {isLoading ? (
+              // Show 3 skeleton cards while loading
+              [...Array(3)].map((_, index) => (
+                <DashboardCardSkeleton key={index} />
+              ))
+            ) : dashboards.length > 0 ? (
               dashboards.map((dashboard) => (
                 <DashboardCard
                   key={dashboard.id}
@@ -42,11 +48,11 @@ const Home = () => {
                   onDelete={deleteDashboard}
                 />
               ))
-            ) : !isLoading ? (
+            ) : (
               <div className="col-span-full text-center py-8 text-gray-500">
                 Aucun tableau de bord trouvé. Créez votre premier tableau de bord!
               </div>
-            ) : null}
+            )}
 
             <CreateDashboardCard onClick={() => setIsCreateDialogOpen(true)} />
           </div>
