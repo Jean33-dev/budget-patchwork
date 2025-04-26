@@ -1,10 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
-import { PlusCircle, LineChart, Settings, Pencil, Trash2 } from "lucide-react";
+import { PlusCircle, LineChart, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
 import { CreateDashboardDialog } from "@/components/dashboard/CreateDashboardDialog";
+import { EditDashboardDialog } from "@/components/dashboard/EditDashboardDialog";
 import { db } from "@/services/database";
 import { v4 as uuidv4 } from 'uuid';
 
@@ -12,6 +13,8 @@ const Home = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [currentDashboard, setCurrentDashboard] = useState<{id: string, title: string} | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [dashboards, setDashboards] = useState<Array<{id: string, title: string}>>([]);
 
@@ -103,10 +106,40 @@ const Home = () => {
   };
 
   const handleEditDashboard = (id: string, currentTitle: string) => {
-    toast({
-      title: "Info",
-      description: "Fonctionnalité de modification à venir"
-    });
+    setCurrentDashboard({ id, title: currentTitle });
+    setIsEditDialogOpen(true);
+  };
+
+  const handleUpdateDashboard = async (newTitle: string) => {
+    if (!currentDashboard) return;
+    
+    try {
+      const dashboard = await db.getDashboardById(currentDashboard.id);
+      if (dashboard) {
+        await db.updateDashboard({
+          ...dashboard,
+          title: newTitle,
+          updatedAt: new Date().toISOString()
+        });
+        
+        const updatedDashboards = await db.getDashboards();
+        setDashboards(updatedDashboards);
+        
+        setIsEditDialogOpen(false);
+        
+        toast({
+          title: "Succès",
+          description: "Le tableau de bord a été modifié"
+        });
+      }
+    } catch (error) {
+      console.error("🔍 Home - Erreur lors de la modification du tableau de bord:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible de modifier le tableau de bord"
+      });
+    }
   };
 
   return (
@@ -187,6 +220,15 @@ const Home = () => {
         onOpenChange={setIsCreateDialogOpen}
         onSave={handleSaveDashboard}
       />
+
+      {currentDashboard && (
+        <EditDashboardDialog
+          open={isEditDialogOpen}
+          onOpenChange={setIsEditDialogOpen}
+          currentName={currentDashboard.title}
+          onSave={handleUpdateDashboard}
+        />
+      )}
     </div>
   );
 };
