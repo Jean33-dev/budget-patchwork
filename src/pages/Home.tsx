@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { PlusCircle, LineChart, Settings } from "lucide-react";
@@ -45,7 +44,6 @@ const Home = () => {
 
   const handleSaveDashboard = async (name: string) => {
     try {
-      // Génération d'un UUID pour le nouveau dashboard
       const newDashboardId = uuidv4();
       console.log("🔍 Home - Création d'un nouveau tableau de bord avec ID:", newDashboardId);
       
@@ -58,21 +56,16 @@ const Home = () => {
 
       console.log("🔍 Home - Nouveau dashboard à créer:", newDashboard);
       
-      // Sauvegarde dans SQLite
       await db.addDashboard(newDashboard);
       console.log("🔍 Home - Dashboard sauvegardé dans SQLite");
       
-      // Mise à jour de la liste des dashboards
       const updatedDashboards = await db.getDashboards();
       setDashboards(updatedDashboards);
       
-      // Stockage de l'ID du dashboard courant pour la navigation
       localStorage.setItem('currentDashboardId', newDashboardId);
       
-      // Fermeture de la modal
       setIsCreateDialogOpen(false);
       
-      // Navigation vers le nouveau dashboard
       navigate(`/dashboard/${newDashboardId}`);
       
       toast({
@@ -86,7 +79,7 @@ const Home = () => {
         title: "Erreur",
         description: "Impossible de créer le tableau de bord"
       });
-      throw error; // Re-throw pour que le dialog puisse gérer l'état de loading
+      throw error;
     }
   };
   
@@ -115,7 +108,6 @@ const Home = () => {
       
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {dashboards.length > 0 ? (
-          // Liste des tableaux de bord existants
           dashboards.map((dashboard) => (
             <Card 
               key={dashboard.id}
@@ -144,11 +136,6 @@ const Home = () => {
                   </Button>
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="text-sm text-gray-500">
-                  ID: {dashboard.id.substring(0, 8)}...
-                </div>
-              </CardContent>
             </Card>
           ))
         ) : !isLoading ? (
@@ -157,7 +144,6 @@ const Home = () => {
           </div>
         ) : null}
 
-        {/* Carte pour créer un nouveau tableau de bord */}
         <Card 
           className="border-dashed cursor-pointer hover:shadow-lg transition-shadow"
           onClick={handleCreateDashboard}
