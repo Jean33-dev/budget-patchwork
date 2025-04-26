@@ -168,6 +168,11 @@ function toast({ ...props }: Toast) {
   }
 }
 
+  // ✨ Auto-dismiss après 3000ms (3s)
+  setTimeout(() => {
+    dismiss()
+  }, 3000)
+
 function useToast() {
   const [state, setState] = React.useState<State>(memoryState)
 
