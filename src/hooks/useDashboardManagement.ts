@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { db } from "@/services/database";
@@ -16,7 +16,7 @@ export const useDashboardManagement = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [dashboards, setDashboards] = useState<Dashboard[]>([]);
 
-  const loadDashboards = async () => {
+  const loadDashboards = useCallback(async () => {
     try {
       await db.init();
       console.log("🔍 Home - Chargement des tableaux de bord...");
@@ -33,7 +33,7 @@ export const useDashboardManagement = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [toast]);
 
   const createDashboard = async (name: string) => {
     try {
@@ -48,8 +48,7 @@ export const useDashboardManagement = () => {
       };
 
       await db.addDashboard(newDashboard);
-      const updatedDashboards = await db.getDashboards();
-      setDashboards(updatedDashboards);
+      await loadDashboards(); // Recharger les tableaux de bord après création
       
       localStorage.setItem('currentDashboardId', newDashboardId);
       navigate(`/dashboard/${newDashboardId}`);
@@ -71,6 +70,7 @@ export const useDashboardManagement = () => {
 
   const updateDashboard = async (dashboardId: string, newTitle: string) => {
     try {
+      console.log(`🔍 Home - Mise à jour du tableau de bord ${dashboardId} avec le titre "${newTitle}"`);
       const dashboard = await db.getDashboardById(dashboardId);
       if (dashboard) {
         await db.updateDashboard({
@@ -79,12 +79,18 @@ export const useDashboardManagement = () => {
           updatedAt: new Date().toISOString()
         });
         
-        const updatedDashboards = await db.getDashboards();
-        setDashboards(updatedDashboards);
+        await loadDashboards(); // Recharger les tableaux de bord après modification
         
         toast({
           title: "Succès",
           description: "Le tableau de bord a été modifié"
+        });
+      } else {
+        console.error(`🔍 Home - Tableau de bord avec ID ${dashboardId} non trouvé`);
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Tableau de bord non trouvé"
         });
       }
     } catch (error) {
@@ -100,8 +106,8 @@ export const useDashboardManagement = () => {
   const deleteDashboard = async (id: string) => {
     try {
       await db.deleteDashboard(id);
-      const updatedDashboards = await db.getDashboards();
-      setDashboards(updatedDashboards);
+      await loadDashboards(); // Recharger les tableaux de bord après suppression
+      
       toast({
         title: "Succès",
         description: "Le tableau de bord a été supprimé",
@@ -118,11 +124,12 @@ export const useDashboardManagement = () => {
 
   useEffect(() => {
     loadDashboards();
-  }, [toast]);
+  }, [loadDashboards]);
 
   return {
     dashboards,
     isLoading,
+    loadDashboards,
     createDashboard,
     updateDashboard,
     deleteDashboard

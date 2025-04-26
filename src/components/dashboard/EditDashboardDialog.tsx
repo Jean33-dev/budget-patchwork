@@ -30,6 +30,7 @@ export const EditDashboardDialog = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (name.trim()) {
+      console.log("EditDashboardDialog: Saving new dashboard name:", name);
       onSave(name);
       onOpenChange(false);
     }

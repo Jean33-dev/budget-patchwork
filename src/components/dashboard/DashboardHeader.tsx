@@ -1,10 +1,12 @@
+
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Home, Clock, CreditCard, DollarSign, Calendar, CalendarPlus, Download } from "lucide-react";
+import { ArrowLeft, CalendarPlus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { db } from "@/services/database";
 import { BudgetPDFDownload } from "@/components/pdf/BudgetPDF";
 import { useBudgets } from "@/hooks/useBudgets";
+import { useDashboardContext } from "@/hooks/useDashboardContext";
 
 interface DashboardHeaderProps {
   currentDate: Date;
@@ -16,23 +18,38 @@ export const DashboardHeader = ({ currentDate, onMonthChange, onBackClick }: Das
   const navigate = useNavigate();
   const [dashboardTitle, setDashboardTitle] = useState("Budget");
   const { budgets, totalRevenues, totalExpenses } = useBudgets();
+  const { currentDashboardId } = useDashboardContext();
 
   useEffect(() => {
     const loadDashboardTitle = async () => {
       try {
+        // D'abord, essayer de charger le titre du tableau de bord actuel
+        if (currentDashboardId) {
+          console.log("DashboardHeader: Chargement du dashboard avec ID:", currentDashboardId);
+          const dashboard = await db.getDashboardById(currentDashboardId);
+          
+          if (dashboard) {
+            console.log("DashboardHeader: Dashboard trouvé:", dashboard.title);
+            setDashboardTitle(dashboard.title);
+            return;
+          }
+        }
+        
+        // Fallback: rechercher un tableau de bord avec l'ID "dashboard_title"
         const budgets = await db.getBudgets();
         const dashboardTitleBudget = budgets.find(b => b.id === "dashboard_title");
         
         if (dashboardTitleBudget) {
+          console.log("DashboardHeader: Utilisation du titre de fallback:", dashboardTitleBudget.title);
           setDashboardTitle(dashboardTitleBudget.title);
         }
       } catch (error) {
-        console.error("Erreur lors du chargement du titre:", error);
+        console.error("DashboardHeader: Erreur lors du chargement du titre:", error);
       }
     };
 
     loadDashboardTitle();
-  }, []);
+  }, [currentDashboardId]); // Recharger le titre lorsque l'ID du tableau de bord change
 
   return (
     <div className="space-y-4">
