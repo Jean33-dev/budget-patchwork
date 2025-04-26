@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Home, Clock, CreditCard, DollarSign, Calendar, CalendarPlus, Download } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -14,7 +15,7 @@ interface DashboardHeaderProps {
 
 export const DashboardHeader = ({ currentDate, onMonthChange, onBackClick }: DashboardHeaderProps) => {
   const navigate = useNavigate();
-  const [dashboardTitle, setDashboardTitle] = useState("Budget");
+  const [dashboardTitle, setDashboardTitle] = useState("Budget Patchwork");
   const { budgets, totalRevenues, totalExpenses } = useBudgets();
 
   useEffect(() => {
