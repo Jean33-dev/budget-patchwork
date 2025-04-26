@@ -37,6 +37,8 @@ export const ExpenseTable = ({
 
   const handleUpdate = (updatedExpense: any) => {
     if (onUpdateExpense) {
+      // Assurez-vous que dashboardId est conservé lors de la mise à jour
+      console.log("ExpenseTable - handleUpdate with expense:", updatedExpense);
       onUpdateExpense(updatedExpense);
     }
     setExpandedRow(null);

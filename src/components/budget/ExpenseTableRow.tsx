@@ -52,6 +52,9 @@ export const ExpenseTableRow = ({
     toggleRow(expense.id);
   };
 
+  // Ajouter un log pour voir l'ID du tableau de bord
+  console.log(`ExpenseTableRow - expense ID: ${expense.id}, dashboardId: ${expense.dashboardId || 'none'}`);
+
   return (
     <TableRow 
       key={expense.id}
