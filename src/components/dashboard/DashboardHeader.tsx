@@ -1,12 +1,13 @@
 
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, CalendarPlus } from "lucide-react";
+import { ArrowLeft, CalendarPlus, Edit } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { db } from "@/services/database";
 import { BudgetPDFDownload } from "@/components/pdf/BudgetPDF";
 import { useBudgets } from "@/hooks/useBudgets";
 import { useDashboardContext } from "@/hooks/useDashboardContext";
+import { EditDashboardDialog } from "./EditDashboardDialog";
 
 interface DashboardHeaderProps {
   currentDate: Date;
@@ -19,37 +20,74 @@ export const DashboardHeader = ({ currentDate, onMonthChange, onBackClick }: Das
   const [dashboardTitle, setDashboardTitle] = useState("Budget");
   const { budgets, totalRevenues, totalExpenses } = useBudgets();
   const { currentDashboardId } = useDashboardContext();
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+
+  const loadDashboardTitle = async () => {
+    try {
+      // D'abord, essayer de charger le titre du tableau de bord actuel
+      if (currentDashboardId) {
+        console.log("DashboardHeader: Chargement du dashboard avec ID:", currentDashboardId);
+        const dashboard = await db.getDashboardById(currentDashboardId);
+        
+        if (dashboard) {
+          console.log("DashboardHeader: Dashboard trouvé:", dashboard.title);
+          setDashboardTitle(dashboard.title);
+          return;
+        } else {
+          console.log("DashboardHeader: Dashboard non trouvé avec ID:", currentDashboardId);
+        }
+      }
+      
+      // Fallback: rechercher un tableau de bord avec l'ID "dashboard_title"
+      const budgets = await db.getBudgets();
+      const dashboardTitleBudget = budgets.find(b => b.id === "dashboard_title");
+      
+      if (dashboardTitleBudget) {
+        console.log("DashboardHeader: Utilisation du titre de fallback:", dashboardTitleBudget.title);
+        setDashboardTitle(dashboardTitleBudget.title);
+      }
+    } catch (error) {
+      console.error("DashboardHeader: Erreur lors du chargement du titre:", error);
+    }
+  };
 
   useEffect(() => {
-    const loadDashboardTitle = async () => {
-      try {
-        // D'abord, essayer de charger le titre du tableau de bord actuel
-        if (currentDashboardId) {
-          console.log("DashboardHeader: Chargement du dashboard avec ID:", currentDashboardId);
-          const dashboard = await db.getDashboardById(currentDashboardId);
-          
-          if (dashboard) {
-            console.log("DashboardHeader: Dashboard trouvé:", dashboard.title);
-            setDashboardTitle(dashboard.title);
-            return;
-          }
-        }
-        
-        // Fallback: rechercher un tableau de bord avec l'ID "dashboard_title"
-        const budgets = await db.getBudgets();
-        const dashboardTitleBudget = budgets.find(b => b.id === "dashboard_title");
-        
-        if (dashboardTitleBudget) {
-          console.log("DashboardHeader: Utilisation du titre de fallback:", dashboardTitleBudget.title);
-          setDashboardTitle(dashboardTitleBudget.title);
-        }
-      } catch (error) {
-        console.error("DashboardHeader: Erreur lors du chargement du titre:", error);
-      }
-    };
-
     loadDashboardTitle();
   }, [currentDashboardId]); // Recharger le titre lorsque l'ID du tableau de bord change
+
+  const handleUpdateDashboard = async (newTitle: string) => {
+    try {
+      if (!currentDashboardId) return;
+      
+      // Mettre à jour le dashboard directement dans la base de données
+      const dashboard = await db.getDashboardById(currentDashboardId);
+      
+      if (dashboard) {
+        await db.updateDashboard({
+          ...dashboard,
+          title: newTitle,
+          updatedAt: new Date().toISOString()
+        });
+        
+        // Mettre à jour l'affichage sans attendre le useEffect
+        setDashboardTitle(newTitle);
+        console.log("DashboardHeader: Titre mis à jour avec succès:", newTitle);
+      } else {
+        // Si le dashboard n'existe pas, le créer
+        console.log("DashboardHeader: Création d'un nouveau dashboard avec ID:", currentDashboardId);
+        await db.addDashboard({
+          id: currentDashboardId,
+          title: newTitle,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        });
+        setDashboardTitle(newTitle);
+      }
+    } catch (error) {
+      console.error("DashboardHeader: Erreur lors de la mise à jour du titre:", error);
+      throw error;
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -63,7 +101,17 @@ export const DashboardHeader = ({ currentDate, onMonthChange, onBackClick }: Das
           <ArrowLeft className="h-4 w-4" />
         </Button>
 
-        <h1 className="text-xl">Tableau de bord {dashboardTitle}</h1>
+        <div className="flex items-center gap-2 flex-grow">
+          <h1 className="text-xl">Tableau de bord {dashboardTitle}</h1>
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={() => setIsEditDialogOpen(true)}
+            className="h-7 w-7"
+          >
+            <Edit className="h-3.5 w-3.5" />
+          </Button>
+        </div>
       </div>
       
       <div className="flex justify-end gap-2 mb-4">
@@ -84,6 +132,13 @@ export const DashboardHeader = ({ currentDate, onMonthChange, onBackClick }: Das
           Nouveau mois
         </Button>
       </div>
+
+      <EditDashboardDialog
+        open={isEditDialogOpen}
+        onOpenChange={setIsEditDialogOpen}
+        currentName={dashboardTitle}
+        onSave={handleUpdateDashboard}
+      />
     </div>
   );
 };

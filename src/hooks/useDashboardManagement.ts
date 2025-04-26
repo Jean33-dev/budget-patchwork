@@ -71,28 +71,54 @@ export const useDashboardManagement = () => {
   const updateDashboard = async (dashboardId: string, newTitle: string) => {
     try {
       console.log(`🔍 Home - Mise à jour du tableau de bord ${dashboardId} avec le titre "${newTitle}"`);
-      const dashboard = await db.getDashboardById(dashboardId);
+      
+      // Rechercher le dashboard d'abord dans notre état local
+      let dashboard = dashboards.find(d => d.id === dashboardId);
+      
       if (dashboard) {
-        await db.updateDashboard({
-          ...dashboard,
-          title: newTitle,
-          updatedAt: new Date().toISOString()
-        });
-        
-        await loadDashboards(); // Recharger les tableaux de bord après modification
-        
-        toast({
-          title: "Succès",
-          description: "Le tableau de bord a été modifié"
-        });
+        console.log(`🔍 Home - Dashboard trouvé dans l'état local:`, dashboard);
       } else {
-        console.error(`🔍 Home - Tableau de bord avec ID ${dashboardId} non trouvé`);
-        toast({
-          variant: "destructive",
-          title: "Erreur",
-          description: "Tableau de bord non trouvé"
-        });
+        // Si pas trouvé dans l'état local, essayer de le récupérer directement depuis la base de données
+        console.log(`🔍 Home - Dashboard non trouvé dans l'état local, recherche dans la base de données...`);
+        const fetchedDashboard = await db.getDashboardById(dashboardId);
+        
+        if (fetchedDashboard) {
+          console.log(`🔍 Home - Dashboard trouvé dans la base de données:`, fetchedDashboard);
+          dashboard = fetchedDashboard;
+        } else {
+          // Si toujours pas trouvé, créer un nouveau dashboard avec cet ID
+          console.log(`🔍 Home - Dashboard non trouvé, création d'un nouveau dashboard avec l'ID ${dashboardId}`);
+          dashboard = {
+            id: dashboardId,
+            title: newTitle,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          };
+          
+          await db.addDashboard(dashboard);
+          toast({
+            title: "Succès",
+            description: "Nouveau tableau de bord créé"
+          });
+          await loadDashboards();
+          return;
+        }
       }
+      
+      // Mettre à jour le dashboard
+      await db.updateDashboard({
+        ...dashboard,
+        title: newTitle,
+        updatedAt: new Date().toISOString()
+      });
+      
+      await loadDashboards(); // Recharger les tableaux de bord après modification
+      
+      toast({
+        title: "Succès",
+        description: "Le tableau de bord a été modifié"
+      });
+      
     } catch (error) {
       console.error("🔍 Home - Erreur lors de la modification du tableau de bord:", error);
       toast({
