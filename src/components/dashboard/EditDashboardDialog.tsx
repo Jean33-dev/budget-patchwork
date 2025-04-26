@@ -31,6 +31,7 @@ export const EditDashboardDialog = ({
     e.preventDefault();
     if (name.trim()) {
       onSave(name);
+      onOpenChange(false);
     }
   };
 
