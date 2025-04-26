@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
-import { PlusCircle, LineChart, Settings } from "lucide-react";
+import { PlusCircle, LineChart, Settings, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
@@ -102,6 +102,13 @@ const Home = () => {
     }
   };
 
+  const handleEditDashboard = (id: string, currentTitle: string) => {
+    toast({
+      title: "Info",
+      description: "Fonctionnalité de modification à venir"
+    });
+  };
+
   return (
     <div className="container mx-auto py-8 space-y-8">
       <h1 className="text-4xl font-bold">Mes Tableaux de Bord</h1>
@@ -123,17 +130,30 @@ const Home = () => {
                     <LineChart className="h-6 w-6" />
                     {dashboard.title}
                   </div>
-                  <Button 
-                    variant="ghost" 
-                    size="icon"
-                    className="h-8 w-8" 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeleteDashboard(dashboard.id);
-                    }}
-                  >
-                    <Settings className="h-4 w-4" />
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button 
+                      variant="ghost" 
+                      size="icon"
+                      className="h-8 w-8" 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEditDashboard(dashboard.id, dashboard.title);
+                      }}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="icon"
+                      className="h-8 w-8 text-destructive hover:text-destructive" 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteDashboard(dashboard.id);
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </CardTitle>
               </CardHeader>
             </Card>
