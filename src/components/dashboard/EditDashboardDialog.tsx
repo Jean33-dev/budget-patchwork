@@ -1,5 +1,5 @@
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -39,6 +39,9 @@ export const EditDashboardDialog = ({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Modifier le tableau de bord</DialogTitle>
+          <DialogDescription>
+            Modifiez le nom de votre tableau de bord.
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 py-4">
           <div className="space-y-2">
@@ -56,7 +59,6 @@ export const EditDashboardDialog = ({
               type="button" 
               variant="outline" 
               onClick={() => onOpenChange(false)}
-              className="mr-2"
             >
               Annuler
             </Button>
