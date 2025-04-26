@@ -4,11 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { db } from "@/services/database";
 import { v4 as uuidv4 } from 'uuid';
-
-export interface Dashboard {
-  id: string;
-  title: string;
-}
+import { Dashboard } from "@/services/database/models/dashboard"; // Import the correct Dashboard type
 
 export const useDashboardManagement = () => {
   const navigate = useNavigate();
@@ -40,11 +36,12 @@ export const useDashboardManagement = () => {
       const newDashboardId = uuidv4();
       console.log("🔍 Home - Création d'un nouveau tableau de bord avec ID:", newDashboardId);
       
-      const newDashboard = {
+      const now = new Date().toISOString();
+      const newDashboard: Dashboard = {
         id: newDashboardId,
         title: name,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        createdAt: now,
+        updatedAt: now
       };
 
       await db.addDashboard(newDashboard);
@@ -77,6 +74,15 @@ export const useDashboardManagement = () => {
       
       if (dashboard) {
         console.log(`🔍 Home - Dashboard trouvé dans l'état local:`, dashboard);
+        
+        // Mettre à jour le dashboard avec les données existantes
+        const updatedDashboard: Dashboard = {
+          ...dashboard,
+          title: newTitle,
+          updatedAt: new Date().toISOString()
+        };
+        
+        await db.updateDashboard(updatedDashboard);
       } else {
         // Si pas trouvé dans l'état local, essayer de le récupérer directement depuis la base de données
         console.log(`🔍 Home - Dashboard non trouvé dans l'état local, recherche dans la base de données...`);
@@ -84,33 +90,33 @@ export const useDashboardManagement = () => {
         
         if (fetchedDashboard) {
           console.log(`🔍 Home - Dashboard trouvé dans la base de données:`, fetchedDashboard);
-          dashboard = fetchedDashboard;
-        } else {
-          // Si toujours pas trouvé, créer un nouveau dashboard avec cet ID
-          console.log(`🔍 Home - Dashboard non trouvé, création d'un nouveau dashboard avec l'ID ${dashboardId}`);
-          dashboard = {
-            id: dashboardId,
+          
+          // Mettre à jour avec les données récupérées
+          const updatedDashboard: Dashboard = {
+            ...fetchedDashboard,
             title: newTitle,
-            createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString()
           };
           
-          await db.addDashboard(dashboard);
+          await db.updateDashboard(updatedDashboard);
+        } else {
+          // Si toujours pas trouvé, créer un nouveau dashboard avec cet ID
+          console.log(`🔍 Home - Dashboard non trouvé, création d'un nouveau dashboard avec l'ID ${dashboardId}`);
+          const now = new Date().toISOString();
+          const newDashboard: Dashboard = {
+            id: dashboardId,
+            title: newTitle,
+            createdAt: now,
+            updatedAt: now
+          };
+          
+          await db.addDashboard(newDashboard);
           toast({
             title: "Succès",
             description: "Nouveau tableau de bord créé"
           });
-          await loadDashboards();
-          return;
         }
       }
-      
-      // Mettre à jour le dashboard
-      await db.updateDashboard({
-        ...dashboard,
-        title: newTitle,
-        updatedAt: new Date().toISOString()
-      });
       
       await loadDashboards(); // Recharger les tableaux de bord après modification
       
