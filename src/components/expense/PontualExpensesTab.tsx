@@ -96,6 +96,7 @@ export const PontualExpensesTab = ({
           handleDeleteExpense={handleDeleteExpense}
           handleUpdateExpense={handleUpdateExpense}
           defaultBudgetId={budgetId}
+          showHeader={false}  // Ajout de cette propriété pour masquer l'en-tête
         />
       )}
     </>

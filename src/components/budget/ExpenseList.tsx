@@ -20,6 +20,7 @@ interface ExpenseListProps {
   handleDeleteExpense?: (id: string) => void;
   handleUpdateExpense?: (expense: Expense) => void;
   defaultBudgetId?: string;
+  showHeader?: boolean; // Ajout de cette propriété
 }
 
 export const ExpenseList = ({
@@ -31,6 +32,7 @@ export const ExpenseList = ({
   handleDeleteExpense,
   handleUpdateExpense,
   defaultBudgetId,
+  showHeader = true, // Par défaut, on affiche l'en-tête
 }: ExpenseListProps) => {
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
 
@@ -51,10 +53,12 @@ export const ExpenseList = ({
 
   return (
     <div className="space-y-6">
-      <EnvelopeListHeader
-        type="expense"
-        onAddClick={() => setAddDialogOpen(true)}
-      />
+      {showHeader && (
+        <EnvelopeListHeader
+          type="expense"
+          onAddClick={() => setAddDialogOpen(true)}
+        />
+      )}
 
       <ExpenseTable
         expenses={expenses}
