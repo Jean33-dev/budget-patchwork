@@ -129,6 +129,7 @@ const BudgetsPage = () => {
           onEnvelopeClick={handleEnvelopeClick}
           onViewExpenses={handleViewExpenses}
           onDeleteClick={handleDeleteClick}
+          showHeader={false}
         />
       )}
 

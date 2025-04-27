@@ -22,6 +22,7 @@ interface EnvelopeListProps {
   onViewExpenses?: (envelope: Envelope) => void;
   onDeleteEnvelope?: (id: string) => void;
   availableBudgets?: Array<{ id: string; title: string }>;
+  showHeader?: boolean; // Ajout d'une prop pour contrôler l'affichage de l'en-tête
 }
 
 export const EnvelopeList = ({ 
@@ -32,13 +33,17 @@ export const EnvelopeList = ({
   onDeleteClick,
   onViewExpenses,
   onDeleteEnvelope,
-  availableBudgets = []
+  availableBudgets = [],
+  showHeader = true // Par défaut, on affiche l'en-tête
 }: EnvelopeListProps) => {
   const filteredEnvelopes = envelopes.filter((env) => env.type === type);
 
   return (
     <div className="space-y-4">
-      <EnvelopeListHeader type={type} onAddClick={onAddClick} />
+      {/* Afficher l'en-tête uniquement si showHeader est true */}
+      {showHeader && (
+        <EnvelopeListHeader type={type} onAddClick={onAddClick} />
+      )}
       
       {type === "expense" ? (
         <ExpenseTable 
