@@ -1,3 +1,4 @@
+
 import { db } from "@/services/database";
 import { TransitionEnvelope, TransitionOption, MultiTransfer } from "@/types/transition";
 import { toast } from "@/components/ui/use-toast";
@@ -39,11 +40,28 @@ export const useBudgetTransitioner = () => {
             console.log(`Budget ${envelope.title} réinitialisé (spent = 0)`);
             break;
           
+          case "carry":
+            // Reporter le montant non dépensé
+            const remainingAmount = budgetToProcess.budget - budgetToProcess.spent;
+            if (remainingAmount > 0) {
+              // Mise à jour du budget avec le montant reporté
+              await updateBudgetCarriedOver(envelope.id, remainingAmount);
+              console.log(`Budget ${envelope.title} : ${remainingAmount} reporté au mois suivant`);
+            } else {
+              console.log(`Budget ${envelope.title} : rien à reporter (montant restant ≤ 0)`);
+            }
+            // Réinitialiser quand même le 'spent'
+            await updateBudgetSpent(envelope.id, 0);
+            break;
+          
           case "partial":
             // Conserver une partie du budget
             if (typeof envelope.partialAmount === 'number') {
-              await updateBudgetSpent(envelope.id, envelope.partialAmount);
-              console.log(`Budget ${envelope.title} partiellement conservé (spent = ${envelope.partialAmount})`);
+              // Mettre à jour le montant reporté
+              await updateBudgetCarriedOver(envelope.id, envelope.partialAmount);
+              // Et réinitialiser le spent
+              await updateBudgetSpent(envelope.id, 0);
+              console.log(`Budget ${envelope.title} partiellement reporté (${envelope.partialAmount})`);
             }
             break;
           
@@ -106,6 +124,28 @@ export const useBudgetTransitioner = () => {
     }
   };
   
+  // Nouvelle fonction pour mettre à jour le montant reporté
+  const updateBudgetCarriedOver = async (budgetId: string, carriedOverAmount: number) => {
+    try {
+      const budget = await db.getBudgets()
+        .then(budgets => budgets.find(b => b.id === budgetId));
+      
+      if (budget) {
+        // Additionner avec le montant déjà reporté s'il existe
+        const newCarriedOver = (budget.carriedOver || 0) + carriedOverAmount;
+        console.log(`Budget ${budget.title}: Montant reporté mis à jour de ${budget.carriedOver || 0} à ${newCarriedOver}`);
+        
+        await db.updateBudget({
+          ...budget,
+          carriedOver: newCarriedOver
+        });
+      }
+    } catch (error) {
+      console.error(`Erreur lors de la mise à jour du montant reporté pour le budget ${budgetId}:`, error);
+      throw error;
+    }
+  };
+  
   const transferBudget = async (sourceId: string, targetId: string, amount: number, dashboardId: string) => {
     try {
       const budgets = await db.getBudgets();
@@ -124,12 +164,14 @@ export const useBudgetTransitioner = () => {
         spent: 0
       });
       
-      // Ajouter le montant au budget cible
-      const newSpent = Math.max(0, target.spent - amount);
+      // Ajouter le montant au montant reporté du budget cible
+      const newCarriedOver = (target.carriedOver || 0) + amount;
       await db.updateBudget({
         ...target,
-        spent: newSpent
+        carriedOver: newCarriedOver
       });
+      
+      console.log(`Transfert de ${amount} depuis ${source.title} vers ${target.title} (nouveau report: ${newCarriedOver})`);
     } catch (error) {
       console.error(`Erreur lors du transfert du budget ${sourceId} vers ${targetId}:`, error);
       throw error;
@@ -157,12 +199,15 @@ export const useBudgetTransitioner = () => {
         
         if (target) {
           const transferAmount = transfer.amount || 0;
-          const newSpent = Math.max(0, target.spent - transferAmount);
+          // Ajouter le montant au report du budget cible
+          const newCarriedOver = (target.carriedOver || 0) + transferAmount;
           
           await db.updateBudget({
             ...target,
-            spent: newSpent
+            carriedOver: newCarriedOver
           });
+          
+          console.log(`Transfert de ${transferAmount} depuis ${source.title} vers ${target.title} (nouveau report: ${newCarriedOver})`);
         }
       }
     } catch (error) {
