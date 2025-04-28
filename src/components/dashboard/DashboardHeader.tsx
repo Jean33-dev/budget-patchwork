@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, CalendarPlus, ChevronDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -32,7 +31,6 @@ export const DashboardHeader = ({ currentDate, onMonthChange, onBackClick }: Das
 
   const loadDashboardTitle = async () => {
     try {
-      // D'abord, essayer de charger le titre du tableau de bord actuel
       if (currentDashboardId) {
         console.log("DashboardHeader: Chargement du dashboard avec ID:", currentDashboardId);
         const dashboard = await db.getDashboardById(currentDashboardId);
@@ -46,7 +44,6 @@ export const DashboardHeader = ({ currentDate, onMonthChange, onBackClick }: Das
         }
       }
       
-      // Fallback: rechercher un tableau de bord avec l'ID "dashboard_title"
       const budgets = await db.getBudgets();
       const dashboardTitleBudget = budgets.find(b => b.id === "dashboard_title");
       
@@ -72,13 +69,12 @@ export const DashboardHeader = ({ currentDate, onMonthChange, onBackClick }: Das
   useEffect(() => {
     loadDashboardTitle();
     loadDashboards();
-  }, [currentDashboardId]); // Recharger le titre lorsque l'ID du tableau de bord change
+  }, [currentDashboardId]);
 
   const handleUpdateDashboard = async (newTitle: string) => {
     try {
       if (!currentDashboardId) return;
       
-      // Mettre à jour le dashboard directement dans la base de données
       const dashboard = await db.getDashboardById(currentDashboardId);
       
       if (dashboard) {
@@ -88,11 +84,9 @@ export const DashboardHeader = ({ currentDate, onMonthChange, onBackClick }: Das
           updatedAt: new Date().toISOString()
         });
         
-        // Mettre à jour l'affichage sans attendre le useEffect
         setDashboardTitle(newTitle);
         console.log("DashboardHeader: Titre mis à jour avec succès:", newTitle);
       } else {
-        // Si le dashboard n'existe pas, le créer
         console.log("DashboardHeader: Création d'un nouveau dashboard avec ID:", currentDashboardId);
         await db.addDashboard({
           id: currentDashboardId,
