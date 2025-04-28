@@ -1,79 +1,129 @@
 
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 
+/**
+ * Custom hook to manage and determine the current dashboard ID based on URL and localStorage
+ */
 export const useDashboardContext = () => {
   const location = useLocation();
   const { dashboardId } = useParams();
 
+  /**
+   * Check if a route is a special route that doesn't directly contain a dashboard ID
+   * @param route The route to check
+   */
+  const isSpecialRoute = useCallback((route: string): boolean => {
+    const specialRoutes = ['budget', 'expenses', 'income', 'recurring-expenses', 'recurring-income', 'categories'];
+    return specialRoutes.includes(route);
+  }, []);
+
+  /**
+   * Get the stored dashboard ID from localStorage
+   */
+  const getStoredDashboardId = useCallback((): string | null => {
+    return localStorage.getItem('currentDashboardId');
+  }, []);
+
+  /**
+   * Store a dashboard ID in localStorage
+   * @param id The dashboard ID to store
+   */
+  const storeDashboardId = useCallback((id: string): void => {
+    localStorage.setItem('currentDashboardId', id);
+    console.log("🔍 useDashboardContext - Stored dashboardId:", id);
+  }, []);
+
+  /**
+   * Extract a potential dashboard ID from the current URL path
+   */
+  const extractDashboardIdFromPath = useCallback((): string | null => {
+    const pathParts = location.pathname.split('/');
+    console.log("🔍 useDashboardContext - pathname parts:", pathParts);
+    
+    const dashboardIndex = pathParts.indexOf('dashboard');
+    if (dashboardIndex !== -1 && pathParts[dashboardIndex + 1]) {
+      const potentialId = decodeURIComponent(pathParts[dashboardIndex + 1]);
+      console.log("🔍 useDashboardContext - Found potential dashboardId in path:", potentialId);
+      
+      if (isSpecialRoute(potentialId)) {
+        console.log("🔍 useDashboardContext - This is a special route:", potentialId);
+        return null;
+      }
+      
+      return potentialId;
+    }
+    
+    return null;
+  }, [location.pathname, isSpecialRoute]);
+
+  /**
+   * Generate a new dashboard ID
+   */
+  const generateNewDashboardId = useCallback((): string => {
+    const newId = uuidv4();
+    console.log("🔍 useDashboardContext - Creating new dashboardId:", newId);
+    storeDashboardId(newId);
+    return newId;
+  }, [storeDashboardId]);
+
+  /**
+   * Determine the current dashboard ID based on various sources
+   */
   const getCurrentDashboardId = useCallback((): string => {
     console.log("🔍 useDashboardContext - Starting with dashboardId param:", dashboardId);
     console.log("🔍 useDashboardContext - location pathname:", location.pathname);
     
-    // Priorité 1: Utiliser l'ID du dashboard des paramètres d'URL
+    // Priority 1: Use URL parameter if available and not a special route
     if (dashboardId) {
-      // Traiter les cas spéciaux comme "budget" directement
-      if (dashboardId === "budget") {
-        console.log("🔍 useDashboardContext - Special 'budget' route detected");
-        // Dans ce cas, on utilise l'ID stocké dans localStorage
-        const storedId = localStorage.getItem('currentDashboardId');
+      if (isSpecialRoute(dashboardId)) {
+        console.log("🔍 useDashboardContext - Special route detected in URL params:", dashboardId);
+        const storedId = getStoredDashboardId();
         if (storedId) {
           console.log("🔍 useDashboardContext - Using stored dashboardId:", storedId);
           return storedId;
         }
       } else {
         console.log("🔍 useDashboardContext - Using dashboardId from params:", dashboardId);
-        // Stocker l'ID courant pour référence future
-        localStorage.setItem('currentDashboardId', dashboardId);
+        storeDashboardId(dashboardId);
         return dashboardId;
       }
     }
-
-    // Priorité 2: Extraire l'ID du dashboard du chemin URL
-    const pathParts = location.pathname.split('/');
-    console.log("🔍 useDashboardContext - pathname parts:", pathParts);
     
-    const dashboardIndex = pathParts.indexOf('dashboard');
-    if (dashboardIndex !== -1 && pathParts[dashboardIndex + 1]) {
-      const specialRoutes = ['budget', 'expenses', 'income', 'recurring-expenses', 'recurring-income', 'categories'];
-      const potentialId = decodeURIComponent(pathParts[dashboardIndex + 1]);
-      console.log("🔍 useDashboardContext - Found potential dashboardId in path:", potentialId);
-      
-      if (specialRoutes.includes(potentialId)) {
-        console.log("🔍 useDashboardContext - This is a special route:", potentialId);
-        
-        // Pour les routes spéciales, utiliser l'ID stocké précédemment
-        const storedId = localStorage.getItem('currentDashboardId');
-        if (storedId) {
-          console.log("🔍 useDashboardContext - Using stored dashboardId:", storedId);
-          return storedId;
-        }
-      } else {
-        // Stocker l'ID courant pour référence future
-        localStorage.setItem('currentDashboardId', potentialId);
-        console.log("🔍 useDashboardContext - Returning ID from path:", potentialId);
-        return potentialId;
-      }
+    // Priority 2: Extract from URL path
+    const pathId = extractDashboardIdFromPath();
+    if (pathId) {
+      storeDashboardId(pathId);
+      console.log("🔍 useDashboardContext - Using ID from path:", pathId);
+      return pathId;
     }
     
-    // Priorité 3: Utiliser l'ID stocké dans localStorage
-    const storedId = localStorage.getItem('currentDashboardId');
+    // Priority 3: Use previously stored ID
+    const storedId = getStoredDashboardId();
     if (storedId) {
       console.log("🔍 useDashboardContext - Using previously stored dashboardId:", storedId);
       return storedId;
     }
     
-    // Priorité 4: Générer un nouvel ID si aucun n'est disponible
-    const newId = uuidv4();
-    console.log("🔍 useDashboardContext - Creating new dashboardId:", newId);
-    localStorage.setItem('currentDashboardId', newId);
-    
-    return newId;
-  }, [location, dashboardId]);
+    // Priority 4: Create new ID if none found
+    return generateNewDashboardId();
+  }, [
+    dashboardId, 
+    location, 
+    isSpecialRoute, 
+    getStoredDashboardId, 
+    extractDashboardIdFromPath, 
+    storeDashboardId, 
+    generateNewDashboardId
+  ]);
 
-  const currentDashboardId = getCurrentDashboardId();
-  console.log("🔍 useDashboardContext - Final currentDashboardId:", currentDashboardId);
+  // Determine and memoize the current dashboard ID
+  const currentDashboardId = useMemo(() => {
+    const id = getCurrentDashboardId();
+    console.log("🔍 useDashboardContext - Final currentDashboardId:", id);
+    return id;
+  }, [getCurrentDashboardId]);
 
   return {
     currentDashboardId
