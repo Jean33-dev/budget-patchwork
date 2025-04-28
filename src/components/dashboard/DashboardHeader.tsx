@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, CalendarPlus, ChevronDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -23,7 +24,7 @@ interface DashboardHeaderProps {
 
 export const DashboardHeader = ({ currentDate, onMonthChange, onBackClick }: DashboardHeaderProps) => {
   const navigate = useNavigate();
-  const [dashboardTitle, setDashboardTitle] = useState("Budget");
+  const [dashboardTitle, setDashboardTitle] = useState("");
   const { budgets, totalRevenues, totalExpenses } = useBudgets();
   const { currentDashboardId } = useDashboardContext();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -121,7 +122,7 @@ export const DashboardHeader = ({ currentDate, onMonthChange, onBackClick }: Das
         <div className="flex items-center gap-2 flex-grow">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="flex items-center gap-2 h-9 px-2 font-medium">
+              <Button variant="ghost" className="flex items-center gap-2 h-9 px-2">
                 <span className="text-xl font-normal">Tableau de bord {dashboardTitle}</span>
                 <ChevronDown className="h-4 w-4" />
               </Button>
