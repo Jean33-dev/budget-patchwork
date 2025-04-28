@@ -128,7 +128,7 @@ export const DashboardHeader = ({ currentDate, onMonthChange, onBackClick }: Das
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="flex items-center gap-2 h-9 px-2 font-medium">
-                <h1 className="text-xl">Tableau de bord {dashboardTitle}</h1>
+                <span className="text-xl font-normal">Tableau de bord {dashboardTitle}</span>
                 <ChevronDown className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
