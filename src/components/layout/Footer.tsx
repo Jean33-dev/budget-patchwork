@@ -1,5 +1,5 @@
 
-import { Home, Clock, CreditCard, CirclePlus, Calendar } from "lucide-react";
+import { Wallet, WalletCards, CreditCard, HandCoins, ChartPie } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export const Footer = () => {
@@ -12,8 +12,8 @@ export const Footer = () => {
               to="/dashboard/budget" 
               className="flex flex-col items-center gap-1 text-muted-foreground hover:text-primary"
             >
-              <Home className="h-6 w-6" />
-              <span className="text-xs">Accueil</span>
+              <Wallet className="h-6 w-6" />
+              <span className="text-xs">Synthèse</span>
             </Link>
           </li>
           <li>
@@ -21,7 +21,7 @@ export const Footer = () => {
               to="/dashboard/budget/budgets" 
               className="flex flex-col items-center gap-1 text-muted-foreground hover:text-primary"
             >
-              <Clock className="h-6 w-6" />
+              <WalletCards className="h-6 w-6" />
               <span className="text-xs">Budgets</span>
             </Link>
           </li>
@@ -39,7 +39,7 @@ export const Footer = () => {
               to="/dashboard/budget/income" 
               className="flex flex-col items-center gap-1 text-muted-foreground hover:text-primary"
             >
-              <CirclePlus className="h-6 w-6" />
+              <HandCoins className="h-6 w-6" />
               <span className="text-xs">Revenus</span>
             </Link>
           </li>
@@ -48,7 +48,7 @@ export const Footer = () => {
               to="/dashboard/budget/categories" 
               className="flex flex-col items-center gap-1 text-muted-foreground hover:text-primary"
             >
-              <Calendar className="h-6 w-6" />
+              <ChartPie className="h-6 w-6" />
               <span className="text-xs">Catégories</span>
             </Link>
           </li>
