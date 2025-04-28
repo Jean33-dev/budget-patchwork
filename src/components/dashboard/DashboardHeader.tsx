@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, CalendarPlus, ChevronDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { db } from "@/services/database";
 import { BudgetPDFDownload } from "@/components/pdf/BudgetPDF";
 import { useBudgets } from "@/hooks/useBudgets";
@@ -32,9 +32,44 @@ export const DashboardHeader = ({ currentDate, onMonthChange, onBackClick }: Das
   const { currentDashboardId } = useDashboardContext();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [dashboards, setDashboards] = useState<Dashboard[]>([]);
+  
+  // Ref to track if dashboard creation is in progress to prevent race conditions
+  const isCreatingDashboardRef = useRef(false);
+  // Ref to track if component is mounted to prevent state updates after unmount
+  const isMountedRef = useRef(true);
+
+  useEffect(() => {
+    return () => {
+      // Mark component as unmounted on cleanup
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  const loadDashboards = async () => {
+    try {
+      await db.init();
+      console.log("DashboardHeader: Chargement de tous les tableaux de bord...");
+      const allDashboards = await db.getDashboards();
+      console.log("DashboardHeader: Tableaux de bord chargés:", allDashboards);
+      
+      if (isMountedRef.current) {
+        setDashboards(allDashboards);
+      }
+      
+      return allDashboards;
+    } catch (error) {
+      console.error("DashboardHeader: Erreur lors du chargement des tableaux de bord:", error);
+      return [];
+    }
+  };
 
   const loadDashboardTitle = async () => {
     try {
+      if (isCreatingDashboardRef.current) {
+        console.log("DashboardHeader: Création de tableau de bord déjà en cours, attente...");
+        return;
+      }
+      
       setIsLoading(true);
       
       // Ensure database is initialized
@@ -43,82 +78,136 @@ export const DashboardHeader = ({ currentDate, onMonthChange, onBackClick }: Das
       console.log("DashboardHeader: Chargement du dashboard avec ID:", currentDashboardId);
       
       if (!currentDashboardId) {
-        console.log("DashboardHeader: Aucun ID de dashboard trouvé");
-        setDashboardTitle("Sans titre");
-        setIsLoading(false);
+        console.log("DashboardHeader: Aucun ID de tableau de bord trouvé");
+        if (isMountedRef.current) {
+          setDashboardTitle("Sans titre");
+          setIsLoading(false);
+        }
         return;
       }
       
-      // Rechercher dans les dashboards déjà chargés
-      const cachedDashboard = dashboards.find(d => d.id === currentDashboardId);
-      if (cachedDashboard) {
-        console.log("DashboardHeader: Dashboard trouvé dans le cache:", cachedDashboard.title);
-        setDashboardTitle(cachedDashboard.title);
-        setIsLoading(false);
+      // Load all dashboards first to check if current exists
+      const allDashboards = await loadDashboards();
+      
+      // Check if dashboard exists in loaded dashboards
+      const existingDashboard = allDashboards.find(d => d.id === currentDashboardId);
+      
+      if (existingDashboard) {
+        console.log("DashboardHeader: Tableau de bord trouvé:", existingDashboard.title);
+        if (isMountedRef.current) {
+          setDashboardTitle(existingDashboard.title);
+          setIsLoading(false);
+        }
         return;
       }
       
-      // Si non trouvé dans le cache, charger depuis la base de données
+      // If not found in cache, check directly from the database as a double-check
+      console.log("DashboardHeader: Tableau de bord non trouvé dans le cache, vérification directe dans la BDD...");
       const dashboard = await db.getDashboardById(currentDashboardId);
       
       if (dashboard) {
-        console.log("DashboardHeader: Dashboard trouvé dans la BDD:", dashboard.title);
-        setDashboardTitle(dashboard.title);
+        console.log("DashboardHeader: Tableau de bord trouvé dans la BDD:", dashboard.title);
+        if (isMountedRef.current) {
+          setDashboardTitle(dashboard.title);
+          setDashboards(prevDashboards => [...prevDashboards, dashboard]);
+        }
       } else {
-        console.log("DashboardHeader: Dashboard non trouvé avec ID:", currentDashboardId);
+        console.log("DashboardHeader: Tableau de bord non trouvé avec ID:", currentDashboardId);
         
-        // Utiliser un titre par défaut si le dashboard n'est pas trouvé
-        const defaultTitle = "Sans titre";
-        console.log("DashboardHeader: Utilisation du titre par défaut:", defaultTitle);
-        setDashboardTitle(defaultTitle);
-        
-        // Créer un nouveau dashboard avec cet ID
-        const newDashboard = {
-          id: currentDashboardId,
-          title: defaultTitle,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        };
-        
-        console.log("DashboardHeader: Création d'un nouveau dashboard:", newDashboard);
-        await db.addDashboard(newDashboard);
-        
-        toast({
-          title: "Nouveau tableau de bord",
-          description: "Un nouveau tableau de bord a été créé"
-        });
+        // Only create a new dashboard if one doesn't exist and we're not already creating one
+        if (!isCreatingDashboardRef.current) {
+          isCreatingDashboardRef.current = true;
+          try {
+            // Double-check again to prevent race conditions
+            const verifyDashboard = await db.getDashboardById(currentDashboardId);
+            
+            if (!verifyDashboard) {
+              // Utiliser un titre par défaut si le dashboard n'est pas trouvé
+              const defaultTitle = "Sans titre";
+              console.log("DashboardHeader: Création d'un nouveau tableau de bord avec ID:", currentDashboardId);
+              
+              // Créer un nouveau dashboard avec cet ID
+              const newDashboard = {
+                id: currentDashboardId,
+                title: defaultTitle,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+              };
+              
+              await db.addDashboard(newDashboard);
+              
+              console.log("DashboardHeader: Nouveau tableau de bord créé:", newDashboard);
+              
+              if (isMountedRef.current) {
+                setDashboardTitle(defaultTitle);
+                setDashboards(prevDashboards => [...prevDashboards, newDashboard]);
+                
+                toast({
+                  title: "Nouveau tableau de bord",
+                  description: "Un nouveau tableau de bord a été créé"
+                });
+              }
+            } else if (isMountedRef.current) {
+              setDashboardTitle(verifyDashboard.title);
+              setDashboards(prevDashboards => [...prevDashboards, verifyDashboard]);
+            }
+          } catch (error) {
+            console.error("DashboardHeader: Erreur lors de la création du tableau de bord:", error);
+            
+            if (error instanceof Error) {
+              // Specific handling for UNIQUE constraint error
+              if (error.message.includes("UNIQUE constraint failed")) {
+                console.log("DashboardHeader: Conflit de contrainte UNIQUE détecté, rechargement des tableaux de bord...");
+                await loadDashboards();
+                const dashboard = await db.getDashboardById(currentDashboardId);
+                if (dashboard && isMountedRef.current) {
+                  setDashboardTitle(dashboard.title);
+                }
+              } else {
+                toast({
+                  variant: "destructive",
+                  title: "Erreur",
+                  description: "Une erreur est survenue lors de la création du tableau de bord"
+                });
+              }
+            }
+          } finally {
+            isCreatingDashboardRef.current = false;
+          }
+        }
       }
     } catch (error) {
       console.error("DashboardHeader: Erreur lors du chargement du titre:", error);
-      setDashboardTitle("Sans titre");
+      if (isMountedRef.current) {
+        setDashboardTitle("Sans titre");
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Une erreur est survenue lors du chargement du tableau de bord"
+        });
+      }
     } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const loadDashboards = async () => {
-    try {
-      await db.init();
-      const allDashboards = await db.getDashboards();
-      console.log("DashboardHeader: Tous les dashboards chargés:", allDashboards);
-      setDashboards(allDashboards);
-    } catch (error) {
-      console.error("DashboardHeader: Erreur lors du chargement des dashboards:", error);
+      if (isMountedRef.current) {
+        setIsLoading(false);
+      }
     }
   };
 
   useEffect(() => {
-    const loadAll = async () => {
-      await loadDashboards();
-      await loadDashboardTitle();
-    };
+    loadDashboardTitle();
     
-    loadAll();
+    // Clean up function
+    return () => {
+      // Already handled by the mounted ref
+    };
   }, [currentDashboardId]);
 
   const handleUpdateDashboard = async (newTitle: string) => {
     try {
       if (!currentDashboardId) return;
+      
+      console.log("DashboardHeader: Mise à jour du tableau de bord avec ID:", currentDashboardId);
+      console.log("DashboardHeader: Nouveau titre:", newTitle);
       
       const dashboard = await db.getDashboardById(currentDashboardId);
       
@@ -131,22 +220,43 @@ export const DashboardHeader = ({ currentDate, onMonthChange, onBackClick }: Das
         
         setDashboardTitle(newTitle);
         console.log("DashboardHeader: Titre mis à jour avec succès:", newTitle);
+        
+        // Recharger la liste des tableaux de bord après modification
+        await loadDashboards();
       } else {
-        console.log("DashboardHeader: Création d'un nouveau dashboard avec ID:", currentDashboardId);
-        await db.addDashboard({
-          id: currentDashboardId,
-          title: newTitle,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        });
-        setDashboardTitle(newTitle);
+        console.log("DashboardHeader: Tableau de bord non trouvé pour la mise à jour, vérification si création en cours...");
+        
+        // Only create if not already in progress
+        if (!isCreatingDashboardRef.current) {
+          isCreatingDashboardRef.current = true;
+          try {
+            console.log("DashboardHeader: Création d'un nouveau tableau de bord avec ID:", currentDashboardId);
+            
+            const now = new Date().toISOString();
+            await db.addDashboard({
+              id: currentDashboardId,
+              title: newTitle,
+              createdAt: now,
+              updatedAt: now
+            });
+            
+            setDashboardTitle(newTitle);
+            
+            // Recharger la liste des tableaux de bord après création
+            await loadDashboards();
+          } finally {
+            isCreatingDashboardRef.current = false;
+          }
+        }
       }
-      
-      // Recharger la liste des dashboards après modification
-      loadDashboards();
     } catch (error) {
       console.error("DashboardHeader: Erreur lors de la mise à jour du titre:", error);
-      throw error;
+      
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la mise à jour du titre"
+      });
     }
   };
 
