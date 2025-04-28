@@ -99,7 +99,6 @@ export const EnvelopeCard = ({
         <Progress
           value={progress > 100 ? 100 : progress}
           className={`h-2 ${progress > 90 ? "bg-red-200" : "bg-gray-200"}`}
-          indicatorClassName={progress > 90 ? "bg-red-500" : ""}
         />
       </CardContent>
       <CardFooter className="pt-2 pb-2 gap-2 justify-end">
