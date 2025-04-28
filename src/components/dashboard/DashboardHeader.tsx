@@ -1,6 +1,12 @@
 
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, CalendarPlus, Edit } from "lucide-react";
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
+import { ArrowLeft, CalendarPlus, ChevronDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { db } from "@/services/database";
@@ -8,6 +14,7 @@ import { BudgetPDFDownload } from "@/components/pdf/BudgetPDF";
 import { useBudgets } from "@/hooks/useBudgets";
 import { useDashboardContext } from "@/hooks/useDashboardContext";
 import { EditDashboardDialog } from "./EditDashboardDialog";
+import { Dashboard } from "@/services/database/models/dashboard";
 
 interface DashboardHeaderProps {
   currentDate: Date;
@@ -21,6 +28,17 @@ export const DashboardHeader = ({ currentDate, onMonthChange, onBackClick }: Das
   const { budgets, totalRevenues, totalExpenses } = useBudgets();
   const { currentDashboardId } = useDashboardContext();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [dashboards, setDashboards] = useState<Dashboard[]>([]);
+
+  const loadDashboards = async () => {
+    try {
+      const allDashboards = await db.getDashboards();
+      console.log("DashboardHeader: Loaded dashboards:", allDashboards);
+      setDashboards(allDashboards);
+    } catch (error) {
+      console.error("DashboardHeader: Error loading dashboards:", error);
+    }
+  };
 
   const loadDashboardTitle = async () => {
     try {
@@ -53,6 +71,7 @@ export const DashboardHeader = ({ currentDate, onMonthChange, onBackClick }: Das
 
   useEffect(() => {
     loadDashboardTitle();
+    loadDashboards();
   }, [currentDashboardId]); // Recharger le titre lorsque l'ID du tableau de bord change
 
   const handleUpdateDashboard = async (newTitle: string) => {
@@ -89,6 +108,11 @@ export const DashboardHeader = ({ currentDate, onMonthChange, onBackClick }: Das
     }
   };
 
+  const handleDashboardChange = (dashboardId: string) => {
+    // Naviguer vers le nouveau tableau de bord
+    navigate(`/dashboard/${dashboardId}`);
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-4 sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-10 pb-4 border-b">
@@ -102,15 +126,30 @@ export const DashboardHeader = ({ currentDate, onMonthChange, onBackClick }: Das
         </Button>
 
         <div className="flex items-center gap-2 flex-grow">
-          <h1 className="text-xl">Tableau de bord {dashboardTitle}</h1>
-          <Button 
-            variant="ghost" 
-            size="icon"
-            onClick={() => setIsEditDialogOpen(true)}
-            className="h-7 w-7"
-          >
-            <Edit className="h-3.5 w-3.5" />
-          </Button>
+          <h1 className="text-xl">Tableau de bord</h1>
+          
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="flex items-center gap-2">
+                {dashboardTitle}
+                <ChevronDown className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-56">
+              {dashboards.map(dashboard => (
+                <DropdownMenuItem 
+                  key={dashboard.id}
+                  onClick={() => handleDashboardChange(dashboard.id)}
+                  className={dashboard.id === currentDashboardId ? "bg-muted" : ""}
+                >
+                  {dashboard.title}
+                </DropdownMenuItem>
+              ))}
+              <DropdownMenuItem onClick={() => setIsEditDialogOpen(true)} className="border-t mt-1 pt-1">
+                Modifier le titre
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
       
