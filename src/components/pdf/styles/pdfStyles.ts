@@ -55,12 +55,12 @@ export const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   tableCell: {
-    width: "25%",
+    width: "20%", // Changed from 25% to 20% to accommodate 5 columns
     padding: 5,
     fontSize: 10,
   },
   tableCellAmount: {
-    width: "25%",
+    width: "20%", // Changed from 25% to 20% to accommodate 5 columns
     padding: 5,
     fontSize: 10,
     textAlign: "right",

@@ -10,6 +10,7 @@ export interface BudgetPDFProps {
     budget: number;
     spent: number;
     type: "income" | "expense" | "budget";
+    carriedOver?: number; // Added the carriedOver property
   }>;
   incomes?: Array<{
     id: string;

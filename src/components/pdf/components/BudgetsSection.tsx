@@ -2,6 +2,7 @@
 import React from "react";
 import { Text, View } from "@react-pdf/renderer";
 import { styles } from "../styles/pdfStyles";
+import { formatAmount } from "@/utils/format-amount";
 
 interface Budget {
   id: string;
@@ -9,6 +10,7 @@ interface Budget {
   budget: number;
   spent: number;
   type: "income" | "expense" | "budget";
+  carriedOver?: number; // Added the carriedOver property
 }
 
 interface BudgetsSectionProps {
@@ -26,18 +28,46 @@ export const BudgetsSection: React.FC<BudgetsSectionProps> = ({ budgets }) => {
       <View style={styles.table}>
         <View style={[styles.tableRow, styles.tableHeader]}>
           <Text style={styles.tableCell}>Nom</Text>
-          <Text style={styles.tableCellAmount}>Montant</Text>
+          <Text style={styles.tableCellAmount}>Budget</Text>
+          <Text style={styles.tableCellAmount}>Reporté</Text>
           <Text style={styles.tableCellAmount}>Dépensé</Text>
           <Text style={styles.tableCellAmount}>Restant</Text>
         </View>
-        {filteredBudgets.map((budget) => (
-          <View style={styles.tableRow} key={budget.id}>
-            <Text style={styles.tableCell}>{budget.title}</Text>
-            <Text style={styles.tableCellAmount}>{budget.budget.toFixed(2)} €</Text>
-            <Text style={styles.tableCellAmount}>{budget.spent.toFixed(2)} €</Text>
-            <Text style={styles.tableCellAmount}>{(budget.budget - budget.spent).toFixed(2)} €</Text>
-          </View>
-        ))}
+        {filteredBudgets.map((budget) => {
+          const carriedOver = budget.carriedOver || 0;
+          const totalBudget = budget.budget + carriedOver;
+          const remaining = totalBudget - budget.spent;
+          
+          return (
+            <View style={styles.tableRow} key={budget.id}>
+              <Text style={styles.tableCell}>{budget.title}</Text>
+              <Text style={styles.tableCellAmount}>{formatAmount(budget.budget)}</Text>
+              <Text style={styles.tableCellAmount}>{formatAmount(carriedOver)}</Text>
+              <Text style={styles.tableCellAmount}>{formatAmount(budget.spent)}</Text>
+              <Text style={styles.tableCellAmount}>{formatAmount(remaining)}</Text>
+            </View>
+          );
+        })}
+        
+        {/* Summary row */}
+        <View style={[styles.tableRow, { backgroundColor: '#f8f9fa' }]}>
+          <Text style={[styles.tableCell, { fontWeight: 'bold' }]}>Total</Text>
+          <Text style={[styles.tableCellAmount, { fontWeight: 'bold' }]}>
+            {formatAmount(filteredBudgets.reduce((sum, b) => sum + b.budget, 0))}
+          </Text>
+          <Text style={[styles.tableCellAmount, { fontWeight: 'bold' }]}>
+            {formatAmount(filteredBudgets.reduce((sum, b) => sum + (b.carriedOver || 0), 0))}
+          </Text>
+          <Text style={[styles.tableCellAmount, { fontWeight: 'bold' }]}>
+            {formatAmount(filteredBudgets.reduce((sum, b) => sum + b.spent, 0))}
+          </Text>
+          <Text style={[styles.tableCellAmount, { fontWeight: 'bold' }]}>
+            {formatAmount(filteredBudgets.reduce((sum, b) => {
+              const totalBudget = b.budget + (b.carriedOver || 0);
+              return sum + (totalBudget - b.spent);
+            }, 0))}
+          </Text>
+        </View>
       </View>
     </View>
   );
