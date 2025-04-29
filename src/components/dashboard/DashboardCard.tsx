@@ -1,7 +1,7 @@
 
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { LineChart, Pencil, Trash2 } from "lucide-react";
+import { LineChart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import {
   AlertDialog,
@@ -43,28 +43,27 @@ export const DashboardCard = ({ id, title, onEdit, onDelete }: DashboardCardProp
               <LineChart className="h-6 w-6" />
               {title}
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
               <Button 
-                variant="ghost" 
-                size="icon"
-                className="h-8 w-8" 
+                variant="outline" 
+                size="sm"
                 onClick={(e) => {
                   e.stopPropagation();
                   onEdit(id, title);
                 }}
               >
-                <Pencil className="h-4 w-4" />
+                Renommer
               </Button>
               <Button 
-                variant="ghost" 
-                size="icon"
-                className="h-8 w-8 text-destructive hover:text-destructive" 
+                variant="outline" 
+                size="sm"
+                className="text-destructive hover:text-destructive" 
                 onClick={(e) => {
                   e.stopPropagation();
                   setShowDeleteDialog(true);
                 }}
               >
-                <Trash2 className="h-4 w-4" />
+                Supprimer
               </Button>
             </div>
           </CardTitle>
