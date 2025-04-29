@@ -38,12 +38,12 @@ export const DashboardCard = ({ id, title, onEdit, onDelete }: DashboardCardProp
         onClick={handleClick}
       >
         <CardHeader>
-          <CardTitle className="flex items-center justify-between">
+          <CardTitle className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
               <LineChart className="h-6 w-6" />
               {title}
             </div>
-            <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+            <div className="flex gap-2 pt-2" onClick={(e) => e.stopPropagation()}>
               <Button 
                 variant="outline" 
                 size="sm"
