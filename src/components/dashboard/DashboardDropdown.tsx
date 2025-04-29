@@ -15,7 +15,8 @@ interface DashboardDropdownProps {
   isLoading: boolean;
   dashboards: Dashboard[];
   currentDashboardId: string;
-  onEditClick: () => void;
+  onEditClick?: () => void;
+  showEditOption?: boolean;
 }
 
 export const DashboardDropdown = ({
@@ -23,7 +24,8 @@ export const DashboardDropdown = ({
   isLoading,
   dashboards,
   currentDashboardId,
-  onEditClick
+  onEditClick,
+  showEditOption = false
 }: DashboardDropdownProps) => {
   const navigate = useNavigate();
 
@@ -51,9 +53,11 @@ export const DashboardDropdown = ({
             {dashboard.title}
           </DropdownMenuItem>
         ))}
-        <DropdownMenuItem onClick={onEditClick}>
-          Modifier le titre
-        </DropdownMenuItem>
+        {showEditOption && onEditClick && (
+          <DropdownMenuItem onClick={onEditClick}>
+            Modifier le titre
+          </DropdownMenuItem>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );

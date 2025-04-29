@@ -44,6 +44,7 @@ export const DashboardHeader = ({ currentDate, onMonthChange, onBackClick }: Das
             dashboards={dashboards}
             currentDashboardId={currentDashboardId}
             onEditClick={() => setIsEditDialogOpen(true)}
+            showEditOption={false} // Ne pas montrer l'option d'édition sur la page de synthèse
           />
         </div>
       </div>
