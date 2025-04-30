@@ -1,8 +1,8 @@
 
 import { useState, useEffect } from "react";
 import { BudgetEnvelope } from "@/types/transition";
-import { useTransitionPreferencesUtils } from "./useTransitionPreferencesUtils";
-import { SavedTransitionPreference } from "./useTransitionPreferencesGet";
+import { useTransitionPreferences } from "../useTransitionPreferences";
+import { SavedTransitionPreference } from "../useTransitionPreferences";
 
 export const useEnvelopeState = (
   budgets: any[],
@@ -12,8 +12,8 @@ export const useEnvelopeState = (
   const [selectedEnvelope, setSelectedEnvelope] = useState<BudgetEnvelope | null>(null);
   const [preferencesLoaded, setPreferencesLoaded] = useState(false);
   
-  // Utiliser le hook d'utilitaires de préférences
-  const { applyPreferencesToEnvelopes } = useTransitionPreferencesUtils();
+  // Utiliser le hook de préférences consolidé
+  const { applyPreferencesToEnvelopes } = useTransitionPreferences();
 
   useEffect(() => {
     // Ne rien faire si aucun budget n'est disponible
