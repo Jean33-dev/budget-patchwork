@@ -4,7 +4,12 @@ import { useToast } from "@/components/ui/use-toast";
 import { db } from "@/services/database";
 import { Budget } from "@/types/categories";
 import { Expense } from "@/services/database/models/expense";
+import { useExpenseFiltering } from "./useExpenseFiltering";
 
+/**
+ * Hook pour charger les données des dépenses
+ * @param dashboardId ID du tableau de bord actuel
+ */
 export const useExpenseDataLoading = (dashboardId: string | null) => {
   const { toast } = useToast();
   const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -12,17 +17,13 @@ export const useExpenseDataLoading = (dashboardId: string | null) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [initAttempted, setInitAttempted] = useState(false);
+  const { filterByDashboardId } = useExpenseFiltering();
 
   const loadData = useCallback(async () => {
-    // Ensure we have a non-null, non-empty string for dashboardId
     if (!dashboardId) {
-      console.log("🔍 useExpenseDataLoading - No dashboardId provided, skipping data load");
       setIsLoading(false);
       return;
     }
-    
-    const useDashboardId = String(dashboardId);
-    console.log(`🔍 useExpenseDataLoading - Beginning data load for dashboard: "${useDashboardId}"`);
     
     setIsLoading(true);
     setError(null);
@@ -30,53 +31,20 @@ export const useExpenseDataLoading = (dashboardId: string | null) => {
     try {
       await db.init();
       
-      // Load budgets
-      console.log("🔍 useExpenseDataLoading - Loading budgets");
+      // Chargement des budgets
       const loadedBudgets = await db.getBudgets();
-      console.log(`🔍 useExpenseDataLoading - All budgets loaded from database (${loadedBudgets.length}):`, loadedBudgets);
-      
-      // Filter budgets strictly by dashboardId with detailed logging
-      const filteredBudgets = loadedBudgets.filter(budget => {
-        const budgetDashboardId = budget.dashboardId ? String(budget.dashboardId) : "";
-        const match = budgetDashboardId === useDashboardId;
-        
-        console.log(`🔍 Budget filter: "${budget.title}" (dashboardId: "${budgetDashboardId}") vs current "${useDashboardId}" = ${match ? "MATCH" : "NO MATCH"}`);
-        return match;
-      });
-      
-      console.log(`🔍 useExpenseDataLoading - Filtered ${filteredBudgets.length} budgets for dashboard "${useDashboardId}" from ${loadedBudgets.length} total budgets`);
+      const filteredBudgets = filterByDashboardId(loadedBudgets, dashboardId);
       setAvailableBudgets(filteredBudgets);
       
-      // Load expenses
-      console.log("🔍 useExpenseDataLoading - Loading expenses");
+      // Chargement des dépenses
       const loadedExpenses = await db.getExpenses();
-      console.log(`🔍 useExpenseDataLoading - All expenses loaded from database (${loadedExpenses.length}):`, loadedExpenses);
-      
-      // Filter out recurring expenses
       const nonRecurringExpenses = loadedExpenses.filter(expense => !expense.isRecurring);
-      console.log(`🔍 useExpenseDataLoading - Non-recurring expenses (${nonRecurringExpenses.length}):`, nonRecurringExpenses);
-      
-      // Filter expenses strictly by dashboardId
-      const filteredExpenses = nonRecurringExpenses.filter(expense => {
-        const expenseDashboardId = expense.dashboardId ? String(expense.dashboardId) : "";
-        const match = expenseDashboardId === useDashboardId;
-        
-        console.log(`🔍 Expense filter: "${expense.title}" (dashboardId: "${expenseDashboardId}") vs current "${useDashboardId}" = ${match ? "MATCH" : "NO MATCH"}`);
-        return match;
-      });
-      
-      console.log(`🔍 useExpenseDataLoading - Final filtered expenses (${filteredExpenses.length}) for dashboard "${useDashboardId}" from ${loadedExpenses.length} total expenses:`);
-      filteredExpenses.forEach((expense, idx) => {
-        if (idx < 5) { // Limit logging to first 5 for brevity
-          const logDashboardId = expense.dashboardId ? String(expense.dashboardId) : "undefined";
-          console.log(`🔍   - Expense ${idx+1}: "${expense.title}", dashboardId: "${logDashboardId}"`);
-        }
-      });
+      const filteredExpenses = filterByDashboardId(nonRecurringExpenses, dashboardId);
       setExpenses(filteredExpenses);
       
       setInitAttempted(true);
     } catch (error) {
-      console.error(`🔍 useExpenseDataLoading - Error loading data for dashboard ${useDashboardId}:`, error);
+      console.error(`Erreur lors du chargement des données pour le tableau de bord ${dashboardId}:`, error);
       toast({
         variant: "destructive",
         title: "Erreur",
@@ -86,12 +54,11 @@ export const useExpenseDataLoading = (dashboardId: string | null) => {
     } finally {
       setIsLoading(false);
     }
-  }, [dashboardId, toast]);
+  }, [dashboardId, toast, filterByDashboardId]);
 
   useEffect(() => {
-    console.log(`🔍 useExpenseDataLoading - Effect triggered with dashboardId: ${dashboardId || 'null'}`);
     loadData();
-  }, [loadData, dashboardId]);
+  }, [loadData]);
 
   return {
     expenses,

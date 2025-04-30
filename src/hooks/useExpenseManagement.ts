@@ -1,3 +1,3 @@
 
-// Re-export from the expense folder for backward compatibility
+// Re-export depuis le dossier expense pour la rétrocompatibilité
 export * from './expense/useExpenseManagement';

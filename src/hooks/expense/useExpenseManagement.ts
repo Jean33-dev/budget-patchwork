@@ -1,23 +1,25 @@
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { Budget } from "@/types/categories";
 import { Expense } from "@/services/database/models/expense"; 
 import { useExpenseDataLoading } from "./useExpenseDataLoading";
-import { useExpenseOperationHandlers } from "./useExpenseOperationHandlers";
+import { useExpenseOperationHandlers } from "./useExpenseOperations";
 import { useDataReloader } from "./useDataReloader";
 import { useDashboardContext } from "../useDashboardContext";
 
 export type { Budget, Expense };
 
+/**
+ * Hook principal pour la gestion des dépenses
+ * @param budgetId ID du budget pour filtrer les dépenses (optionnel)
+ */
 export const useExpenseManagement = (budgetId: string | null) => {
   const { toast } = useToast();
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const { currentDashboardId } = useDashboardContext();
   
-  console.log("useExpenseManagement - initialized with budgetId:", budgetId, "currentDashboardId:", currentDashboardId);
-
-  // Load expense data
+  // Chargement des données
   const { 
     expenses, 
     availableBudgets, 
@@ -27,44 +29,27 @@ export const useExpenseManagement = (budgetId: string | null) => {
     loadData 
   } = useExpenseDataLoading(currentDashboardId);
   
-  console.log("useExpenseManagement - loaded expenses count:", expenses.length);
-  console.log("useExpenseManagement - expense sample:", expenses.slice(0, 2));
-  console.log("useExpenseManagement - available budgets:", availableBudgets);
-
-  // Store current dashboardId in localStorage
-  useEffect(() => {
-    if (currentDashboardId) {
-      console.log("useExpenseManagement: Setting currentDashboardId in localStorage:", currentDashboardId);
-      localStorage.setItem('currentDashboardId', currentDashboardId);
-    }
-  }, [currentDashboardId]);
-
-  // Operation handlers with dashboard context
+  // Gestionnaires d'opérations
   const { 
     isProcessing, 
-    handleAddEnvelope, 
+    handleAddExpense, 
     handleDeleteExpense, 
     handleUpdateExpense 
   } = useExpenseOperationHandlers(budgetId, loadData, currentDashboardId);
 
-  // Data reloading
+  // Rechargement des données
   const { forceReload } = useDataReloader(isProcessing, isLoading, loadData);
 
-  // Filter expenses by budgetId if specified
+  // Filtrer les dépenses par budgetId si spécifié
   const filteredExpenses = useCallback(() => {
-    console.log("useExpenseManagement - Filtering expenses. Total:", expenses.length, "budgetId:", budgetId);
-    
     if (!budgetId) {
-      console.log("useExpenseManagement - No budgetId filter, returning all expenses");
       return expenses;
     }
     
-    const filtered = expenses.filter(expense => expense.linkedBudgetId === budgetId);
-    console.log(`useExpenseManagement - Filtered by budgetId ${budgetId}, returning ${filtered.length} expenses`);
-    return filtered;
+    return expenses.filter(expense => expense.linkedBudgetId === budgetId);
   }, [expenses, budgetId]);
 
-  // Calculer les dépenses filtrées une seule fois et les stocker
+  // Calculer les dépenses filtrées une seule fois
   const filteredExpensesResult = filteredExpenses();
 
   return {
@@ -72,7 +57,7 @@ export const useExpenseManagement = (budgetId: string | null) => {
     availableBudgets,
     addDialogOpen,
     setAddDialogOpen,
-    handleAddEnvelope,
+    handleAddEnvelope: handleAddExpense,
     handleDeleteExpense,
     handleUpdateExpense,
     loadData,
