@@ -84,16 +84,27 @@ export const EnvelopeCard = ({
             {type === "budget" ? "Budget" : type === "income" ? "Revenu" : "Dépense"}
           </Badge>
         </CardTitle>
-        <CardDescription className="flex justify-between text-sm">
-          <span>Disponible: {formatAmount(remaining)}</span>
-          <span className="font-medium">{formatAmount(spent)} / {formatAmount(totalBudget)}</span>
-        </CardDescription>
         
-        {carriedOver > 0 && (
-          <div className="text-xs text-muted-foreground mt-1">
-            Inclut {formatAmount(carriedOver)} reportés
+        {/* Nouvelle section qui affiche clairement le budget, le report et le disponible */}
+        <div className="grid grid-cols-2 gap-2 mt-2">
+          <div className="space-y-1">
+            <div className="text-xs text-muted-foreground">Budgété:</div>
+            <div className="text-sm font-medium">{formatAmount(budget)}</div>
+            
+            <div className="text-xs text-muted-foreground mt-1">Report:</div>
+            <div className="text-sm font-medium">{formatAmount(carriedOver)}</div>
+            
+            <div className="text-xs text-muted-foreground mt-1">Disponible:</div>
+            <div className="text-sm font-medium text-blue-600">{formatAmount(remaining)}</div>
           </div>
-        )}
+          
+          <div className="flex flex-col items-end justify-center">
+            <div className="text-xs text-muted-foreground">Dépenses:</div>
+            <div className="text-lg font-semibold">{formatAmount(spent)}</div>
+            <div className="text-xs text-muted-foreground mt-1">sur</div>
+            <div className="text-base font-medium">{formatAmount(totalBudget)}</div>
+          </div>
+        </div>
       </CardHeader>
       <CardContent className="py-2 flex-grow">
         <Progress
