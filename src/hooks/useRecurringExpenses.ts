@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
@@ -27,16 +28,16 @@ export const useRecurringExpenses = () => {
       
       // Strict filtering by dashboardId
       const filteredExpenses = expenses.filter(expense => {
-        if (currentDashboardId === "budget") {
-          return expense.dashboardId === "budget";
+        if (!expense.dashboardId && !currentDashboardId) {
+          return true; // Si les deux sont vides, c'est une correspondance
         }
-        return expense.dashboardId === currentDashboardId;
+        return String(expense.dashboardId || '') === String(currentDashboardId || '');
       });
       
       // Filter budgets for the current dashboard
-      const filteredBudgets = currentDashboardId === "budget" 
-        ? budgets 
-        : budgets.filter(budget => budget.dashboardId === currentDashboardId);
+      const filteredBudgets = budgets.filter(budget => 
+        String(budget.dashboardId || '') === String(currentDashboardId || '')
+      );
       
       console.log("🔍 useRecurringExpenses - Filtered recurring expenses:", filteredExpenses);
       setRecurringExpenses(filteredExpenses);

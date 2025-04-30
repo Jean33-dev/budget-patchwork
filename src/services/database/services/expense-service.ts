@@ -1,4 +1,3 @@
-
 import { Expense } from '../models/expense';
 import { BaseService } from './base-service';
 import { toast } from "@/components/ui/use-toast";
@@ -167,6 +166,7 @@ export class ExpenseService extends BaseService {
       }
       
       console.log(`Copie de la dépense récurrente "${recurringExpense.title}" au mois actuel...`);
+      console.log("Détails de la dépense récurrente:", JSON.stringify(recurringExpense));
       
       // Normalize dashboardId as a non-empty string
       const dashboardId = recurringExpense.dashboardId && String(recurringExpense.dashboardId).trim() !== "" 
@@ -186,8 +186,34 @@ export class ExpenseService extends BaseService {
         dashboardId: dashboardId // Toujours une chaîne non vide
       };
       
-      console.log("Nouvelle dépense à ajouter:", newExpense);
+      console.log("Nouvelle dépense à ajouter:", JSON.stringify(newExpense));
+      
+      // Vérifier que le budget associé existe toujours
+      const allBudgets = await this.initManager.getAdapter()!.query("SELECT * FROM budgets WHERE id = ?", [recurringExpense.linkedBudgetId]);
+      if (allBudgets.length === 0) {
+        throw new Error(`Le budget associé (ID: ${recurringExpense.linkedBudgetId}) n'existe plus`);
+      }
+      
+      // Ajouter la nouvelle dépense à la base de données
       await this.addExpense(newExpense);
+      
+      // Mise à jour du montant dépensé dans le budget associé
+      const budgetQuery = await this.initManager.getAdapter()!.query(
+        "SELECT * FROM budgets WHERE id = ?", 
+        [recurringExpense.linkedBudgetId]
+      );
+      
+      if (budgetQuery.length > 0) {
+        const budget = budgetQuery[0];
+        const newSpent = Number(budget.spent || 0) + Number(recurringExpense.budget);
+        
+        console.log(`Mise à jour du montant dépensé dans le budget ${budget.title} de ${budget.spent} à ${newSpent}`);
+        
+        await this.initManager.getAdapter()!.run(
+          "UPDATE budgets SET spent = ? WHERE id = ?",
+          [newSpent, recurringExpense.linkedBudgetId]
+        );
+      }
       
       toast({
         title: "Succès",

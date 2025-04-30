@@ -16,6 +16,14 @@ export const useBudgetTransitioner = () => {
     
     console.log(`Budgets trouvés pour le dashboard ${dashboardId}: ${dashboardBudgets.length}`);
     
+    // Récupérer aussi toutes les dépenses récurrentes pour référence
+    const allExpenses = await db.getExpenses();
+    const recurringExpenses = allExpenses.filter(expense => 
+      expense.isRecurring && String(expense.dashboardId) === String(dashboardId)
+    );
+    
+    console.log(`Dépenses récurrentes trouvées pour le dashboard ${dashboardId}: ${recurringExpenses.length}`);
+    
     // Traiter chaque enveloppe
     for (const envelope of envelopes) {
       // Vérifier que l'enveloppe appartient au dashboard courant
@@ -28,6 +36,15 @@ export const useBudgetTransitioner = () => {
       console.log(`Traitement de l'enveloppe ${envelope.id} (${envelope.title}) - Option: ${envelope.transitionOption}`);
       
       try {
+        // Vérifier si ce budget a des dépenses récurrentes associées
+        const linkedRecurringExpenses = recurringExpenses.filter(
+          expense => expense.linkedBudgetId === budgetToProcess.id
+        );
+        
+        if (linkedRecurringExpenses.length > 0) {
+          console.log(`Budget ${envelope.title} a ${linkedRecurringExpenses.length} dépenses récurrentes associées`);
+        }
+        
         switch (envelope.transitionOption) {
           case "keep":
             // Ne rien faire, garder le budget tel quel
