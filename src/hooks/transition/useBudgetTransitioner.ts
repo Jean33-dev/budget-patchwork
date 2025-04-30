@@ -42,11 +42,11 @@ export const useBudgetTransitioner = () => {
           
           case "carry":
             // Reporter le montant non dépensé
-            const remainingAmount = budgetToProcess.budget - budgetToProcess.spent;
+            const remainingAmount = budgetToProcess.budget + (budgetToProcess.carriedOver || 0) - budgetToProcess.spent;
             if (remainingAmount > 0) {
               // Mise à jour du budget avec le montant reporté
               await updateBudgetCarriedOver(envelope.id, remainingAmount);
-              console.log(`Budget ${envelope.title} : ${remainingAmount} reporté au mois suivant`);
+              console.log(`Budget ${envelope.title} : ${remainingAmount} reporté au mois suivant (ancien solde: ${budgetToProcess.budget + (budgetToProcess.carriedOver || 0) - budgetToProcess.spent})`);
             } else {
               console.log(`Budget ${envelope.title} : rien à reporter (montant restant ≤ 0)`);
             }
@@ -68,26 +68,28 @@ export const useBudgetTransitioner = () => {
           case "transfer":
             // Transférer le budget vers une autre enveloppe
             if (envelope.transferTargetId) {
+              const amountToTransfer = budgetToProcess.budget + (budgetToProcess.carriedOver || 0) - budgetToProcess.spent;
               await transferBudget(
                 envelope.id, 
                 envelope.transferTargetId, 
-                budgetToProcess.budget - budgetToProcess.spent,
+                amountToTransfer,
                 dashboardId
               );
-              console.log(`Budget ${envelope.title} transféré vers ${envelope.transferTargetId}`);
+              console.log(`Budget ${envelope.title} transféré vers ${envelope.transferTargetId} (montant: ${amountToTransfer})`);
             }
             break;
           
           case "multi-transfer":
             // Transferts multiples vers plusieurs enveloppes
             if (envelope.multiTransfers && envelope.multiTransfers.length > 0) {
+              const amountToDistribute = budgetToProcess.budget + (budgetToProcess.carriedOver || 0) - budgetToProcess.spent;
               await processMultiTransfers(
                 envelope.id, 
                 envelope.multiTransfers, 
-                budgetToProcess.budget - budgetToProcess.spent,
+                amountToDistribute,
                 dashboardId
               );
-              console.log(`Budget ${envelope.title} transféré vers plusieurs cibles`);
+              console.log(`Budget ${envelope.title} transféré vers plusieurs cibles (montant total: ${amountToDistribute})`);
             }
             break;
             
@@ -124,20 +126,18 @@ export const useBudgetTransitioner = () => {
     }
   };
   
-  // Nouvelle fonction pour mettre à jour le montant reporté
+  // Fonction pour mettre à jour le montant reporté
   const updateBudgetCarriedOver = async (budgetId: string, carriedOverAmount: number) => {
     try {
       const budget = await db.getBudgets()
         .then(budgets => budgets.find(b => b.id === budgetId));
       
       if (budget) {
-        // Additionner avec le montant déjà reporté s'il existe
-        const newCarriedOver = (budget.carriedOver || 0) + carriedOverAmount;
-        console.log(`Budget ${budget.title}: Montant reporté mis à jour de ${budget.carriedOver || 0} à ${newCarriedOver}`);
+        console.log(`Budget ${budget.title}: Remplacement du montant reporté ${budget.carriedOver || 0} par ${carriedOverAmount}`);
         
         await db.updateBudget({
           ...budget,
-          carriedOver: newCarriedOver
+          carriedOver: carriedOverAmount // Remplacer le montant reporté au lieu de l'additionner
         });
       }
     } catch (error) {
