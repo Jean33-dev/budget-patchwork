@@ -5,8 +5,9 @@ import { toast } from "@/components/ui/use-toast";
 import { Budget } from "@/types/categories";
 
 export const useBudgetTransitioner = () => {
-  const processEnvelopeTransitions = async (envelopes: TransitionEnvelope[], dashboardId: string) => {
-    console.log(`Traitement de la transition des enveloppes pour le dashboard: ${dashboardId}`);
+  // Nouvelle fonction: précalcule tous les montants à reporter avant de faire des modifications
+  const calculateTransitionAmounts = async (envelopes: TransitionEnvelope[], dashboardId: string) => {
+    console.log(`Pré-calcul des montants de transition pour le dashboard: ${dashboardId}`);
     
     // Récupérer tous les budgets du dashboard
     const allBudgets = await db.getBudgets();
@@ -14,17 +15,52 @@ export const useBudgetTransitioner = () => {
       String(budget.dashboardId || '') === String(dashboardId || '')
     );
     
-    console.log(`Budgets trouvés pour le dashboard ${dashboardId}: ${dashboardBudgets.length}`);
+    // Structure pour stocker les résultats pré-calculés
+    const transitionPlan = new Map();
     
-    // Récupérer aussi toutes les dépenses récurrentes pour référence
+    // Calculer pour chaque enveloppe
+    for (const envelope of envelopes) {
+      const budgetToProcess = dashboardBudgets.find(b => b.id === envelope.id);
+      if (!budgetToProcess) continue;
+      
+      // Calculer le montant restant (non dépensé) avant transition
+      const remainingAmount = budgetToProcess.budget + (budgetToProcess.carriedOver || 0) - budgetToProcess.spent;
+      console.log(`Pré-calcul - Budget ${envelope.title}: Montant restant = ${remainingAmount}`);
+      
+      // Stocker ce montant et l'option pour utilisation ultérieure
+      transitionPlan.set(envelope.id, {
+        budgetId: envelope.id,
+        remainingAmount: Math.max(0, remainingAmount),
+        option: envelope.transitionOption,
+        partialAmount: envelope.partialAmount,
+        transferTargetId: envelope.transferTargetId,
+        multiTransfers: envelope.multiTransfers
+      });
+    }
+    
+    return transitionPlan;
+  };
+
+  const processEnvelopeTransitions = async (envelopes: TransitionEnvelope[], dashboardId: string) => {
+    console.log(`Traitement de la transition des enveloppes pour le dashboard: ${dashboardId}`);
+    
+    // 1. PRÉ-CALCUL des montants à reporter AVANT toute modification
+    const transitionPlan = await calculateTransitionAmounts(envelopes, dashboardId);
+    console.log("Plan de transition calculé:", transitionPlan);
+    
+    // 2. Récupérer tous les budgets du dashboard pour appliquer les modifications
+    const allBudgets = await db.getBudgets();
+    const dashboardBudgets = allBudgets.filter(budget => 
+      String(budget.dashboardId || '') === String(dashboardId || '')
+    );
+    
+    // 3. Récupérer aussi toutes les dépenses récurrentes pour référence
     const allExpenses = await db.getExpenses();
     const recurringExpenses = allExpenses.filter(expense => 
       expense.isRecurring && String(expense.dashboardId || '') === String(dashboardId || '')
     );
     
-    console.log(`Dépenses récurrentes trouvées pour le dashboard ${dashboardId}: ${recurringExpenses.length}`);
-    
-    // Traiter chaque enveloppe
+    // 4. Appliquer les transitions selon le plan pré-calculé
     for (const envelope of envelopes) {
       // Vérifier que l'enveloppe appartient au dashboard courant
       const budgetToProcess = dashboardBudgets.find(b => b.id === envelope.id);
@@ -33,8 +69,15 @@ export const useBudgetTransitioner = () => {
         continue;
       }
       
+      // Récupérer les valeurs pré-calculées
+      const transitionInfo = transitionPlan.get(envelope.id);
+      if (!transitionInfo) continue;
+      
+      const { remainingAmount } = transitionInfo;
+      
       console.log(`Traitement de l'enveloppe ${envelope.id} (${envelope.title}) - Option: ${envelope.transitionOption}`);
       console.log(`État actuel: budget=${budgetToProcess.budget}, carriedOver=${budgetToProcess.carriedOver || 0}, spent=${budgetToProcess.spent}`);
+      console.log(`Montant restant pré-calculé: ${remainingAmount}`);
       
       try {
         // Vérifier si ce budget a des dépenses récurrentes associées
@@ -45,10 +88,6 @@ export const useBudgetTransitioner = () => {
         if (linkedRecurringExpenses.length > 0) {
           console.log(`Budget ${envelope.title} a ${linkedRecurringExpenses.length} dépenses récurrentes associées`);
         }
-        
-        // Calculer le montant restant (non dépensé) avant transition
-        const remainingAmount = budgetToProcess.budget + (budgetToProcess.carriedOver || 0) - budgetToProcess.spent;
-        console.log(`Budget ${envelope.title}: Montant restant avant transition = ${remainingAmount} (budget=${budgetToProcess.budget} + carriedOver=${budgetToProcess.carriedOver || 0} - spent=${budgetToProcess.spent})`);
         
         switch (envelope.transitionOption) {
           case "keep":
@@ -278,6 +317,7 @@ export const useBudgetTransitioner = () => {
   };
 
   return {
-    processEnvelopeTransitions
+    processEnvelopeTransitions,
+    calculateTransitionAmounts  // Export de la nouvelle fonction
   };
 };
