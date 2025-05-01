@@ -39,8 +39,8 @@ export const useTransitionProcessor = (categories: any[], setCategories: (catego
       
       // ÉTAPE 1: Calcul des montants à reporter AVANT toute modification
       console.log("ÉTAPE 1: Pré-calcul des montants à reporter avant toute modification");
-      // Utiliser la nouvelle fonction mais sans rien faire avec pour le moment - le processEnvelopeTransitions l'utilisera
-      await calculateTransitionAmounts(envelopes, currentDashboardId);
+      const transitionPlan = await calculateTransitionAmounts(envelopes, currentDashboardId);
+      console.log("Plan de transition calculé:", JSON.stringify([...transitionPlan.entries()]));
       
       // ÉTAPE 2: Traitement des budgets pour la transition
       console.log("ÉTAPE 2: Application des transitions sur les budgets");
