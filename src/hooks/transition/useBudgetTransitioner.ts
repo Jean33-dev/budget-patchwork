@@ -1,3 +1,4 @@
+
 import { db } from "@/services/database";
 import { TransitionEnvelope, TransitionOption, MultiTransfer } from "@/types/transition";
 import { toast } from "@/components/ui/use-toast";
@@ -335,7 +336,7 @@ export const useBudgetTransitioner = () => {
   const processMultiTransfers = async (sourceId: string, transfers: MultiTransfer[], totalAmount: number, dashboardId: string) => {
     try {
       const budgets = await db.getBudgets();
-      const source = budgets.find(b => b.id === sourceId && String(b.dashboardId || '') === String(dashboardId || '));
+      const source = budgets.find(b => b.id === sourceId && String(b.dashboardId || '') === String(dashboardId || ''));
       
       if (!source) {
         throw new Error("Budget source introuvable ou n'appartient pas au dashboard actuel");
@@ -353,7 +354,7 @@ export const useBudgetTransitioner = () => {
       
       // Traiter chaque transfert
       for (const transfer of transfers) {
-        const target = budgets.find(b => b.id === transfer.targetId && String(b.dashboardId || '') === String(dashboardId || '));
+        const target = budgets.find(b => b.id === transfer.targetId && String(b.dashboardId || '') === String(dashboardId || ''));
         
         if (target) {
           // S'assurer que le montant à transférer est valide et ne dépasse pas ce qui reste
