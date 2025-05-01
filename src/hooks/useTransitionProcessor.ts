@@ -37,6 +37,18 @@ export const useTransitionProcessor = (categories: any[], setCategories: (catego
       // Save preferences for next time
       saveTransitionPreferences(envelopes);
       
+      // Récupérer tous les budgets pour analyse AVANT modification
+      console.log("DEBUG: Récupération de l'état actuel des budgets AVANT toute modification");
+      const { db } = await import('@/services/database');
+      const allBudgets = await db.getBudgets();
+      const dashboardBudgets = allBudgets.filter(b => 
+        String(b.dashboardId || '') === String(currentDashboardId || '')
+      );
+      console.log("DEBUG: État initial des budgets:");
+      dashboardBudgets.forEach(b => {
+        console.log(`Budget ${b.id} (${b.title}): budget=${b.budget}, carriedOver=${b.carriedOver || 0}, spent=${b.spent}, total disponible=${b.budget + (b.carriedOver || 0)}, reste=(${b.budget + (b.carriedOver || 0)} - ${b.spent})=${(b.budget + (b.carriedOver || 0)) - b.spent}`);
+      });
+      
       // ÉTAPE 1: Calcul des montants à reporter AVANT toute modification
       console.log("ÉTAPE 1: Pré-calcul des montants à reporter avant toute modification");
       const transitionPlan = await calculateTransitionAmounts(envelopes, currentDashboardId);
@@ -47,7 +59,9 @@ export const useTransitionProcessor = (categories: any[], setCategories: (catego
         console.log(`Budget ${id} (${plan.title || 'Sans titre'}):`);
         console.log(`  Budget initial: ${plan.initialBudget || 0}`);
         console.log(`  Report précédent: ${plan.previousCarriedOver || 0}`);
+        console.log(`  Total disponible: ${plan.initialBudget + plan.previousCarriedOver}`);
         console.log(`  Dépensé: ${plan.spent || 0}`);
+        console.log(`  Formule de calcul: (${plan.initialBudget} + ${plan.previousCarriedOver}) - ${plan.spent}`);
         console.log(`  Montant restant calculé: ${plan.remainingAmount}`);
         console.log(`  Option: ${plan.option}`);
       }
@@ -55,6 +69,17 @@ export const useTransitionProcessor = (categories: any[], setCategories: (catego
       // ÉTAPE 2: Traitement des budgets pour la transition
       console.log("ÉTAPE 2: Application des transitions sur les budgets");
       await processEnvelopeTransitions(envelopes, currentDashboardId);
+      
+      // Vérification de l'état intermédiaire après transition des budgets
+      console.log("DEBUG: Vérification de l'état des budgets APRÈS application des transitions");
+      const budgetsAfterTransition = await db.getBudgets();
+      const dashboardBudgetsAfterTransition = budgetsAfterTransition.filter(b => 
+        String(b.dashboardId || '') === String(currentDashboardId || '')
+      );
+      console.log("DEBUG: État intermédiaire des budgets après transition:");
+      dashboardBudgetsAfterTransition.forEach(b => {
+        console.log(`Budget ${b.id} (${b.title}): budget=${b.budget}, carriedOver=${b.carriedOver || 0}, spent=${b.spent}`);
+      });
       
       // ÉTAPE 3: Réinitialisation des dépenses non récurrentes APRÈS les calculs et reports
       console.log("ÉTAPE 3: Réinitialisation des dépenses non récurrentes");
@@ -74,6 +99,26 @@ export const useTransitionProcessor = (categories: any[], setCategories: (catego
       
       // Mettre à jour l'état local des catégories
       setCategories(updatedCategories);
+      
+      // Vérification finale
+      console.log("DEBUG: Vérification FINALE de l'état des budgets");
+      const finalBudgets = await db.getBudgets();
+      const dashboardFinalBudgets = finalBudgets.filter(b => 
+        String(b.dashboardId || '') === String(currentDashboardId || '')
+      );
+      console.log("DEBUG: État final des budgets:");
+      dashboardFinalBudgets.forEach(b => {
+        console.log(`Budget ${b.id} (${b.title}): budget=${b.budget}, carriedOver=${b.carriedOver || 0}, spent=${b.spent}`);
+        
+        // Vérifier si ce budget était dans le plan de transition
+        const budgetPlan = Array.from(transitionPlan.values()).find(plan => plan.budgetId === b.id);
+        if (budgetPlan) {
+          console.log(`  Comparaison avec le plan: montant restant calculé=${budgetPlan.remainingAmount}, carriedOver final=${b.carriedOver || 0}`);
+          if (budgetPlan.option === 'carry' && budgetPlan.remainingAmount !== b.carriedOver) {
+            console.log(`  ⚠️ ANOMALIE: Le report final (${b.carriedOver}) ne correspond pas au montant restant calculé (${budgetPlan.remainingAmount})`);
+          }
+        }
+      });
 
       toast({
         title: "Transition effectuée",

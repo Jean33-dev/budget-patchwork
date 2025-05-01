@@ -1,4 +1,3 @@
-
 import { db } from "@/services/database";
 
 export const useExpenseIncomeReset = () => {
@@ -20,6 +19,16 @@ export const useExpenseIncomeReset = () => {
       String(expense.dashboardId || '') === String(dashboardId || '')
     );
     
+    // Garder les dépenses récurrentes pour analyse
+    const recurringExpenses = expenses.filter(expense => 
+      expense.isRecurring && 
+      String(expense.dashboardId || '') === String(dashboardId || '')
+    );
+    
+    console.log(`DEBUG: Dépenses totales: ${expenses.length}`);
+    console.log(`DEBUG: Dépenses récurrentes: ${recurringExpenses.length}`);
+    console.log(`DEBUG: Dépenses non récurrentes à supprimer: ${nonRecurringExpenses.length}`);
+    
     console.log(`Réinitialisation - Suppression de ${nonRecurringExpenses.length} dépenses non récurrentes du dashboard ${dashboardId}`);
     
     // Vérifier et afficher les détails des dépenses à supprimer (pour débogage)
@@ -28,11 +37,38 @@ export const useExpenseIncomeReset = () => {
         nonRecurringExpenses.slice(0, 3).map(e => ({
           id: e.id,
           title: e.title,
+          budget: e.budget,
           isRecurring: e.isRecurring,
           dashboardId: e.dashboardId,
           linkedBudgetId: e.linkedBudgetId
         }))
       );
+    }
+    
+    // Vérifier et afficher les détails des dépenses récurrentes (pour débogage)
+    if (recurringExpenses.length > 0) {
+      console.log("DEBUG: Détails des premières dépenses récurrentes conservées:", 
+        recurringExpenses.slice(0, 3).map(e => ({
+          id: e.id,
+          title: e.title, 
+          budget: e.budget,
+          isRecurring: e.isRecurring,
+          dashboardId: e.dashboardId,
+          linkedBudgetId: e.linkedBudgetId
+        }))
+      );
+    }
+    
+    // Vérifier l'impact des dépenses récurrentes sur les budgets
+    const allBudgets = await db.getBudgets();
+    const dashboardBudgets = allBudgets.filter(b => String(b.dashboardId || '') === String(dashboardId || ''));
+    
+    console.log("DEBUG: Impact des dépenses récurrentes sur les budgets:");
+    for (const budget of dashboardBudgets) {
+      const linkedRecurringExpenses = recurringExpenses.filter(e => e.linkedBudgetId === budget.id);
+      const totalRecurringAmount = linkedRecurringExpenses.reduce((sum, e) => sum + e.budget, 0);
+      
+      console.log(`Budget ${budget.title}: ${linkedRecurringExpenses.length} dépenses récurrentes, total=${totalRecurringAmount}`);
     }
     
     // Supprimer uniquement les dépenses non récurrentes du dashboard courant
@@ -115,6 +151,14 @@ export const useExpenseIncomeReset = () => {
       console.log(`Budget ${budget.title}: budget=${budget.budget}, carriedOver=${budget.carriedOver || 0}, spent=${budget.spent}`);
     }
     
+    // Récupérer toutes les dépenses récurrentes qui restent après la transition
+    const remainingExpenses = await db.getExpenses();
+    const dashboardRecurringExpenses = remainingExpenses.filter(e => 
+      e.isRecurring && String(e.dashboardId || '') === String(dashboardId || '')
+    );
+    
+    console.log(`DEBUG: ${dashboardRecurringExpenses.length} dépenses récurrentes restent après la transition`);
+    
     for (let category of dashboardCategories) {
       // Stocker l'ancien montant pour le log
       const oldSpent = category.spent || 0;
@@ -123,6 +167,28 @@ export const useExpenseIncomeReset = () => {
       category.spent = 0;
       await db.updateCategory(category);
       console.log(`Réinitialisation - Catégorie ${category.name} mise à jour, dépenses réinitialisées: ${oldSpent} -> 0`);
+    }
+    
+    // Vérification finale des budgets après réinitialisation complète
+    const finalBudgets = await db.getBudgets();
+    const dashboardFinalBudgets = finalBudgets.filter(b => 
+      String(b.dashboardId || '') === String(dashboardId || '')
+    );
+    
+    console.log("VÉRIFICATION FINALE - État des budgets après réinitialisation complète:");
+    for (const budget of dashboardFinalBudgets) {
+      console.log(`Budget ${budget.title}: budget=${budget.budget}, carriedOver=${budget.carriedOver || 0}, spent=${budget.spent}`);
+      
+      // Vérifier si ce budget a des dépenses récurrentes
+      const budgetRecurringExpenses = dashboardRecurringExpenses.filter(e => e.linkedBudgetId === budget.id);
+      const totalRecurringAmount = budgetRecurringExpenses.reduce((sum, e) => sum + e.budget, 0);
+      
+      if (budgetRecurringExpenses.length > 0) {
+        console.log(`  Ce budget a ${budgetRecurringExpenses.length} dépenses récurrentes totalisant ${totalRecurringAmount}`);
+        if (budget.spent !== totalRecurringAmount) {
+          console.log(`  ⚠️ ANOMALIE: Le montant dépensé (${budget.spent}) ne correspond pas au total des dépenses récurrentes (${totalRecurringAmount})`);
+        }
+      }
     }
     
     return dashboardCategories;

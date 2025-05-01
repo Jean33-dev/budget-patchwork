@@ -1,4 +1,3 @@
-
 import { db } from "@/services/database";
 import { TransitionEnvelope, TransitionOption, MultiTransfer } from "@/types/transition";
 import { toast } from "@/components/ui/use-toast";
@@ -18,6 +17,14 @@ export const useBudgetTransitioner = () => {
     // Structure pour stocker les résultats pré-calculés
     const transitionPlan = new Map();
     
+    // Récupérer les dépenses actuelles pour analyse
+    const allExpenses = await db.getExpenses();
+    const dashboardExpenses = allExpenses.filter(expense => 
+      String(expense.dashboardId || '') === String(dashboardId || '')
+    );
+    
+    console.log(`DEBUG: Calculer les montants pour ${envelopes.length} enveloppes avec ${dashboardExpenses.length} dépenses`);
+    
     // Calculer pour chaque enveloppe
     for (const envelope of envelopes) {
       const budgetToProcess = dashboardBudgets.find(b => b.id === envelope.id);
@@ -25,6 +32,12 @@ export const useBudgetTransitioner = () => {
         console.log(`Budget ${envelope.id} (${envelope.title}) non trouvé dans le dashboard`);
         continue;
       }
+      
+      // Vérifier si ce budget a des dépenses associées
+      const budgetExpenses = dashboardExpenses.filter(expense => expense.linkedBudgetId === budgetToProcess.id);
+      const totalExpenseAmount = budgetExpenses.reduce((sum, expense) => sum + expense.budget, 0);
+      
+      console.log(`DEBUG: Budget ${budgetToProcess.title} (${budgetToProcess.id}): ${budgetExpenses.length} dépenses trouvées, total=${totalExpenseAmount}`);
       
       // *** CORRECTION ICI - Calcul du montant restant en prenant en compte les dépenses ***
       // Formule correcte : (budget + carriedOver) - spent
@@ -35,7 +48,11 @@ export const useBudgetTransitioner = () => {
       console.log(`  Budget initial: ${budgetToProcess.budget}`);
       console.log(`  Report précédent (carriedOver): ${budgetToProcess.carriedOver || 0}`);
       console.log(`  Total disponible (budget + carriedOver): ${totalBudget}`);
-      console.log(`  Dépensé: ${budgetToProcess.spent}`);
+      console.log(`  Dépensé selon budget.spent: ${budgetToProcess.spent}`);
+      console.log(`  Dépensé selon somme des dépenses: ${totalExpenseAmount}`);
+      if (budgetToProcess.spent !== totalExpenseAmount) {
+        console.log(`  ⚠️ DIFFÉRENCE DÉTECTÉE entre budget.spent (${budgetToProcess.spent}) et somme des dépenses (${totalExpenseAmount})`);
+      }
       console.log(`  Montant restant (total - dépensé): ${remainingAmount}`);
       console.log(`  Option de transition: ${envelope.transitionOption}`);
       
@@ -46,6 +63,7 @@ export const useBudgetTransitioner = () => {
         initialBudget: budgetToProcess.budget,
         previousCarriedOver: budgetToProcess.carriedOver || 0,
         spent: budgetToProcess.spent,
+        expensesTotal: totalExpenseAmount,
         remainingAmount: Math.max(0, remainingAmount),
         option: envelope.transitionOption,
         partialAmount: envelope.partialAmount,
@@ -106,6 +124,11 @@ export const useBudgetTransitioner = () => {
         
         if (linkedRecurringExpenses.length > 0) {
           console.log(`Budget ${envelope.title} a ${linkedRecurringExpenses.length} dépenses récurrentes associées`);
+          linkedRecurringExpenses.forEach((expense, idx) => {
+            if (idx < 3) { // Limiter à 3 pour éviter trop de logs
+              console.log(`  - Dépense récurrente: ${expense.title}, montant: ${expense.budget}`);
+            }
+          });
         }
         
         switch (envelope.transitionOption) {
@@ -218,10 +241,24 @@ export const useBudgetTransitioner = () => {
       
       if (budget) {
         console.log(`Mise à jour du spent pour ${budget.title}: ${budget.spent} -> ${newSpentValue}`);
+        
+        // DEBUG: Vérifier le format et le type de newSpentValue avant mise à jour
+        console.log(`DEBUG: Type de newSpentValue: ${typeof newSpentValue}, Valeur: ${newSpentValue}`);
+        
         await db.updateBudget({
           ...budget,
           spent: newSpentValue
         });
+        
+        // Vérifier après mise à jour
+        const verifyBudget = await db.getBudgets()
+          .then(budgets => budgets.find(b => b.id === budgetId));
+        if (verifyBudget) {
+          console.log(`Vérification après mise à jour: spent = ${verifyBudget.spent}`);
+          if (verifyBudget.spent !== newSpentValue) {
+            console.log(`⚠️ ERREUR: La mise à jour de spent n'a pas fonctionné correctement (${verifyBudget.spent} ≠ ${newSpentValue})`);
+          }
+        }
       }
     } catch (error) {
       console.error(`Erreur lors de la mise à jour du budget ${budgetId}:`, error);
@@ -238,10 +275,23 @@ export const useBudgetTransitioner = () => {
       if (budget) {
         console.log(`Mise à jour du carriedOver pour ${budget.title}: ${budget.carriedOver || 0} -> ${carriedOverAmount}`);
         
+        // DEBUG: Vérifier le format et le type de carriedOverAmount avant mise à jour
+        console.log(`DEBUG: Type de carriedOverAmount: ${typeof carriedOverAmount}, Valeur: ${carriedOverAmount}`);
+        
         await db.updateBudget({
           ...budget,
           carriedOver: carriedOverAmount // Remplacer le montant reporté au lieu de l'additionner
         });
+        
+        // Vérifier après mise à jour
+        const verifyBudget = await db.getBudgets()
+          .then(budgets => budgets.find(b => b.id === budgetId));
+        if (verifyBudget) {
+          console.log(`Vérification après mise à jour: carriedOver = ${verifyBudget.carriedOver}`);
+          if (verifyBudget.carriedOver !== carriedOverAmount) {
+            console.log(`⚠️ ERREUR: La mise à jour de carriedOver n'a pas fonctionné correctement (${verifyBudget.carriedOver} ≠ ${carriedOverAmount})`);
+          }
+        }
       }
     } catch (error) {
       console.error(`Erreur lors de la mise à jour du montant reporté pour le budget ${budgetId}:`, error);
@@ -285,7 +335,7 @@ export const useBudgetTransitioner = () => {
   const processMultiTransfers = async (sourceId: string, transfers: MultiTransfer[], totalAmount: number, dashboardId: string) => {
     try {
       const budgets = await db.getBudgets();
-      const source = budgets.find(b => b.id === sourceId && String(b.dashboardId || '') === String(dashboardId || ''));
+      const source = budgets.find(b => b.id === sourceId && String(b.dashboardId || '') === String(dashboardId || '));
       
       if (!source) {
         throw new Error("Budget source introuvable ou n'appartient pas au dashboard actuel");
@@ -303,7 +353,7 @@ export const useBudgetTransitioner = () => {
       
       // Traiter chaque transfert
       for (const transfer of transfers) {
-        const target = budgets.find(b => b.id === transfer.targetId && String(b.dashboardId || '') === String(dashboardId || ''));
+        const target = budgets.find(b => b.id === transfer.targetId && String(b.dashboardId || '') === String(dashboardId || '));
         
         if (target) {
           // S'assurer que le montant à transférer est valide et ne dépasse pas ce qui reste
