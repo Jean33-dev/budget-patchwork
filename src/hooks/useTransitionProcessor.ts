@@ -40,7 +40,17 @@ export const useTransitionProcessor = (categories: any[], setCategories: (catego
       // ÉTAPE 1: Calcul des montants à reporter AVANT toute modification
       console.log("ÉTAPE 1: Pré-calcul des montants à reporter avant toute modification");
       const transitionPlan = await calculateTransitionAmounts(envelopes, currentDashboardId);
-      console.log("Plan de transition calculé:", JSON.stringify([...transitionPlan.entries()]));
+      
+      // Amélioration du log pour diagnostic
+      console.log("Plan de transition calculé en détail:");
+      for (const [id, plan] of transitionPlan.entries()) {
+        console.log(`Budget ${id} (${plan.title || 'Sans titre'}):`);
+        console.log(`  Budget initial: ${plan.initialBudget || 0}`);
+        console.log(`  Report précédent: ${plan.previousCarriedOver || 0}`);
+        console.log(`  Dépensé: ${plan.spent || 0}`);
+        console.log(`  Montant restant calculé: ${plan.remainingAmount}`);
+        console.log(`  Option: ${plan.option}`);
+      }
       
       // ÉTAPE 2: Traitement des budgets pour la transition
       console.log("ÉTAPE 2: Application des transitions sur les budgets");

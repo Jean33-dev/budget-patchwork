@@ -21,15 +21,31 @@ export const useBudgetTransitioner = () => {
     // Calculer pour chaque enveloppe
     for (const envelope of envelopes) {
       const budgetToProcess = dashboardBudgets.find(b => b.id === envelope.id);
-      if (!budgetToProcess) continue;
+      if (!budgetToProcess) {
+        console.log(`Budget ${envelope.id} (${envelope.title}) non trouvé dans le dashboard`);
+        continue;
+      }
       
-      // Calculer le montant restant (non dépensé) avant transition
-      const remainingAmount = budgetToProcess.budget + (budgetToProcess.carriedOver || 0) - budgetToProcess.spent;
-      console.log(`Pré-calcul - Budget ${envelope.title}: Montant restant = ${remainingAmount}`);
+      // *** CORRECTION ICI - Calcul du montant restant en prenant en compte les dépenses ***
+      // Formule correcte : (budget + carriedOver) - spent
+      const totalBudget = budgetToProcess.budget + (budgetToProcess.carriedOver || 0);
+      const remainingAmount = totalBudget - budgetToProcess.spent;
+      
+      console.log(`Pré-calcul détaillé - Budget ${envelope.title}:`);
+      console.log(`  Budget initial: ${budgetToProcess.budget}`);
+      console.log(`  Report précédent (carriedOver): ${budgetToProcess.carriedOver || 0}`);
+      console.log(`  Total disponible (budget + carriedOver): ${totalBudget}`);
+      console.log(`  Dépensé: ${budgetToProcess.spent}`);
+      console.log(`  Montant restant (total - dépensé): ${remainingAmount}`);
+      console.log(`  Option de transition: ${envelope.transitionOption}`);
       
       // Stocker ce montant et l'option pour utilisation ultérieure
       transitionPlan.set(envelope.id, {
         budgetId: envelope.id,
+        title: budgetToProcess.title,
+        initialBudget: budgetToProcess.budget,
+        previousCarriedOver: budgetToProcess.carriedOver || 0,
+        spent: budgetToProcess.spent,
         remainingAmount: Math.max(0, remainingAmount),
         option: envelope.transitionOption,
         partialAmount: envelope.partialAmount,
@@ -71,7 +87,10 @@ export const useBudgetTransitioner = () => {
       
       // Récupérer les valeurs pré-calculées
       const transitionInfo = transitionPlan.get(envelope.id);
-      if (!transitionInfo) continue;
+      if (!transitionInfo) {
+        console.log(`Pas d'information de transition pour le budget ${envelope.id}`);
+        continue;
+      }
       
       const { remainingAmount } = transitionInfo;
       
@@ -318,6 +337,6 @@ export const useBudgetTransitioner = () => {
 
   return {
     processEnvelopeTransitions,
-    calculateTransitionAmounts  // Export de la nouvelle fonction
+    calculateTransitionAmounts
   };
 };

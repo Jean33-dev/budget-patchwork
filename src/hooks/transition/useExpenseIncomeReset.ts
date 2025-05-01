@@ -17,7 +17,7 @@ export const useExpenseIncomeReset = () => {
     // Filtrer pour ne garder que les dépenses non récurrentes du dashboard courant à supprimer
     const nonRecurringExpenses = expenses.filter(expense => 
       !expense.isRecurring && 
-      String(expense.dashboardId) === String(dashboardId)
+      String(expense.dashboardId || '') === String(dashboardId || '')
     );
     
     console.log(`Réinitialisation - Suppression de ${nonRecurringExpenses.length} dépenses non récurrentes du dashboard ${dashboardId}`);
@@ -29,7 +29,8 @@ export const useExpenseIncomeReset = () => {
           id: e.id,
           title: e.title,
           isRecurring: e.isRecurring,
-          dashboardId: e.dashboardId
+          dashboardId: e.dashboardId,
+          linkedBudgetId: e.linkedBudgetId
         }))
       );
     }
@@ -102,6 +103,17 @@ export const useExpenseIncomeReset = () => {
     
     console.log(`Réinitialisation - Remise à zéro des dépenses des catégories pour le dashboard ${dashboardId}`);
     console.log(`Réinitialisation - Nombre de catégories à traiter: ${dashboardCategories.length}`);
+    
+    // Vérifier les budgets après application des transitions pour le débogage
+    const budgetsAfterTransition = await db.getBudgets();
+    const dashboardBudgets = budgetsAfterTransition.filter(b => 
+      String(b.dashboardId || '') === String(dashboardId || '')
+    );
+    
+    console.log("État des budgets après application des transitions et avant réinitialisation des catégories:");
+    for (const budget of dashboardBudgets) {
+      console.log(`Budget ${budget.title}: budget=${budget.budget}, carriedOver=${budget.carriedOver || 0}, spent=${budget.spent}`);
+    }
     
     for (let category of dashboardCategories) {
       // Stocker l'ancien montant pour le log
