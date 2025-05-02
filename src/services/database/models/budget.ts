@@ -5,6 +5,6 @@ export interface Budget {
   budget: number;
   spent: number;
   type: 'budget';
-  carriedOver?: number; // Assurer que c'est bien un number
+  carriedOver?: number; // Assurons-nous que c'est bien un number
   dashboardId: string;
 }
