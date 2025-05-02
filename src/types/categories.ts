@@ -14,6 +14,6 @@ export interface Budget {
   budget: number;
   spent: number;
   type: "budget";
-  carriedOver?: number;
+  carriedOver: number; // Now required to match database model
   dashboardId: string; // Maintenant obligatoire
 }

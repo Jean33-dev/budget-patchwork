@@ -30,7 +30,8 @@ export const budgetOperations = {
         budget: newBudget.budget,
         spent: 0,
         type: "budget",
-        dashboardId: actualDashboardId // Ajout du dashboardId
+        carriedOver: newBudget.carriedOver || 0, // Ensure carriedOver is always set
+        dashboardId: actualDashboardId
       };
 
       console.log("Ajout d'un nouveau budget:", budgetToAdd);
