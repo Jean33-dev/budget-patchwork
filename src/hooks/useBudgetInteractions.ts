@@ -127,7 +127,8 @@ export const useBudgetInteractions = (navigate: NavigateFunction) => {
       title: envelope.title,
       budget: envelope.budget,
       type: "budget" as const,
-      dashboardId: currentDashboardId // Add the dashboardId property
+      carriedOver: 0, // Add the required carriedOver property with a default value of 0
+      dashboardId: currentDashboardId 
     };
     
     console.log("Ajout d'un nouveau budget:", budgetData);
@@ -135,7 +136,7 @@ export const useBudgetInteractions = (navigate: NavigateFunction) => {
     if (success) {
       setAddDialogOpen(false);
     }
-  }, [addBudget, currentDashboardId]); // Add currentDashboardId to dependencies
+  }, [addBudget, currentDashboardId]);
 
   const handleDeleteClick = useCallback(async (envelope: Budget) => {
     setSelectedBudget(envelope);
