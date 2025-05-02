@@ -68,11 +68,24 @@ export const useBudgetData = () => {
           sum + (Number(expense.budget) || 0), 0
         );
         
+        // Important: If the calculated spent amount differs from the stored spent amount,
+        // update the budget in the database to ensure consistency
+        if (budgetSpent !== budget.spent) {
+          console.log(`Synchronizing budget ${budget.title}: spent in DB (${budget.spent}) ≠ actual expenses (${budgetSpent})`);
+          const updatedBudget = {
+            ...budget,
+            spent: budgetSpent
+          };
+          db.updateBudget(updatedBudget).catch(err => 
+            console.error("Error synchronizing budget spent:", err)
+          );
+        }
+        
         return {
           ...budget,
           budget: Number(budget.budget) || 0,
-          spent: budgetSpent,
-          carriedOver: budget.carriedOver || 0
+          spent: budgetSpent, // Use the calculated spent amount
+          carriedOver: Number(budget.carriedOver) || 0
         };
       });
       
