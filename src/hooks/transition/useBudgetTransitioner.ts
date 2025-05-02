@@ -1,8 +1,134 @@
-
-import { db } from "@/services/database";
-import { TransitionEnvelope, TransitionOption, MultiTransfer } from "@/types/transition";
 import { toast } from "@/components/ui/use-toast";
-import { Budget } from "@/types/categories";
+import { Budget } from '../models/budget';
+import { BaseQueryManager } from '../query-managers/base-query-manager';
+import { QueryManager } from '../query-manager';
+import { TransitionEnvelope, MultiTransfer } from "@/types/transition";
+import { db } from "@/services/database";
+
+export class BudgetOperationsManager {
+  private ensureInitialized: () => Promise<boolean>;
+  private managerFactory: DatabaseManagerFactory;
+
+  constructor(
+    ensureInitialized: () => Promise<boolean>,
+    managerFactory: DatabaseManagerFactory
+  ) {
+    this.ensureInitialized = ensureInitialized;
+    this.managerFactory = managerFactory;
+  }
+
+  async getBudgets(): Promise<Budget[]> {
+    try {
+      const initialized = await this.ensureInitialized();
+      if (!initialized) {
+        console.error("Database not initialized in getBudgets");
+        return [];
+      }
+      return this.managerFactory.getBudgetManager().getBudgets();
+    } catch (error) {
+      console.error("Error in getBudgets:", error);
+      return [];
+    }
+  }
+
+  async addBudget(budget: Budget): Promise<void> {
+    const initialized = await this.ensureInitialized();
+    if (!initialized) {
+      throw new Error("Database not initialized in addBudget");
+    }
+    await this.managerFactory.getBudgetManager().addBudget(budget);
+  }
+
+  async updateBudget(budget: Budget): Promise<void> {
+    const initialized = await this.ensureInitialized();
+    if (!initialized) {
+      throw new Error("Database not initialized in updateBudget");
+    }
+    await this.managerFactory.getBudgetManager().updateBudget(budget);
+  }
+
+  async deleteBudget(id: string): Promise<void> {
+    const initialized = await this.ensureInitialized();
+    if (!initialized) {
+      throw new Error("Database not initialized in deleteBudget");
+    }
+    await this.managerFactory.getBudgetManager().deleteBudget(id);
+  }
+}
+
+export class BudgetQueryManager extends BaseQueryManager {
+  constructor(parent: QueryManager) {
+    super(parent);
+  }
+
+  async getAll(): Promise<Budget[]> {
+    try {
+      const success = await this.ensureParentInitialized();
+      if (!success) return [];
+      const db = this.getDb();
+      return budgetQueries.getAll(db);
+    } catch (error) {
+      console.error("Error getting budgets:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible de récupérer les budgets"
+      });
+      return [];
+    }
+  }
+
+  async add(budget: Budget): Promise<void> {
+    try {
+      const success = await this.ensureParentInitialized();
+      if (!success) return;
+      const db = this.getDb();
+      budgetQueries.add(db, budget);
+    } catch (error) {
+      console.error("Error adding budget:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible d'ajouter le budget"
+      });
+      throw error;
+    }
+  }
+
+  async update(budget: Budget): Promise<void> {
+    try {
+      const success = await this.ensureParentInitialized();
+      if (!success) return;
+      const db = this.getDb();
+      budgetQueries.update(db, budget);
+    } catch (error) {
+      console.error("Error updating budget:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible de mettre à jour le budget"
+      });
+      throw error;
+    }
+  }
+
+  async delete(id: string): Promise<void> {
+    try {
+      const success = await this.ensureParentInitialized();
+      if (!success || !id) return;
+      const db = this.getDb();
+      budgetQueries.delete(db, id);
+    } catch (error) {
+      console.error("Error deleting budget:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible de supprimer le budget"
+      });
+      throw error;
+    }
+  }
+}
 
 export const useBudgetTransitioner = () => {
   // Nouvelle fonction: précalcule tous les montants à reporter avant de faire des modifications
@@ -51,6 +177,10 @@ export const useBudgetTransitioner = () => {
       const totalExpenseAmount = budgetExpenses.reduce((sum, expense) => sum + expense.budget, 0);
       
       console.log(`[LOG] 📊 Nombre de dépenses associées: ${budgetExpenses.length}`);
+      console.log(`[LOG] 📊 Détail des dépenses associées:`);
+      budgetExpenses.forEach((expense, index) => {
+        console.log(`[LOG] 📊 - Dépense #${index+1}: id=${expense.id}, titre=${expense.title}, montant=${expense.budget}, date=${expense.date}`);
+      });
       console.log(`[LOG] 💰 Total des dépenses associées: ${totalExpenseAmount}`);
       
       // *** CALCUL DU MONTANT RESTANT ***
@@ -65,6 +195,11 @@ export const useBudgetTransitioner = () => {
       if (budgetToProcess.spent !== totalExpenseAmount) {
         console.log(`[LOG] ⚠️ DIFFÉRENCE DÉTECTÉE: budget.spent (${budgetToProcess.spent}) ≠ somme des dépenses (${totalExpenseAmount})`);
         console.log(`[LOG] ⚠️ Cette différence pourrait causer des problèmes dans les calculs`);
+        console.log(`[LOG] 🔍 ANALYSE DE LA DIFFÉRENCE: ${Math.abs(budgetToProcess.spent - totalExpenseAmount)} (${budgetToProcess.spent > totalExpenseAmount ? 'surévaluation' : 'sous-évaluation'} du spent)`);
+        
+        // Déterminer quelle valeur utiliser pour le calcul
+        const calculatedAmount = totalBudget - totalExpenseAmount;
+        console.log(`[LOG] 🧮 Calcul alternatif avec les dépenses réelles: ${totalBudget} - ${totalExpenseAmount} = ${calculatedAmount}`);
       }
       
       console.log(`[LOG] 🔄 Option de transition choisie: ${envelope.transitionOption}`);
@@ -92,6 +227,7 @@ export const useBudgetTransitioner = () => {
       console.log(`[LOG] 📝 Budget ${id} (${plan.title}):`);
       console.log(`[LOG] 📝 - Montant restant à reporter: ${plan.remainingAmount}`);
       console.log(`[LOG] 📝 - Option de transition: ${plan.option}`);
+      console.log(`[LOG] 📝 - Différence budget.spent vs total dépenses: ${plan.spent} vs ${plan.expensesTotal} = ${plan.spent - plan.expensesTotal}`);
     }
     
     return transitionPlan;
@@ -338,6 +474,15 @@ export const useBudgetTransitioner = () => {
       // Journaliser l'objet budget avant mise à jour
       console.log(`[LOG] 🔍 updateBudgetSpent - Objet budget AVANT mise à jour:`, JSON.stringify(budget, null, 2));
       
+      // Vérifier si des dépenses sont associées à ce budget
+      const { db: database } = await import('@/services/database');
+      const expenses = await database.getExpenses();
+      const linkedExpenses = expenses.filter(expense => expense.linkedBudgetId === budgetId);
+      const totalExpenseAmount = linkedExpenses.reduce((sum, expense) => sum + expense.budget, 0);
+      
+      console.log(`[LOG] 🔍 updateBudgetSpent - Dépenses associées: ${linkedExpenses.length} dépenses pour un total de ${totalExpenseAmount}`);
+      console.log(`[LOG] 🔍 updateBudgetSpent - Valeur actuellement en DB: ${budget.spent}, nouvelle valeur à définir: ${newSpentValue}, somme réelle des dépenses: ${totalExpenseAmount}`);
+      
       // Créer un nouveau budget avec le spent mis à jour
       const updatedBudget = {
         ...budget,
@@ -375,7 +520,8 @@ export const useBudgetTransitioner = () => {
   // Fonction pour mettre à jour le montant reporté
   const updateBudgetCarriedOver = async (budgetId: string, carriedOverAmount: number) => {
     try {
-      console.log(`[LOG] 🔄 updateBudgetCarriedOver - Mise à jour du carriedOver pour budget ID ${budgetId} vers ${carriedOverAmount}`);
+      console.log(`[LOG] 🔄 updateBudgetCarriedOver - Début mise à jour carriedOver pour budget ID ${budgetId}`);
+      console.log(`[LOG] 🔄 updateBudgetCarriedOver - Valeur à définir: ${carriedOverAmount}, type: ${typeof carriedOverAmount}`);
       
       const budget = await db.getBudgets()
         .then(budgets => budgets.find(b => b.id === budgetId));
@@ -397,6 +543,12 @@ export const useBudgetTransitioner = () => {
         carriedOverAmount = 0; // Valeur par défaut en cas d'erreur
       }
       
+      // Récupérer l'accès direct à la base de données pour vérification
+      const { databaseService } = await import('@/services/database/database-service');
+      const budgetService = databaseService.getBudgetService();
+      
+      console.log(`[LOG] 🔍 updateBudgetCarriedOver - Service de budget récupéré: ${!!budgetService ? 'OK' : 'NON'}`);
+      
       // Créer un nouveau budget avec le carriedOver mis à jour
       const updatedBudget = {
         ...budget,
@@ -406,8 +558,9 @@ export const useBudgetTransitioner = () => {
       console.log(`[LOG] 🔍 updateBudgetCarriedOver - Objet budget APRÈS préparation de mise à jour:`, JSON.stringify(updatedBudget, null, 2));
       
       // Effectuer la mise à jour
+      console.log(`[LOG] 🔄 updateBudgetCarriedOver - APPEL db.updateBudget avec carriedOver = ${carriedOverAmount}`);
       await db.updateBudget(updatedBudget);
-      console.log(`[LOG] 🔄 updateBudgetCarriedOver - db.updateBudget appelé`);
+      console.log(`[LOG] 🔄 updateBudgetCarriedOver - db.updateBudget appelé et résolu`);
       
       // Vérifier après mise à jour
       const verifyBudget = await db.getBudgets()
@@ -418,13 +571,46 @@ export const useBudgetTransitioner = () => {
         return;
       }
       
-      console.log(`[LOG] 🔍 updateBudgetCarriedOver - Vérification après mise à jour: carriedOver = ${verifyBudget.carriedOver}`);
+      console.log(`[LOG] 🔍 updateBudgetCarriedOver - Vérification après mise à jour: carriedOver = ${verifyBudget.carriedOver}, type = ${typeof verifyBudget.carriedOver}`);
+      
+      // Vérification très détaillée pour debug
+      console.log(`[LOG] 🔬 INSPECTION DÉTAILLÉE:`);
+      console.log(`[LOG] 🔬 - Type original envoyé: ${typeof carriedOverAmount}`);
+      console.log(`[LOG] 🔬 - Valeur originale envoyée: ${carriedOverAmount}`);
+      console.log(`[LOG] 🔬 - Type stocké en DB: ${typeof verifyBudget.carriedOver}`);
+      console.log(`[LOG] 🔬 - Valeur stockée en DB: ${verifyBudget.carriedOver}`);
+      console.log(`[LOG] 🔬 - Égalité stricte: ${verifyBudget.carriedOver === carriedOverAmount}`);
+      console.log(`[LOG] 🔬 - Égalité avec conversion: ${Number(verifyBudget.carriedOver) === Number(carriedOverAmount)}`);
+      console.log(`[LOG] 🔬 - Différence numérique: ${Number(verifyBudget.carriedOver) - Number(carriedOverAmount)}`);
       
       if (verifyBudget.carriedOver !== carriedOverAmount) {
         console.log(`[LOG] ❌ updateBudgetCarriedOver - ERREUR: La mise à jour de carriedOver n'a pas fonctionné correctement (${verifyBudget.carriedOver} ≠ ${carriedOverAmount})`);
         // Afficher plus de détails pour aider au dépannage
         console.log(`[LOG] 🔍 Types: type actuel=${typeof verifyBudget.carriedOver}, type attendu=${typeof carriedOverAmount}`);
         console.log(`[LOG] 🔍 Valeurs strictement égales: ${verifyBudget.carriedOver === carriedOverAmount}`);
+        
+        // Tentative directe avec le service budgetService
+        if (budgetService) {
+          console.log(`[LOG] 🔄 TENTATIVE DE RÉPARATION: Mise à jour directe via le service budgetService`);
+          try {
+            await budgetService.updateBudget({
+              ...updatedBudget,
+              carriedOver: carriedOverAmount
+            });
+            console.log(`[LOG] 🔄 TENTATIVE DE RÉPARATION: Mise à jour directe effectuée`);
+            
+            // Vérifier à nouveau
+            const finalCheck = await db.getBudgets()
+              .then(budgets => budgets.find(b => b.id === budgetId));
+            
+            if (finalCheck) {
+              console.log(`[LOG] 🔄 TENTATIVE DE RÉPARATION: Vérification finale: carriedOver = ${finalCheck.carriedOver}`);
+              console.log(`[LOG] 🔄 TENTATIVE DE RÉPARATION: Réussite = ${finalCheck.carriedOver === carriedOverAmount}`);
+            }
+          } catch (repairError) {
+            console.log(`[LOG] ❌ TENTATIVE DE RÉPARATION: Échec - ${repairError}`);
+          }
+        }
       } else {
         console.log(`[LOG] ✅ updateBudgetCarriedOver - Mise à jour réussie de carriedOver pour ${budget.title}`);
       }
@@ -455,153 +641,4 @@ export const useBudgetTransitioner = () => {
           console.log(`[LOG] ❌ transferBudget - Budget cible ${targetId} non trouvé`);
         }
         
-        throw new Error("Budgets source ou cible introuvables ou n'appartiennent pas au dashboard actuel");
-      }
-      
-      console.log(`[LOG] 🔄 transferBudget - Budget source: ${source.title}, Budget cible: ${target.title}`);
-      console.log(`[LOG] 🔄 transferBudget - État source avant: spent=${source.spent}, carriedOver=${source.carriedOver || 0}`);
-      console.log(`[LOG] 🔄 transferBudget - État cible avant: carriedOver=${target.carriedOver || 0}`);
-      
-      // Réinitialiser le budget source (spent = 0 et carriedOver = 0)
-      console.log(`[LOG] 🔄 transferBudget - Réinitialisation du budget source ${source.title}`);
-      await db.updateBudget({
-        ...source,
-        spent: 0,
-        carriedOver: 0
-      });
-      
-      // Ajouter le montant au montant reporté du budget cible
-      const newCarriedOver = (target.carriedOver || 0) + amount;
-      console.log(`[LOG] 🔄 transferBudget - Mise à jour du budget cible ${target.title}, nouveau carriedOver: ${newCarriedOver}`);
-      await db.updateBudget({
-        ...target,
-        carriedOver: newCarriedOver
-      });
-      
-      // Vérification après transfert
-      const updatedSource = await db.getBudgets().then(budgets => budgets.find(b => b.id === sourceId));
-      const updatedTarget = await db.getBudgets().then(budgets => budgets.find(b => b.id === targetId));
-      
-      if (updatedSource) {
-        console.log(`[LOG] 🔍 transferBudget - État source après: spent=${updatedSource.spent}, carriedOver=${updatedSource.carriedOver || 0}`);
-        
-        if (updatedSource.spent !== 0 || updatedSource.carriedOver !== 0) {
-          console.log(`[LOG] ⚠️ transferBudget - ATTENTION: La réinitialisation de la source n'a pas fonctionné correctement`);
-        }
-      }
-      
-      if (updatedTarget) {
-        console.log(`[LOG] 🔍 transferBudget - État cible après: carriedOver=${updatedTarget.carriedOver || 0}`);
-        
-        if (updatedTarget.carriedOver !== newCarriedOver) {
-          console.log(`[LOG] ⚠️ transferBudget - ATTENTION: La mise à jour de la cible n'a pas fonctionné correctement (${updatedTarget.carriedOver} ≠ ${newCarriedOver})`);
-        }
-      }
-      
-      console.log(`[LOG] ✅ transferBudget - Transfert terminé de ${source.title} vers ${target.title}`);
-    } catch (error) {
-      console.error(`[LOG] ❌ transferBudget - Erreur lors du transfert du budget ${sourceId} vers ${targetId}:`, error);
-      throw error;
-    }
-  };
-  
-  const processMultiTransfers = async (sourceId: string, transfers: MultiTransfer[], totalAmount: number, dashboardId: string) => {
-    try {
-      console.log(`[LOG] 🔄 processMultiTransfers - Transferts multiples depuis ${sourceId}, montant total: ${totalAmount}`);
-      console.log(`[LOG] 🔄 processMultiTransfers - Nombre de transferts à effectuer: ${transfers.length}`);
-      
-      const budgets = await db.getBudgets();
-      const source = budgets.find(b => b.id === sourceId && String(b.dashboardId || '') === String(dashboardId || ''));
-      
-      if (!source) {
-        console.log(`[LOG] ❌ processMultiTransfers - Budget source ${sourceId} introuvable ou n'appartient pas au dashboard ${dashboardId}`);
-        throw new Error("Budget source introuvable ou n'appartient pas au dashboard actuel");
-      }
-      
-      console.log(`[LOG] 🔄 processMultiTransfers - Budget source: ${source.title}`);
-      console.log(`[LOG] 🔄 processMultiTransfers - État source avant: spent=${source.spent}, carriedOver=${source.carriedOver || 0}`);
-      
-      // Réinitialiser le budget source
-      console.log(`[LOG] 🔄 processMultiTransfers - Réinitialisation du budget source ${source.title}`);
-      await db.updateBudget({
-        ...source,
-        spent: 0,
-        carriedOver: 0
-      });
-      
-      // Vérifier que la somme des transferts ne dépasse pas le montant total disponible
-      let totalTransferred = 0;
-      
-      // Traiter chaque transfert
-      for (const transfer of transfers) {
-        console.log(`[LOG] 🔄 processMultiTransfers - Traitement du transfert vers ${transfer.targetId}`);
-        
-        const target = budgets.find(b => b.id === transfer.targetId && String(b.dashboardId || '') === String(dashboardId || ''));
-        
-        if (!target) {
-          console.log(`[LOG] ⚠️ processMultiTransfers - Budget cible ${transfer.targetId} non trouvé, transfert ignoré`);
-          continue;
-        }
-        
-        console.log(`[LOG] 🔄 processMultiTransfers - Budget cible: ${target.title}`);
-        console.log(`[LOG] 🔄 processMultiTransfers - État cible avant: carriedOver=${target.carriedOver || 0}`);
-        
-        // S'assurer que le montant à transférer est valide et ne dépasse pas ce qui reste
-        const transferAmount = Math.min(transfer.amount || 0, totalAmount - totalTransferred);
-        console.log(`[LOG] 🔄 processMultiTransfers - Montant à transférer: ${transferAmount}`);
-        
-        if (transferAmount > 0) {
-          // Ajouter le montant au report du budget cible
-          const newCarriedOver = (target.carriedOver || 0) + transferAmount;
-          console.log(`[LOG] 🔄 processMultiTransfers - Mise à jour du budget cible ${target.title}, nouveau carriedOver: ${newCarriedOver}`);
-          
-          await db.updateBudget({
-            ...target,
-            carriedOver: newCarriedOver
-          });
-          
-          totalTransferred += transferAmount;
-          console.log(`[LOG] 🔄 processMultiTransfers - Total transféré jusqu'à présent: ${totalTransferred}/${totalAmount}`);
-          
-          // Vérification après transfert
-          const updatedTarget = await db.getBudgets().then(budgets => budgets.find(b => b.id === transfer.targetId));
-          if (updatedTarget) {
-            console.log(`[LOG] 🔍 processMultiTransfers - État cible après: carriedOver=${updatedTarget.carriedOver || 0}`);
-            
-            if (updatedTarget.carriedOver !== newCarriedOver) {
-              console.log(`[LOG] ⚠️ processMultiTransfers - ATTENTION: La mise à jour de la cible n'a pas fonctionné correctement (${updatedTarget.carriedOver} ≠ ${newCarriedOver})`);
-            }
-          }
-        } else {
-          console.log(`[LOG] ℹ️ processMultiTransfers - Aucun montant à transférer pour cette cible (montant épuisé ou invalide)`);
-        }
-        
-        // Si on a dépassé le montant disponible, arrêter
-        if (totalTransferred >= totalAmount) {
-          console.log(`[LOG] ℹ️ processMultiTransfers - Montant total épuisé, arrêt des transferts`);
-          break;
-        }
-      }
-      
-      // Vérification finale du budget source
-      const updatedSource = await db.getBudgets().then(budgets => budgets.find(b => b.id === sourceId));
-      if (updatedSource) {
-        console.log(`[LOG] 🔍 processMultiTransfers - État source final: spent=${updatedSource.spent}, carriedOver=${updatedSource.carriedOver || 0}`);
-        
-        if (updatedSource.spent !== 0 || updatedSource.carriedOver !== 0) {
-          console.log(`[LOG] ⚠️ processMultiTransfers - ATTENTION: La réinitialisation de la source n'a pas fonctionné correctement`);
-        }
-      }
-      
-      console.log(`[LOG] ✅ processMultiTransfers - Transferts multiples terminés, total transféré: ${totalTransferred}/${totalAmount}`);
-    } catch (error) {
-      console.error(`[LOG] ❌ processMultiTransfers - Erreur lors des transferts multiples depuis ${sourceId}:`, error);
-      throw error;
-    }
-  };
-
-  return {
-    processEnvelopeTransitions,
-    calculateTransitionAmounts
-  };
-};
+        throw new Error("Budgets source ou cible introu
