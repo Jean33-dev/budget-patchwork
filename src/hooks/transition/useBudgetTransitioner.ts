@@ -576,6 +576,9 @@ export const useBudgetTransitioner = () => {
         console.log(`[LOG] ⚠️ processMultiTransfers - La somme des transferts (${sumOfTransfers}) dépasse le montant disponible (${totalAmount})`);
         // On peut décider de proportionner ou d'échouer
         // Ici on va proportionner
+        const ratio = totalAmount / sumOfTransfers;
+        console.log(`[LOG] 🧮 processMultiTransfers - Calcul du ratio d'ajustement: ${totalAmount} / ${sumOfTransfers} = ${ratio}`);
+        
         transfers = transfers.map(t => ({
           ...t,
           amount: t.amount * ratio
