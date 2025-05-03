@@ -17,10 +17,6 @@ export const useEnvelopeActions = (setEnvelopes: React.Dispatch<React.SetStateAc
           };
           
           // Clear related fields if changing away from that option
-          if (option !== "partial") {
-            delete updatedEnv.partialAmount;
-          }
-          
           if (option !== "transfer") {
             delete updatedEnv.transferTargetId;
             delete updatedEnv.transferTargetTitle;
@@ -39,18 +35,6 @@ export const useEnvelopeActions = (setEnvelopes: React.Dispatch<React.SetStateAc
       console.log('All envelopes after update:', updatedEnvelopes);
       return updatedEnvelopes;
     });
-  };
-
-  const handlePartialAmountChange = (envelopeId: string, amount: number) => {
-    console.log(`Partial amount changed for ${envelopeId}:`, amount);
-    
-    setEnvelopes(prev =>
-      prev.map(env =>
-        env.id === envelopeId
-          ? { ...env, partialAmount: amount }
-          : env
-      )
-    );
   };
 
   const handleTransferTargetChange = (envelopeId: string, targetId: string) => {
@@ -92,7 +76,6 @@ export const useEnvelopeActions = (setEnvelopes: React.Dispatch<React.SetStateAc
 
   return {
     handleOptionChange,
-    handlePartialAmountChange,
     handleTransferTargetChange,
     handleMultiTransferChange
   };

@@ -9,7 +9,6 @@ export const useTransitionConfirmation = (
   onComplete: () => void
 ) => {
   const [isProcessing, setIsProcessing] = useState(false);
-  const [showPartialDialog, setShowPartialDialog] = useState(false);
   const [showTransferDialog, setShowTransferDialog] = useState(false);
 
   const handleTransitionConfirm = async () => {
@@ -43,7 +42,6 @@ export const useTransitionConfirmation = (
         id: env.id,
         title: env.title,
         transitionOption: env.transitionOption,
-        partialAmount: env.partialAmount,
         transferTargetId: env.transferTargetId,
         multiTransfers: env.multiTransfers?.map(t => ({
           targetId: t.targetId,
@@ -71,9 +69,7 @@ export const useTransitionConfirmation = (
 
   return {
     isProcessing,
-    showPartialDialog,
     showTransferDialog,
-    setShowPartialDialog,
     setShowTransferDialog,
     handleTransitionConfirm
   };

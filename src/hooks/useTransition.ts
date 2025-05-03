@@ -20,7 +20,6 @@ export const useTransition = (onComplete: () => void) => {
   // Utilise le hook pour gérer les actions sur les enveloppes
   const {
     handleOptionChange,
-    handlePartialAmountChange,
     handleTransferTargetChange,
     handleMultiTransferChange
   } = useEnvelopeActions(setEnvelopes);
@@ -28,9 +27,7 @@ export const useTransition = (onComplete: () => void) => {
   // Utilise le hook pour gérer la confirmation de transition
   const {
     isProcessing,
-    showPartialDialog,
     showTransferDialog,
-    setShowPartialDialog,
     setShowTransferDialog,
     handleTransitionConfirm
   } = useTransitionConfirmation(envelopes, handleMonthTransition, onComplete);
@@ -38,14 +35,11 @@ export const useTransition = (onComplete: () => void) => {
   return {
     envelopes,
     selectedEnvelope,
-    showPartialDialog,
     showTransferDialog,
     isProcessing,
     setSelectedEnvelope,
-    setShowPartialDialog,
     setShowTransferDialog,
     handleOptionChange,
-    handlePartialAmountChange,
     handleTransferTargetChange,
     handleMultiTransferChange,
     handleTransitionConfirm

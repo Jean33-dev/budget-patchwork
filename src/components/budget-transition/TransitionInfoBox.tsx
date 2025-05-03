@@ -22,7 +22,6 @@ export const TransitionInfoBox = () => {
             <ul className="space-y-1 list-disc pl-5">
               <li><span className="font-medium">Réinitialiser</span> : Le solde restant est perdu</li>
               <li><span className="font-medium">Reporter tout</span> : Tout le solde est reporté</li>
-              <li><span className="font-medium">Report partiel</span> : Définissez un montant à reporter</li>
               <li><span className="font-medium">Transférer</span> : Déplacez le solde vers un autre budget</li>
               <li><span className="font-medium">Transferts multiples</span> : Répartissez le solde entre plusieurs budgets</li>
             </ul>

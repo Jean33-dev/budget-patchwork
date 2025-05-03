@@ -23,9 +23,6 @@ interface OptionSelectorProps {
   selectedOption: TransitionOption;
   onOptionChange: (option: TransitionOption) => void;
   onTransferTargetSelect: (targetId: string) => void;
-  partialAmount: number;
-  handlePartialAmountChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  confirmPartialAmount: () => void;
 }
 
 export const OptionSelector: React.FC<OptionSelectorProps> = ({
@@ -34,12 +31,8 @@ export const OptionSelector: React.FC<OptionSelectorProps> = ({
   selectedOption,
   onOptionChange,
   onTransferTargetSelect,
-  partialAmount,
-  handlePartialAmountChange,
-  confirmPartialAmount
 }) => {
   // Determine whether to show the additional inputs based on selected option
-  const showPartialInput = selectedOption === "partial";
   const showTransferOptions = selectedOption === "transfer";
   
   return (
@@ -56,7 +49,6 @@ export const OptionSelector: React.FC<OptionSelectorProps> = ({
           <SelectItem value="reset">Réinitialiser</SelectItem>
           <SelectItem value="transfer">Transférer</SelectItem>
           <SelectItem value="multi-transfer">Transferts multiples</SelectItem>
-          <SelectItem value="partial">Report partiel</SelectItem>
         </SelectContent>
       </Select>
 
@@ -79,23 +71,6 @@ export const OptionSelector: React.FC<OptionSelectorProps> = ({
             ))}
           </DropdownMenuContent>
         </DropdownMenu>
-      )}
-
-      {showPartialInput && (
-        <div className="flex w-full sm:w-[200px] gap-2">
-          <input
-            type="number"
-            value={partialAmount}
-            onChange={handlePartialAmountChange}
-            min="0"
-            max={envelope.remaining}
-            step="0.01"
-            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
-          />
-          <Button variant="outline" size="sm" onClick={confirmPartialAmount}>
-            OK
-          </Button>
-        </div>
       )}
     </>
   );

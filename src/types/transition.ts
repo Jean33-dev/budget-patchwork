@@ -1,5 +1,5 @@
 
-export type TransitionOption = "reset" | "carry" | "partial" | "transfer" | "multi-transfer" | "keep";
+export type TransitionOption = "reset" | "carry" | "transfer" | "multi-transfer" | "keep";
 
 export interface BudgetEnvelope {
   id: string;
@@ -8,7 +8,6 @@ export interface BudgetEnvelope {
   spent: number;
   remaining: number;
   transitionOption: TransitionOption;
-  partialAmount?: number;
   transferTargetId?: string;
   transferTargetTitle?: string;
   multiTransfers?: {
@@ -22,7 +21,6 @@ export interface TransitionEnvelope {
   id: string;
   title: string;
   transitionOption: TransitionOption;
-  partialAmount?: number;
   transferTargetId?: string;
   multiTransfers?: {
     targetId: string;

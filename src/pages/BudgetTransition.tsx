@@ -41,14 +41,11 @@ export const BudgetTransition = () => {
   const {
     envelopes,
     selectedEnvelope,
-    showPartialDialog,
     showTransferDialog,
     isProcessing,
     setSelectedEnvelope,
-    setShowPartialDialog,
     setShowTransferDialog,
     handleOptionChange,
-    handlePartialAmountChange,
     handleTransferTargetChange,
     handleMultiTransferChange,
     handleTransitionConfirm
@@ -97,7 +94,6 @@ export const BudgetTransition = () => {
           envelopes={envelopes} 
           onOptionChange={handleOptionChange}
           onTransferTargetChange={handleTransferTargetChange}
-          onPartialAmountChange={handlePartialAmountChange}
           onMultiTransferChange={handleMultiTransferChange}
         />
 
