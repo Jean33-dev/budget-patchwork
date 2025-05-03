@@ -48,6 +48,11 @@ export const ExpenseList = ({
   // Utilisation du hook pour gérer l'état des boîtes de dialogue
   const dialogState = useExpenseDialogState(handleUpdateExpense, handleDeleteExpense);
 
+  // Créer un wrapper pour la fonction de suppression qui accepte un ID
+  const handleDelete = handleDeleteExpense 
+    ? (id: string) => dialogState.handleDeleteClick({ id } as Expense) 
+    : undefined;
+
   return (
     <div className="space-y-6">
       {showHeader && (
@@ -64,7 +69,7 @@ export const ExpenseList = ({
           id: budget.id,
           title: budget.title,
         }))}
-        onDeleteExpense={handleDeleteExpense ? dialogState.handleDeleteClick : undefined}
+        onDeleteExpense={handleDelete}
         onUpdateExpense={handleUpdateExpense}
       />
 
