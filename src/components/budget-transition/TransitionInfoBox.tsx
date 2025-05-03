@@ -4,14 +4,6 @@ import { CalendarDays, ArrowRight, AlertTriangle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export const TransitionInfoBox = () => {
-  // Obtenir le mois actuel et le mois suivant
-  const currentDate = new Date();
-  const nextDate = new Date();
-  nextDate.setMonth(nextDate.getMonth() + 1);
-  
-  const currentMonth = currentDate.toLocaleDateString('fr-FR', { month: 'long' });
-  const nextMonth = nextDate.toLocaleDateString('fr-FR', { month: 'long' });
-  
   return (
     <div className="space-y-4">
       <div className="bg-muted/40 p-4 rounded-lg">
@@ -21,8 +13,7 @@ export const TransitionInfoBox = () => {
         </div>
         
         <p className="text-sm mb-3">
-          Vous configurez la transition budgétaire de <span className="font-semibold">{currentMonth}</span> vers <span className="font-semibold">{nextMonth}</span>.
-          Cette opération vous permet de définir comment les soldes restants de vos budgets seront gérés.
+          Vous configurez la transition budgétaire. Cette opération vous permet de définir comment les soldes restants de vos budgets seront gérés.
         </p>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
