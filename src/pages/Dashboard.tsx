@@ -17,12 +17,14 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { useDashboardTitle } from "@/hooks/useDashboardTitle";
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [showTransitionDialog, setShowTransitionDialog] = useState(false);
   const [nextDate, setNextDate] = useState<Date | null>(null);
+  const { dashboardTitle } = useDashboardTitle();
 
   // Utilisation du hook useBudgets pour obtenir toutes les données
   const { 
@@ -95,7 +97,7 @@ const Dashboard = () => {
                 <AlertTitle>Attention : Sauvegardez vos données</AlertTitle>
                 <AlertDescription>
                   <p className="text-sm">
-                    En passant au nouveau mois, vos dépenses et revenus actuels seront réinitialisés.
+                    En passant au nouveau mois, vos dépenses et revenus du dashboard "{dashboardTitle || "Sans titre"}" seront réinitialisés.
                     Ces données seront définitivement perdues.
                   </p>
                 </AlertDescription>

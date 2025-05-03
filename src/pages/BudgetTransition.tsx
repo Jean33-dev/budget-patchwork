@@ -21,13 +21,15 @@ import { AlertTriangle, FileText } from "lucide-react";
 import { BudgetPDFDownload } from "@/components/pdf/BudgetPDF";
 import { useBudgets } from "@/hooks/useBudgets";
 import { useDashboardContext } from "@/hooks/useDashboardContext";
+import { useDashboardTitle } from "@/hooks/useDashboardTitle";
 
 export const BudgetTransition = () => {
   const navigate = useNavigate();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [pdfExported, setPdfExported] = useState(false);
-  const { totalRevenues, totalExpenses, budgets, dashboardId } = useBudgets();
+  const { totalRevenues, totalExpenses, budgets } = useBudgets();
   const { currentDashboardId } = useDashboardContext();
+  const { dashboardTitle } = useDashboardTitle();
   
   // Vérifier que nous avons bien un dashboard actif
   if (!currentDashboardId) {
@@ -118,7 +120,7 @@ export const BudgetTransition = () => {
                 <AlertDescription>
                   <p className="text-sm">
                     La transition vers un nouveau mois va réinitialiser toutes vos dépenses et revenus 
-                    du dashboard actuel ({currentDashboardId}).
+                    du dashboard actuel ({dashboardTitle || "Sans titre"}).
                     Une fois cette opération effectuée, les données du mois actuel seront définitivement perdues.
                   </p>
                   
