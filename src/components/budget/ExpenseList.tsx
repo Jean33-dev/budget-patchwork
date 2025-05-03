@@ -4,6 +4,7 @@ import { EnvelopeListHeader } from "./EnvelopeListHeader";
 import { ExpenseTable } from "./ExpenseTable";
 import { AddEnvelopeDialog } from "./AddEnvelopeDialog";
 import { Expense, Budget } from "@/hooks/useExpenseManagement";
+import { ExpenseDialogs, useExpenseDialogState } from "./ExpenseDialogs";
 
 interface ExpenseListProps {
   expenses: Expense[];
@@ -34,8 +35,6 @@ export const ExpenseList = ({
   defaultBudgetId,
   showHeader = true, // Par défaut, on affiche l'en-tête
 }: ExpenseListProps) => {
-  const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
-
   // Log pour déboguer
   useEffect(() => {
     console.log("ExpenseList - received expenses:", expenses.length);
@@ -46,10 +45,8 @@ export const ExpenseList = ({
     }
   }, [expenses]);
 
-  const handleExpenseClick = (expense: Expense) => {
-    console.log("Expense clicked:", expense);
-    setSelectedExpense(expense);
-  };
+  // Utilisation du hook pour gérer l'état des boîtes de dialogue
+  const dialogState = useExpenseDialogState(handleUpdateExpense, handleDeleteExpense);
 
   return (
     <div className="space-y-6">
@@ -62,12 +59,12 @@ export const ExpenseList = ({
 
       <ExpenseTable
         expenses={expenses}
-        onEnvelopeClick={handleExpenseClick}
+        onEnvelopeClick={dialogState.handleEditClick}
         availableBudgets={availableBudgets.map(budget => ({
           id: budget.id,
           title: budget.title,
         }))}
-        onDeleteExpense={handleDeleteExpense}
+        onDeleteExpense={handleDeleteExpense ? dialogState.handleDeleteClick : undefined}
         onUpdateExpense={handleUpdateExpense}
       />
 
@@ -81,6 +78,19 @@ export const ExpenseList = ({
           title: budget.title,
         }))}
         defaultBudgetId={defaultBudgetId}
+      />
+
+      <ExpenseDialogs
+        selectedExpense={dialogState.selectedExpense}
+        isEditDialogOpen={dialogState.isEditDialogOpen}
+        setIsEditDialogOpen={dialogState.setIsEditDialogOpen}
+        editableTitle={dialogState.editableTitle}
+        setEditableTitle={dialogState.setEditableTitle}
+        editableBudget={dialogState.editableBudget}
+        setEditableBudget={dialogState.setEditableBudget}
+        editableDate={dialogState.editableDate}
+        setEditableDate={dialogState.setEditableDate}
+        onConfirmEdit={dialogState.handleConfirmEdit}
       />
     </div>
   );

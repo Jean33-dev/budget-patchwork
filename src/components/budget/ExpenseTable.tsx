@@ -33,6 +33,14 @@ export const ExpenseTable = ({
 
   const toggleRow = (id: string) => {
     setExpandedRow(expandedRow === id ? null : id);
+    
+    // Si on clique sur une ligne et qu'un gestionnaire d'événements de clic est fourni
+    if (onEnvelopeClick) {
+      const clickedExpense = expenses.find(expense => expense.id === id);
+      if (clickedExpense) {
+        onEnvelopeClick(clickedExpense);
+      }
+    }
   };
 
   const handleUpdate = (updatedExpense: any) => {
