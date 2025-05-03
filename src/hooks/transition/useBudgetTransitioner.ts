@@ -596,4 +596,19 @@ export const useBudgetTransitioner = () => {
       
       // Vérifier chaque cible
       for (const transfer of transfers) {
-        const updatedTarget = updatedBudgets.find(
+        const updatedTarget = updatedBudgets.find(b => b.id === transfer.targetId);
+        if (updatedTarget) {
+          console.log(`[LOG] 📊 Cible ${updatedTarget.title}: carriedOver=${updatedTarget.carriedOver || 0}`);
+        }
+      }
+    } catch (error) {
+      console.error(`[LOG] ❌ processMultiTransfers - Erreur lors des transferts multiples:`, error);
+      throw error;
+    }
+  };
+
+  return {
+    calculateTransitionAmounts,
+    processEnvelopeTransitions
+  };
+};
