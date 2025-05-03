@@ -7,7 +7,6 @@ interface TransitionEnvelopeGridProps {
   envelopes: BudgetEnvelope[];
   onOptionChange: (envelopeId: string, option: TransitionOption) => void;
   onTransferTargetChange?: (envelopeId: string, targetId: string) => void;
-  onPartialAmountChange?: (envelopeId: string, amount: number) => void;
   onMultiTransferChange?: (envelopeId: string, transfers: { targetId: string; targetTitle: string; amount: number }[]) => void;
 }
 
@@ -15,7 +14,6 @@ export const TransitionEnvelopeGrid = ({
   envelopes, 
   onOptionChange,
   onTransferTargetChange,
-  onPartialAmountChange,
   onMultiTransferChange
 }: TransitionEnvelopeGridProps) => {
   return (
@@ -27,7 +25,6 @@ export const TransitionEnvelopeGrid = ({
           otherEnvelopes={envelopes.filter(e => e.id !== envelope.id)}
           onOptionChange={onOptionChange}
           onTransferTargetChange={onTransferTargetChange}
-          onPartialAmountChange={onPartialAmountChange}
           onMultiTransferChange={onMultiTransferChange}
         />
       ))}

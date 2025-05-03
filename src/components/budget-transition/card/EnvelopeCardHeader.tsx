@@ -7,7 +7,7 @@ interface EnvelopeCardHeaderProps {
 }
 
 export const EnvelopeCardHeader: React.FC<EnvelopeCardHeaderProps> = ({ envelope }) => {
-  const { title, remaining, transitionOption, partialAmount, transferTargetTitle, multiTransfers } = envelope;
+  const { title, remaining, transitionOption, transferTargetTitle, multiTransfers } = envelope;
   const usedAmount = multiTransfers?.reduce((sum, transfer) => sum + transfer.amount, 0) || 0;
   const availableAmount = remaining - usedAmount;
   
@@ -16,9 +16,6 @@ export const EnvelopeCardHeader: React.FC<EnvelopeCardHeaderProps> = ({ envelope
       <h3 className="font-medium">{title}</h3>
       <div className="text-sm text-muted-foreground space-y-1">
         <div>Solde restant: {remaining.toFixed(2)}€</div>
-        {transitionOption === "partial" && partialAmount !== undefined && (
-          <div>Montant reporté: {partialAmount.toFixed(2)}€</div>
-        )}
         {transitionOption === "transfer" && transferTargetTitle && (
           <div>
             Transfert vers: {transferTargetTitle}

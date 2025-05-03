@@ -1,4 +1,3 @@
-
 import { toast } from "@/components/ui/use-toast";
 import { Budget } from '@/services/database/models/budget';
 import { TransitionEnvelope, MultiTransfer } from "@/types/transition";
@@ -88,7 +87,6 @@ export const useBudgetTransitioner = () => {
         expensesTotal: totalExpenseAmount,
         remainingAmount: Math.max(0, remainingAmount),
         option: envelope.transitionOption,
-        partialAmount: envelope.partialAmount,
         transferTargetId: envelope.transferTargetId,
         multiTransfers: envelope.multiTransfers
       });
@@ -218,28 +216,6 @@ export const useBudgetTransitioner = () => {
             console.log(`[LOG] 🔄 Réinitialisation de spent à 0`);
             await updateBudgetSpent(envelope.id, 0);
             console.log(`[LOG] ✅ Report terminé pour ${envelope.title}`);
-            break;
-          
-          case "partial":
-            console.log(`[LOG] 🔄 Report partiel pour ${envelope.title}...`);
-            if (typeof envelope.partialAmount === 'number') {
-              // Vérifier que le montant partiel n'excède pas le montant restant
-              const amountToCarry = Math.min(envelope.partialAmount, Math.max(0, remainingAmount));
-              console.log(`[LOG] 🔄 - Montant partial demandé: ${envelope.partialAmount}`);
-              console.log(`[LOG] 🔄 - Montant restant disponible: ${remainingAmount}`);
-              console.log(`[LOG] 🔄 - Montant final à reporter: ${amountToCarry}`);
-              
-              // Mettre à jour le montant reporté
-              console.log(`[LOG] 🔄 - Mise à jour de carriedOver: ${budgetToProcess.carriedOver || 0} -> ${amountToCarry}`);
-              await updateBudgetCarriedOver(envelope.id, amountToCarry);
-              
-              // Et réinitialiser le spent
-              console.log(`[LOG] 🔄 - Réinitialisation de spent à 0`);
-              await updateBudgetSpent(envelope.id, 0);
-              console.log(`[LOG] ✅ Report partiel terminé pour ${envelope.title}`);
-            } else {
-              console.log(`[LOG] ⚠️ Montant partiel non défini pour ${envelope.title}, aucune action effectuée`);
-            }
             break;
           
           case "transfer":
@@ -620,19 +596,4 @@ export const useBudgetTransitioner = () => {
       
       // Vérifier chaque cible
       for (const transfer of transfers) {
-        const updatedTarget = updatedBudgets.find(b => b.id === transfer.targetId);
-        if (updatedTarget) {
-          console.log(`[LOG] 📊 Cible ${updatedTarget.title}: carriedOver=${updatedTarget.carriedOver || 0}`);
-        }
-      }
-    } catch (error) {
-      console.error(`[LOG] ❌ processMultiTransfers - Erreur lors des transferts multiples:`, error);
-      throw error;
-    }
-  };
-
-  return {
-    processEnvelopeTransitions,
-    calculateTransitionAmounts
-  };
-};
+        const updatedTarget = updatedBudgets.find(

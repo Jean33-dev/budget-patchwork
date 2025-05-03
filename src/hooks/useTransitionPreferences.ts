@@ -11,7 +11,6 @@ const TRANSITION_PREFERENCES_KEY = "budget_transition_preferences";
 export interface SavedTransitionPreference {
   id: string;
   transitionOption: string;
-  partialAmount?: number;
   transferTargetId?: string;
   multiTransfers?: { targetId: string; amount: number }[];
 }
@@ -36,10 +35,6 @@ export const useTransitionPreferences = () => {
         };
         
         // Inclure uniquement les champs pertinents selon l'option choisie
-        if (env.transitionOption === "partial" && env.partialAmount !== undefined) {
-          pref.partialAmount = env.partialAmount;
-        }
-        
         if (env.transitionOption === "transfer" && env.transferTargetId) {
           pref.transferTargetId = env.transferTargetId;
         }
@@ -82,7 +77,7 @@ export const useTransitionPreferences = () => {
    * @param savedPreferences Les préférences sauvegardées
    * @returns Les enveloppes budgétaires avec les préférences appliquées
    */
-  const applyPreferencesToEnvelopes = useCallback(<T extends { id: string; title?: string; transitionOption?: string; transferTargetId?: string; transferTargetTitle?: string; partialAmount?: number; multiTransfers?: any[] }>(
+  const applyPreferencesToEnvelopes = useCallback(<T extends { id: string; title?: string; transitionOption?: string; transferTargetId?: string; transferTargetTitle?: string; multiTransfers?: any[] }>(
     envelopes: T[],
     savedPreferences: SavedTransitionPreference[] | null
   ): T[] => {
@@ -107,11 +102,6 @@ export const useTransitionPreferences = () => {
         const targetEnvelope = envelopes.find(e => e.id === savedPref.transferTargetId);
         updatedEnv.transferTargetId = savedPref.transferTargetId;
         updatedEnv.transferTargetTitle = targetEnvelope?.title;
-      }
-
-      // Pour les options de montant partiel
-      if (savedPref.transitionOption === "partial" && savedPref.partialAmount !== undefined) {
-        updatedEnv.partialAmount = savedPref.partialAmount;
       }
 
       // Pour les options de transferts multiples
