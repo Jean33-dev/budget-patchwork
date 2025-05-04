@@ -112,12 +112,6 @@ export const EnvelopeCard = ({
               <span className="text-sm font-medium">{formatAmount(budget)}</span>
             </div>
             
-            {/* Toujours afficher le report, même s'il est à 0 */}
-            <div className="flex flex-col">
-              <span className="text-xs text-gray-500">Report</span>
-              <span className="text-sm font-medium">{formatAmount(carriedOver)}</span>
-            </div>
-            
             <div className="flex flex-col">
               <span className="text-xs text-gray-500">Disponible</span>
               <span className={`text-sm font-medium ${getRemainingColor()}`}>
@@ -146,6 +140,14 @@ export const EnvelopeCard = ({
             value={Math.min(progress, 100)}
             className={`h-2 ${getProgressColor()}`}
           />
+        </div>
+        
+        {/* Report déplacé sous la barre de progression */}
+        <div className="flex justify-between items-center">
+          <div className="flex flex-col">
+            <span className="text-xs text-gray-500">Report</span>
+            <span className="text-sm font-medium">{formatAmount(carriedOver)}</span>
+          </div>
         </div>
       </CardContent>
 
