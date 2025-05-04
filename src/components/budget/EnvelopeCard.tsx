@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import {
   Card,
@@ -141,38 +140,37 @@ export const EnvelopeCard = ({
             className={`h-2 ${getProgressColor()}`}
           />
         </div>
-        
-        {/* Report déplacé sous la barre de progression */}
-        <div className="flex justify-between items-center">
-          <div className="flex flex-col">
-            <span className="text-xs text-gray-500">Report</span>
-            <span className="text-sm font-medium">{formatAmount(carriedOver)}</span>
-          </div>
-        </div>
       </CardContent>
 
-      <CardFooter className="pt-2 pb-3 gap-2 justify-end">
-        {onViewExpenses && type === "budget" && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleViewExpenses}
-            className="h-8 text-xs bg-white hover:bg-blue-50 text-blue-600 border-blue-200 hover:border-blue-300"
-          >
-            <Eye className="h-3.5 w-3.5 mr-1" />
-            Voir dépenses
-          </Button>
-        )}
-        {onDeleteEnvelope && (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50"
-            onClick={handleDeleteClick}
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        )}
+      <CardFooter className="pt-2 pb-3 gap-2 flex justify-between">
+        <div className="flex flex-col">
+          <span className="text-xs text-gray-500">Report</span>
+          <span className="text-sm font-medium">{formatAmount(carriedOver)}</span>
+        </div>
+        
+        <div className="flex gap-2 justify-end">
+          {onViewExpenses && type === "budget" && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleViewExpenses}
+              className="h-8 text-xs bg-white hover:bg-blue-50 text-blue-600 border-blue-200 hover:border-blue-300"
+            >
+              <Eye className="h-3.5 w-3.5 mr-1" />
+              Voir dépenses
+            </Button>
+          )}
+          {onDeleteEnvelope && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50"
+              onClick={handleDeleteClick}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
       </CardFooter>
     </Card>
   );
