@@ -4,6 +4,7 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { ExpenseActionMenu } from "./ExpenseActionMenu";
+import { formatAmount } from "@/utils/format-amount";
 
 interface ExpenseTableRowProps {
   expense: {
@@ -52,19 +53,35 @@ export const ExpenseTableRow = ({
     toggleRow(expense.id);
   };
 
+  // Détermine si le montant est élevé pour stylisation différente
+  const isHighAmount = expense.budget > 100;
+
   return (
     <TableRow 
       key={expense.id}
-      className={`cursor-pointer transition-colors hover:bg-slate-50 ${isExpanded ? 'bg-slate-50' : ''}`}
+      className={`group cursor-pointer transition-all hover:bg-slate-50 ${isExpanded ? 'bg-slate-50' : ''} border-l-4 ${isHighAmount ? 'border-l-amber-400' : 'border-l-transparent'}`}
       onClick={handleRowClick}
     >
-      <TableCell className="font-medium py-3">
-        {expense.title}
+      <TableCell className="font-medium py-3 flex items-center gap-3">
+        <div className={`w-2 h-2 rounded-full ${isHighAmount ? 'bg-amber-400' : 'bg-blue-400'} opacity-70`}></div>
+        <div className="flex flex-col">
+          <span className="text-gray-800 font-medium line-clamp-1">{expense.title}</span>
+          {expense.linkedBudgetId && (
+            <span className="text-xs text-gray-500">{getBudgetTitle(expense.linkedBudgetId)}</span>
+          )}
+        </div>
       </TableCell>
-      <TableCell className="text-right font-semibold text-gray-700">
-        {Number(expense.budget).toFixed(2)} €
+      <TableCell className="text-right">
+        <div className="flex flex-col items-end">
+          <span className={`font-semibold ${isHighAmount ? 'text-amber-600' : 'text-gray-700'}`}>
+            {formatAmount(expense.budget)}
+          </span>
+          {expense.date && (
+            <span className="text-xs text-gray-500">{formatDate(expense.date)}</span>
+          )}
+        </div>
       </TableCell>
-      <TableCell className="w-16">
+      <TableCell className="w-16 opacity-0 group-hover:opacity-100 transition-opacity">
         {onDelete && (
           <ExpenseActionMenu
             onDeleteClick={(e) => {
