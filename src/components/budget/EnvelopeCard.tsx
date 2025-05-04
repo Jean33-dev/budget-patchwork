@@ -112,12 +112,11 @@ export const EnvelopeCard = ({
               <span className="text-sm font-medium">{formatAmount(budget)}</span>
             </div>
             
-            {carriedOver > 0 && (
-              <div className="flex flex-col">
-                <span className="text-xs text-gray-500">Report</span>
-                <span className="text-sm font-medium">{formatAmount(carriedOver)}</span>
-              </div>
-            )}
+            {/* Toujours afficher le report, même s'il est à 0 */}
+            <div className="flex flex-col">
+              <span className="text-xs text-gray-500">Report</span>
+              <span className="text-sm font-medium">{formatAmount(carriedOver)}</span>
+            </div>
             
             <div className="flex flex-col">
               <span className="text-xs text-gray-500">Disponible</span>
@@ -131,8 +130,7 @@ export const EnvelopeCard = ({
             <span className="text-xs text-gray-500 text-right">Dépenses</span>
             <span className="text-xl font-bold">{formatAmount(spent)}</span>
             <div className="flex items-baseline gap-1 mt-1">
-              <span className="text-xs text-gray-500">sur</span>
-              <span className="text-sm">{formatAmount(totalBudget)}</span>
+              <span className="text-sm">{formatAmount(spent)}/{formatAmount(totalBudget)}</span>
             </div>
           </div>
         </div>
