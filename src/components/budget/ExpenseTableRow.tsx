@@ -52,22 +52,19 @@ export const ExpenseTableRow = ({
     toggleRow(expense.id);
   };
 
-  // Ajouter un log pour voir l'ID du tableau de bord
-  console.log(`ExpenseTableRow - expense ID: ${expense.id}, dashboardId: ${expense.dashboardId || 'none'}`);
-
   return (
     <TableRow 
       key={expense.id}
-      className={`cursor-pointer hover:bg-muted ${isExpanded ? 'bg-muted' : ''}`}
+      className={`cursor-pointer transition-colors hover:bg-slate-50 ${isExpanded ? 'bg-slate-50' : ''}`}
       onClick={handleRowClick}
     >
-      <TableCell className="font-medium">
+      <TableCell className="font-medium py-3">
         {expense.title}
       </TableCell>
-      <TableCell className="text-right">
+      <TableCell className="text-right font-semibold text-gray-700">
         {Number(expense.budget).toFixed(2)} €
       </TableCell>
-      <TableCell>
+      <TableCell className="w-16">
         {onDelete && (
           <ExpenseActionMenu
             onDeleteClick={(e) => {

@@ -60,12 +60,12 @@ export const ExpenseTable = ({
   }
 
   return (
-    <div className="rounded-md border">
+    <div className="rounded-lg border shadow-sm overflow-hidden">
       <Table>
         <TableHeader>
-          <TableRow>
-            <TableHead>Libellé</TableHead>
-            <TableHead className="text-right w-24">Montant</TableHead>
+          <TableRow className="bg-slate-50">
+            <TableHead className="text-slate-700 font-semibold">Libellé</TableHead>
+            <TableHead className="text-right text-slate-700 font-semibold w-24">Montant</TableHead>
             <TableHead className="w-16"></TableHead>
           </TableRow>
         </TableHeader>
