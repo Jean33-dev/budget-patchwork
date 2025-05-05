@@ -4,6 +4,8 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 type ThemeContextType = {
   invertColors: boolean;
   toggleInvertColors: () => void;
+  showToasts: boolean;
+  toggleShowToasts: () => void;
 };
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -13,6 +15,13 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     // Récupérer la préférence de l'utilisateur depuis le localStorage
     const savedPreference = localStorage.getItem("invertColors");
     return savedPreference === "true";
+  });
+
+  const [showToasts, setShowToasts] = useState<boolean>(() => {
+    // Récupérer la préférence des toasts depuis le localStorage
+    const savedToastPreference = localStorage.getItem("showToasts");
+    // Par défaut, les toasts sont activés (null ou "true")
+    return savedToastPreference !== "false";
   });
 
   // Mettre à jour la classe du document en fonction de la préférence
@@ -27,12 +36,26 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     localStorage.setItem("invertColors", invertColors.toString());
   }, [invertColors]);
 
+  // Sauvegarder la préférence des toasts
+  useEffect(() => {
+    localStorage.setItem("showToasts", showToasts.toString());
+  }, [showToasts]);
+
   const toggleInvertColors = () => {
     setInvertColors(prev => !prev);
   };
 
+  const toggleShowToasts = () => {
+    setShowToasts(prev => !prev);
+  };
+
   return (
-    <ThemeContext.Provider value={{ invertColors, toggleInvertColors }}>
+    <ThemeContext.Provider value={{ 
+      invertColors, 
+      toggleInvertColors,
+      showToasts,
+      toggleShowToasts
+    }}>
       {children}
     </ThemeContext.Provider>
   );

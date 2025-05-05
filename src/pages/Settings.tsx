@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 
 const Settings = () => {
   const navigate = useNavigate();
-  const { invertColors, toggleInvertColors } = useTheme();
+  const { invertColors, toggleInvertColors, showToasts, toggleShowToasts } = useTheme();
 
   return (
     <div className="container mx-auto py-8 space-y-6">
@@ -31,7 +31,7 @@ const Settings = () => {
             Personnalisez l'apparence de l'application
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-6">
           <div className="flex items-center justify-between py-2">
             <div>
               <h3 className="font-medium">Couleurs inversées</h3>
@@ -42,6 +42,19 @@ const Settings = () => {
             <Switch 
               checked={invertColors} 
               onCheckedChange={toggleInvertColors} 
+            />
+          </div>
+
+          <div className="flex items-center justify-between py-2">
+            <div>
+              <h3 className="font-medium">Notifications toast</h3>
+              <p className="text-sm text-muted-foreground">
+                Afficher les notifications temporaires dans l'application
+              </p>
+            </div>
+            <Switch 
+              checked={showToasts} 
+              onCheckedChange={toggleShowToasts} 
             />
           </div>
         </CardContent>
