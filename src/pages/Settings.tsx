@@ -12,52 +12,49 @@ const Settings = () => {
   const { invertColors, toggleInvertColors, showToasts, toggleShowToasts } = useTheme();
 
   return (
-    <div className="container mx-auto py-8 space-y-6 animate-fade-in">
-      <div className="flex items-center gap-4 mb-8">
+    <div className="container mx-auto py-8 space-y-6">
+      <div className="flex items-center gap-4">
         <Button 
-          variant="ghost" 
+          variant="outline" 
           size="icon"
-          className="rounded-full hover:bg-secondary/80"
           onClick={() => navigate(-1)}
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
-        <h1 className="text-3xl font-bold text-gradient">Paramètres</h1>
+        <h1 className="text-3xl font-bold">Paramètres</h1>
       </div>
 
-      <Card className="border border-border/50 shadow-lg overflow-hidden">
-        <CardHeader className="bg-secondary/20 pb-4">
-          <CardTitle className="text-xl font-semibold">Affichage</CardTitle>
-          <CardDescription className="text-muted-foreground">
+      <Card>
+        <CardHeader>
+          <CardTitle>Affichage</CardTitle>
+          <CardDescription>
             Personnalisez l'apparence de l'application
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6 pt-6">
-          <div className="flex items-center justify-between py-3 px-2 rounded-lg hover:bg-secondary/20 transition-colors">
+        <CardContent className="space-y-6">
+          <div className="flex items-center justify-between py-2">
             <div>
-              <h3 className="font-medium text-base">Couleurs inversées</h3>
-              <p className="text-sm text-muted-foreground mt-1">
+              <h3 className="font-medium">Couleurs inversées</h3>
+              <p className="text-sm text-muted-foreground">
                 Inverser les couleurs de l'interface pour un meilleur contraste
               </p>
             </div>
             <Switch 
               checked={invertColors} 
               onCheckedChange={toggleInvertColors} 
-              className="data-[state=checked]:bg-primary"
             />
           </div>
 
-          <div className="flex items-center justify-between py-3 px-2 rounded-lg hover:bg-secondary/20 transition-colors">
+          <div className="flex items-center justify-between py-2">
             <div>
-              <h3 className="font-medium text-base">Notifications toast</h3>
-              <p className="text-sm text-muted-foreground mt-1">
+              <h3 className="font-medium">Notifications toast</h3>
+              <p className="text-sm text-muted-foreground">
                 Afficher les notifications temporaires dans l'application
               </p>
             </div>
             <Switch 
               checked={showToasts} 
-              onCheckedChange={toggleShowToasts}
-              className="data-[state=checked]:bg-primary" 
+              onCheckedChange={toggleShowToasts} 
             />
           </div>
         </CardContent>
