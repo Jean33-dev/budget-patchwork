@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -97,5 +98,16 @@
 
   body {
     @apply bg-background text-foreground;
+  }
+  
+  /* Styles pour l'inversion des couleurs */
+  .invert-colors {
+    filter: invert(1) hue-rotate(180deg);
+  }
+  
+  /* Pour ne pas inverser les images */
+  .invert-colors img,
+  .invert-colors video {
+    filter: invert(1) hue-rotate(180deg);
   }
 }

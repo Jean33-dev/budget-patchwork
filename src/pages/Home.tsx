@@ -8,6 +8,7 @@ import { EditDashboardDialog } from "@/components/dashboard/EditDashboardDialog"
 import { ErrorBoundary } from "@/components/error-boundary/ErrorBoundary";
 import { DashboardGridErrorBoundary } from "@/components/dashboard/DashboardGridErrorBoundary";
 import { DashboardCardSkeleton } from "@/components/dashboard/DashboardCardSkeleton";
+import { HomeFooter } from "@/components/dashboard/HomeFooter";
 
 const Home = () => {
   const { dashboards, isLoading, createDashboard, updateDashboard, deleteDashboard } = useDashboardManagement();
@@ -73,6 +74,8 @@ const Home = () => {
           />
         )}
       </div>
+
+      <HomeFooter />
     </ErrorBoundary>
   );
 };
