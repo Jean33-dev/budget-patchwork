@@ -26,9 +26,16 @@ export const EnvelopeGrid = ({
   onDeleteEnvelope,
 }: EnvelopeGridProps) => {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      {envelopes.map((envelope) => (
-        <div key={envelope.id} className="animate-fade-in transition-all hover:translate-y-[-2px]">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6">
+      {envelopes.map((envelope, index) => (
+        <div 
+          key={envelope.id} 
+          className="animate-fade-in transition-all hover:translate-y-[-4px] hover:shadow-lg"
+          style={{ 
+            animationDelay: `${index * 0.05}s`,
+            animationFillMode: 'both'
+          }}
+        >
           <EnvelopeCard
             {...envelope}
             onEnvelopeClick={onEnvelopeClick}

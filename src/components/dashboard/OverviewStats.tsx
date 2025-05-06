@@ -1,5 +1,6 @@
 
 import { Card, CardContent } from "@/components/ui/card";
+import { TrendingDown, TrendingUp, CircleDollarSign } from "lucide-react";
 
 interface OverviewStatsProps {
   totalIncome: number;
@@ -13,25 +14,40 @@ export const OverviewStats = ({
   balance
 }: OverviewStatsProps) => {
   return (
-    <Card className="shadow-md overflow-hidden border-t-4 border-t-primary">
+    <Card className="shadow-md overflow-hidden border-t-4 border-t-primary backdrop-blur-sm bg-background/90">
       <CardContent className="p-0">
         <div className="divide-y">
-          <div className="flex items-center justify-between p-4 hover:bg-muted/30 transition-colors">
-            <h3 className="text-base font-medium">Revenus Totaux</h3>
+          <div className="flex items-center justify-between p-5 hover:bg-muted/30 transition-colors">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                <TrendingUp className="h-5 w-5 text-budget-income" />
+              </div>
+              <h3 className="text-base font-medium">Revenus Totaux</h3>
+            </div>
             <div className="text-lg font-semibold text-budget-income">
               {totalIncome.toFixed(2)} €
             </div>
           </div>
           
-          <div className="flex items-center justify-between p-4 hover:bg-muted/30 transition-colors">
-            <h3 className="text-base font-medium">Dépenses Totales</h3>
+          <div className="flex items-center justify-between p-5 hover:bg-muted/30 transition-colors">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                <TrendingDown className="h-5 w-5 text-budget-expense" />
+              </div>
+              <h3 className="text-base font-medium">Dépenses Totales</h3>
+            </div>
             <div className="text-lg font-semibold text-budget-expense">
               {totalExpenses.toFixed(2)} €
             </div>
           </div>
           
-          <div className="flex items-center justify-between p-4 hover:bg-muted/30 transition-colors bg-muted/10">
-            <h3 className="text-base font-medium">Solde</h3>
+          <div className="flex items-center justify-between p-5 hover:bg-muted/30 transition-colors bg-muted/10">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                <CircleDollarSign className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+              </div>
+              <h3 className="text-base font-medium">Solde</h3>
+            </div>
             <div className={`text-lg font-semibold ${balance >= 0 ? "text-budget-income" : "text-budget-expense"}`}>
               {balance >= 0 ? balance.toFixed(2) : `-${Math.abs(balance).toFixed(2)}`} €
             </div>
