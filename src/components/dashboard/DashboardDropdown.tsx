@@ -38,7 +38,7 @@ export const DashboardDropdown = ({
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="flex items-center gap-2 h-9 px-2">
           <span className="text-xl font-normal">
-            {isLoading ? "Chargement..." : `Tableau de bord ${title}`}
+            {isLoading ? "Chargement..." : title}
           </span>
           <ChevronDown className="h-4 w-4" />
         </Button>
