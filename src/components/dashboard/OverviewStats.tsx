@@ -1,6 +1,6 @@
 
 import { Card, CardContent } from "@/components/ui/card";
-import { TrendingDown, TrendingUp, CircleDollarSign } from "lucide-react";
+import { TrendingDown, TrendingUp, Wallet } from "lucide-react";
 
 interface OverviewStatsProps {
   totalIncome: number;
@@ -44,7 +44,7 @@ export const OverviewStats = ({
           <div className="flex items-center justify-between p-5 hover:bg-muted/30 transition-colors bg-muted/10">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                <CircleDollarSign className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                <Wallet className="h-5 w-5 text-blue-600 dark:text-blue-400" />
               </div>
               <h3 className="text-base font-medium">Solde</h3>
             </div>
