@@ -100,16 +100,24 @@ const Categories = () => {
 
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
-      <div className="flex items-center gap-4 sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-10 pb-4 border-b">
+      <div className="flex items-center gap-4 sticky top-0 bg-background/95 backdrop-blur-md z-10 py-4 mb-6 border-b">
         <Button
           variant="outline"
           size="icon"
+          className="rounded-full shadow-sm hover:shadow-md hover:bg-primary/10 transition-all"
           onClick={() => navigate("/dashboard/budget")}
         >
           <ArrowLeft className="h-4 w-4" />
         </Button>
 
-        <h1 className="text-xl">Gestion des Catégories</h1>
+        <div className="flex-1">
+          <h1 className="text-xl font-semibold bg-gradient-to-r from-purple-600 to-purple-400 bg-clip-text text-transparent">
+            Gestion des Catégories
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Organisez et suivez vos dépenses par catégorie
+          </p>
+        </div>
       </div>
 
       <Tabs defaultValue="categories" className="w-full">

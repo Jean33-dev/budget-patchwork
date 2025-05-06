@@ -27,24 +27,33 @@ export const DashboardHeader = ({ currentDate, onMonthChange, onBackClick }: Das
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-4 sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-10 pb-4 border-b">
+      <div className="flex items-center gap-4 sticky top-0 bg-background/95 backdrop-blur-md z-10 py-4 mb-2 border-b">
         <Button 
           variant="outline" 
           size="icon"
           onClick={onBackClick}
-          className="shrink-0 h-8 w-8 sm:h-9 sm:w-9"
+          className="rounded-full shadow-sm hover:shadow-md hover:bg-primary/10 transition-all h-9 w-9"
         >
           <ArrowLeft className="h-4 w-4" />
         </Button>
 
         <div className="flex items-center gap-2 flex-grow">
+          <div className="flex-1">
+            <h1 className="text-xl font-semibold bg-gradient-to-r from-primary to-blue-400 bg-clip-text text-transparent">
+              {dashboardTitle || "Tableau de bord"}
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              Vue d'ensemble de vos finances
+            </p>
+          </div>
+          
           <DashboardDropdown
             title={dashboardTitle}
             isLoading={isLoading}
             dashboards={dashboards}
             currentDashboardId={currentDashboardId}
             onEditClick={() => setIsEditDialogOpen(true)}
-            showEditOption={false} // Ne pas montrer l'option d'édition sur la page de synthèse
+            showEditOption={false}
           />
         </div>
       </div>

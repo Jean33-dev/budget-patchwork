@@ -24,7 +24,7 @@ export const OverviewStats = ({
               </div>
               <h3 className="text-base font-medium">Revenus Totaux</h3>
             </div>
-            <div className="text-lg font-semibold text-budget-income">
+            <div className="text-lg font-semibold text-gradient-success">
               {totalIncome.toFixed(2)} €
             </div>
           </div>
@@ -36,7 +36,7 @@ export const OverviewStats = ({
               </div>
               <h3 className="text-base font-medium">Dépenses Totales</h3>
             </div>
-            <div className="text-lg font-semibold text-budget-expense">
+            <div className="text-lg font-semibold text-gradient-danger">
               {totalExpenses.toFixed(2)} €
             </div>
           </div>
@@ -48,7 +48,7 @@ export const OverviewStats = ({
               </div>
               <h3 className="text-base font-medium">Solde</h3>
             </div>
-            <div className={`text-lg font-semibold ${balance >= 0 ? "text-budget-income" : "text-budget-expense"}`}>
+            <div className={`text-lg font-semibold ${balance >= 0 ? "text-gradient-success" : "text-gradient-danger"}`}>
               {balance >= 0 ? balance.toFixed(2) : `-${Math.abs(balance).toFixed(2)}`} €
             </div>
           </div>
