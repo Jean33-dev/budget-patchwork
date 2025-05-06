@@ -28,7 +28,7 @@ export const EnvelopeGrid = ({
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       {envelopes.map((envelope) => (
-        <div key={envelope.id} className="animate-fade-in">
+        <div key={envelope.id} className="animate-fade-in transition-all hover:translate-y-[-2px]">
           <EnvelopeCard
             {...envelope}
             onEnvelopeClick={onEnvelopeClick}
