@@ -1,9 +1,10 @@
 
-import { useToast } from "@/hooks/use-toast";
+import { useCallback } from "react";
+import { useToast } from "@/components/ui/use-toast";
 import { db } from "@/services/database";
 
 export const useDashboardOperations = (
-  currentDashboardId: string,
+  currentDashboardId: string | null,
   setDashboardTitle: (title: string) => void,
   loadDashboards: () => Promise<any>,
   isCreatingDashboardRef: React.MutableRefObject<boolean>,
@@ -11,7 +12,7 @@ export const useDashboardOperations = (
 ) => {
   const { toast } = useToast();
 
-  const updateDashboardTitle = async (newTitle: string) => {
+  const updateDashboardTitle = useCallback(async (newTitle: string) => {
     try {
       if (!currentDashboardId) return;
       
@@ -67,7 +68,7 @@ export const useDashboardOperations = (
         description: "Une erreur est survenue lors de la mise à jour du titre"
       });
     }
-  };
+  }, [currentDashboardId, loadDashboards, setDashboardTitle, isCreatingDashboardRef, toast]);
 
   return {
     updateDashboardTitle
