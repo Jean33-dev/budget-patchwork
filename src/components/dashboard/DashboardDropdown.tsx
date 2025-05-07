@@ -36,10 +36,11 @@ export const DashboardDropdown = ({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="flex items-center gap-2 h-9 px-2">
-          <span className="text-xl font-normal">
-            {isLoading ? "Chargement..." : title}
-          </span>
+        <Button 
+          variant="ghost" 
+          className="flex items-center justify-center h-9 w-9 px-0 rounded-full"
+          aria-label="Changer de tableau de bord"
+        >
           <ChevronDown className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>

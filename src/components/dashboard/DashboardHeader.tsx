@@ -37,8 +37,8 @@ export const DashboardHeader = ({ currentDate, onMonthChange, onBackClick }: Das
           <ArrowLeft className="h-4 w-4" />
         </Button>
 
-        <div className="flex items-center gap-2 flex-grow">
-          <div className="flex-1">
+        <div className="flex items-center gap-2 flex-grow justify-between">
+          <div>
             <h1 className="text-xl font-semibold bg-gradient-to-r from-primary to-blue-400 bg-clip-text text-transparent">
               {dashboardTitle || "Tableau de bord"}
             </h1>
