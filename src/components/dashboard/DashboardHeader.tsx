@@ -43,7 +43,7 @@ export const DashboardHeader = ({ currentDate, onMonthChange, onBackClick }: Das
               {dashboardTitle || "Tableau de bord"}
             </h1>
             <p className="text-sm text-muted-foreground">
-              Vue d'ensemble de vos finances
+              Synthèse {dashboardTitle ? `- ${dashboardTitle}` : ""} - Vue d'ensemble de vos finances
             </p>
           </div>
           
