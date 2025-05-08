@@ -55,6 +55,16 @@ export class WebSQLiteAdapter extends SQLiteAdapter {
     if (!initialized) {
       throw new Error("Failed to initialize database before executing query");
     }
+    
+    // Pour les opérations d'écriture, vérifier l'espace disponible
+    if (this.isWriteOperation(query)) {
+      // Estimer 1 KB par défaut pour une opération d'écriture
+      const hasSpace = await this.checkDiskSpace(1024);
+      if (!hasSpace) {
+        throw new Error("Espace de stockage insuffisant pour cette opération");
+      }
+    }
+    
     return WebSQLiteOperations.execute(this.db, query, params);
   }
 
@@ -66,6 +76,20 @@ export class WebSQLiteAdapter extends SQLiteAdapter {
     if (!initialized) {
       throw new Error("Failed to initialize database before executing query set");
     }
+    
+    // Vérifier si des opérations d'écriture sont présentes
+    const hasWriteOperations = queries.some(query => this.isWriteOperation(query));
+    if (hasWriteOperations) {
+      // Estimer 1 KB par requête d'écriture
+      const writeQueriesCount = queries.filter(query => this.isWriteOperation(query)).length;
+      const estimatedSize = writeQueriesCount * 1024;
+      
+      const hasSpace = await this.checkDiskSpace(estimatedSize);
+      if (!hasSpace) {
+        throw new Error("Espace de stockage insuffisant pour cette opération");
+      }
+    }
+    
     return WebSQLiteOperations.executeSet(this.db, queries);
   }
 
@@ -77,6 +101,14 @@ export class WebSQLiteAdapter extends SQLiteAdapter {
     if (!initialized) {
       throw new Error("Failed to initialize database before running query");
     }
+    
+    // Les requêtes run sont généralement des opérations d'écriture
+    // Estimer 1 KB par défaut pour une opération d'écriture
+    const hasSpace = await this.checkDiskSpace(1024);
+    if (!hasSpace) {
+      throw new Error("Espace de stockage insuffisant pour cette opération");
+    }
+    
     return WebSQLiteOperations.run(this.db, query, params);
   }
 
@@ -147,5 +179,20 @@ export class WebSQLiteAdapter extends SQLiteAdapter {
    */
   static resetInitializationAttempts(): void {
     SqlJsInitializer.resetInitializationAttempts();
+  }
+  
+  /**
+   * Déterminer si une requête SQL est une opération d'écriture
+   */
+  private isWriteOperation(query: string): boolean {
+    const normalizedQuery = query.trim().toUpperCase();
+    return (
+      normalizedQuery.startsWith('INSERT') ||
+      normalizedQuery.startsWith('UPDATE') ||
+      normalizedQuery.startsWith('DELETE') ||
+      normalizedQuery.startsWith('CREATE') ||
+      normalizedQuery.startsWith('DROP') ||
+      normalizedQuery.startsWith('ALTER')
+    );
   }
 }

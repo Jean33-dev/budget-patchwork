@@ -1,5 +1,6 @@
 
 import { toast } from "@/components/ui/use-toast";
+import { DiskSpaceChecker } from './disk-space-checker';
 
 export interface SQLiteInterface {
   execute(query: string, params?: any[]): Promise<any>;
@@ -38,6 +39,14 @@ export abstract class SQLiteAdapter {
       title: "Erreur de base de données",
       description: `Une erreur est survenue: ${error.message || "Erreur inconnue"}`
     });
+  }
+
+  /**
+   * Vérifier s'il y a assez d'espace pour l'opération d'écriture
+   * @param estimatedSize Taille estimée en octets de l'opération
+   */
+  async checkDiskSpace(estimatedSize?: number): Promise<boolean> {
+    return await DiskSpaceChecker.hasEnoughSpace(estimatedSize);
   }
 }
 
