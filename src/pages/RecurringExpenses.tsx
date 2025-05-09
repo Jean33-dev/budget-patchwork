@@ -48,6 +48,10 @@ const RecurringExpenses = () => {
     }
   };
 
+  const handleDeleteWrapper = (expense: Expense) => {
+    handleDeleteExpense(expense.id);
+  };
+
   const openAddDialog = () => {
     setEditExpense(null);
     setAddDialogOpen(true);
@@ -72,8 +76,9 @@ const RecurringExpenses = () => {
       ) : (
         <RecurringExpenseGrid
           expenses={recurringExpenses}
+          budgets={availableBudgets}
           getBudgetName={getBudgetName}
-          onDelete={handleDeleteExpense}
+          onDelete={handleDeleteWrapper}
           onAddToCurrentMonth={handleAddToCurrentMonth}
           onEdit={handleEdit}
           currentDate={currentDate}

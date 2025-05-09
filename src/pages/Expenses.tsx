@@ -10,6 +10,7 @@ import { PontualExpensesTab } from "@/components/expense/PontualExpensesTab";
 import { RecurringExpensesTab } from "@/components/expense/RecurringExpensesTab";
 import { ProcessingIndicator } from "@/components/expense/ProcessingIndicator";
 import { AddButton } from "@/components/budget/AddButton";
+import { Expense } from "@/services/database/models/expense";
 
 const Expenses = () => {
   const navigate = useNavigate();

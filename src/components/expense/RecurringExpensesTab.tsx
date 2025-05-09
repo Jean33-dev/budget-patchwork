@@ -108,8 +108,14 @@ export function RecurringExpensesTab({
             open={editDialogOpen}
             onOpenChange={setEditDialogOpen}
             budget={{
-              ...selectedExpense,
-              type: "expense" as const
+              id: selectedExpense.id,
+              title: selectedExpense.title,
+              budget: selectedExpense.budget,
+              spent: selectedExpense.spent,
+              type: "expense" as const,
+              linkedBudgetId: selectedExpense.linkedBudgetId,
+              date: selectedExpense.date,
+              isRecurring: selectedExpense.isRecurring
             }}
             onSave={handleUpdateExpense}
             availableBudgets={availableBudgets}
@@ -121,8 +127,7 @@ export function RecurringExpensesTab({
             open={deleteDialogOpen}
             onOpenChange={setDeleteDialogOpen}
             onConfirm={handleConfirmDelete}
-            type="expense"
-            title={selectedExpense.title}
+            budgetName={selectedExpense.title}
             isRecurring={true}
           />
         </>

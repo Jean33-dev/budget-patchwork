@@ -90,12 +90,14 @@ export function PontualExpensesTab({
         <ExpenseShareButton expenses={expenses} budgets={availableBudgets} />
       </div>
       
-      {/* Adapter les propriétés pour ExpenseList */}
+      {/* Utiliser correctement ExpenseList avec les props qu'elle attend */}
       <ExpenseList
         expenses={expenses}
         availableBudgets={availableBudgets} 
-        onEditExpense={handleEditExpense}
-        onDeleteExpense={handleDeleteExpenseClick}
+        showHeader={false}
+        addDialogOpen={false}
+        setAddDialogOpen={() => {}}
+        handleAddEnvelope={() => {}}
       />
 
       <AddEnvelopeDialog
@@ -109,6 +111,7 @@ export function PontualExpensesTab({
 
       {/* Adapter les propriétés pour ExpenseDialogs */}
       <ExpenseDialogs
+        selectedExpense={selectedExpense}
         isEditDialogOpen={editDialogOpen}
         setIsEditDialogOpen={setEditDialogOpen}
         editableTitle={editableTitle}
