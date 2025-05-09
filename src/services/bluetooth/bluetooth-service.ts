@@ -1,270 +1,133 @@
 
-import { toast } from "@/components/ui/use-toast";
-import { Expense } from "../database/models/expense";
-
+/**
+ * Service pour gérer les fonctionnalités Bluetooth et de partage
+ */
 export class BluetoothService {
   /**
-   * Vérifie si le Bluetooth est disponible sur l'appareil
+   * Vérifie si le Bluetooth ou toute autre méthode de partage est disponible
    */
   static async isBluetoothAvailable(): Promise<boolean> {
     try {
-      console.log("Vérification de la disponibilité Bluetooth...");
-      
-      // Vérifier si nous sommes sur une plateforme mobile via Capacitor
-      const isCapacitorNative = typeof window !== 'undefined' && 
-                               window && 
-                               (window as any).Capacitor && 
-                               (window as any).Capacitor.isNativePlatform && 
-                               (window as any).Capacitor.isNativePlatform();
-      
-      console.log("Plateforme native Capacitor détectée:", isCapacitorNative);
-      
-      // Sur les plateformes natives (Android/iOS), on suppose que le Bluetooth est disponible
-      // car il sera géré par des plugins natifs ou le partage natif
-      if (isCapacitorNative) {
-        console.log("Plateforme native détectée, considérant Bluetooth comme disponible");
+      // Vérifier d'abord l'API Web Share si disponible (plus simple et plus fiable)
+      if (navigator.share && navigator.canShare) {
+        console.log("API Web Share disponible");
         return true;
       }
       
-      // Vérifier si l'API Web Bluetooth est disponible dans le navigateur
-      if (typeof navigator === 'undefined') {
-        console.log("Navigator n'est pas défini, Bluetooth non disponible");
-        return false;
-      }
-      
-      // Pour les navigateurs de bureau modernes supportant Web Bluetooth
+      // Vérifier l'API Bluetooth si disponible
       if (navigator.bluetooth) {
-        try {
-          const available = await navigator.bluetooth.getAvailability();
-          console.log("Disponibilité Bluetooth via API Web Bluetooth:", available);
-          return available;
-        } catch (error) {
-          console.log("Erreur lors de la vérification via API Web Bluetooth:", error);
-          // Si erreur avec l'API, on vérifie une autre méthode
-        }
-      } else {
-        console.log("API Web Bluetooth non disponible dans ce navigateur");
+        console.log("API Bluetooth disponible, vérification de l'activation...");
+        const available = await navigator.bluetooth.getAvailability();
+        console.log(`Bluetooth disponible: ${available}`);
+        return available;
       }
       
-      // Pour les navigateurs qui ne supportent pas Web Bluetooth,
-      // on vérifie si le partage natif est disponible comme alternative
-      if (navigator.share) {
-        console.log("API Web Share disponible, considérant comme alternative au Bluetooth");
-        return true;
-      }
-      
-      // En dernier recours, vérifier si le téléchargement est possible
-      console.log("Aucune méthode de partage Bluetooth n'est disponible, utilisant téléchargement");
-      return true; // On permet toujours de continuer, même pour télécharger
+      console.log("Aucune API de partage détectée");
+      // Sur mobile, considérer comme disponible par défaut pour d'autres mécanismes de partage
+      return this.isMobileDevice();
     } catch (error) {
-      console.error("Erreur générale lors de la vérification Bluetooth:", error);
-      // En cas d'erreur, on autorise quand même la fonctionnalité
-      // pour permettre au moins le téléchargement du fichier
-      return true;
+      console.error("Erreur lors de la vérification du Bluetooth:", error);
+      // Sur erreur, considérer comme disponible sur mobile (pour permettre d'autres méthodes)
+      return this.isMobileDevice();
     }
   }
-
+  
   /**
-   * Partage des dépenses via Bluetooth
-   * @param expenses Liste des dépenses à partager
+   * Détecte si l'appareil est un mobile
    */
-  static async shareExpensesViaBluetooth(expenses: Expense[]): Promise<boolean> {
+  static isMobileDevice(): boolean {
+    const userAgent = navigator.userAgent.toLowerCase();
+    return /android|webos|iphone|ipad|ipod|blackberry|windows phone/i.test(userAgent);
+  }
+  
+  /**
+   * Partage les dépenses via Bluetooth ou autre méthode disponible
+   */
+  static async shareExpensesViaBluetooth(expenses: any[]): Promise<boolean> {
     try {
-      // Vérifier si le Bluetooth est disponible
-      const isAvailable = await this.isBluetoothAvailable();
-      console.log("Bluetooth disponible:", isAvailable);
-      
-      if (!isAvailable) {
-        throw new Error("Bluetooth n'est pas disponible sur cet appareil");
+      if (expenses.length === 0) {
+        throw new Error("Aucune dépense à partager");
       }
       
-      // Préparer les données pour le partage
+      // Formatter les données à partager
       const expensesData = JSON.stringify(expenses);
-      
-      // Détection de Capacitor pour les plateformes natives
-      const isCapacitorNative = typeof window !== 'undefined' && 
-                               window && 
-                               (window as any).Capacitor && 
-                               (window as any).Capacitor.isNativePlatform && 
-                               (window as any).Capacitor.isNativePlatform();
-      
-      console.log("Partage Bluetooth - Plateforme native:", isCapacitorNative);
-      
-      // Sur les plateformes natives (Android/iOS), utiliser le plugin Capacitor si disponible
-      if (isCapacitorNative) {
-        console.log("Tentative de partage via plugin natif");
-        // Si un plugin Bluetooth est disponible
-        if ((window as any).Capacitor?.Plugins?.BluetoothLE) {
-          console.log("Plugin BluetoothLE détecté");
-          // Logique spécifique au plugin BluetoothLE de Capacitor
-          const result = await this.shareViaNativePlugin(expensesData);
-          return result;
-        } else {
-          console.log("Aucun plugin Bluetooth spécifique détecté, utilisation du partage natif");
-          // Utiliser le partage natif si le plugin spécifique n'est pas disponible
-          return await this.shareViaGenericShare(expenses);
-        }
-      }
-      
-      // Sur le web, utiliser Web Bluetooth API
-      console.log("Tentative de partage via Web Bluetooth API");
-      if (navigator.bluetooth) {
-        return await this.shareViaWebBluetooth(expensesData);
-      }
-      
-      // Fallback vers le partage générique
-      console.log("Fallback vers partage générique");
-      return await this.shareViaGenericShare(expenses);
-    } catch (error) {
-      console.error("Erreur lors du partage via Bluetooth:", error);
-      
-      toast({
-        variant: "destructive",
-        title: "Erreur de partage",
-        description: `Le partage via Bluetooth a échoué: ${error instanceof Error ? error.message : "Erreur inconnue"}`
-      });
-      
-      return false;
-    }
-  }
-  
-  /**
-   * Partage via le plugin Bluetooth natif de Capacitor
-   */
-  private static async shareViaNativePlugin(data: string): Promise<boolean> {
-    try {
-      const bluetoothPlugin = (window as any).Capacitor.Plugins.BluetoothLE;
-      
-      // Ajout de logs pour le débogage
-      console.log("Initialisation du plugin Bluetooth natif");
-      
-      // Initialiser le Bluetooth
-      await bluetoothPlugin.initialize();
-      console.log("Plugin Bluetooth initialisé");
-      
-      // Demander à l'utilisateur de sélectionner un appareil
-      console.log("Démarrage du scan Bluetooth");
-      const scanResult = await bluetoothPlugin.scan({ services: [] });
-      console.log("Résultat du scan:", scanResult);
-      const device = scanResult.devices?.[0] || scanResult;
-      
-      if (!device || !device.address) {
-        throw new Error("Aucun appareil Bluetooth détecté");
-      }
-      
-      // Connecter à l'appareil
-      console.log("Connexion à l'appareil:", device.address);
-      await bluetoothPlugin.connect({ address: device.address });
-      
-      // Envoyer les données
-      console.log("Envoi des données via Bluetooth");
-      await bluetoothPlugin.write({
-        address: device.address,
-        service: "generic_service",
-        characteristic: "generic_char",
-        value: this.convertStringToBytes(data)
-      });
-      
-      toast({
-        title: "Partage réussi",
-        description: "Les dépenses ont été partagées avec succès via Bluetooth"
-      });
-      
-      return true;
-    } catch (error) {
-      console.error("Erreur détaillée lors du partage via plugin natif:", error);
-      throw new Error(`Erreur lors du partage Bluetooth: ${error instanceof Error ? error.message : "Erreur inconnue"}`);
-    }
-  }
-  
-  /**
-   * Partage via Web Bluetooth API
-   */
-  private static async shareViaWebBluetooth(data: string): Promise<boolean> {
-    try {
-      console.log("Démarrage du partage via Web Bluetooth");
-      
-      // Demander à l'utilisateur de sélectionner un appareil compatible
-      const device = await navigator.bluetooth.requestDevice({
-        acceptAllDevices: true,
-        optionalServices: ['generic_access']
-      });
-      
-      console.log("Appareil sélectionné:", device.name || device.id);
-      
-      // Notification à l'utilisateur - Web Bluetooth a des limitations
-      toast({
-        title: "Appareil connecté",
-        description: `Connecté à ${device.name || 'l\'appareil'}. Le partage Web Bluetooth est limité dans les navigateurs.`
-      });
-      
-      // Pour une véritable implémentation, il faudrait:
-      // 1. Se connecter au GATT server
-      // 2. Obtenir le service approprié
-      // 3. Obtenir la caractéristique pour l'écriture
-      // 4. Écrire les données
-      
-      // Comme Web Bluetooth est limité pour le partage, on propose le téléchargement
-      await this.shareViaGenericShare([]);
-      
-      return true;
-    } catch (error) {
-      console.error("Erreur détaillée lors du partage via Web Bluetooth:", error);
-      throw error;
-    }
-  }
-  
-  /**
-   * Partage via l'API de partage générique
-   */
-  private static async shareViaGenericShare(expenses: Expense[]): Promise<boolean> {
-    try {
-      console.log("Utilisation du partage générique");
-      
-      // Créer un fichier des dépenses
-      const expensesData = JSON.stringify(expenses, null, 2);
       const blob = new Blob([expensesData], { type: 'application/json' });
-      const file = new File([blob], "depenses_partagees.json", { type: "application/json" });
+      const file = new File([blob], 'expenses.json', { type: 'application/json' });
       
-      // Si l'API de partage web est disponible
+      // Utiliser l'API Web Share si disponible (plus fiable)
       if (navigator.share && navigator.canShare({ files: [file] })) {
-        console.log("Utilisation de l'API Web Share");
+        console.log("Partage via Web Share API");
         await navigator.share({
+          files: [file],
           title: 'Dépenses partagées',
-          files: [file]
+          text: `${expenses.length} dépense(s) partagée(s)`
         });
-        
-        return true;
-      } else {
-        // Fallback pour les navigateurs ne supportant pas l'API de partage
-        console.log("Fallback: téléchargement du fichier");
-        const dataUrl = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = dataUrl;
-        link.download = 'depenses_partagees.json';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(dataUrl);
-        
-        toast({
-          title: "Téléchargement des données",
-          description: "Les données ont été téléchargées car le partage direct n'est pas disponible sur ce navigateur"
-        });
-        
         return true;
       }
+      
+      // Fallback pour le téléchargement direct
+      console.log("Fallback: téléchargement direct du fichier");
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'expenses.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      return true;
     } catch (error) {
-      console.error("Erreur détaillée lors du partage générique:", error);
+      console.error("Erreur lors du partage des dépenses:", error);
       throw error;
     }
   }
   
   /**
-   * Convertit une chaîne en tableau d'octets
+   * Reçoit les dépenses depuis un fichier
    */
-  private static convertStringToBytes(str: string): Uint8Array {
-    const encoder = new TextEncoder();
-    return encoder.encode(str);
+  static async receiveExpensesFromFile(): Promise<any[]> {
+    return new Promise((resolve, reject) => {
+      try {
+        // Créer un input file invisible
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'application/json';
+        input.style.display = 'none';
+        
+        input.onchange = async (event) => {
+          const target = event.target as HTMLInputElement;
+          if (!target.files || target.files.length === 0) {
+            reject(new Error("Aucun fichier sélectionné"));
+            return;
+          }
+          
+          const file = target.files[0];
+          try {
+            const text = await file.text();
+            const expenses = JSON.parse(text);
+            
+            // Vérifier que les données sont au bon format
+            if (!Array.isArray(expenses)) {
+              reject(new Error("Format de données invalide"));
+              return;
+            }
+            
+            document.body.removeChild(input);
+            resolve(expenses);
+          } catch (error) {
+            console.error("Erreur lors de la lecture du fichier:", error);
+            reject(new Error("Impossible de lire le fichier"));
+          }
+        };
+        
+        // Ajouter l'input au DOM et déclencher le clic
+        document.body.appendChild(input);
+        input.click();
+      } catch (error) {
+        console.error("Erreur lors de la réception des dépenses:", error);
+        reject(error);
+      }
+    });
   }
 }
