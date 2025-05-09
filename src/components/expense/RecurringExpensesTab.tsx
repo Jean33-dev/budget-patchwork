@@ -127,8 +127,7 @@ export function RecurringExpensesTab({
             open={deleteDialogOpen}
             onOpenChange={setDeleteDialogOpen}
             onConfirm={handleConfirmDelete}
-            budgetName={selectedExpense.title}
-            isRecurring={true}
+            hasLinkedExpenses={false}
           />
         </>
       )}
