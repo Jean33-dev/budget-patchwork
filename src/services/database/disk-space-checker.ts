@@ -46,13 +46,17 @@ export class DiskSpaceChecker {
           used: this.formatBytes(storageInfo.usage)
         });
         
-        // Afficher une alerte à l'utilisateur
-        toast({
-          variant: "destructive",
-          title: "Espace de stockage insuffisant",
-          description: `L'opération nécessite ${this.formatBytes(requiredSpace)} mais seulement ${this.formatBytes(storageInfo.available)} sont disponibles. Veuillez libérer de l'espace pour continuer à utiliser l'application.`,
-          duration: 6000, // Un peu plus long pour que l'utilisateur ait le temps de lire
-        });
+        // Vérifier la préférence utilisateur avant d'afficher le toast
+        const showToastsPreference = localStorage.getItem("showToasts");
+        if (showToastsPreference !== "false") {
+          // Afficher une alerte à l'utilisateur uniquement si les toasts sont activés
+          toast({
+            variant: "destructive",
+            title: "Espace de stockage insuffisant",
+            description: `L'opération nécessite ${this.formatBytes(requiredSpace)} mais seulement ${this.formatBytes(storageInfo.available)} sont disponibles. Veuillez libérer de l'espace pour continuer à utiliser l'application.`,
+            duration: 6000, // Un peu plus long pour que l'utilisateur ait le temps de lire
+          });
+        }
       }
       
       return hasEnoughSpace;
