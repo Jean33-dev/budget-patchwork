@@ -1,32 +1,28 @@
-import { AddButton } from "@/components/budget/AddButton";
-import { AddEnvelopeDialog } from "@/components/budget/AddEnvelopeDialog";
-import { RecurringExpenseGrid } from "@/components/recurring/RecurringExpenseGrid";
+
+import { useState } from "react";
+import { RecurringExpenseHeader } from "@/components/recurring/RecurringExpenseHeader";
 import { RecurringExpenseEmptyState } from "@/components/recurring/RecurringExpenseEmptyState";
+import { RecurringExpenseGrid } from "@/components/recurring/RecurringExpenseGrid";
+import { AddEnvelopeDialog } from "@/components/budget/AddEnvelopeDialog";
+import { EditBudgetDialog } from "@/components/budget/EditBudgetDialog";
+import { DeleteBudgetDialog } from "@/components/budget/DeleteBudgetDialog";
 import { Expense } from "@/services/database/models/expense";
-import { Budget } from "@/hooks/useBudgets";
-import { useState, useEffect } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { Budget } from "@/types/categories";
+import { ExpenseShareButton } from "./ExpenseShareButton";
 
 interface RecurringExpensesTabProps {
   recurringExpenses: Expense[];
   availableBudgets: Budget[];
   isLoading: boolean;
-  handleAddExpense: (expense: {
-    title: string;
-    budget: number;
-    type: "income" | "expense" | "budget";
-    linkedBudgetId?: string;
-    date: string;
-    isRecurring?: boolean;
-  }) => void;
-  handleDeleteExpense: (id: string) => void;
-  handleAddToCurrentMonth: (id: string) => Promise<boolean>;
-  handleUpdateExpense: (expense: Expense) => void;
-  getBudgetName: (id: string) => string;
+  handleAddExpense: (data: any) => void;
+  handleDeleteExpense: (id: string) => Promise<void>;
+  handleAddToCurrentMonth: (expenseId: string) => Promise<void>;
+  handleUpdateExpense: (expense: Expense) => Promise<void>;
+  getBudgetName: (budgetId: string) => string;
   currentDate: string;
 }
 
-export const RecurringExpensesTab = ({
+export function RecurringExpensesTab({
   recurringExpenses,
   availableBudgets,
   isLoading,
@@ -36,94 +32,81 @@ export const RecurringExpensesTab = ({
   handleUpdateExpense,
   getBudgetName,
   currentDate
-}: RecurringExpensesTabProps) => {
-  const { toast } = useToast();
-  const [addRecurringDialogOpen, setAddRecurringDialogOpen] = useState(false);
-  const [editRecurringExpense, setEditRecurringExpense] = useState<Expense | null>(null);
-
-  useEffect(() => {
-    if (!addRecurringDialogOpen) {
-      setEditRecurringExpense(null);
-    }
-  }, [addRecurringDialogOpen]);
-
-  const handleAddRecurringExpenseWrapper = (expense: { 
-    title: string; 
-    budget: number; 
-    type: "income" | "expense" | "budget";
-    linkedBudgetId?: string;
-    date: string;
-    isRecurring?: boolean;
-  }) => {
-    if (expense.type === "expense") {
-      handleAddExpense(expense);
-    } else {
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Le type doit être 'expense'"
-      });
-    }
-  };
-
-  const handleEditRecurringExpense = (expense: Expense) => {
-    setEditRecurringExpense(expense);
-    setAddRecurringDialogOpen(true);
-  };
-
-  const handleUpdateRecurringExpenseWrapper = (data: Expense) => {
-    if (data.type === "expense") {
-      handleUpdateExpense(data);
-    }
-  };
-
-  const openAddRecurringDialog = () => {
-    setEditRecurringExpense(null);
-    setAddRecurringDialogOpen(true);
-  };
+}: RecurringExpensesTabProps) {
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
 
   return (
-    <>
-      <AddButton
-        onClick={openAddRecurringDialog}
-        label="Ajouter une dépense récurrente"
-      />
-
+    <div className="space-y-4">
+      <RecurringExpenseHeader onAdd={() => setAddDialogOpen(true)} />
+      
+      {/* Ajouter le bouton de partage en haut à droite */}
+      <div className="flex justify-end mt-4 mb-2">
+        <ExpenseShareButton expenses={recurringExpenses} budgets={availableBudgets} />
+      </div>
+      
       {isLoading ? (
         <div className="text-center py-8">Chargement des dépenses récurrentes...</div>
       ) : recurringExpenses.length === 0 ? (
-        <RecurringExpenseEmptyState onAddClick={openAddRecurringDialog} />
+        <RecurringExpenseEmptyState onAddClick={() => setAddDialogOpen(true)} />
       ) : (
-        <RecurringExpenseGrid
+        <RecurringExpenseGrid 
           expenses={recurringExpenses}
-          getBudgetName={getBudgetName}
-          onDelete={handleDeleteExpense}
+          budgets={availableBudgets}
+          onDelete={(expense) => {
+            setSelectedExpense(expense);
+            setDeleteDialogOpen(true);
+          }}
+          onEdit={(expense) => {
+            setSelectedExpense(expense);
+            setEditDialogOpen(true);
+          }}
           onAddToCurrentMonth={handleAddToCurrentMonth}
-          onEdit={handleEditRecurringExpense}
+          getBudgetName={getBudgetName}
           currentDate={currentDate}
         />
       )}
 
       <AddEnvelopeDialog
         type="expense"
-        open={addRecurringDialogOpen}
-        onOpenChange={setAddRecurringDialogOpen}
-        onAdd={editRecurringExpense ? 
-          (data) => handleUpdateRecurringExpenseWrapper({...editRecurringExpense, ...data} as Expense) : 
-          handleAddRecurringExpenseWrapper}
-        availableBudgets={availableBudgets.map(budget => ({
-          id: budget.id,
-          title: budget.title,
-        }))}
+        open={addDialogOpen}
+        onOpenChange={setAddDialogOpen}
+        onAdd={(data) => handleAddExpense({...data, isRecurring: true})}
+        availableBudgets={availableBudgets}
         isRecurring={true}
-        defaultValues={editRecurringExpense ? {
-          title: editRecurringExpense.title,
-          budget: editRecurringExpense.budget,
-          linkedBudgetId: editRecurringExpense.linkedBudgetId,
-          date: editRecurringExpense.date,
-        } : undefined}
-        dialogTitle={editRecurringExpense ? "Modifier la dépense récurrente" : "Ajouter une dépense récurrente"}
       />
-    </>
+
+      {selectedExpense && (
+        <>
+          <EditBudgetDialog
+            open={editDialogOpen}
+            onOpenChange={setEditDialogOpen}
+            budget={{
+              ...selectedExpense,
+              type: "expense" as const
+            }}
+            onSave={handleUpdateExpense}
+            availableBudgets={availableBudgets}
+            isExpense={true}
+            isRecurring={true}
+          />
+
+          <DeleteBudgetDialog
+            open={deleteDialogOpen}
+            onOpenChange={setDeleteDialogOpen}
+            onDelete={() => {
+              if (selectedExpense) {
+                handleDeleteExpense(selectedExpense.id);
+              }
+            }}
+            type="expense"
+            title={selectedExpense.title}
+            isRecurring={true}
+          />
+        </>
+      )}
+    </div>
   );
-};
+}

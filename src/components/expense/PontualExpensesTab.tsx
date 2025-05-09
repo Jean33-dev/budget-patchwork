@@ -1,10 +1,13 @@
 
-import { ExpenseList } from "@/components/budget/ExpenseList";
-import { BudgetLoadingState } from "@/components/budget/BudgetLoadingState";
-import { ExpenseErrorState } from "@/components/budget/ExpenseErrorState";
+import { useState } from "react";
 import { Expense } from "@/services/database/models/expense";
-import { Budget } from "@/hooks/useBudgets";
-import { useEffect } from "react";
+import { Budget } from "@/types/categories";
+import { ExpenseList } from "@/components/budget/ExpenseList";
+import { ExpenseErrorState } from "@/components/budget/ExpenseErrorState";
+import { BudgetLoadingState } from "@/components/budget/BudgetLoadingState";
+import { AddEnvelopeDialog } from "@/components/budget/AddEnvelopeDialog";
+import { ExpenseDialogs } from "@/components/budget/ExpenseDialogs";
+import { ExpenseShareButton } from "./ExpenseShareButton";
 
 interface PontualExpensesTabProps {
   isLoading: boolean;
@@ -15,25 +18,18 @@ interface PontualExpensesTabProps {
   availableBudgets: Budget[];
   addDialogOpen: boolean;
   setAddDialogOpen: (open: boolean) => void;
-  handleAddEnvelope: (envelope: {
-    title: string;
-    budget: number;
-    type: "income" | "expense" | "budget";
-    linkedBudgetId?: string;
-    date: string;
-  }) => void;
-  handleDeleteExpense: (id: string) => void;
-  handleUpdateExpense: (expense: Expense) => void;
+  handleAddEnvelope: (data: any) => void;
+  handleDeleteExpense: (id: string) => Promise<void>;
+  handleUpdateExpense: (expense: Expense) => Promise<void>;
   forceReload: () => void;
-  handleRetry: () => Promise<void>;
-  budgetId: string | undefined;
+  handleRetry: () => void;
+  budgetId?: string;
 }
 
-export const PontualExpensesTab = ({
+export function PontualExpensesTab({
   isLoading,
   error,
   initAttempted,
-  isProcessing,
   expenses,
   availableBudgets,
   addDialogOpen,
@@ -44,61 +40,58 @@ export const PontualExpensesTab = ({
   forceReload,
   handleRetry,
   budgetId
-}: PontualExpensesTabProps) => {
+}: PontualExpensesTabProps) {
+  const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
   
-  // Log pour déboguer
-  useEffect(() => {
-    console.log("PontualExpensesTab - render with props:", {
-      isLoading,
-      error: error?.message,
-      initAttempted,
-      isProcessing,
-      expensesCount: expenses.length,
-      availableBudgetsCount: availableBudgets.length,
-      budgetId
-    });
-    
-    if (expenses.length > 0) {
-      console.log("PontualExpensesTab - First 2 expenses:", expenses.slice(0, 2));
-    } else {
-      console.log("PontualExpensesTab - No expenses found");
-    }
-    
-    if (availableBudgets.length > 0) {
-      console.log("PontualExpensesTab - First 2 budgets:", availableBudgets.slice(0, 2));
-    }
-  }, [expenses, budgetId, availableBudgets, isLoading, error, initAttempted, isProcessing]);
-  
+  if (isLoading && !initAttempted) {
+    return <BudgetLoadingState />;
+  }
+
+  if (error && !isLoading && initAttempted) {
+    return <ExpenseErrorState onRetry={handleRetry} />;
+  }
+
   return (
-    <>
-      {isLoading && (
-        <BudgetLoadingState attempt={1} maxAttempts={1} />
-      )}
+    <div className="space-y-4">
+      {/* Ajouter le bouton de partage en haut à droite */}
+      <div className="flex justify-end mt-4 mb-2">
+        <ExpenseShareButton expenses={expenses} budgets={availableBudgets} />
+      </div>
       
-      {error && initAttempted && !isProcessing && (
-        <ExpenseErrorState 
-          retryAttempt={1}
-          maxRetryAttempts={3}
-          isRetrying={false}
-          handleRetry={handleRetry}
-          handleForceReload={forceReload}
-          handleClearCacheAndReload={() => window.location.reload()}
-        />
-      )}
-      
-      {!isLoading && !error && (
-        <ExpenseList
-          expenses={expenses}
-          availableBudgets={availableBudgets}
-          addDialogOpen={addDialogOpen}
-          setAddDialogOpen={setAddDialogOpen}
-          handleAddEnvelope={handleAddEnvelope}
-          handleDeleteExpense={handleDeleteExpense}
-          handleUpdateExpense={handleUpdateExpense}
-          defaultBudgetId={budgetId}
-          showHeader={false}  // Ajout de cette propriété pour masquer l'en-tête
-        />
-      )}
-    </>
+      <ExpenseList
+        expenses={expenses}
+        availableBudgets={availableBudgets}
+        onEdit={(expense) => {
+          setSelectedExpense(expense);
+          setEditDialogOpen(true);
+        }}
+        onDelete={(expense) => {
+          setSelectedExpense(expense);
+          setDeleteDialogOpen(true);
+        }}
+      />
+
+      <AddEnvelopeDialog
+        type="expense"
+        open={addDialogOpen}
+        onOpenChange={setAddDialogOpen}
+        onAdd={handleAddEnvelope}
+        availableBudgets={availableBudgets}
+        budgetId={budgetId}
+      />
+
+      <ExpenseDialogs
+        selectedExpense={selectedExpense}
+        deleteDialogOpen={deleteDialogOpen}
+        setDeleteDialogOpen={setDeleteDialogOpen}
+        editDialogOpen={editDialogOpen}
+        setEditDialogOpen={setEditDialogOpen}
+        handleDeleteExpense={handleDeleteExpense}
+        handleUpdateExpense={handleUpdateExpense}
+        availableBudgets={availableBudgets}
+      />
+    </div>
   );
-};
+}
