@@ -1,7 +1,7 @@
 
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Bluetooth, Share } from "lucide-react";
+import { Bluetooth, Share, Download } from "lucide-react";
 import { ExpenseShareDialog } from "./ExpenseShareDialog";
 import { Expense } from "@/services/database/models/expense";
 import { Budget } from "@/types/categories";
@@ -28,26 +28,28 @@ export function ExpenseShareButton({ expenses, budgets }: ExpenseShareButtonProp
     try {
       setIsChecking(true);
       
-      // Vérifier la disponibilité du Bluetooth avant d'ouvrir le dialogue
+      console.log("Tentative de vérification Bluetooth avant ouverture du dialogue");
+      // Détection allégée du Bluetooth - considérer comme disponible par défaut sur mobile
       const isAvailable = await BluetoothService.isBluetoothAvailable();
+      console.log("Résultat de la vérification Bluetooth:", isAvailable);
       
       if (!isAvailable) {
         toast({
           variant: "destructive",
-          title: "Bluetooth non disponible",
-          description: "Le Bluetooth n'est pas disponible ou activé sur cet appareil. Veuillez activer le Bluetooth et réessayer."
+          title: "Partage non disponible",
+          description: "Aucune méthode de partage n'est disponible sur cet appareil."
         });
         return;
       }
       
-      // Ouvrir le dialogue si le Bluetooth est disponible
+      // Ouvrir le dialogue de partage
       setDialogOpen(true);
     } catch (error) {
-      console.error("Erreur lors de la vérification du Bluetooth:", error);
+      console.error("Erreur lors de la vérification du partage:", error);
       toast({
         variant: "destructive",
-        title: "Erreur Bluetooth",
-        description: "Impossible de vérifier la disponibilité du Bluetooth. Veuillez réessayer."
+        title: "Erreur de vérification",
+        description: "Une erreur est survenue lors de la vérification des capacités de partage."
       });
     } finally {
       setIsChecking(false);
@@ -64,11 +66,11 @@ export function ExpenseShareButton({ expenses, budgets }: ExpenseShareButtonProp
         disabled={isChecking}
       >
         {isChecking ? (
-          <span>Vérification du Bluetooth...</span>
+          <span>Vérification en cours...</span>
         ) : (
           <>
-            <Bluetooth className="h-4 w-4" />
-            <span>Partager via Bluetooth</span>
+            <Share className="h-4 w-4" />
+            <span>Partager les dépenses</span>
           </>
         )}
       </Button>

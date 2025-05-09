@@ -7,36 +7,60 @@ export class BluetoothService {
    * Vérifie si le Bluetooth est disponible sur l'appareil
    */
   static async isBluetoothAvailable(): Promise<boolean> {
-    // Vérifier si nous sommes sur une plateforme mobile via Capacitor
-    const isCapacitorNative = typeof window !== 'undefined' && 
-                             window && 
-                             (window as any).Capacitor && 
-                             (window as any).Capacitor.isNativePlatform && 
-                             (window as any).Capacitor.isNativePlatform();
-    
-    console.log("Plateforme native Capacitor détectée:", isCapacitorNative);
-    
-    // Sur les plateformes natives, considérer Bluetooth comme disponible
-    // car il sera géré par des plugins natifs
-    if (isCapacitorNative) {
-      console.log("Plateforme native détectée, considérant Bluetooth comme disponible");
-      return true;
-    }
-    
-    // Vérifier si l'API Web Bluetooth est disponible dans le navigateur
-    if (typeof navigator === 'undefined' || !navigator.bluetooth) {
-      console.log("API Web Bluetooth non disponible dans ce navigateur");
-      return false;
-    }
-    
-    // Vérifier si l'API est accessible (autorisations)
     try {
-      const available = await navigator.bluetooth.getAvailability();
-      console.log("Disponibilité Bluetooth via API:", available);
-      return available;
+      console.log("Vérification de la disponibilité Bluetooth...");
+      
+      // Vérifier si nous sommes sur une plateforme mobile via Capacitor
+      const isCapacitorNative = typeof window !== 'undefined' && 
+                               window && 
+                               (window as any).Capacitor && 
+                               (window as any).Capacitor.isNativePlatform && 
+                               (window as any).Capacitor.isNativePlatform();
+      
+      console.log("Plateforme native Capacitor détectée:", isCapacitorNative);
+      
+      // Sur les plateformes natives (Android/iOS), on suppose que le Bluetooth est disponible
+      // car il sera géré par des plugins natifs ou le partage natif
+      if (isCapacitorNative) {
+        console.log("Plateforme native détectée, considérant Bluetooth comme disponible");
+        return true;
+      }
+      
+      // Vérifier si l'API Web Bluetooth est disponible dans le navigateur
+      if (typeof navigator === 'undefined') {
+        console.log("Navigator n'est pas défini, Bluetooth non disponible");
+        return false;
+      }
+      
+      // Pour les navigateurs de bureau modernes supportant Web Bluetooth
+      if (navigator.bluetooth) {
+        try {
+          const available = await navigator.bluetooth.getAvailability();
+          console.log("Disponibilité Bluetooth via API Web Bluetooth:", available);
+          return available;
+        } catch (error) {
+          console.log("Erreur lors de la vérification via API Web Bluetooth:", error);
+          // Si erreur avec l'API, on vérifie une autre méthode
+        }
+      } else {
+        console.log("API Web Bluetooth non disponible dans ce navigateur");
+      }
+      
+      // Pour les navigateurs qui ne supportent pas Web Bluetooth,
+      // on vérifie si le partage natif est disponible comme alternative
+      if (navigator.share) {
+        console.log("API Web Share disponible, considérant comme alternative au Bluetooth");
+        return true;
+      }
+      
+      // En dernier recours, vérifier si le téléchargement est possible
+      console.log("Aucune méthode de partage Bluetooth n'est disponible, utilisant téléchargement");
+      return true; // On permet toujours de continuer, même pour télécharger
     } catch (error) {
-      console.error("Erreur lors de la vérification de disponibilité Bluetooth:", error);
-      return false;
+      console.error("Erreur générale lors de la vérification Bluetooth:", error);
+      // En cas d'erreur, on autorise quand même la fonctionnalité
+      // pour permettre au moins le téléchargement du fichier
+      return true;
     }
   }
 

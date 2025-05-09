@@ -1,12 +1,12 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Expense } from "@/services/database/models/expense";
 import { BluetoothService } from "@/services/bluetooth/bluetooth-service";
-import { Bluetooth, Share, AlertCircle } from "lucide-react";
+import { Bluetooth, Share, AlertCircle, Download } from "lucide-react";
 import { formatAmount } from "@/utils/format-amount";
 import { useToast } from "@/components/ui/use-toast";
 
@@ -21,10 +21,11 @@ export function ExpenseShareDialog({ open, onOpenChange, expenses, budgetNames }
   const [selectedExpenses, setSelectedExpenses] = useState<Record<string, boolean>>({});
   const [isSharing, setIsSharing] = useState(false);
   const [sharingError, setSharingError] = useState<string | null>(null);
+  const [shareMethod, setShareMethod] = useState<"bluetooth" | "download">("bluetooth");
   const { toast } = useToast();
   
   // Réinitialiser l'état lors de l'ouverture/fermeture du dialogue
-  React.useEffect(() => {
+  useEffect(() => {
     if (open) {
       // Pré-sélectionner toutes les dépenses par défaut
       const initialSelection: Record<string, boolean> = {};
@@ -33,6 +34,18 @@ export function ExpenseShareDialog({ open, onOpenChange, expenses, budgetNames }
       });
       setSelectedExpenses(initialSelection);
       setSharingError(null);
+      
+      // Vérifier la meilleure méthode de partage disponible
+      BluetoothService.isBluetoothAvailable().then(isAvailable => {
+        if (isAvailable) {
+          // Bluetooth ou une alternative est disponible
+          console.log("Une méthode de partage est disponible");
+        } else {
+          // Fallback vers le téléchargement uniquement
+          setShareMethod("download");
+          console.log("Bluetooth non disponible, utilisation du téléchargement uniquement");
+        }
+      });
     } else {
       setIsSharing(false);
       setSharingError(null);
@@ -64,8 +77,8 @@ export function ExpenseShareDialog({ open, onOpenChange, expenses, budgetNames }
     }));
   };
   
-  // Partager les dépenses sélectionnées via Bluetooth
-  const handleShareViaBluetooth = async () => {
+  // Partager les dépenses sélectionnées
+  const handleShare = async () => {
     setSharingError(null);
     try {
       setIsSharing(true);
@@ -76,8 +89,9 @@ export function ExpenseShareDialog({ open, onOpenChange, expenses, budgetNames }
         throw new Error("Aucune dépense sélectionnée pour le partage");
       }
       
-      console.log("Tentative de partage de", expensesToShare.length, "dépenses via Bluetooth");
+      console.log(`Tentative de partage de ${expensesToShare.length} dépenses`);
       
+      // Tenter le partage via Bluetooth ou téléchargement direct
       const success = await BluetoothService.shareExpensesViaBluetooth(expensesToShare);
       
       if (success) {
@@ -96,7 +110,7 @@ export function ExpenseShareDialog({ open, onOpenChange, expenses, budgetNames }
       toast({
         variant: "destructive",
         title: "Échec du partage",
-        description: "Le partage des dépenses via Bluetooth a échoué. Veuillez réessayer."
+        description: "Le partage des dépenses a échoué. Veuillez réessayer."
       });
     } finally {
       setIsSharing(false);
@@ -111,11 +125,11 @@ export function ExpenseShareDialog({ open, onOpenChange, expenses, budgetNames }
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Bluetooth className="h-5 w-5" />
-            <span>Partager les dépenses via Bluetooth</span>
+            <Share className="h-5 w-5" />
+            <span>Partager les dépenses</span>
           </DialogTitle>
           <DialogDescription>
-            Sélectionnez les dépenses à partager avec un autre appareil
+            Sélectionnez les dépenses à partager
           </DialogDescription>
         </DialogHeader>
         
@@ -179,7 +193,7 @@ export function ExpenseShareDialog({ open, onOpenChange, expenses, budgetNames }
             Annuler
           </Button>
           <Button
-            onClick={handleShareViaBluetooth}
+            onClick={handleShare}
             disabled={isSharing || selectedCount === 0}
             className="gap-2"
           >
@@ -187,7 +201,7 @@ export function ExpenseShareDialog({ open, onOpenChange, expenses, budgetNames }
               "Partage en cours..."
             ) : (
               <>
-                <Bluetooth className="h-4 w-4" />
+                <Share className="h-4 w-4" />
                 <span>Partager ({selectedCount})</span>
               </>
             )}
