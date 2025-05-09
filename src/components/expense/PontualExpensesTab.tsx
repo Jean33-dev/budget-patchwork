@@ -45,12 +45,42 @@ export function PontualExpensesTab({
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   
+  // États pour ExpenseDialogs modifiés
+  const [editableTitle, setEditableTitle] = useState("");
+  const [editableBudget, setEditableBudget] = useState(0);
+  const [editableDate, setEditableDate] = useState("");
+  
+  const handleEditExpense = (expense: Expense) => {
+    setSelectedExpense(expense);
+    setEditableTitle(expense.title);
+    setEditableBudget(expense.budget);
+    setEditableDate(expense.date);
+    setEditDialogOpen(true);
+  };
+  
+  const handleDeleteExpenseClick = (expense: Expense) => {
+    setSelectedExpense(expense);
+    setDeleteDialogOpen(true);
+  };
+  
+  const handleConfirmEdit = () => {
+    if (selectedExpense) {
+      handleUpdateExpense({
+        ...selectedExpense,
+        title: editableTitle,
+        budget: editableBudget,
+        date: editableDate
+      });
+    }
+    setEditDialogOpen(false);
+  };
+  
   if (isLoading && !initAttempted) {
     return <BudgetLoadingState />;
   }
 
   if (error && !isLoading && initAttempted) {
-    return <ExpenseErrorState onRetry={handleRetry} />;
+    return <ExpenseErrorState handleRetry={handleRetry} />;
   }
 
   return (
@@ -60,17 +90,12 @@ export function PontualExpensesTab({
         <ExpenseShareButton expenses={expenses} budgets={availableBudgets} />
       </div>
       
+      {/* Adapter les propriétés pour ExpenseList */}
       <ExpenseList
         expenses={expenses}
-        availableBudgets={availableBudgets}
-        onEdit={(expense) => {
-          setSelectedExpense(expense);
-          setEditDialogOpen(true);
-        }}
-        onDelete={(expense) => {
-          setSelectedExpense(expense);
-          setDeleteDialogOpen(true);
-        }}
+        availableBudgets={availableBudgets} 
+        onEditExpense={handleEditExpense}
+        onDeleteExpense={handleDeleteExpenseClick}
       />
 
       <AddEnvelopeDialog
@@ -79,18 +104,20 @@ export function PontualExpensesTab({
         onOpenChange={setAddDialogOpen}
         onAdd={handleAddEnvelope}
         availableBudgets={availableBudgets}
-        budgetId={budgetId}
+        defaultBudgetId={budgetId}
       />
 
+      {/* Adapter les propriétés pour ExpenseDialogs */}
       <ExpenseDialogs
-        selectedExpense={selectedExpense}
-        deleteDialogOpen={deleteDialogOpen}
-        setDeleteDialogOpen={setDeleteDialogOpen}
-        editDialogOpen={editDialogOpen}
-        setEditDialogOpen={setEditDialogOpen}
-        handleDeleteExpense={handleDeleteExpense}
-        handleUpdateExpense={handleUpdateExpense}
-        availableBudgets={availableBudgets}
+        isEditDialogOpen={editDialogOpen}
+        setIsEditDialogOpen={setEditDialogOpen}
+        editableTitle={editableTitle}
+        setEditableTitle={setEditableTitle}
+        editableBudget={editableBudget}
+        setEditableBudget={setEditableBudget}
+        editableDate={editableDate}
+        setEditableDate={setEditableDate}
+        onConfirmEdit={handleConfirmEdit}
       />
     </div>
   );

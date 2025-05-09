@@ -18,14 +18,15 @@ const Expenses = () => {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("ponctuel");
   
+  // Pour corriger les erreurs de type, nous devons adapter les hooks ou ajouter des wrappers
   const {
     expenses,
     availableBudgets,
     addDialogOpen,
     setAddDialogOpen,
     handleAddEnvelope,
-    handleDeleteExpense,
-    handleUpdateExpense,
+    handleDeleteExpense: originalDeleteExpense,
+    handleUpdateExpense: originalUpdateExpense,
     forceReload,
     isLoading,
     isProcessing,
@@ -33,17 +34,39 @@ const Expenses = () => {
     initAttempted
   } = useExpenseManagement(budgetId);
 
+  // Wrapper pour assurer que les fonctions renvoient void
+  const handleDeleteExpense = async (id: string): Promise<void> => {
+    await originalDeleteExpense(id);
+  };
+
+  const handleUpdateExpense = async (expense: Expense): Promise<void> => {
+    await originalUpdateExpense(expense);
+  };
+
   const {
     recurringExpenses,
     availableBudgets: recurringAvailableBudgets,
     isLoading: isRecurringLoading,
     handleAddExpense: handleAddRecurringExpense,
-    handleDeleteExpense: handleDeleteRecurringExpense,
-    handleAddToCurrentMonth,
-    handleUpdateExpense: handleUpdateRecurringExpense,
+    handleDeleteExpense: originalDeleteRecurringExpense,
+    handleAddToCurrentMonth: originalAddToCurrentMonth,
+    handleUpdateExpense: originalUpdateRecurringExpense,
     getBudgetName,
     currentDate,
   } = useRecurringExpenses();
+
+  // Wrapper pour assurer que les fonctions renvoient void
+  const handleDeleteRecurringExpense = async (id: string): Promise<void> => {
+    await originalDeleteRecurringExpense(id);
+  };
+
+  const handleAddToCurrentMonth = async (id: string): Promise<void> => {
+    await originalAddToCurrentMonth(id);
+  };
+
+  const handleUpdateRecurringExpense = async (expense: Expense): Promise<void> => {
+    await originalUpdateRecurringExpense(expense);
+  };
 
   useEffect(() => {
     if (error && !isLoading && !isProcessing) {

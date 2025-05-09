@@ -38,6 +38,36 @@ export function RecurringExpensesTab({
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
 
+  // Fonctions adaptées pour corriger les types
+  const handleExpenseDelete = (expense: Expense) => {
+    setSelectedExpense(expense);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleExpenseEdit = (expense: Expense) => {
+    setSelectedExpense(expense);
+    setEditDialogOpen(true);
+  };
+
+  // Adapter addToCurrentMonth pour renvoyer un boolean
+  const handleAddToMonth = async (id: string): Promise<boolean> => {
+    try {
+      await handleAddToCurrentMonth(id);
+      return true;
+    } catch (error) {
+      console.error("Error adding expense to current month:", error);
+      return false;
+    }
+  };
+
+  // Fonction pour confirmer la suppression
+  const handleConfirmDelete = async () => {
+    if (selectedExpense) {
+      await handleDeleteExpense(selectedExpense.id);
+      setDeleteDialogOpen(false);
+    }
+  };
+
   return (
     <div className="space-y-4">
       <RecurringExpenseHeader onAdd={() => setAddDialogOpen(true)} />
@@ -55,15 +85,9 @@ export function RecurringExpensesTab({
         <RecurringExpenseGrid 
           expenses={recurringExpenses}
           budgets={availableBudgets}
-          onDelete={(expense) => {
-            setSelectedExpense(expense);
-            setDeleteDialogOpen(true);
-          }}
-          onEdit={(expense) => {
-            setSelectedExpense(expense);
-            setEditDialogOpen(true);
-          }}
-          onAddToCurrentMonth={handleAddToCurrentMonth}
+          onDelete={handleExpenseDelete}
+          onEdit={handleExpenseEdit}
+          onAddToCurrentMonth={handleAddToMonth}
           getBudgetName={getBudgetName}
           currentDate={currentDate}
         />
@@ -96,11 +120,7 @@ export function RecurringExpensesTab({
           <DeleteBudgetDialog
             open={deleteDialogOpen}
             onOpenChange={setDeleteDialogOpen}
-            onDelete={() => {
-              if (selectedExpense) {
-                handleDeleteExpense(selectedExpense.id);
-              }
-            }}
+            onConfirm={handleConfirmDelete}
             type="expense"
             title={selectedExpense.title}
             isRecurring={true}

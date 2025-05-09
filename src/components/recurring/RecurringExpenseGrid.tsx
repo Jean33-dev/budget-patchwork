@@ -1,11 +1,13 @@
 
 import { RecurringExpenseCard } from "./RecurringExpenseCard";
 import { Expense } from "@/services/database/models/expense";
+import { Budget } from "@/types/categories";
 
 interface RecurringExpenseGridProps {
   expenses: Expense[];
+  budgets: Budget[];
   getBudgetName: (id: string) => string;
-  onDelete: (id: string) => void;
+  onDelete: (expense: Expense) => void;
   onAddToCurrentMonth: (id: string) => Promise<boolean>;
   onEdit: (expense: Expense) => void;
   currentDate: string;
@@ -13,6 +15,7 @@ interface RecurringExpenseGridProps {
 
 export const RecurringExpenseGrid = ({
   expenses,
+  budgets,
   getBudgetName,
   onDelete,
   onAddToCurrentMonth,
@@ -26,16 +29,8 @@ export const RecurringExpenseGrid = ({
           key={expense.id}
           expense={expense}
           budgetName={getBudgetName(expense.linkedBudgetId)}
-          onDelete={() => onDelete(expense.id)}
-          onAddToMonth={async () => {
-            try {
-              const success = await onAddToCurrentMonth(expense.id);
-              return success;
-            } catch (error) {
-              console.error("Error adding expense to current month:", error);
-              return false;
-            }
-          }}
+          onDelete={() => onDelete(expense)}
+          onAddToMonth={() => onAddToCurrentMonth(expense.id)}
           onEdit={() => onEdit(expense)}
           currentDate={currentDate}
         />

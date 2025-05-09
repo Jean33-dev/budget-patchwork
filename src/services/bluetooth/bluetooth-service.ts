@@ -2,6 +2,8 @@
 import { toast } from "@/components/ui/use-toast";
 import { Expense } from "../database/models/expense";
 
+// La déclaration pour le Web Bluetooth API est maintenant dans src/types/web-bluetooth.d.ts
+
 export class BluetoothService {
   /**
    * Vérifie si le Bluetooth est disponible sur l'appareil
