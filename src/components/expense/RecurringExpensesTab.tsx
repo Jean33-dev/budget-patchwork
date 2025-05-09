@@ -107,20 +107,16 @@ export function RecurringExpensesTab({
           <EditBudgetDialog
             open={editDialogOpen}
             onOpenChange={setEditDialogOpen}
-            budget={{
-              id: selectedExpense.id,
-              title: selectedExpense.title,
-              budget: selectedExpense.budget,
-              spent: selectedExpense.spent,
-              type: "expense" as const,
-              linkedBudgetId: selectedExpense.linkedBudgetId,
-              date: selectedExpense.date,
-              isRecurring: selectedExpense.isRecurring
+            budget={selectedExpense.budget}
+            onBudgetChange={() => {}}
+            title={selectedExpense.title}
+            onTitleChange={() => {}}
+            onSubmit={() => {
+              if (selectedExpense) {
+                handleUpdateExpense(selectedExpense);
+                setEditDialogOpen(false);
+              }
             }}
-            onSave={handleUpdateExpense}
-            availableBudgets={availableBudgets}
-            isExpense={true}
-            isRecurring={true}
           />
 
           <DeleteBudgetDialog
