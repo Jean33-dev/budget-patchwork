@@ -7,6 +7,13 @@ import { DatabaseInitManager } from '../../database-init-manager';
  */
 export class ExpenseBaseService extends BaseService {
   /**
+   * Sets the database init manager for this service
+   */
+  public setInitManager(manager: DatabaseInitManager): void {
+    this.initManager = manager;
+  }
+
+  /**
    * Ensures the database is initialized before operations
    */
   protected async ensureDatabase(): Promise<boolean> {

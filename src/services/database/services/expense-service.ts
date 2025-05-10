@@ -33,10 +33,10 @@ export class ExpenseService extends BaseService {
         return false;
       }
 
-      // Share the initialization manager with all specialized services
-      this.queryService.initManager = this.initManager;
-      this.mutationService.initManager = this.initManager;
-      this.recurringService.initManager = this.initManager;
+      // Share the initialization manager with all specialized services using the setter method
+      this.queryService.setInitManager(this.initManager);
+      this.mutationService.setInitManager(this.initManager);
+      this.recurringService.setInitManager(this.initManager);
 
       return true;
     } catch (error) {
