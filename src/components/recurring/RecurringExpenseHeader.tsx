@@ -1,29 +1,19 @@
 
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, PlusCircle } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { PlusCircle } from "lucide-react";
 
 interface RecurringExpenseHeaderProps {
   onAdd: () => void;
 }
 
 export const RecurringExpenseHeader = ({ onAdd }: RecurringExpenseHeaderProps) => {
-  const navigate = useNavigate();
-  
   return (
-    <div className="flex items-center justify-between">
-      <div className="flex items-center space-x-2">
-        <Button variant="outline" size="icon" onClick={() => navigate(-1)}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <h1 className="text-2xl font-bold">Dépenses Récurrentes</h1>
-      </div>
-      <div>
-        <Button onClick={onAdd}>
-          <PlusCircle className="h-4 w-4 mr-2" />
-          Ajouter
-        </Button>
-      </div>
+    <div className="flex items-center justify-between mb-6">
+      <h1 className="text-2xl font-bold">Dépenses Récurrentes</h1>
+      <Button onClick={onAdd} variant="default">
+        <PlusCircle className="h-4 w-4 mr-2" />
+        Ajouter
+      </Button>
     </div>
   );
 };

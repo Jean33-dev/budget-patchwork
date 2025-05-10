@@ -1,10 +1,25 @@
 
 import { BaseService } from '../base-service';
+import { InitializationManager } from '../../initialization-manager';
 
 /**
  * Base service class for expense operations
  */
 export class ExpenseBaseService extends BaseService {
+  /**
+   * Setter for initialization manager - needed for inheritance
+   */
+  set initManager(manager: InitializationManager) {
+    this._initManager = manager;
+  }
+
+  /**
+   * Getter for initialization manager - needed for inheritance
+   */
+  get initManager(): InitializationManager {
+    return this._initManager;
+  }
+
   /**
    * Ensures the database is initialized before operations
    */
