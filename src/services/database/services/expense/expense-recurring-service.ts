@@ -1,4 +1,3 @@
-
 import { toast } from "@/components/ui/use-toast";
 import { Expense } from '../../models/expense';
 import { ExpenseBaseService } from './expense-base-service';
@@ -25,7 +24,6 @@ export class ExpenseRecurringService extends ExpenseBaseService {
       }
       
       console.log(`Copie de la dépense récurrente "${recurringExpense.title}" au mois actuel...`);
-      console.log("Détails de la dépense récurrente:", JSON.stringify(recurringExpense));
       
       // Normalize dashboardId as a non-empty string
       const dashboardId = recurringExpense.dashboardId && String(recurringExpense.dashboardId).trim() !== "" 
