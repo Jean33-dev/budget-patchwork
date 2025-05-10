@@ -6,7 +6,7 @@ import { ExpenseShareDialog } from "./ExpenseShareDialog";
 import { ExpenseReceiveDialog } from "./ExpenseReceiveDialog";
 import { Expense } from "@/services/database/models/expense";
 import { Budget } from "@/types/categories";
-import { BluetoothService } from "@/services/bluetooth/bluetooth-service";
+import { BluetoothService } from "@/services/bluetooth"; // Updated import
 import { useToast } from "@/components/ui/use-toast";
 import {
   DropdownMenu,

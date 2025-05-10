@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Expense } from "@/services/database/models/expense";
-import { BluetoothService } from "@/services/bluetooth/bluetooth-service";
+import { BluetoothService } from "@/services/bluetooth"; // Updated import
 import { Bluetooth, Share, AlertCircle, Download } from "lucide-react";
 import { formatAmount } from "@/utils/format-amount";
 import { useToast } from "@/components/ui/use-toast";
