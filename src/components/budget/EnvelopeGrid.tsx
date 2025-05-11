@@ -1,5 +1,6 @@
 
 import { EnvelopeCard } from "./EnvelopeCard";
+import { Budget } from "@/types/categories";
 
 interface Envelope {
   id: string;
@@ -9,16 +10,22 @@ interface Envelope {
   type: "income" | "expense" | "budget";
   linkedBudgetId?: string;
   date?: string;
+  carriedOver?: number;
+  dashboardId?: string;
 }
 
 interface EnvelopeGridProps {
   envelopes: Envelope[];
   onEnvelopeClick: (envelope: Envelope) => void;
+  onViewExpenses?: (envelope: Envelope) => void;
+  onDeleteEnvelope?: (id: string) => void;
 }
 
 export const EnvelopeGrid = ({
   envelopes,
   onEnvelopeClick,
+  onViewExpenses,
+  onDeleteEnvelope,
 }: EnvelopeGridProps) => {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6">
@@ -32,8 +39,15 @@ export const EnvelopeGrid = ({
           }}
         >
           <EnvelopeCard
-            budget={envelope}
+            budget={{
+              ...envelope,
+              carriedOver: envelope.carriedOver || 0,
+              type: "budget" as const,
+              dashboardId: envelope.dashboardId || ""
+            }}
             onClick={onEnvelopeClick}
+            onEdit={onViewExpenses ? () => onViewExpenses(envelope) : undefined}
+            onDelete={onDeleteEnvelope && envelope.id ? () => onDeleteEnvelope(envelope.id) : undefined}
           />
         </div>
       ))}
