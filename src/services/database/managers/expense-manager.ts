@@ -39,6 +39,26 @@ export class ExpenseManager extends BaseDatabaseManager implements IExpenseManag
    */
   async addExpense(expense: Expense): Promise<void> {
     console.log("🔍 ExpenseManager.addExpense called with expense:", expense);
+    
+    // Vérification et correction du dashboardId
+    if (!expense.dashboardId) {
+      console.error("🔍 ExpenseManager.addExpense: dashboardId manquant, tentative de récupération depuis localStorage");
+      const storedDashboardId = typeof window !== 'undefined' ? localStorage.getItem('currentDashboardId') : null;
+      
+      if (storedDashboardId) {
+        console.log(`🔍 ExpenseManager.addExpense: dashboardId récupéré de localStorage: ${storedDashboardId}`);
+        expense.dashboardId = storedDashboardId;
+      } else {
+        console.error("🔍 ExpenseManager.addExpense: aucun dashboardId disponible");
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Impossible d'ajouter une dépense sans tableau de bord associé"
+        });
+        return;
+      }
+    }
+    
     await this.ensureInitialized();
     await this.queryManager.executeAddExpense(expense);
     console.log("🔍 ExpenseManager.addExpense completed");
@@ -49,6 +69,26 @@ export class ExpenseManager extends BaseDatabaseManager implements IExpenseManag
    */
   async updateExpense(expense: Expense): Promise<void> {
     console.log("🔍 ExpenseManager.updateExpense called with expense:", expense);
+    
+    // Vérification et correction du dashboardId
+    if (!expense.dashboardId) {
+      console.error("🔍 ExpenseManager.updateExpense: dashboardId manquant, tentative de récupération depuis localStorage");
+      const storedDashboardId = typeof window !== 'undefined' ? localStorage.getItem('currentDashboardId') : null;
+      
+      if (storedDashboardId) {
+        console.log(`🔍 ExpenseManager.updateExpense: dashboardId récupéré de localStorage: ${storedDashboardId}`);
+        expense.dashboardId = storedDashboardId;
+      } else {
+        console.error("🔍 ExpenseManager.updateExpense: aucun dashboardId disponible");
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Impossible de mettre à jour une dépense sans tableau de bord associé"
+        });
+        return;
+      }
+    }
+    
     await this.ensureInitialized();
     await this.queryManager.executeUpdateExpense(expense);
     console.log("🔍 ExpenseManager.updateExpense completed");

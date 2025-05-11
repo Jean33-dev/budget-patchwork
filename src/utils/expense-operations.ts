@@ -29,7 +29,7 @@ export const expenseOperations = {
         return false;
       }
       
-      // Récupérer le dashboardId du contexte si non fourni explicitement
+      // Récupérer le dashboardId fourni ou du localStorage
       const dashboardId = data.dashboardId || 
         (typeof window !== 'undefined' ? localStorage.getItem('currentDashboardId') : null);
         
@@ -44,6 +44,11 @@ export const expenseOperations = {
       }
       
       console.log(`expenseOperations.addExpense: Using dashboardId: "${dashboardId}"`);
+      
+      // Stocker le dashboardId courant dans localStorage pour la récupération ultérieure
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('currentDashboardId', dashboardId);
+      }
       
       const newExpense: Expense = {
         id: uuidv4(),
@@ -98,7 +103,7 @@ export const expenseOperations = {
         return false;
       }
       
-      // Récupérer le dashboardId du contexte si non fourni explicitement
+      // Récupérer le dashboardId du contexte ou du localStorage si non fourni
       const dashboardId = expenseToUpdate.dashboardId || 
         (typeof window !== 'undefined' ? localStorage.getItem('currentDashboardId') : null);
         
@@ -113,6 +118,11 @@ export const expenseOperations = {
       }
       
       console.log(`expenseOperations.updateExpense: Using dashboardId: "${dashboardId}"`);
+      
+      // Stocker le dashboardId courant dans localStorage pour la récupération ultérieure
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('currentDashboardId', dashboardId);
+      }
       
       const validatedExpense: Expense = {
         id: String(expenseToUpdate.id),
