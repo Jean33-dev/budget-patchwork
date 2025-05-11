@@ -38,7 +38,7 @@ export const DeleteBudgetDialog = ({
             {hasLinkedExpenses ? (
               "Ce budget a des dépenses qui lui sont associées. Veuillez d'abord réaffecter ces dépenses à d'autres budgets avant de le supprimer."
             ) : (
-              `Cette action ne peut pas être annulée. ${budgetName ? `La ${itemType} "${budgetName}"` : `Ce ${itemType}`} sera définitivement supprimé${isRecurring ? 'e' : ''}.`
+              `Cette action ne peut pas être annulée. ${budgetName ? `Le ${itemType} "${budgetName}"` : `Ce ${itemType}`} sera définitivement supprimé.`
             )}
           </AlertDialogDescription>
         </AlertDialogHeader>

@@ -1,183 +1,132 @@
 
-import { useState, useEffect, useCallback } from "react";
-import { NavigateFunction } from "react-router-dom";
-import { useBudgets, Budget } from "@/hooks/useBudgets";
-import { db } from "@/services/database";
-import { toast } from "@/components/ui/use-toast";
-import { useDashboardContext } from "./useDashboardContext";
+import { useState, useCallback } from "react";
+import { Budget } from "@/hooks/useBudgets";
+import { useExpenseManagement } from "@/hooks/useExpenseManagement";
 
-export const useBudgetInteractions = (navigate: NavigateFunction) => {
-  const { budgets, remainingAmount, addBudget, updateBudget, deleteBudget, isLoading, error, refreshData } = useBudgets();
-  const { currentDashboardId } = useDashboardContext();
-  
-  // Define all state variables first to maintain consistent hook order
+/**
+ * Hook pour gérer les interactions avec les budgets (ajout, édition, suppression)
+ */
+export const useBudgetInteractions = (
+  budgets: Budget[],
+  addBudget: (budget: Omit<Budget, "id" | "spent">) => Promise<boolean>,
+  updateBudget: (budget: Budget) => Promise<boolean>,
+  deleteBudget: (id: string) => Promise<boolean>,
+  dashboardId: string | null
+) => {
+  // États pour les dialogues
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedBudget, setSelectedBudget] = useState<Budget | null>(null);
   const [editTitle, setEditTitle] = useState("");
   const [editBudget, setEditBudget] = useState(0);
+  
+  // Récupération des dépenses pour vérification
+  const { expenses } = useExpenseManagement(null);
+  
+  // État pour savoir si le budget sélectionné a des dépenses liées
   const [hasLinkedExpenses, setHasLinkedExpenses] = useState(false);
-  const [initializationAttempted, setInitializationAttempted] = useState(false);
-  const [isInitializing, setIsInitializing] = useState(false);
 
-  // Create a callback for database initialization
-  const initializeDatabase = useCallback(async () => {
-    if (isInitializing || initializationAttempted) return;
-    
-    setIsInitializing(true);
-    try {
-      console.log("Starting database initialization...");
-      // Try to initialize database up to 3 times
-      let success = false;
-      for (let attempt = 1; attempt <= 3; attempt++) {
-        console.log(`Database initialization attempt ${attempt}...`);
-        success = await db.init();
-        if (success) {
-          console.log(`Database initialized successfully on attempt ${attempt}`);
-          break;
-        }
-        // Wait a bit before retrying if not the last attempt
-        if (attempt < 3) {
-          await new Promise(resolve => setTimeout(resolve, 500));
-        }
-      }
-      
-      if (!success) {
-        console.error("Failed to initialize database after multiple attempts");
-        toast({
-          variant: "destructive",
-          title: "Database error",
-          description: "Unable to initialize the database. Please refresh the page."
-        });
-        return false;
-      }
-      
-      return true;
-    } catch (error) {
-      console.error("Error during initialization:", error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "An error occurred while initializing the database."
-      });
-      return false;
-    } finally {
-      setIsInitializing(false);
-      setInitializationAttempted(true);
-    }
-  }, [isInitializing, initializationAttempted]);
-
-  // Refresh data whenever component mounts
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const success = await initializeDatabase();
-        if (success) {
-          console.log("Database initialization completed, refreshing data...");
-          await refreshData();
-        }
-      } catch (error) {
-        console.error("Error during data refresh:", error);
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "An error occurred while loading budget data."
-        });
-      }
-    };
-    
-    loadData();
-  }, [refreshData, initializeDatabase]);
-
-  const handleEnvelopeClick = useCallback((envelope: Budget) => {
-    setSelectedBudget(envelope);
-    setEditTitle(envelope.title);
-    setEditBudget(envelope.budget);
+  /**
+   * Ouvre le dialogue d'édition pour un budget
+   */
+  const handleEditBudget = useCallback((budget: Budget) => {
+    setSelectedBudget(budget);
+    setEditTitle(budget.title);
+    setEditBudget(budget.budget);
     setEditDialogOpen(true);
   }, []);
 
+  /**
+   * Ouvre le dialogue de suppression pour un budget
+   */
+  const handleDeleteClick = useCallback((budget: Budget) => {
+    setSelectedBudget(budget);
+    
+    // Vérifier si le budget a des dépenses liées
+    const linkedExpenses = expenses.some(expense => 
+      expense.linkedBudgetId === budget.id
+    );
+    setHasLinkedExpenses(linkedExpenses);
+    
+    setDeleteDialogOpen(true);
+  }, [expenses]);
+
+  /**
+   * Gère la soumission du formulaire d'ajout
+   */
+  const handleAddEnvelope = useCallback(async (envelope: { 
+    title: string; 
+    budget: number; 
+    type: "income" | "expense" | "budget";
+  }) => {
+    const success = await addBudget({
+      title: envelope.title,
+      budget: envelope.budget,
+      type: "budget",
+      carriedOver: 0,
+      dashboardId: dashboardId || ""
+    });
+    
+    if (success) {
+      setAddDialogOpen(false);
+    }
+  }, [addBudget, dashboardId]);
+
+  /**
+   * Gère la soumission du formulaire d'édition
+   */
   const handleEditSubmit = useCallback(async () => {
     if (!selectedBudget) return;
-
-    const success = await updateBudget({
+    
+    const updatedBudget = {
       ...selectedBudget,
       title: editTitle,
       budget: editBudget
-    });
-
+    };
+    
+    const success = await updateBudget(updatedBudget);
+    
     if (success) {
       setEditDialogOpen(false);
       setSelectedBudget(null);
     }
   }, [selectedBudget, editTitle, editBudget, updateBudget]);
 
-  const handleViewExpenses = useCallback((envelope: Budget) => {
-    navigate(`/dashboard/budget/expenses?budgetId=${envelope.id}`);
-  }, [navigate]);
-
-  const handleAddEnvelope = useCallback(async (envelope: { 
-    title: string; 
-    budget: number; 
-    type: "income" | "expense" | "budget";
-  }) => {
-    if (envelope.type !== "budget") return;
-    
-    const budgetData = {
-      title: envelope.title,
-      budget: envelope.budget,
-      type: "budget" as const,
-      carriedOver: 0, // Add the required carriedOver property with a default value of 0
-      dashboardId: currentDashboardId 
-    };
-    
-    console.log("Ajout d'un nouveau budget:", budgetData);
-    const success = await addBudget(budgetData);
-    if (success) {
-      setAddDialogOpen(false);
-    }
-  }, [addBudget, currentDashboardId]);
-
-  const handleDeleteClick = useCallback(async (envelope: Budget) => {
-    setSelectedBudget(envelope);
-    
-    // Vérifier si le budget a des dépenses associées
-    const expenses = await db.getExpenses();
-    const linkedExpenses = expenses.filter(expense => expense.linkedBudgetId === envelope.id);
-    setHasLinkedExpenses(linkedExpenses.length > 0);
-    
-    setDeleteDialogOpen(true);
-  }, []);
-
+  /**
+   * Gère la suppression d'un budget
+   */
   const handleDeleteConfirm = useCallback(async () => {
     if (!selectedBudget) return;
-    await deleteBudget(selectedBudget.id);
-    setDeleteDialogOpen(false);
-    setSelectedBudget(null);
+    
+    const success = await deleteBudget(selectedBudget.id);
+    
+    if (success) {
+      setDeleteDialogOpen(false);
+      setSelectedBudget(null);
+    }
   }, [selectedBudget, deleteBudget]);
 
   return {
-    budgets,
-    remainingAmount,
-    isLoading,
-    error,
+    // États des dialogues
     addDialogOpen,
     setAddDialogOpen,
     editDialogOpen,
     setEditDialogOpen,
     deleteDialogOpen,
     setDeleteDialogOpen,
+    // États pour l'édition
     selectedBudget,
     editTitle,
     setEditTitle,
     editBudget,
     setEditBudget,
     hasLinkedExpenses,
-    handleEnvelopeClick,
-    handleEditSubmit,
-    handleViewExpenses,
-    handleAddEnvelope,
+    // Gestionnaires d'événements
+    handleEditBudget,
     handleDeleteClick,
+    handleAddEnvelope,
+    handleEditSubmit,
     handleDeleteConfirm
   };
 };
