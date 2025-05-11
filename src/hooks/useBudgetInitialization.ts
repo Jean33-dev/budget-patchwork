@@ -116,7 +116,7 @@ export const useBudgetInitialization = () => {
     isRefreshing,
     initializationSuccess,
     handleManualRefresh,
-    initializeDatabase,
+    initializeDatabase, // Exporter la fonction pour permettre de réinitialiser la base depuis l'extérieur
     attempt,
     maxAttempts
   };

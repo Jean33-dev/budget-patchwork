@@ -1,6 +1,6 @@
 
 import { EnvelopeCard } from "./EnvelopeCard";
-import { Budget } from "@/types/categories";
+import { Button } from "@/components/ui/button";
 
 interface Envelope {
   id: string;
@@ -10,8 +10,6 @@ interface Envelope {
   type: "income" | "expense" | "budget";
   linkedBudgetId?: string;
   date?: string;
-  carriedOver: number;
-  dashboardId: string;
 }
 
 interface EnvelopeGridProps {
@@ -39,13 +37,10 @@ export const EnvelopeGrid = ({
           }}
         >
           <EnvelopeCard
-            budget={{
-              ...envelope,
-              type: "budget" as const,
-            }}
-            onClick={onEnvelopeClick}
-            onEdit={onViewExpenses ? () => onViewExpenses(envelope) : undefined}
-            onDelete={onDeleteEnvelope && envelope.id ? () => onDeleteEnvelope(envelope.id) : undefined}
+            {...envelope}
+            onEnvelopeClick={onEnvelopeClick}
+            onViewExpenses={onViewExpenses}
+            onDeleteEnvelope={onDeleteEnvelope}
           />
         </div>
       ))}

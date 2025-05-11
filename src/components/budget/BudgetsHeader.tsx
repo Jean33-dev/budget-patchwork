@@ -1,13 +1,12 @@
 
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, PlusCircle } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 interface BudgetsHeaderProps {
   onNavigate: (path: string) => void;
-  onAddClick?: () => void;
 }
 
-export const BudgetsHeader = ({ onNavigate, onAddClick }: BudgetsHeaderProps) => {
+export const BudgetsHeader = ({ onNavigate }: BudgetsHeaderProps) => {
   return (
     <div className="flex items-center gap-4 sticky top-0 bg-background/95 backdrop-blur-md z-10 py-4 mb-6 border-b">
       <Button 
@@ -27,17 +26,6 @@ export const BudgetsHeader = ({ onNavigate, onAddClick }: BudgetsHeaderProps) =>
           Créez et gérez vos budgets mensuels
         </p>
       </div>
-      
-      {onAddClick && (
-        <Button 
-          onClick={onAddClick}
-          variant="default"
-          className="flex items-center gap-2"
-        >
-          <PlusCircle className="h-4 w-4" />
-          Ajouter
-        </Button>
-      )}
     </div>
   );
 };

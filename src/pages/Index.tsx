@@ -13,8 +13,6 @@ interface Envelope {
   type: "income" | "expense";
   category?: string;
   date: string;
-  carriedOver: number; // Added required property
-  dashboardId: string; // Added required property
 }
 
 const Index = () => {
@@ -26,9 +24,7 @@ const Index = () => {
       budget: 5000, 
       spent: 5000, 
       type: "income",
-      date: new Date().toISOString().split('T')[0],
-      carriedOver: 0, // Added required property
-      dashboardId: "default" // Added required property
+      date: new Date().toISOString().split('T')[0]
     },
     { 
       id: "2", 
@@ -36,9 +32,7 @@ const Index = () => {
       budget: 1000, 
       spent: 800, 
       type: "income",
-      date: new Date().toISOString().split('T')[0],
-      carriedOver: 0, // Added required property
-      dashboardId: "default" // Added required property
+      date: new Date().toISOString().split('T')[0]
     },
     { 
       id: "3", 
@@ -47,9 +41,7 @@ const Index = () => {
       spent: 1500, 
       type: "expense", 
       category: "Logement",
-      date: new Date().toISOString().split('T')[0],
-      carriedOver: 0, // Added required property
-      dashboardId: "default" // Added required property
+      date: new Date().toISOString().split('T')[0]
     },
     { 
       id: "4", 
@@ -58,9 +50,7 @@ const Index = () => {
       spent: 450, 
       type: "expense", 
       category: "Alimentation",
-      date: new Date().toISOString().split('T')[0],
-      carriedOver: 0, // Added required property
-      dashboardId: "default" // Added required property
+      date: new Date().toISOString().split('T')[0]
     },
     { 
       id: "5", 
@@ -69,9 +59,7 @@ const Index = () => {
       spent: 180, 
       type: "expense", 
       category: "Loisirs",
-      date: new Date().toISOString().split('T')[0],
-      carriedOver: 0, // Added required property
-      dashboardId: "default" // Added required property
+      date: new Date().toISOString().split('T')[0]
     },
   ]);
 
@@ -99,9 +87,7 @@ const Index = () => {
       budget: newEnvelope.budget,
       spent: newEnvelope.type === "income" ? newEnvelope.budget : 0,
       type: newEnvelope.type as "income" | "expense",
-      date: newEnvelope.date,
-      carriedOver: 0, // Added required property
-      dashboardId: "default" // Added required property
+      date: newEnvelope.date
     };
     
     setEnvelopes([...envelopes, envelope]);

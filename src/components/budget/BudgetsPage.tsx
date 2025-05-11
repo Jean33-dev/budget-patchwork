@@ -1,41 +1,37 @@
-
-import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useBudgets } from "@/hooks/useBudgets";
-import { BudgetsHeader } from "./BudgetsHeader";
-import { EnvelopeGrid } from "./EnvelopeGrid";
-import { BudgetDialogs } from "./BudgetDialogs";
-import { BudgetLoadingState } from "./BudgetLoadingState";
-import { BudgetLoadingError } from "./BudgetLoadingError";
-import { EmptyBudgetState } from "./EmptyBudgetState";
-import { RemainingAmountAlert } from "./RemainingAmountAlert";
+import { useState, useEffect } from "react";
+import { BudgetsHeader } from "@/components/budget/BudgetsHeader";
+import { EnvelopeList } from "@/components/budget/EnvelopeList";
+import { BudgetLoadingState } from "@/components/budget/BudgetLoadingState";
+import { BudgetErrorState } from "@/components/budget/BudgetErrorState";
+import { RemainingAmountAlert } from "@/components/budget/RemainingAmountAlert";
+import { EmptyBudgetState } from "@/components/budget/EmptyBudgetState";
+import { BudgetDialogs } from "@/components/budget/BudgetDialogs";
+import { toast } from "@/components/ui/use-toast";
 import { useBudgetInitialization } from "@/hooks/useBudgetInitialization";
 import { useBudgetInteractions } from "@/hooks/useBudgetInteractions";
+import { Button } from "@/components/ui/button";
+import { AlertCircle, RefreshCw, PlusCircle } from "lucide-react";
+import { AddButton } from "@/components/budget/AddButton";
 
 const BudgetsPage = () => {
   const navigate = useNavigate();
   const { 
-    budgets, 
-    totalRevenues, 
+    isRefreshing, 
+    initializationSuccess,
+    handleManualRefresh,
+    initializeDatabase,
+    attempt,
+    maxAttempts
+  } = useBudgetInitialization();
+  
+  const [retryCount, setRetryCount] = useState(0);
+  
+  const {
+    budgets,
     remainingAmount,
-    totalBudgets,
     isLoading,
     error,
-    addBudget,
-    updateBudget,
-    deleteBudget,
-    dashboardId
-  } = useBudgets();
-
-  // Initialisation personnalisée des budgets
-  const { 
-    isRefreshing,
-    initializationSuccess,
-    handleManualRefresh: handleRetryInit
-  } = useBudgetInitialization();
-
-  // Hook pour la gestion des interactions avec les budgets
-  const {
     addDialogOpen,
     setAddDialogOpen,
     editDialogOpen,
@@ -48,100 +44,96 @@ const BudgetsPage = () => {
     editBudget,
     setEditBudget,
     hasLinkedExpenses,
-    handleEditBudget,
-    handleDeleteClick,
-    handleAddEnvelope,
+    handleEnvelopeClick,
     handleEditSubmit,
+    handleViewExpenses,
+    handleAddEnvelope,
+    handleDeleteClick,
     handleDeleteConfirm
-  } = useBudgetInteractions(
-    budgets,
-    addBudget,
-    updateBudget,
-    deleteBudget,
-    dashboardId
-  );
+  } = useBudgetInteractions(navigate);
 
-  // Rediriger si on n'a pas sélectionné de dashboard
   useEffect(() => {
-    if (initializationSuccess === false && !isLoading && !dashboardId) {
-      navigate('/');
+    console.log("BudgetsPage: initialization status changed:", initializationSuccess);
+    if (initializationSuccess === false) {
+      console.error("Database initialization failed, showing error state");
     }
-  }, [initializationSuccess, isLoading, dashboardId, navigate]);
+  }, [initializationSuccess]);
 
-  // Si on est en cours de chargement
-  if (isLoading && !error) {
-    return <BudgetLoadingState />;
+  useEffect(() => {
+    if (initializationSuccess === false && retryCount < 2) {
+      console.log(`Auto-retry initialization (${retryCount + 1}/2)...`);
+      const timer = setTimeout(() => {
+        setRetryCount(prev => prev + 1);
+        initializeDatabase();
+      }, 3000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [initializationSuccess, retryCount, initializeDatabase]);
+
+  const handleForceReset = async () => {
+    setRetryCount(0);
+    localStorage.clear();
+    await handleManualRefresh();
+  };
+
+  if (isLoading || initializationSuccess === null || isRefreshing) {
+    return <BudgetLoadingState attempt={attempt} maxAttempts={maxAttempts} />;
   }
 
-  // Si une erreur s'est produite
   if (error || initializationSuccess === false) {
     return (
-      <BudgetLoadingError 
-        onRetry={handleRetryInit}
-        isRetrying={isRefreshing}
-      />
-    );
-  }
-
-  // Si on n'a pas de budgets
-  if (budgets.length === 0) {
-    return (
-      <div className="container py-6 max-w-6xl mx-auto">
-        <BudgetsHeader 
-          onNavigate={navigate}
-          onAddClick={() => setAddDialogOpen(true)} 
-        />
-        <EmptyBudgetState />
-        
-        <BudgetDialogs 
-          addDialogOpen={addDialogOpen}
-          setAddDialogOpen={setAddDialogOpen}
-          editDialogOpen={false}
-          setEditDialogOpen={() => {}}
-          deleteDialogOpen={false}
-          setDeleteDialogOpen={() => {}}
-          selectedBudget={null}
-          editTitle=""
-          setEditTitle={() => {}}
-          editBudget={0}
-          setEditBudget={() => {}}
-          hasLinkedExpenses={false}
-          handleAddEnvelope={handleAddEnvelope}
-          handleEditSubmit={() => Promise.resolve()}
-          handleDeleteConfirm={() => Promise.resolve()}
-        />
+      <div className="container mx-auto px-4 py-6 space-y-6">
+        <BudgetsHeader onNavigate={navigate} />
+        <div className="bg-destructive/10 border border-destructive rounded-lg p-4 mb-4">
+          <div className="flex items-start">
+            <AlertCircle className="h-5 w-5 text-destructive mr-2 mt-0.5" />
+            <div>
+              <h3 className="font-semibold text-destructive">Erreur de chargement</h3>
+              <p className="text-sm mt-1">
+                Impossible de charger la base de données. Veuillez essayer l'une des solutions suivantes:
+              </p>
+              <div className="mt-4 space-y-2">
+                <Button onClick={handleManualRefresh} className="mr-2" variant="outline">
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Réessayer simplement
+                </Button>
+                <Button onClick={handleForceReset} variant="destructive">
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Réinitialiser complètement
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
 
-  // Wrapper function to adapt the handleDeleteClick to accept a string ID
-  const handleDeleteEnvelope = (id: string) => {
-    // Find the budget with the matching ID
-    const budgetToDelete = budgets.find(budget => budget.id === id);
-    if (budgetToDelete) {
-      handleDeleteClick(budgetToDelete);
-    }
-  };
-
   return (
-    <div className="container py-6 max-w-6xl mx-auto">
-      <BudgetsHeader 
-        onNavigate={navigate}
-        onAddClick={() => setAddDialogOpen(true)} 
+    <div className="container mx-auto px-4 py-6 space-y-6">
+      <BudgetsHeader onNavigate={navigate} />
+
+      <AddButton 
+        onClick={() => setAddDialogOpen(true)}
+        label="Ajouter un budget"
       />
-      
-      <RemainingAmountAlert 
-        remainingAmount={remainingAmount}
-      />
-      
-      <EnvelopeGrid
-        envelopes={budgets}
-        onEnvelopeClick={(budget) => navigate(`/budget/${budget.id}/expenses`)}
-        onViewExpenses={handleEditBudget}
-        onDeleteEnvelope={handleDeleteEnvelope}
-      />
-      
-      <BudgetDialogs 
+
+      {budgets.length === 0 ? (
+        <EmptyBudgetState />
+      ) : (
+        <EnvelopeList
+          envelopes={budgets}
+          type="budget"
+          onAddClick={() => setAddDialogOpen(true)}
+          onEnvelopeClick={handleEnvelopeClick}
+          onViewExpenses={handleViewExpenses}
+          onDeleteClick={handleDeleteClick}
+          showHeader={false}
+        />
+      )}
+
+      <BudgetDialogs
         addDialogOpen={addDialogOpen}
         setAddDialogOpen={setAddDialogOpen}
         editDialogOpen={editDialogOpen}

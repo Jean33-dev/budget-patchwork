@@ -9,8 +9,7 @@ interface Envelope {
   budget: number;
   spent: number;
   type: "income" | "expense" | "budget";
-  dashboardId: string;
-  carriedOver: number;
+  dashboardId?: string;
 }
 
 interface EnvelopeManagerProps {
