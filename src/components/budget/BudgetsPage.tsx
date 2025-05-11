@@ -88,7 +88,8 @@ const BudgetsPage = () => {
     return (
       <div className="container py-6 max-w-6xl mx-auto">
         <BudgetsHeader 
-          onNavigate={navigate} 
+          onNavigate={navigate}
+          onAddClick={() => setAddDialogOpen(true)} 
         />
         <EmptyBudgetState />
         
@@ -117,6 +118,7 @@ const BudgetsPage = () => {
     <div className="container py-6 max-w-6xl mx-auto">
       <BudgetsHeader 
         onNavigate={navigate}
+        onAddClick={() => setAddDialogOpen(true)} 
       />
       
       <RemainingAmountAlert 
@@ -126,6 +128,8 @@ const BudgetsPage = () => {
       <EnvelopeGrid
         envelopes={budgets}
         onEnvelopeClick={(budget) => navigate(`/budget/${budget.id}/expenses`)}
+        onViewExpenses={handleEditBudget}
+        onDeleteEnvelope={handleDeleteClick}
       />
       
       <BudgetDialogs 
