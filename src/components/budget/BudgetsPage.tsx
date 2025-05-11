@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useBudgets } from "@/hooks/useBudgets";
 import { BudgetsHeader } from "./BudgetsHeader";
 import { EnvelopeGrid } from "./EnvelopeGrid";
-import { BudgetsDialogs } from "./BudgetsDialogs";
+import { BudgetDialogs } from "./BudgetDialogs";
 import { BudgetLoadingState } from "./BudgetLoadingState";
 import { BudgetLoadingError } from "./BudgetLoadingError";
 import { EmptyBudgetState } from "./EmptyBudgetState";
@@ -29,10 +29,9 @@ const BudgetsPage = () => {
 
   // Initialisation personnalisée des budgets
   const { 
-    initAttempted, 
-    initFailed,
-    initStatus,
-    handleRetryInit
+    isRefreshing,
+    initializationSuccess,
+    handleManualRefresh: handleRetryInit
   } = useBudgetInitialization();
 
   // Hook pour la gestion des interactions avec les budgets
@@ -64,10 +63,10 @@ const BudgetsPage = () => {
 
   // Rediriger si on n'a pas sélectionné de dashboard
   useEffect(() => {
-    if (initAttempted && !isLoading && !dashboardId) {
+    if (initializationSuccess === false && !isLoading && !dashboardId) {
       navigate('/');
     }
-  }, [initAttempted, isLoading, dashboardId, navigate]);
+  }, [initializationSuccess, isLoading, dashboardId, navigate]);
 
   // Si on est en cours de chargement
   if (isLoading && !error) {
@@ -75,11 +74,11 @@ const BudgetsPage = () => {
   }
 
   // Si une erreur s'est produite
-  if (error || initFailed) {
+  if (error || initializationSuccess === false) {
     return (
       <BudgetLoadingError 
         onRetry={handleRetryInit}
-        message="Impossible de charger les budgets. Veuillez réessayer."
+        isRetrying={isRefreshing}
       />
     );
   }
@@ -89,11 +88,11 @@ const BudgetsPage = () => {
     return (
       <div className="container py-6 max-w-6xl mx-auto">
         <BudgetsHeader 
-          onAddClick={() => setAddDialogOpen(true)} 
+          onNavigate={navigate} 
         />
-        <EmptyBudgetState onCreateClick={() => setAddDialogOpen(true)} />
+        <EmptyBudgetState />
         
-        <BudgetsDialogs 
+        <BudgetDialogs 
           addDialogOpen={addDialogOpen}
           setAddDialogOpen={setAddDialogOpen}
           editDialogOpen={false}
@@ -117,20 +116,16 @@ const BudgetsPage = () => {
   return (
     <div className="container py-6 max-w-6xl mx-auto">
       <BudgetsHeader 
-        onAddClick={() => setAddDialogOpen(true)} 
+        onNavigate={navigate}
       />
       
       <RemainingAmountAlert 
-        totalRevenues={totalRevenues}
         remainingAmount={remainingAmount}
-        totalBudgets={totalBudgets}
       />
       
       <EnvelopeGrid
         envelopes={budgets}
-        onEdit={handleEditBudget}
-        onDelete={handleDeleteClick}
-        onClick={(budget) => navigate(`/budget/${budget.id}/expenses`)}
+        onEnvelopeClick={(budget) => navigate(`/budget/${budget.id}/expenses`)}
       />
       
       <BudgetDialogs 

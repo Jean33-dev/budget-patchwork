@@ -1,6 +1,5 @@
 
 import { EnvelopeCard } from "./EnvelopeCard";
-import { Button } from "@/components/ui/button";
 
 interface Envelope {
   id: string;
@@ -15,15 +14,11 @@ interface Envelope {
 interface EnvelopeGridProps {
   envelopes: Envelope[];
   onEnvelopeClick: (envelope: Envelope) => void;
-  onViewExpenses?: (envelope: Envelope) => void;
-  onDeleteEnvelope?: (id: string) => void;
 }
 
 export const EnvelopeGrid = ({
   envelopes,
   onEnvelopeClick,
-  onViewExpenses,
-  onDeleteEnvelope,
 }: EnvelopeGridProps) => {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6">
@@ -37,10 +32,8 @@ export const EnvelopeGrid = ({
           }}
         >
           <EnvelopeCard
-            {...envelope}
-            onEnvelopeClick={onEnvelopeClick}
-            onViewExpenses={onViewExpenses}
-            onDeleteEnvelope={onDeleteEnvelope}
+            budget={envelope}
+            onClick={onEnvelopeClick}
           />
         </div>
       ))}
