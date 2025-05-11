@@ -14,6 +14,7 @@ export interface IDatabaseManager {
   isInitialized(): boolean;
   exportData(): any;
   migrateFromLocalStorage(): Promise<boolean>;
+  resetInitializationAttempts(): void;
   
   // Dashboard operations
   getDashboards(): Promise<Dashboard[]>;
