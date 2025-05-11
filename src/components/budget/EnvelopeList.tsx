@@ -11,6 +11,8 @@ interface Envelope {
   type: "income" | "expense" | "budget";
   linkedBudgetId?: string;
   date?: string;
+  carriedOver: number; // Added this required property
+  dashboardId: string; // Added this required property
 }
 
 interface EnvelopeListProps {
