@@ -10,8 +10,8 @@ interface Envelope {
   type: "income" | "expense" | "budget";
   linkedBudgetId?: string;
   date?: string;
-  carriedOver?: number;
-  dashboardId?: string;
+  carriedOver: number;
+  dashboardId: string;
 }
 
 interface EnvelopeGridProps {
@@ -41,9 +41,7 @@ export const EnvelopeGrid = ({
           <EnvelopeCard
             budget={{
               ...envelope,
-              carriedOver: envelope.carriedOver || 0,
               type: "budget" as const,
-              dashboardId: envelope.dashboardId || ""
             }}
             onClick={onEnvelopeClick}
             onEdit={onViewExpenses ? () => onViewExpenses(envelope) : undefined}

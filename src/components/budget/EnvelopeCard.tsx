@@ -35,7 +35,8 @@ export const EnvelopeCard = ({
   return (
     <Card 
       className={cn(
-        "overflow-hidden hover:shadow-md transition-all", 
+        "overflow-hidden border-t-4 hover:shadow-md transition-all", 
+        isOverBudget ? "border-t-red-500" : "border-t-green-500",
         onClick ? "cursor-pointer" : "",
         className
       )}
