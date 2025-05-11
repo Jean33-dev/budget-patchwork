@@ -114,6 +114,15 @@ const BudgetsPage = () => {
     );
   }
 
+  // Wrapper function to adapt the handleDeleteClick to accept a string ID
+  const handleDeleteEnvelope = (id: string) => {
+    // Find the budget with the matching ID
+    const budgetToDelete = budgets.find(budget => budget.id === id);
+    if (budgetToDelete) {
+      handleDeleteClick(budgetToDelete);
+    }
+  };
+
   return (
     <div className="container py-6 max-w-6xl mx-auto">
       <BudgetsHeader 
@@ -129,7 +138,7 @@ const BudgetsPage = () => {
         envelopes={budgets}
         onEnvelopeClick={(budget) => navigate(`/budget/${budget.id}/expenses`)}
         onViewExpenses={handleEditBudget}
-        onDeleteEnvelope={handleDeleteClick}
+        onDeleteEnvelope={handleDeleteEnvelope}
       />
       
       <BudgetDialogs 
