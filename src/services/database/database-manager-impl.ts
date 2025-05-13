@@ -29,7 +29,7 @@ export class DatabaseManagerImpl extends DatabaseManagerCore {
     }
     
     // Create a new initialization promise
-    DatabaseManagerImpl.initializationPromise = this.performInitialization();
+    DatabaseManagerImpl.initializationPromise = this.doInitialization();
     
     try {
       return await DatabaseManagerImpl.initializationPromise;
@@ -39,7 +39,7 @@ export class DatabaseManagerImpl extends DatabaseManagerCore {
     }
   }
   
-  private async performInitialization(): Promise<boolean> {
+  private async doInitialization(): Promise<boolean> {
     // Use the parent class's method to check initialization status
     if (this.isInitializationInProgress()) {
       console.log("DatabaseManager initialization already in progress, waiting...");
