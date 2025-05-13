@@ -2,13 +2,12 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Expense } from "@/services/database/models/expense";
-import { Calendar, Plus, Wallet } from "lucide-react";
+import { Calendar, Wallet } from "lucide-react";
 
 interface RecurringExpenseCardProps {
   expense: Expense;
   budgetName: string;
   onDelete: () => void;
-  onAddToMonth: () => Promise<boolean>;
   onEdit: () => void;
   currentDate: string;
 }
@@ -17,7 +16,6 @@ export const RecurringExpenseCard = ({
   expense,
   budgetName,
   onDelete,
-  onAddToMonth,
   onEdit,
   currentDate,
 }: RecurringExpenseCardProps) => {
@@ -48,7 +46,7 @@ export const RecurringExpenseCard = ({
           <div>Dépense récurrente</div>
         </div>
       </CardContent>
-      <CardFooter className="flex justify-between border-t pt-4">
+      <CardFooter className="flex justify-end border-t pt-4">
         <Button 
           variant="destructive" 
           size="sm" 
@@ -58,16 +56,6 @@ export const RecurringExpenseCard = ({
           }}
         >
           Supprimer
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={(e) => {
-            e.stopPropagation();
-            onAddToMonth();
-          }}
-        >
-          <Plus className="h-4 w-4 mr-1" /> Ajouter au mois
         </Button>
       </CardFooter>
     </Card>

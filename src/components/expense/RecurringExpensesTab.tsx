@@ -1,3 +1,4 @@
+
 import { AddButton } from "@/components/budget/AddButton";
 import { AddEnvelopeDialog } from "@/components/budget/AddEnvelopeDialog";
 import { RecurringExpenseGrid } from "@/components/recurring/RecurringExpenseGrid";
@@ -20,7 +21,6 @@ interface RecurringExpensesTabProps {
     isRecurring?: boolean;
   }) => void;
   handleDeleteExpense: (id: string) => void;
-  handleAddToCurrentMonth: (id: string) => Promise<boolean>;
   handleUpdateExpense: (expense: Expense) => void;
   getBudgetName: (id: string) => string;
   currentDate: string;
@@ -32,7 +32,6 @@ export const RecurringExpensesTab = ({
   isLoading,
   handleAddExpense,
   handleDeleteExpense,
-  handleAddToCurrentMonth,
   handleUpdateExpense,
   getBudgetName,
   currentDate
@@ -98,7 +97,6 @@ export const RecurringExpensesTab = ({
           expenses={recurringExpenses}
           getBudgetName={getBudgetName}
           onDelete={handleDeleteExpense}
-          onAddToCurrentMonth={handleAddToCurrentMonth}
           onEdit={handleEditRecurringExpense}
           currentDate={currentDate}
         />

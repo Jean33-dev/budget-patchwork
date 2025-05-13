@@ -16,7 +16,6 @@ const RecurringExpenses = () => {
     handleAddExpense,
     handleUpdateExpense,
     handleDeleteExpense,
-    handleAddToCurrentMonth,
     getBudgetName,
     currentDate,
   } = useRecurringExpenses();
@@ -74,7 +73,6 @@ const RecurringExpenses = () => {
           expenses={recurringExpenses}
           getBudgetName={getBudgetName}
           onDelete={handleDeleteExpense}
-          onAddToCurrentMonth={handleAddToCurrentMonth}
           onEdit={handleEdit}
           currentDate={currentDate}
         />
