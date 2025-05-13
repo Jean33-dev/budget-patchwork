@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
@@ -166,30 +167,6 @@ export const useRecurringExpenses = () => {
     }
   };
 
-  const handleAddToCurrentMonth = async (id: string) => {
-    try {
-      console.log(`Ajout de la dépense récurrente ${id} au mois courant (${currentDate})...`);
-      await db.copyRecurringExpenseToMonth(id, currentDate);
-      
-      // Force reload to display the new monthly expense
-      await loadData();
-      
-      toast({
-        title: "Succès",
-        description: "Dépense ajoutée au mois courant"
-      });
-      return true;
-    } catch (error) {
-      console.error("Erreur lors de l'ajout de la dépense au mois courant:", error);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Impossible d'ajouter la dépense au mois courant"
-      });
-      return false;
-    }
-  };
-
   const getBudgetName = (budgetId?: string) => {
     if (!budgetId) return "Aucun budget";
     const budget = availableBudgets.find(b => b.id === budgetId);
@@ -204,7 +181,6 @@ export const useRecurringExpenses = () => {
     handleAddExpense,
     handleUpdateExpense,
     handleDeleteExpense,
-    handleAddToCurrentMonth,
     getBudgetName,
     currentDate,
   };

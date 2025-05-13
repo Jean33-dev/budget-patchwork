@@ -39,7 +39,6 @@ const Expenses = () => {
     isLoading: isRecurringLoading,
     handleAddExpense: handleAddRecurringExpense,
     handleDeleteExpense: handleDeleteRecurringExpense,
-    handleAddToCurrentMonth,
     handleUpdateExpense: handleUpdateRecurringExpense,
     getBudgetName,
     currentDate,
@@ -101,7 +100,6 @@ const Expenses = () => {
             isLoading={isRecurringLoading}
             handleAddExpense={handleAddRecurringExpense}
             handleDeleteExpense={handleDeleteRecurringExpense}
-            handleAddToCurrentMonth={handleAddToCurrentMonth}
             handleUpdateExpense={handleUpdateRecurringExpense}
             getBudgetName={getBudgetName}
             currentDate={currentDate}
