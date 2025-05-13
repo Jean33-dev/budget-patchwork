@@ -10,7 +10,8 @@ import { BaseDatabaseManager } from './base-database-manager';
  */
 export class DatabaseManagerImpl extends DatabaseManagerCore {
   protected initManager: DatabaseInitManager;
-  private static initializationPromise: Promise<boolean> | null = null;
+  // Renamed from initializationPromise to instanceInitPromise to avoid conflict with parent class
+  private static instanceInitPromise: Promise<boolean> | null = null;
 
   constructor() {
     super();
@@ -24,18 +25,18 @@ export class DatabaseManagerImpl extends DatabaseManagerCore {
     }
     
     // If initialization is already in progress, return the existing promise
-    if (DatabaseManagerImpl.initializationPromise) {
-      return DatabaseManagerImpl.initializationPromise;
+    if (DatabaseManagerImpl.instanceInitPromise) {
+      return DatabaseManagerImpl.instanceInitPromise;
     }
     
     // Create a new initialization promise
-    DatabaseManagerImpl.initializationPromise = this.doInitialization();
+    DatabaseManagerImpl.instanceInitPromise = this.doInitialization();
     
     try {
-      return await DatabaseManagerImpl.initializationPromise;
+      return await DatabaseManagerImpl.instanceInitPromise;
     } finally {
       // Clear the promise reference when done
-      DatabaseManagerImpl.initializationPromise = null;
+      DatabaseManagerImpl.instanceInitPromise = null;
     }
   }
   
@@ -99,7 +100,7 @@ export class DatabaseManagerImpl extends DatabaseManagerCore {
   resetInitializationAttempts(): void {
     BaseDatabaseManager.resetInitializationAttempts();
     // Clear initialization promise when resetting
-    DatabaseManagerImpl.initializationPromise = null;
+    DatabaseManagerImpl.instanceInitPromise = null;
   }
 
   async migrateFromLocalStorage(): Promise<boolean> {
