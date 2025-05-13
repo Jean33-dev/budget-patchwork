@@ -1,30 +1,52 @@
 
+import React from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Home } from "lucide-react";
+import { ExpenseDiagnosticButton } from "@/components/expense/ExpenseDiagnosticButton";
 
 interface ExpensesHeaderProps {
-  onNavigate: (path: string) => void;
+  onNavigate?: (path: string) => void;
 }
 
 export const ExpensesHeader = ({ onNavigate }: ExpensesHeaderProps) => {
-  return (
-    <div className="flex items-center gap-4 sticky top-0 bg-background/95 backdrop-blur-md z-10 py-4 mb-6 border-b">
-      <Button 
-        variant="outline" 
-        size="icon" 
-        className="rounded-full shadow-sm hover:shadow-md hover:bg-primary/10 transition-all"
-        onClick={() => onNavigate("/dashboard/budget/budgets")}
-      >
-        <ArrowLeft className="h-4 w-4" />
-      </Button>
+  const navigate = useNavigate();
 
-      <div className="flex-1">
-        <h1 className="text-xl font-semibold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-          Gestion des Dépenses
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Suivez et gérez vos dépenses
-        </p>
+  const handleNavigation = (path: string) => {
+    if (onNavigate) {
+      onNavigate(path);
+    } else {
+      navigate(path);
+    }
+  };
+
+  return (
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-4">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="flex items-center gap-1"
+          onClick={() => handleNavigation("/dashboard")}
+        >
+          <ArrowLeft className="h-4 w-4" />
+          <span>Retour</span>
+        </Button>
+
+        <h1 className="text-2xl font-bold">Dépenses</h1>
+      </div>
+      
+      <div className="flex items-center gap-2">
+        <ExpenseDiagnosticButton />
+        <Button
+          variant="outline"
+          size="sm"
+          className="flex items-center gap-1"
+          onClick={() => handleNavigation("/")}
+        >
+          <Home className="h-4 w-4" />
+          <span>Accueil</span>
+        </Button>
       </div>
     </div>
   );
