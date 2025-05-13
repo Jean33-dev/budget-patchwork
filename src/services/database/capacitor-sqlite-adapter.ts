@@ -76,15 +76,6 @@ export class CapacitorSQLiteAdapter extends SQLiteAdapter {
         throw new Error("Connexion à la base de données non établie");
       }
       
-      // Pour les opérations d'écriture, vérifier l'espace disponible
-      if (this.isWriteOperation(query)) {
-        // Estimer 1 KB par défaut pour une opération d'écriture
-        const hasSpace = await this.checkDiskSpace(1024);
-        if (!hasSpace) {
-          throw new Error("Espace de stockage insuffisant pour cette opération");
-        }
-      }
-      
       const result = await this.dbConnection.execute({
         statement: query,
         values: params
@@ -106,19 +97,6 @@ export class CapacitorSQLiteAdapter extends SQLiteAdapter {
       
       if (!this.dbConnection) {
         throw new Error("Connexion à la base de données non établie");
-      }
-      
-      // Vérifier si des opérations d'écriture sont présentes
-      const hasWriteOperations = queries.some(query => this.isWriteOperation(query));
-      if (hasWriteOperations) {
-        // Estimer 1 KB par requête d'écriture
-        const writeQueriesCount = queries.filter(query => this.isWriteOperation(query)).length;
-        const estimatedSize = writeQueriesCount * 1024;
-        
-        const hasSpace = await this.checkDiskSpace(estimatedSize);
-        if (!hasSpace) {
-          throw new Error("Espace de stockage insuffisant pour cette opération");
-        }
       }
       
       // Commence une transaction
@@ -163,13 +141,6 @@ export class CapacitorSQLiteAdapter extends SQLiteAdapter {
       
       if (!this.dbConnection) {
         throw new Error("Connexion à la base de données non établie");
-      }
-      
-      // Les requêtes run sont généralement des opérations d'écriture
-      // Estimer 1 KB par défaut pour une opération d'écriture
-      const hasSpace = await this.checkDiskSpace(1024);
-      if (!hasSpace) {
-        throw new Error("Espace de stockage insuffisant pour cette opération");
       }
       
       const result = await this.dbConnection.execute({
@@ -232,20 +203,5 @@ export class CapacitorSQLiteAdapter extends SQLiteAdapter {
    */
   isInitialized(): boolean {
     return this.initialized && this.dbConnection !== null;
-  }
-  
-  /**
-   * Déterminer si une requête SQL est une opération d'écriture
-   */
-  private isWriteOperation(query: string): boolean {
-    const normalizedQuery = query.trim().toUpperCase();
-    return (
-      normalizedQuery.startsWith('INSERT') ||
-      normalizedQuery.startsWith('UPDATE') ||
-      normalizedQuery.startsWith('DELETE') ||
-      normalizedQuery.startsWith('CREATE') ||
-      normalizedQuery.startsWith('DROP') ||
-      normalizedQuery.startsWith('ALTER')
-    );
   }
 }

@@ -54,17 +54,12 @@ export const expenseGetQueries = {
         console.log("🔍 First row sample:", result[0].values[0]);
       }
       
-      // Map database results to Expense objects with safe defaults
+      // Map database results to Expense objects
       const expenses = result[0].values.map((row: any[]) => {
-        // Always provide a default value for dashboardId
-        let dashboardId = "";
-        if (hasDashboardIdColumn && row[8] !== null && row[8] !== undefined) {
-          dashboardId = String(row[8]);
-        }
+        const dashboardId = hasDashboardIdColumn && row[8] ? String(row[8]) : "";
+        console.log(`🔍 Row dashboardId at index 8: ${row[8]} -> converted to: ${dashboardId}`);
         
-        console.log(`🔍 Row dashboardId at index 8: ${row[8]} -> converted to: "${dashboardId}"`);
-        
-        return {
+        const expense = {
           id: String(row[0]),
           title: String(row[1] || ''),
           budget: Number(row[2] || 0),
@@ -73,8 +68,10 @@ export const expenseGetQueries = {
           linkedBudgetId: row[5] ? String(row[5]) : undefined,
           date: String(row[6] || new Date().toISOString().split('T')[0]),
           isRecurring: hasIsRecurringColumn ? Boolean(row[7]) : false,
-          dashboardId: dashboardId
+          dashboardId: dashboardId 
         };
+        console.log(`🔍 Mapped expense for ${expense.id} (${expense.title}): dashboardId=${expense.dashboardId}`);
+        return expense;
       });
       
       return expenses;
@@ -104,15 +101,10 @@ export const expenseGetQueries = {
       
       // Map database results to Expense objects
       const expenses = result[0].values.map((row: any[]) => {
-        // Always provide a default value for dashboardId
-        let dashboardId = "";
-        if (row[8] !== null && row[8] !== undefined) {
-          dashboardId = String(row[8]);
-        }
+        const dashboardId = row[8] ? String(row[8]) : "";
+        console.log(`🔍 RecurringExpense row dashboardId at index 8: ${row[8]} -> converted to: ${dashboardId}`);
         
-        console.log(`🔍 RecurringExpense row dashboardId at index 8: ${row[8]} -> converted to: "${dashboardId}"`);
-        
-        return {
+        const expense = {
           id: String(row[0]),
           title: String(row[1] || ''),
           budget: Number(row[2] || 0),
@@ -123,6 +115,8 @@ export const expenseGetQueries = {
           isRecurring: true,
           dashboardId: dashboardId
         };
+        console.log(`🔍 Mapped recurring expense for ${expense.id} (${expense.title}): dashboardId=${expense.dashboardId}`);
+        return expense;
       });
       
       return expenses;

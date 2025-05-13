@@ -4,34 +4,23 @@ import { AlertCircle, RefreshCw, Database, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface ExpenseErrorStateProps {
-  retryAttempt?: number;
-  maxRetryAttempts?: number;
-  isRetrying?: boolean;
+  retryAttempt: number;
+  maxRetryAttempts: number;
+  isRetrying: boolean;
   handleRetry: () => void;
-  handleForceReload?: () => void;
-  handleClearCacheAndReload?: () => void;
-  onRetry?: () => void; // Propriété ajoutée pour compatibilité
+  handleForceReload: () => void;
+  handleClearCacheAndReload: () => void;
 }
 
 export const ExpenseErrorState = ({
-  retryAttempt = 0,
-  maxRetryAttempts = 3,
-  isRetrying = false,
+  retryAttempt,
+  maxRetryAttempts,
+  isRetrying,
   handleRetry,
-  handleForceReload = () => window.location.reload(),
-  handleClearCacheAndReload = () => window.location.reload(),
-  onRetry
+  handleForceReload,
+  handleClearCacheAndReload
 }: ExpenseErrorStateProps) => {
   const maxAttemptsReached = retryAttempt >= maxRetryAttempts;
-  
-  // Si onRetry est fourni, l'utiliser au lieu de handleRetry
-  const handleRetryClick = () => {
-    if (onRetry) {
-      onRetry();
-    } else {
-      handleRetry();
-    }
-  };
   
   return (
     <Alert variant="destructive" className="mb-4">
@@ -48,7 +37,7 @@ export const ExpenseErrorState = ({
         </p>
         <div className="mt-4 space-x-2 flex flex-wrap gap-2">
           <Button 
-            onClick={handleRetryClick} 
+            onClick={handleRetry} 
             disabled={isRetrying || maxAttemptsReached} 
             variant="outline" 
             className="flex items-center gap-2"

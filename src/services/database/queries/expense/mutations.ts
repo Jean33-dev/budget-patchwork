@@ -10,6 +10,9 @@ export const expenseMutationQueries = {
     
     try {
       console.log("🔍 expenseMutationQueries.add - Adding expense:", expense);
+      const stmt = db.prepare(
+        'INSERT INTO expenses (id, title, budget, spent, type, linkedBudgetId, date, isRecurring, dashboardId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
+      );
       
       // Vérifie que le dashboardId est non-vide et le convertit en string
       if (!expense.dashboardId) {
@@ -18,16 +21,13 @@ export const expenseMutationQueries = {
       }
       
       const dashboardIdToUse = String(expense.dashboardId);
+        
       console.log(`🔍 Using dashboardId for insert: "${dashboardIdToUse}"`);
       
       if (!expense.linkedBudgetId) {
         console.error("🔍 Erreur: linkedBudgetId obligatoire mais non fourni");
         throw new Error("Le budget associé est obligatoire pour une dépense");
       }
-      
-      const stmt = db.prepare(
-        'INSERT INTO expenses (id, title, budget, spent, type, linkedBudgetId, date, isRecurring, dashboardId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
-      );
       
       const params = [
         String(expense.id), 

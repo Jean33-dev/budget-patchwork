@@ -42,16 +42,7 @@ export const useExpenseOperationHandlers = (
         return;
       }
 
-      // S'assurer que le dashboardId est toujours défini
-      let currentDashboardId = dashboardId;
-      
-      // Si dashboardId n'est pas fourni, essayer de le récupérer du localStorage
-      if (!currentDashboardId && typeof window !== 'undefined') {
-        currentDashboardId = localStorage.getItem('currentDashboardId');
-        console.log(`handleAddExpense: Récupération du dashboardId depuis localStorage: ${currentDashboardId}`);
-      }
-      
-      if (!currentDashboardId) {
+      if (!dashboardId) {
         toast({
           variant: "destructive",
           title: "Erreur",
@@ -61,13 +52,7 @@ export const useExpenseOperationHandlers = (
       }
       
       // S'assurer que le dashboardId est toujours défini comme une chaîne non vide
-      const dashboardIdToUse = String(currentDashboardId);
-      console.log(`handleAddExpense: Utilisation du dashboardId: ${dashboardIdToUse}`);
-      
-      // Stocker le dashboardId courant dans localStorage pour la récupération ultérieure
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('currentDashboardId', dashboardIdToUse);
-      }
+      const currentDashboardId = String(dashboardId);
       
       const formData: ExpenseFormData = {
         title: envelope.title,
@@ -75,11 +60,9 @@ export const useExpenseOperationHandlers = (
         type: "expense",
         linkedBudgetId: linkedBudgetId,
         date: envelope.date,
-        dashboardId: dashboardIdToUse,
-        isRecurring: envelope.isRecurring
+        dashboardId: currentDashboardId
       };
       
-      console.log("handleAddExpense: Données pour ajout:", formData);
       const success = await expenseOperations.addExpense(formData);
       
       if (success) {
@@ -114,25 +97,19 @@ export const useExpenseOperationHandlers = (
     setIsProcessing(true);
     try {
       // S'assurer que dashboardId est toujours présent
-      if (!expense.dashboardId) {
-        // Essayer de récupérer de différentes sources
-        const dashboardIdToUse = dashboardId || 
-                               (typeof window !== 'undefined' ? localStorage.getItem('currentDashboardId') : null);
-                               
-        if (!dashboardIdToUse) {
-          toast({
-            variant: "destructive",
-            title: "Erreur",
-            description: "ID du tableau de bord manquant"
-          });
-          return;
-        }
-        
-        expense.dashboardId = String(dashboardIdToUse);
-        console.log(`handleUpdateExpense: Ajout du dashboardId manquant: ${expense.dashboardId}`);
+      if (!expense.dashboardId && dashboardId) {
+        expense.dashboardId = String(dashboardId);
       }
       
-      console.log("handleUpdateExpense: Données pour mise à jour:", expense);
+      if (!expense.dashboardId) {
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "ID du tableau de bord manquant"
+        });
+        return;
+      }
+      
       const success = await expenseOperations.updateExpense(expense);
       
       if (success) {

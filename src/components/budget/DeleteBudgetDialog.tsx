@@ -15,8 +15,6 @@ interface DeleteBudgetDialogProps {
   onOpenChange: (open: boolean) => void;
   onConfirm: () => void;
   hasLinkedExpenses: boolean;
-  budgetName?: string;
-  isRecurring?: boolean;
 }
 
 export const DeleteBudgetDialog = ({
@@ -24,11 +22,7 @@ export const DeleteBudgetDialog = ({
   onOpenChange,
   onConfirm,
   hasLinkedExpenses,
-  budgetName = "",
-  isRecurring = false,
 }: DeleteBudgetDialogProps) => {
-  const itemType = isRecurring ? "dépense récurrente" : "budget";
-  
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
@@ -38,7 +32,7 @@ export const DeleteBudgetDialog = ({
             {hasLinkedExpenses ? (
               "Ce budget a des dépenses qui lui sont associées. Veuillez d'abord réaffecter ces dépenses à d'autres budgets avant de le supprimer."
             ) : (
-              `Cette action ne peut pas être annulée. ${budgetName ? `La ${itemType} "${budgetName}"` : `Ce ${itemType}`} sera définitivement supprimé${isRecurring ? 'e' : ''}.`
+              "Cette action ne peut pas être annulée. Le budget sera définitivement supprimé."
             )}
           </AlertDialogDescription>
         </AlertDialogHeader>

@@ -1,28 +1,14 @@
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { db } from "@/services/database";
 import { Budget } from "@/types/categories";
 import { Expense } from "@/services/database/models/expense";
 import { useExpenseFiltering } from "./useExpenseFiltering";
-import { useDatabaseConnection } from "../useDatabaseConnection";
-
-// Cache storage for expenses and budgets
-const expenseCache = new Map<string, {
-  data: Expense[],
-  timestamp: number
-}>();
-const budgetCache = new Map<string, {
-  data: Budget[],
-  timestamp: number
-}>();
-
-// Cache expiration in ms (10 seconds)
-const CACHE_EXPIRY = 10000;
 
 /**
- * Hook for loading expense data with performance optimization
- * @param dashboardId ID of the current dashboard
+ * Hook pour charger les données des dépenses
+ * @param dashboardId ID du tableau de bord actuel
  */
 export const useExpenseDataLoading = (dashboardId: string | null) => {
   const { toast } = useToast();
@@ -32,113 +18,47 @@ export const useExpenseDataLoading = (dashboardId: string | null) => {
   const [error, setError] = useState<Error | null>(null);
   const [initAttempted, setInitAttempted] = useState(false);
   const { filterByDashboardId } = useExpenseFiltering();
-  const { isInitialized } = useDatabaseConnection();
-  
-  // Track if component is mounted
-  const isMounted = useRef(true);
-  
-  // Determine the effective dashboardId
-  const getEffectiveDashboardId = useCallback(() => {
-    return dashboardId || 
-      (typeof window !== 'undefined' ? localStorage.getItem('currentDashboardId') : null) || 
-      'default';
-  }, [dashboardId]);
 
-  const loadData = useCallback(async (forceRefresh = false) => {
-    // Skip if database is not initialized
-    if (!isInitialized) return;
-    
-    const effectiveDashboardId = getEffectiveDashboardId();
-    if (!effectiveDashboardId) {
-      console.error("useExpenseDataLoading: No dashboardId available");
+  const loadData = useCallback(async () => {
+    if (!dashboardId) {
       setIsLoading(false);
       return;
     }
     
-    // Store the dashboardId for future operations
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('currentDashboardId', effectiveDashboardId);
-    }
-    
     setIsLoading(true);
     setError(null);
-
+    
     try {
-      // Check if we have a valid cached data
-      const now = Date.now();
-      const cachedExpenses = expenseCache.get(effectiveDashboardId);
-      const cachedBudgets = budgetCache.get(effectiveDashboardId);
+      await db.init();
       
-      // Use cache if available and not expired
-      if (!forceRefresh && 
-          cachedExpenses && 
-          cachedBudgets && 
-          now - cachedExpenses.timestamp < CACHE_EXPIRY && 
-          now - cachedBudgets.timestamp < CACHE_EXPIRY) {
-        
-        setExpenses(cachedExpenses.data);
-        setAvailableBudgets(cachedBudgets.data);
-        setIsLoading(false);
-        setInitAttempted(true);
-        return;
-      }
-      
-      // Load budgets
+      // Chargement des budgets
       const loadedBudgets = await db.getBudgets();
-      const filteredBudgets = filterByDashboardId(loadedBudgets, effectiveDashboardId);
+      const filteredBudgets = filterByDashboardId(loadedBudgets, dashboardId);
+      setAvailableBudgets(filteredBudgets);
       
-      // Load expenses
+      // Chargement des dépenses
       const loadedExpenses = await db.getExpenses();
       const nonRecurringExpenses = loadedExpenses.filter(expense => !expense.isRecurring);
-      const filteredExpenses = filterByDashboardId(nonRecurringExpenses, effectiveDashboardId);
+      const filteredExpenses = filterByDashboardId(nonRecurringExpenses, dashboardId);
+      setExpenses(filteredExpenses);
       
-      // Update cache
-      expenseCache.set(effectiveDashboardId, {
-        data: filteredExpenses,
-        timestamp: now
-      });
-      budgetCache.set(effectiveDashboardId, {
-        data: filteredBudgets,
-        timestamp: now
-      });
-      
-      // Update state if component is still mounted
-      if (isMounted.current) {
-        setAvailableBudgets(filteredBudgets);
-        setExpenses(filteredExpenses);
-        setInitAttempted(true);
-      }
+      setInitAttempted(true);
     } catch (error) {
-      console.error(`Error loading data for dashboard ${effectiveDashboardId}:`, error);
-      if (isMounted.current) {
-        toast({
-          variant: "destructive",
-          title: "Erreur",
-          description: "Impossible de charger les données"
-        });
-        setError(error instanceof Error ? error : new Error("Failed to load data"));
-      }
+      console.error(`Erreur lors du chargement des données pour le tableau de bord ${dashboardId}:`, error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible de charger les données"
+      });
+      setError(error instanceof Error ? error : new Error("Failed to load data"));
     } finally {
-      if (isMounted.current) {
-        setIsLoading(false);
-      }
+      setIsLoading(false);
     }
-  }, [isInitialized, dashboardId, toast, filterByDashboardId, getEffectiveDashboardId]);
+  }, [dashboardId, toast, filterByDashboardId]);
 
-  // Clean up when unmounting
   useEffect(() => {
-    isMounted.current = true;
-    return () => {
-      isMounted.current = false;
-    };
-  }, []);
-
-  // Load data when dashboard changes or database is initialized
-  useEffect(() => {
-    if (isInitialized) {
-      loadData();
-    }
-  }, [loadData, isInitialized, dashboardId]);
+    loadData();
+  }, [loadData]);
 
   return {
     expenses,
@@ -146,6 +66,6 @@ export const useExpenseDataLoading = (dashboardId: string | null) => {
     isLoading,
     error,
     initAttempted,
-    loadData: (forceRefresh = true) => loadData(forceRefresh)
+    loadData
   };
 };

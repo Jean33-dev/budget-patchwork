@@ -10,7 +10,6 @@ import { PontualExpensesTab } from "@/components/expense/PontualExpensesTab";
 import { RecurringExpensesTab } from "@/components/expense/RecurringExpensesTab";
 import { ProcessingIndicator } from "@/components/expense/ProcessingIndicator";
 import { AddButton } from "@/components/budget/AddButton";
-import { Expense } from "@/services/database/models/expense";
 
 const Expenses = () => {
   const navigate = useNavigate();
@@ -19,15 +18,14 @@ const Expenses = () => {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("ponctuel");
   
-  // Pour corriger les erreurs de type, nous devons adapter les hooks ou ajouter des wrappers
   const {
     expenses,
     availableBudgets,
     addDialogOpen,
     setAddDialogOpen,
     handleAddEnvelope,
-    handleDeleteExpense: originalDeleteExpense,
-    handleUpdateExpense: originalUpdateExpense,
+    handleDeleteExpense,
+    handleUpdateExpense,
     forceReload,
     isLoading,
     isProcessing,
@@ -35,39 +33,17 @@ const Expenses = () => {
     initAttempted
   } = useExpenseManagement(budgetId);
 
-  // Wrapper pour assurer que les fonctions renvoient void
-  const handleDeleteExpense = async (id: string): Promise<void> => {
-    await originalDeleteExpense(id);
-  };
-
-  const handleUpdateExpense = async (expense: Expense): Promise<void> => {
-    await originalUpdateExpense(expense);
-  };
-
   const {
     recurringExpenses,
     availableBudgets: recurringAvailableBudgets,
     isLoading: isRecurringLoading,
     handleAddExpense: handleAddRecurringExpense,
-    handleDeleteExpense: originalDeleteRecurringExpense,
-    handleAddToCurrentMonth: originalAddToCurrentMonth,
-    handleUpdateExpense: originalUpdateRecurringExpense,
+    handleDeleteExpense: handleDeleteRecurringExpense,
+    handleAddToCurrentMonth,
+    handleUpdateExpense: handleUpdateRecurringExpense,
     getBudgetName,
     currentDate,
   } = useRecurringExpenses();
-
-  // Wrapper pour assurer que les fonctions renvoient void
-  const handleDeleteRecurringExpense = async (id: string): Promise<void> => {
-    await originalDeleteRecurringExpense(id);
-  };
-
-  const handleAddToCurrentMonth = async (id: string): Promise<void> => {
-    await originalAddToCurrentMonth(id);
-  };
-
-  const handleUpdateRecurringExpense = async (expense: Expense): Promise<void> => {
-    await originalUpdateRecurringExpense(expense);
-  };
 
   useEffect(() => {
     if (error && !isLoading && !isProcessing) {
