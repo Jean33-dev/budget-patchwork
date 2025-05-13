@@ -6,9 +6,11 @@ import { BaseDatabaseManager } from './base-database-manager';
 
 /**
  * Implementation of the main database manager that coordinates all specialized managers
+ * with optimized initialization
  */
 export class DatabaseManagerImpl extends DatabaseManagerCore {
   protected initManager: DatabaseInitManager;
+  private static initializationPromise: Promise<boolean> | null = null;
 
   constructor() {
     super();
@@ -21,6 +23,23 @@ export class DatabaseManagerImpl extends DatabaseManagerCore {
       return true;
     }
     
+    // If initialization is already in progress, return the existing promise
+    if (DatabaseManagerImpl.initializationPromise) {
+      return DatabaseManagerImpl.initializationPromise;
+    }
+    
+    // Create a new initialization promise
+    DatabaseManagerImpl.initializationPromise = this.performInitialization();
+    
+    try {
+      return await DatabaseManagerImpl.initializationPromise;
+    } finally {
+      // Clear the promise reference when done
+      DatabaseManagerImpl.initializationPromise = null;
+    }
+  }
+  
+  private async performInitialization(): Promise<boolean> {
     // Use the parent class's method to check initialization status
     if (this.isInitializationInProgress()) {
       console.log("DatabaseManager initialization already in progress, waiting...");
@@ -38,7 +57,6 @@ export class DatabaseManagerImpl extends DatabaseManagerCore {
     
     try {
       // First initialize the core
-      console.log("Initializing database core...");
       const coreSuccess = await super.init();
       if (!coreSuccess) {
         console.error("Failed to initialize database core");
@@ -47,7 +65,6 @@ export class DatabaseManagerImpl extends DatabaseManagerCore {
       
       try {
         // Initialize the database using the init manager
-        console.log("Initializing database using init manager...");
         const success = await this.initManager.init();
         
         if (!success) {
@@ -81,6 +98,8 @@ export class DatabaseManagerImpl extends DatabaseManagerCore {
   // Method to reset the initialization attempts
   resetInitializationAttempts(): void {
     BaseDatabaseManager.resetInitializationAttempts();
+    // Clear initialization promise when resetting
+    DatabaseManagerImpl.initializationPromise = null;
   }
 
   async migrateFromLocalStorage(): Promise<boolean> {

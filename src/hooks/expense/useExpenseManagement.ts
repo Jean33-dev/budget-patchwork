@@ -1,5 +1,5 @@
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { Budget } from "@/types/categories";
 import { Expense } from "@/services/database/models/expense"; 
@@ -11,7 +11,7 @@ import { useDashboardContext } from "../useDashboardContext";
 export type { Budget, Expense };
 
 /**
- * Hook principal pour la gestion des dépenses
+ * Hook principal pour la gestion des dépenses avec optimisations de performance
  * @param budgetId ID du budget pour filtrer les dépenses (optionnel)
  */
 export const useExpenseManagement = (budgetId: string | null) => {
@@ -19,7 +19,7 @@ export const useExpenseManagement = (budgetId: string | null) => {
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const { currentDashboardId } = useDashboardContext();
   
-  // Chargement des données
+  // Chargement des données avec cache
   const { 
     expenses, 
     availableBudgets, 
@@ -37,20 +37,16 @@ export const useExpenseManagement = (budgetId: string | null) => {
     handleUpdateExpense 
   } = useExpenseOperationHandlers(budgetId, loadData, currentDashboardId);
 
-  // Rechargement des données
+  // Rechargement des données optimisé
   const { forceReload } = useDataReloader(isProcessing, isLoading, loadData);
 
-  // Filtrer les dépenses par budgetId si spécifié
-  const filteredExpenses = useCallback(() => {
+  // Filtrer les dépenses par budgetId si spécifié (memoized)
+  const filteredExpensesResult = useMemo(() => {
     if (!budgetId) {
       return expenses;
     }
-    
     return expenses.filter(expense => expense.linkedBudgetId === budgetId);
   }, [expenses, budgetId]);
-
-  // Calculer les dépenses filtrées une seule fois
-  const filteredExpensesResult = filteredExpenses();
 
   return {
     expenses: filteredExpensesResult,
