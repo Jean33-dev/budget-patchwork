@@ -94,10 +94,9 @@
     font-feature-settings: "ss01", "ss02", "cv01", "cv02";
   }
   
-  /* Styles améliorés pour l'inversion des couleurs */
+  /* Styles pour l'inversion des couleurs */
   .invert-colors {
-    filter: invert(0.92) hue-rotate(180deg);
-    background-color: #121212; /* Fond sombre pour améliorer l'effet */
+    filter: invert(1) hue-rotate(180deg);
   }
   
   /* Pour ne pas inverser les images */
@@ -106,46 +105,22 @@
     filter: invert(1) hue-rotate(180deg);
   }
 
-  /* Amélioration des bordures en mode inversé */
+  /* Amélioration du contraste des bordures en mode inversé */
   .invert-colors * {
-    @apply border-slate-800;
+    @apply border-slate-700;
   }
 
-  /* Augmentation de l'épaisseur des bordures pour un meilleur contraste */
   .invert-colors .border,
   .invert-colors [class*="border-"],
   .invert-colors [class*="ring-"] {
     border-width: 1.5px;
-    border-color: rgba(30, 30, 30, 0.7); /* Plus sombre et légèrement transparent */
   }
 
-  /* Ajustements pour les conteneurs spécifiques */
   .invert-colors .card,
   .invert-colors .input,
   .invert-colors .select,
   .invert-colors .button {
-    @apply shadow-md border-slate-900;
-    border-color: rgba(20, 20, 20, 0.8); /* Encore plus sombre pour les éléments importants */
-  }
-  
-  /* Réduction de la visibilité des bordures pour certains éléments conteneurs */
-  .invert-colors .flex,
-  .invert-colors .container,
-  .invert-colors .grid {
-    border-color: rgba(40, 40, 40, 0.6);
-  }
-  
-  /* Correction spécifique pour l'entête */
-  .invert-colors [class*="sticky top-0"] {
-    background-color: rgba(15, 15, 15, 0.92);
-    backdrop-filter: blur(12px);
-    border-color: rgba(30, 30, 30, 0.8);
-  }
-  
-  /* Améliorations des boutons et éléments interactifs */
-  .invert-colors button,
-  .invert-colors .button {
-    border-color: rgba(40, 40, 40, 0.9);
+    @apply border-slate-800 shadow-md;
   }
 }
 
@@ -176,19 +151,6 @@
   
   .text-gradient-danger {
     @apply bg-gradient-to-r from-red-600 to-red-400 bg-clip-text text-transparent;
-  }
-  
-  /* Nouvelles classes pour le mode sombre */
-  .dark-card {
-    @apply bg-gray-900 border-gray-800 shadow-xl;
-  }
-  
-  .dark-button {
-    @apply bg-gray-800 hover:bg-gray-700 border-gray-700;
-  }
-  
-  .dark-input {
-    @apply bg-gray-800 border-gray-700;
   }
   
   @keyframes entrance {
@@ -235,4 +197,3 @@
     @apply border-t-4 border-t-red-500;
   }
 }
-

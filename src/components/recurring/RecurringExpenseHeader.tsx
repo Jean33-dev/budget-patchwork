@@ -11,7 +11,7 @@ export const RecurringExpenseHeader = ({ onAdd }: RecurringExpenseHeaderProps) =
   const navigate = useNavigate();
   
   return (
-    <div className="flex items-center justify-between border-b border-t-0 border-r-0 border-l-0 pb-4">
+    <div className="flex items-center justify-between">
       <div className="flex items-center space-x-2">
         <Button variant="outline" size="icon" onClick={() => navigate(-1)}>
           <ArrowLeft className="h-4 w-4" />
