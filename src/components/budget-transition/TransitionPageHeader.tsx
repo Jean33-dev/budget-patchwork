@@ -9,7 +9,7 @@ interface TransitionPageHeaderProps {
 
 export const TransitionPageHeader = ({ onBackClick }: TransitionPageHeaderProps) => {
   return (
-    <div className="flex items-center gap-4 pb-4 border-b">
+    <div className="flex items-center gap-4 pb-4 border-b border-t-0 border-r-0 border-l-0">
       <Button
         variant="outline"
         size="icon"

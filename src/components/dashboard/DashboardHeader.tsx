@@ -27,7 +27,7 @@ export const DashboardHeader = ({ currentDate, onMonthChange, onBackClick }: Das
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-4 sticky top-0 bg-background/95 backdrop-blur-md z-10 py-4 mb-2 border-b">
+      <div className="flex items-center gap-4 sticky top-0 bg-background/95 backdrop-blur-md z-10 py-4 mb-2 border-b border-t-0 border-r-0 border-l-0">
         <Button 
           variant="outline" 
           size="icon"

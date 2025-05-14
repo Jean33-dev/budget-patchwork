@@ -11,7 +11,7 @@ export const IncomeHeader = ({ title }: IncomeHeaderProps) => {
   const navigate = useNavigate();
 
   return (
-    <div className="flex items-center gap-4 sticky top-0 bg-background/95 backdrop-blur-md z-10 py-4 mb-6 border-b">
+    <div className="flex items-center gap-4 sticky top-0 bg-background/95 backdrop-blur-md z-10 py-4 mb-6 border-b border-t-0 border-r-0 border-l-0">
       <Button
         variant="outline"
         size="icon"
