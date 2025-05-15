@@ -1,5 +1,5 @@
 
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts";
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, Label } from "recharts";
 
 interface BudgetData {
   name: string;
@@ -13,7 +13,7 @@ interface BudgetChartProps {
   addUnallocated?: boolean;
 }
 
-// Palette de couleurs distinctes pour éviter les répétitions et les couleurs adjacentes similaires
+// Palette de couleurs modernes pour une meilleure expérience visuelle
 const COLORS = {
   income: ["#1A1F2C", "#221F26", "#2C2436"],
   expense: ["#ea384c", "#d41d31", "#b31929"],
@@ -64,11 +64,11 @@ export const BudgetChart = ({ data, totalIncome = 0, addUnallocated = false }: B
   };
 
   // Dimensions ajustées pour un anneau plus épais et plus lisible
-  const innerRadius = 60;
-  const outerRadius = 87;
+  const innerRadius = 70;
+  const outerRadius = 110;
 
   return (
-    <div className="relative w-full h-[300px]">
+    <div className="relative w-full h-full min-h-[300px]">
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Pie
@@ -80,8 +80,41 @@ export const BudgetChart = ({ data, totalIncome = 0, addUnallocated = false }: B
             outerRadius={outerRadius}
             fill="#8884d8"
             dataKey="value"
-            paddingAngle={1} // Léger espacement entre les segments
+            paddingAngle={2} // Espacement entre les segments pour un look plus moderne
+            cornerRadius={4} // Coins arrondis pour un aspect plus élégant
+            stroke="transparent" // Suppression des bordures pour un aspect plus propre
           >
+            {chartData.length > 0 && (
+              <Label
+                position="center"
+                content={({ viewBox }) => {
+                  const { cx, cy } = viewBox as { cx: number; cy: number };
+                  const totalValue = chartData.reduce((sum, entry) => sum + entry.value, 0);
+                  return (
+                    <g>
+                      <text
+                        x={cx}
+                        y={cy - 5}
+                        textAnchor="middle"
+                        dominantBaseline="central"
+                        className="fill-muted-foreground font-medium text-sm"
+                      >
+                        Total
+                      </text>
+                      <text
+                        x={cx}
+                        y={cy + 15}
+                        textAnchor="middle"
+                        dominantBaseline="central"
+                        className="fill-foreground font-bold text-base"
+                      >
+                        {totalValue.toFixed(2)} €
+                      </text>
+                    </g>
+                  );
+                }}
+              />
+            )}
             {chartData.map((entry, index) => {
               // Couleur spéciale pour le budget non alloué
               if (entry.name === "Budget non alloué") {
@@ -93,6 +126,7 @@ export const BudgetChart = ({ data, totalIncome = 0, addUnallocated = false }: B
                 <Cell
                   key={`cell-${index}`}
                   fill={COLORS[entry.type][index % COLORS[entry.type].length]}
+                  style={{ filter: 'drop-shadow(0px 2px 3px rgba(0, 0, 0, 0.1))' }} // Effet subtil d'ombre
                 />
               );
             })}
@@ -103,20 +137,38 @@ export const BudgetChart = ({ data, totalIncome = 0, addUnallocated = false }: B
               name
             ]}
             contentStyle={{
-              backgroundColor: "#F8FAFC",
-              border: "1px solid #E2E8F0",
+              backgroundColor: "#FFFFFF",
+              border: "none",
               borderRadius: "8px",
               color: "#1A1F2C",
-              boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)"
+              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+              padding: "10px 14px",
+              fontSize: "13px"
             }}
             labelStyle={{
               color: "#1A1F2C",
-              fontWeight: "bold"
+              fontWeight: "bold",
+              marginBottom: "4px"
             }}
+            wrapperStyle={{
+              outline: "none"
+            }}
+            cursor={{ fill: "transparent" }} // Désactiver le survol des sections
           />
           <Legend
-            formatter={(value) => <span style={{ color: "#4A5568" }}>{value}</span>}
+            formatter={(value) => (
+              <span style={{ color: "#4A5568", fontSize: "13px", paddingLeft: "4px" }}>
+                {value}
+              </span>
+            )}
             iconType="circle"
+            iconSize={8}
+            layout="vertical"
+            verticalAlign="middle"
+            align="right"
+            wrapperStyle={{
+              paddingTop: "10px"
+            }}
           />
         </PieChart>
       </ResponsiveContainer>

@@ -1,5 +1,6 @@
 
 import { Card } from "@/components/ui/card";
+import { ArrowDown, ArrowUp } from "lucide-react";
 
 interface BudgetStatsProps {
   remainingBudget: number;
@@ -9,14 +10,29 @@ interface BudgetStatsProps {
 export const BudgetStats = ({ remainingBudget, remainingBudgetAfterExpenses }: BudgetStatsProps) => {
   return (
     <div className="space-y-4">
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-3">
-        <p className="text-blue-800 text-sm sm:text-base">
-          Revenu restant à répartir : {remainingBudget.toFixed(2)} €
-        </p>
-        <p className="text-blue-800 text-sm sm:text-base">
-          Budget restant : {remainingBudgetAfterExpenses.toFixed(2)} €
-        </p>
-      </div>
+      <Card className="overflow-hidden">
+        <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-border/30">
+          <div className="p-4 sm:p-6 flex flex-col">
+            <span className="text-sm text-muted-foreground mb-1.5 flex items-center">
+              <ArrowDown className="h-3.5 w-3.5 mr-1.5 text-blue-500" />
+              Revenu restant à répartir
+            </span>
+            <span className={`text-lg sm:text-xl font-semibold ${remainingBudget < 0 ? 'text-red-500' : 'text-blue-800'}`}>
+              {remainingBudget.toFixed(2)} €
+            </span>
+          </div>
+          
+          <div className="p-4 sm:p-6 flex flex-col">
+            <span className="text-sm text-muted-foreground mb-1.5 flex items-center">
+              <ArrowUp className="h-3.5 w-3.5 mr-1.5 text-green-500" />
+              Budget restant
+            </span>
+            <span className={`text-lg sm:text-xl font-semibold ${remainingBudgetAfterExpenses < 0 ? 'text-red-500' : 'text-blue-800'}`}>
+              {remainingBudgetAfterExpenses.toFixed(2)} €
+            </span>
+          </div>
+        </div>
+      </Card>
     </div>
   );
 };
