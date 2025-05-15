@@ -49,7 +49,7 @@ const Settings = () => {
 
           <div className="flex items-center justify-between py-2">
             <div>
-              <h3 className="font-medium">Notifications toast</h3>
+              <h3 className="font-medium">Notifications </h3>
               <p className="text-sm text-muted-foreground">
                 Afficher les notifications temporaires dans l'application
               </p>
