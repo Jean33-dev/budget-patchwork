@@ -14,7 +14,7 @@ export const RemainingAmountAlert = ({ remainingAmount }: RemainingAmountAlertPr
       {remainingAmount < 0 && (
         <Alert variant="destructive" className="py-2">
           <AlertDescription>
-            Le total des budgets dépasse vos revenus. Veuillez réduire certains budgets.
+            Le total des budgets dépasse vos revenus. Essayer de réduire certains budgets.
           </AlertDescription>
         </Alert>
       )}
