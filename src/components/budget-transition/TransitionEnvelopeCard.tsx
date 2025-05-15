@@ -4,6 +4,7 @@ import { BudgetEnvelope, TransitionOption } from "@/types/transition";
 import { EnvelopeCardHeader } from './card/EnvelopeCardHeader';
 import { OptionSelector } from './card/OptionSelector';
 import { MultiTransferControl } from './card/MultiTransferControl';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface TransitionEnvelopeCardProps {
   envelope: BudgetEnvelope;
@@ -20,6 +21,8 @@ export const TransitionEnvelopeCard = ({
   onTransferTargetChange,
   onMultiTransferChange
 }: TransitionEnvelopeCardProps) => {
+  const isMobile = useIsMobile();
+  
   // Local state to display selected option
   const [selectedOption, setSelectedOption] = useState<TransitionOption>(envelope.transitionOption);
   const [multiTransfers, setMultiTransfers] = useState<{ targetId: string; targetTitle: string; amount: number }[]>(
@@ -56,7 +59,7 @@ export const TransitionEnvelopeCard = ({
   };
 
   return (
-    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 border rounded-lg">
+    <div className={`flex ${isMobile ? 'flex-col' : 'flex-col sm:flex-row'} items-start sm:items-center justify-between gap-4 p-4 border rounded-lg`}>
       <EnvelopeCardHeader envelope={envelope} />
       
       <div className="flex flex-col gap-2 w-full sm:w-auto">

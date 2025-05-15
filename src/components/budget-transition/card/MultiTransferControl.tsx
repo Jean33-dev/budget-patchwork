@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ChevronDown, PlusCircle, Trash2 } from "lucide-react";
 import { BudgetEnvelope } from "@/types/transition";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface MultiTransferControlProps {
   envelope: BudgetEnvelope;
@@ -26,6 +27,8 @@ export const MultiTransferControl: React.FC<MultiTransferControlProps> = ({
   setMultiTransfers,
   onMultiTransferChange
 }) => {
+  const isMobile = useIsMobile();
+  
   // Calculate remaining amount for multi-transfers
   const usedAmount = multiTransfers.reduce((sum, transfer) => sum + transfer.amount, 0);
   const availableAmount = envelope.remaining - usedAmount;
@@ -138,6 +141,7 @@ export const MultiTransferControl: React.FC<MultiTransferControlProps> = ({
               onChange={(e) => handleMultiTransferAmountChange(index, e)}
               min="0"
               step="0.01"
+              inputMode="decimal"
               className="flex h-8 w-full rounded-md border border-input bg-background px-3 py-1 text-sm ring-offset-background"
             />
             <span className="text-sm">€</span>
