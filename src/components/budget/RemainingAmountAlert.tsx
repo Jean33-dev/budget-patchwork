@@ -9,7 +9,7 @@ export const RemainingAmountAlert = ({ remainingAmount }: RemainingAmountAlertPr
   return (
     <div className="space-y-4">
       <div className={`text-sm font-medium ${remainingAmount < 0 ? 'text-red-500' : ''}`}>
-        Montant restant à répartir : {Number.isFinite(remainingAmount) ? remainingAmount.toFixed(2) : "0.00"}€
+        Revenu restant à répartir : {Number.isFinite(remainingAmount) ? remainingAmount.toFixed(2) : "0.00"}€
       </div>
       {remainingAmount < 0 && (
         <Alert variant="destructive" className="py-2">

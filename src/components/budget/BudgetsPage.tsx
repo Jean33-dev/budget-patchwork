@@ -1,3 +1,4 @@
+
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { BudgetsHeader } from "@/components/budget/BudgetsHeader";
@@ -118,6 +119,8 @@ const BudgetsPage = () => {
         onClick={() => setAddDialogOpen(true)}
         label="Ajouter un budget"
       />
+
+      {remainingAmount !== undefined && <RemainingAmountAlert remainingAmount={remainingAmount} />}
 
       {budgets.length === 0 ? (
         <EmptyBudgetState />
