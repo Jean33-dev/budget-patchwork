@@ -2,6 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, PlusCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { ExportImportButtons } from "../shared/ExportImportButtons";
 
 interface RecurringExpenseHeaderProps {
   onAdd: () => void;
@@ -18,7 +19,8 @@ export const RecurringExpenseHeader = ({ onAdd }: RecurringExpenseHeaderProps) =
         </Button>
         <h1 className="text-2xl font-bold">Dépenses Récurrentes</h1>
       </div>
-      <div>
+      <div className="flex items-center gap-2">
+        <ExportImportButtons />
         <Button onClick={onAdd}>
           <PlusCircle className="h-4 w-4 mr-2" />
           Ajouter
