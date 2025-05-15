@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { FileExport, FileImport } from "lucide-react";
+import { FileText, FileInput } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { db } from "@/services/database";
 
@@ -169,7 +169,7 @@ export const ExportImportButtons = ({ className = "" }: ExportImportButtonsProps
         className="flex items-center gap-1"
         title="Exporter les données"
       >
-        <FileExport className="h-4 w-4" />
+        <FileText className="h-4 w-4" />
         <span className="hidden sm:inline">Exporter</span>
       </Button>
       
@@ -180,7 +180,7 @@ export const ExportImportButtons = ({ className = "" }: ExportImportButtonsProps
         className="flex items-center gap-1"
         title="Importer des données"
       >
-        <FileImport className="h-4 w-4" />
+        <FileInput className="h-4 w-4" />
         <span className="hidden sm:inline">Importer</span>
       </Button>
     </div>
