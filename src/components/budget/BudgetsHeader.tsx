@@ -1,7 +1,6 @@
 
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-import { ExportImportButtons } from "../shared/ExportImportButtons";
 
 interface BudgetsHeaderProps {
   onNavigate: (path: string) => void;
@@ -27,8 +26,6 @@ export const BudgetsHeader = ({ onNavigate }: BudgetsHeaderProps) => {
           Créez et gérez vos budgets mensuels
         </p>
       </div>
-      
-      <ExportImportButtons />
     </div>
   );
 };

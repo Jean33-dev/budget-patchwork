@@ -104,24 +104,6 @@
   .invert-colors video {
     filter: invert(1) hue-rotate(180deg);
   }
-
-  /* Amélioration du contraste des bordures en mode inversé */
-  .invert-colors * {
-    @apply border-slate-700;
-  }
-
-  .invert-colors .border,
-  .invert-colors [class*="border-"],
-  .invert-colors [class*="ring-"] {
-    border-width: 1.5px;
-  }
-
-  .invert-colors .card,
-  .invert-colors .input,
-  .invert-colors .select,
-  .invert-colors .button {
-    @apply border-slate-800 shadow-md;
-  }
 }
 
 @layer utilities {

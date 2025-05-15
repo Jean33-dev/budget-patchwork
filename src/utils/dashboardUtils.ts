@@ -3,8 +3,6 @@
  * Utility functions for dashboard ID management
  */
 
-import { v4 as uuidv4 } from 'uuid';
-
 /**
  * Check if a route is a special route that doesn't directly contain a dashboard ID
  * @param route The route to check
@@ -33,6 +31,7 @@ export const storeDashboardId = (id: string): void => {
  * Generate a new dashboard ID
  */
 export const generateNewDashboardId = (): string => {
+  const { v4: uuidv4 } = require('uuid');
   const newId = uuidv4();
   storeDashboardId(newId);
   return newId;

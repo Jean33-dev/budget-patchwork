@@ -2,7 +2,6 @@
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, PlusCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { ExportImportButtons } from "../shared/ExportImportButtons";
 
 interface RecurringIncomeHeaderProps {
   onAdd: () => void;
@@ -19,8 +18,7 @@ export const RecurringIncomeHeader = ({ onAdd }: RecurringIncomeHeaderProps) => 
         </Button>
         <h1 className="text-2xl font-bold">Revenus Récurrents</h1>
       </div>
-      <div className="flex items-center gap-2">
-        <ExportImportButtons />
+      <div>
         <Button onClick={onAdd}>
           <PlusCircle className="h-4 w-4 mr-2" />
           Ajouter
