@@ -1,5 +1,5 @@
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { bluetoothService, ExpenseShareData } from '@/services/bluetooth/bluetooth-service';
 import { BleDevice } from '@capacitor-community/bluetooth-le';
 import { useToast } from '@/hooks/use-toast';
@@ -14,16 +14,57 @@ export const useBluetoothSharing = () => {
   const [isReceivingData, setIsReceivingData] = useState(false);
   const [isSendingData, setIsSendingData] = useState(false);
   const [receivedData, setReceivedData] = useState<ExpenseShareData | null>(null);
+  const [bluetoothAvailable, setBluetoothAvailable] = useState<boolean | null>(null);
   const { toast } = useToast();
+
+  // Vérifier la disponibilité du Bluetooth au chargement du hook
+  useEffect(() => {
+    const checkBluetoothAvailability = async () => {
+      try {
+        // Initialiser le service Bluetooth
+        const initialized = await bluetoothService.initialize();
+        
+        if (initialized) {
+          // Vérifier les permissions
+          const permissionsGranted = await bluetoothService.requestPermissions();
+          setBluetoothAvailable(permissionsGranted);
+          
+          if (!permissionsGranted) {
+            console.log("Bluetooth permissions not granted or Bluetooth not enabled");
+          } else {
+            console.log("Bluetooth available and permissions granted");
+          }
+        } else {
+          setBluetoothAvailable(false);
+          console.log("Failed to initialize Bluetooth");
+        }
+      } catch (error) {
+        console.error("Error checking Bluetooth availability:", error);
+        setBluetoothAvailable(false);
+      }
+    };
+
+    checkBluetoothAvailability();
+  }, []);
 
   const startScan = useCallback(async () => {
     setIsScanning(true);
+    setDevices([]); // Reset devices list before scanning
     try {
+      console.log("Starting Bluetooth scan...");
       const discoveredDevices = await bluetoothService.scanForDevices();
+      console.log(`Scan complete. Found ${discoveredDevices.length} devices:`, discoveredDevices);
       setDevices(discoveredDevices);
       toast({
         title: "Recherche terminée",
         description: `${discoveredDevices.length} appareils trouvés`
+      });
+    } catch (error) {
+      console.error("Error in startScan:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur de scan",
+        description: "Une erreur s'est produite pendant la recherche d'appareils"
       });
     } finally {
       setIsScanning(false);
@@ -31,16 +72,22 @@ export const useBluetoothSharing = () => {
   }, [toast]);
 
   const connectToDevice = useCallback(async (device: BleDevice) => {
-    const success = await bluetoothService.connect(device.deviceId);
-    if (success) {
-      setSelectedDevice(device);
-      setIsConnected(true);
-      toast({
-        title: "Connecté",
-        description: `Connecté à ${device.name || device.deviceId}`
-      });
+    try {
+      console.log(`Attempting to connect to device: ${device.name || device.deviceId}`);
+      const success = await bluetoothService.connect(device.deviceId);
+      if (success) {
+        setSelectedDevice(device);
+        setIsConnected(true);
+        toast({
+          title: "Connecté",
+          description: `Connecté à ${device.name || device.deviceId}`
+        });
+      }
+      return success;
+    } catch (error) {
+      console.error("Error in connectToDevice:", error);
+      return false;
     }
-    return success;
   }, [toast]);
 
   const disconnectFromDevice = useCallback(async () => {
@@ -153,6 +200,7 @@ export const useBluetoothSharing = () => {
     isReceivingData,
     isSendingData,
     receivedData,
+    bluetoothAvailable,
     startScan,
     connectToDevice,
     disconnectFromDevice,

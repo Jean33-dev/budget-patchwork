@@ -13,7 +13,6 @@ import { BluetoothSearching, Loader2, Download } from "lucide-react";
 import { BluetoothDeviceList } from "./BluetoothDeviceList";
 import { useBluetoothSharing } from "@/hooks/useBluetoothSharing";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Budget } from "@/hooks/useBudgets";
 import { useBudgets } from "@/hooks/useBudgets";
@@ -34,12 +33,20 @@ export const ExpenseReceiveDialog = ({ onReceiveComplete }: ExpenseReceiveDialog
     isConnected,
     isReceivingData,
     receivedData,
+    bluetoothAvailable,
     startScan,
     connectToDevice,
     disconnectFromDevice,
     receiveExpense,
     importReceivedExpense
   } = useBluetoothSharing();
+
+  // Start scan when dialog opens
+  useEffect(() => {
+    if (isOpen && !selectedDevice) {
+      startScan();
+    }
+  }, [isOpen, selectedDevice, startScan]);
 
   // Disconnection on dialog close
   useEffect(() => {
@@ -176,6 +183,7 @@ export const ExpenseReceiveDialog = ({ onReceiveComplete }: ExpenseReceiveDialog
               onSelectDevice={connectToDevice}
               onScan={startScan}
               isScanning={isScanning}
+              bluetoothAvailable={bluetoothAvailable}
             />
           )}
         </div>

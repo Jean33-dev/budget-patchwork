@@ -2,7 +2,7 @@
 import { BleDevice } from "@capacitor-community/bluetooth-le";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Bluetooth, RefreshCw } from "lucide-react";
+import { Bluetooth, RefreshCw, AlertTriangle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface BluetoothDeviceListProps {
@@ -10,14 +10,45 @@ interface BluetoothDeviceListProps {
   onSelectDevice: (device: BleDevice) => void;
   onScan: () => void;
   isScanning: boolean;
+  bluetoothAvailable?: boolean | null;
 }
 
 export const BluetoothDeviceList = ({
   devices,
   onSelectDevice,
   onScan,
-  isScanning
+  isScanning,
+  bluetoothAvailable = null
 }: BluetoothDeviceListProps) => {
+  if (bluetoothAvailable === false) {
+    return (
+      <Card className="w-full">
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg flex items-center">
+              <Bluetooth className="mr-2 h-5 w-5" />
+              Bluetooth
+            </CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-4 text-muted-foreground">
+            <AlertTriangle className="h-10 w-10 mx-auto mb-2 text-amber-500" />
+            <p className="font-medium">Bluetooth non disponible</p>
+            <p className="text-sm mt-1 mb-3">Veuillez activer le Bluetooth et vérifier les permissions de l'application</p>
+            <Button 
+              variant="secondary" 
+              size="sm" 
+              onClick={onScan}
+            >
+              Réessayer
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className="w-full">
       <CardHeader className="pb-3">

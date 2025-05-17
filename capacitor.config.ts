@@ -28,7 +28,8 @@ const config: CapacitorConfig = {
   ios: {
     permissions: [
       "bluetooth-peripheral",
-      "bluetooth-central"
+      "bluetooth-central",
+      "nearby-interaction"
     ]
   },
   android: {

@@ -1,6 +1,6 @@
 
 import { BleClient, BleDevice, numberToUUID } from '@capacitor-community/bluetooth-le';
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 
 // Structure pour les données de dépense à partager
 export interface ExpenseShareData {
@@ -39,7 +39,31 @@ export class BluetoothService {
       toast({
         variant: "destructive",
         title: "Erreur Bluetooth",
-        description: "Impossible d'initialiser Bluetooth"
+        description: "Impossible d'initialiser Bluetooth. Vérifiez que le Bluetooth est activé et que les permissions sont accordées."
+      });
+      return false;
+    }
+  }
+
+  async requestPermissions(): Promise<boolean> {
+    try {
+      // Vérifier si le Bluetooth est disponible et activé
+      const bluetoothIsAvailable = await BleClient.isEnabled();
+      if (!bluetoothIsAvailable) {
+        console.log('Bluetooth is not enabled, requesting to enable it');
+        toast({
+          title: "Bluetooth désactivé",
+          description: "Veuillez activer le Bluetooth sur votre appareil"
+        });
+        return false;
+      }
+      return true;
+    } catch (error) {
+      console.error('Error checking Bluetooth status:', error);
+      toast({
+        variant: "destructive",
+        title: "Erreur Bluetooth",
+        description: "Impossible de vérifier l'état du Bluetooth"
       });
       return false;
     }
@@ -48,13 +72,18 @@ export class BluetoothService {
   async scanForDevices(): Promise<BleDevice[]> {
     try {
       if (!await this.initialize()) return [];
-
+      if (!await this.requestPermissions()) return [];
+      
+      console.log('Starting BLE scan...');
       const devices: BleDevice[] = [];
+      
       await BleClient.requestLEScan(
-        {
-          services: [SERVICE_UUID],
+        { 
+          // Ne pas filtrer par service UUID pour trouver plus d'appareils
+          // services: [SERVICE_UUID],
         },
         (result) => {
+          console.log('Found device:', result.device);
           // Ajouter l'appareil à la liste s'il n'existe pas déjà
           if (!devices.find(d => d.deviceId === result.device.deviceId)) {
             devices.push(result.device);
@@ -65,7 +94,7 @@ export class BluetoothService {
       // Scanner pendant 5 secondes
       setTimeout(async () => {
         await BleClient.stopLEScan();
-        console.log('Scanning stopped');
+        console.log('Scanning stopped, found', devices.length, 'devices');
       }, 5000);
 
       return devices;
@@ -74,7 +103,7 @@ export class BluetoothService {
       toast({
         variant: "destructive",
         title: "Erreur de recherche",
-        description: "Impossible de rechercher des appareils Bluetooth"
+        description: "Impossible de rechercher des appareils Bluetooth. Vérifiez les permissions."
       });
       return [];
     }
@@ -83,6 +112,7 @@ export class BluetoothService {
   async connect(deviceId: string): Promise<boolean> {
     try {
       if (!await this.initialize()) return false;
+      if (!await this.requestPermissions()) return false;
       
       await BleClient.connect(deviceId);
       console.log('Connected to device:', deviceId);
@@ -111,15 +141,15 @@ export class BluetoothService {
   async sendExpenseData(deviceId: string, expenseData: ExpenseShareData): Promise<boolean> {
     try {
       if (!await this.initialize()) return false;
+      if (!await this.requestPermissions()) return false;
       
       // Convertir les données en JSON puis en ArrayBuffer
       const jsonString = JSON.stringify(expenseData);
       const encoder = new TextEncoder();
-      const data = encoder.encode(jsonString);
+      const dataArray = encoder.encode(jsonString);
       
-      // Créer une DataView à partir de l'ArrayBuffer pour être compatible avec l'API BleClient
-      const buffer = data.buffer;
-      const dataView = new DataView(buffer);
+      // Correction: créer un DataView à partir de l'ArrayBuffer pour être compatible avec l'API BleClient
+      const dataView = new DataView(dataArray.buffer);
       
       await BleClient.write(
         deviceId,
@@ -144,6 +174,7 @@ export class BluetoothService {
   async receiveExpenseData(deviceId: string): Promise<ExpenseShareData | null> {
     try {
       if (!await this.initialize()) return null;
+      if (!await this.requestPermissions()) return null;
       
       const result = await BleClient.read(
         deviceId,

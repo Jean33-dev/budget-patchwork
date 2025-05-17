@@ -34,11 +34,19 @@ export const ExpenseShareDialog = ({
     selectedDevice,
     isConnected,
     isSendingData,
+    bluetoothAvailable,
     startScan,
     connectToDevice,
     disconnectFromDevice,
     sendExpense
   } = useBluetoothSharing();
+
+  // Start scan when dialog opens
+  useEffect(() => {
+    if (isOpen && !selectedDevice) {
+      startScan();
+    }
+  }, [isOpen, selectedDevice, startScan]);
 
   // Disconnection on dialog close
   useEffect(() => {
@@ -54,7 +62,7 @@ export const ExpenseShareDialog = ({
     const expenseData: ExpenseShareData = {
       title: expense.title,
       amount: expense.budget,
-      date: expense.date
+      date: expense.date || new Date().toISOString().split('T')[0]
     };
 
     const success = await sendExpense(expenseData);
@@ -93,7 +101,7 @@ export const ExpenseShareDialog = ({
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Date</span>
-                <span className="font-medium">{expense.date}</span>
+                <span className="font-medium">{expense.date || "Non spécifiée"}</span>
               </div>
             </div>
           </div>
@@ -138,14 +146,13 @@ export const ExpenseShareDialog = ({
               </div>
             </div>
           ) : (
-            <>
-              <BluetoothDeviceList
-                devices={devices}
-                onSelectDevice={connectToDevice}
-                onScan={startScan}
-                isScanning={isScanning}
-              />
-            </>
+            <BluetoothDeviceList
+              devices={devices}
+              onSelectDevice={connectToDevice}
+              onScan={startScan}
+              isScanning={isScanning}
+              bluetoothAvailable={bluetoothAvailable}
+            />
           )}
         </div>
       </DialogContent>
