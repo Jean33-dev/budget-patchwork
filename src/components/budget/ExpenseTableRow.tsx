@@ -1,7 +1,9 @@
+
 import React, { useState } from "react";
 import { TableCell, TableRow } from "@/components/ui/table";
-import { formatCurrency } from "@/lib/utils";
+import { formatAmount } from "@/utils/format-amount";
 import { MoreHorizontal } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { EditExpenseDialog } from "./EditExpenseDialog";
 import { ExpenseShareDialog } from "@/components/expense/share/ExpenseShareDialog";
@@ -30,7 +32,7 @@ export const ExpenseTableRow = ({
     <>
       <TableRow key={expense.id} onClick={() => toggleRow(expense.id)} className="cursor-pointer">
         <TableCell className="font-medium">{expense.title}</TableCell>
-        <TableCell className="text-right">{formatCurrency(expense.budget)}</TableCell>
+        <TableCell className="text-right">{formatAmount(expense.budget)}</TableCell>
         <TableCell className="w-16">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -57,11 +59,32 @@ export const ExpenseTableRow = ({
       </TableRow>
 
       <EditExpenseDialog
-        isOpen={isEditDialogOpen}
+        open={isEditDialogOpen}
         onOpenChange={setIsEditDialogOpen}
-        expense={expense}
-        availableBudgets={availableBudgets}
-        onUpdate={onUpdate}
+        title={expense.title}
+        onTitleChange={(title) => {
+          if (onUpdate && expense) {
+            onUpdate({ ...expense, title });
+          }
+        }}
+        budget={expense.budget}
+        onBudgetChange={(budget) => {
+          if (onUpdate && expense) {
+            onUpdate({ ...expense, budget });
+          }
+        }}
+        date={expense.date || new Date().toISOString().split('T')[0]}
+        onDateChange={(date) => {
+          if (onUpdate && expense) {
+            onUpdate({ ...expense, date });
+          }
+        }}
+        onSubmit={() => {
+          setIsEditDialogOpen(false);
+          if (onUpdate) {
+            onUpdate(expense);
+          }
+        }}
       />
     </>
   );
