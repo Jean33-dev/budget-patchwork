@@ -2,6 +2,7 @@
 import { EnvelopeListHeader } from "./EnvelopeListHeader";
 import { ExpenseTable } from "./ExpenseTable";
 import { EnvelopeGrid } from "./EnvelopeGrid";
+import { Expense } from "@/services/database/models/expense";
 
 interface Envelope {
   id: string;
@@ -47,7 +48,7 @@ export const EnvelopeList = ({
       
       {type === "expense" ? (
         <ExpenseTable 
-          expenses={filteredEnvelopes}
+          expenses={filteredEnvelopes as Expense[]}
           onEnvelopeClick={onEnvelopeClick}
           availableBudgets={availableBudgets}
         />
