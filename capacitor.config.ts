@@ -15,7 +15,32 @@ const config: CapacitorConfig = {
       androidLocation: 'databases',
       androidDatabaseLocation: 'default',
       iosDatabaseLocation: 'Library'
+    },
+    BluetoothLe: {
+      displayStrings: {
+        scanning: "Recherche d'appareils...",
+        cancel: "Annuler",
+        availableDevices: "Appareils disponibles",
+        noDeviceFound: "Aucun appareil trouvé"
+      }
     }
+  },
+  ios: {
+    permissions: [
+      "bluetooth-peripheral",
+      "bluetooth-central"
+    ]
+  },
+  android: {
+    permissions: [
+      "android.permission.BLUETOOTH",
+      "android.permission.BLUETOOTH_ADMIN",
+      "android.permission.BLUETOOTH_CONNECT",
+      "android.permission.BLUETOOTH_SCAN",
+      "android.permission.BLUETOOTH_ADVERTISE",
+      "android.permission.ACCESS_COARSE_LOCATION",
+      "android.permission.ACCESS_FINE_LOCATION"
+    ]
   }
 };
 

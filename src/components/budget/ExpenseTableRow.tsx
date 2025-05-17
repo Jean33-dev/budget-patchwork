@@ -1,27 +1,22 @@
 
-import React from "react";
 import { TableCell, TableRow } from "@/components/ui/table";
-import { format } from "date-fns";
-import { fr } from "date-fns/locale";
-import { ExpenseActionMenu } from "./ExpenseActionMenu";
+import { ChevronDown, ChevronUp, Trash2 } from "lucide-react";
 import { formatAmount } from "@/utils/format-amount";
+import { Button } from "@/components/ui/button";
+import { Budget, Expense } from "@/hooks/useExpenseManagement";
+import { useState, useMemo } from "react";
+import { ExpenseShareDialog } from "../expense/share/ExpenseShareDialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
 interface ExpenseTableRowProps {
-  expense: {
-    id: string;
-    title: string;
-    budget: number;
-    spent: number;
-    type: string;
-    linkedBudgetId?: string;
-    date?: string;
-    dashboardId?: string;
-  };
+  expense: Expense;
   isExpanded: boolean;
   toggleRow: (id: string) => void;
-  onDelete?: (() => void) | undefined;
-  availableBudgets: Array<{ id: string; title: string }>;
-  onUpdate: (updatedExpense: any) => void;
+  onDelete?: (id: string) => void;
+  availableBudgets?: Array<{ id: string; title: string; }>;
+  onUpdate?: (updatedExpense: Expense) => void;
 }
 
 export const ExpenseTableRow = ({
@@ -32,65 +27,195 @@ export const ExpenseTableRow = ({
   availableBudgets,
   onUpdate
 }: ExpenseTableRowProps) => {
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return "Non spécifiée";
-    try {
-      const date = new Date(dateString);
-      return format(date, 'dd/MM/yyyy', { locale: fr });
-    } catch (error) {
-      console.error("Error formatting date:", error);
-      return "Date invalide";
+  const [editedTitle, setEditedTitle] = useState(expense.title);
+  const [editedBudget, setEditedBudget] = useState(expense.budget.toString());
+  const [editedBudgetId, setEditedBudgetId] = useState(expense.linkedBudgetId || "");
+  const [editedDate, setEditedDate] = useState(expense.date || "");
+  
+  // Find the selected budget's name
+  const selectedBudgetName = useMemo(() => {
+    if (!availableBudgets) return "Inconnu";
+    const budget = availableBudgets.find(budget => budget.id === expense.linkedBudgetId);
+    return budget ? budget.title : "Inconnu";
+  }, [availableBudgets, expense.linkedBudgetId]);
+
+  const handleSave = () => {
+    if (onUpdate) {
+      onUpdate({
+        ...expense,
+        title: editedTitle,
+        budget: parseFloat(editedBudget),
+        spent: parseFloat(editedBudget), // Définir spent égal à budget
+        linkedBudgetId: editedBudgetId,
+        date: editedDate
+      });
     }
   };
 
-  const getBudgetTitle = (budgetId?: string): string => {
-    if (!budgetId) return "Non catégorisé";
-    const budget = availableBudgets.find(b => b.id === budgetId);
-    return budget ? budget.title : "Catégorie inconnue";
+  const handleEscape = (e: React.KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      toggleRow(expense.id);
+    }
   };
 
-  const handleRowClick = () => {
-    toggleRow(expense.id);
+  const onBudgetChange = (value: string) => {
+    setEditedBudget(value.replace(/[^0-9.]/g, ''));
   };
-
-  // Détermine si le montant est élevé pour stylisation différente
-  const isHighAmount = expense.budget > 100;
 
   return (
-    <TableRow 
-      key={expense.id}
-      className={`group cursor-pointer transition-all hover:bg-slate-50 ${isExpanded ? 'bg-slate-50' : ''} border-l-4 ${isHighAmount ? 'border-l-amber-400' : 'border-l-transparent'}`}
-      onClick={handleRowClick}
-    >
-      <TableCell className="font-medium py-3 flex items-center gap-3">
-        <div className={`w-2 h-2 rounded-full ${isHighAmount ? 'bg-amber-400' : 'bg-blue-400'} opacity-70`}></div>
-        <div className="flex flex-col">
-          <span className="text-gray-800 font-medium line-clamp-1">{expense.title}</span>
-          {expense.linkedBudgetId && (
-            <span className="text-xs text-gray-500">{getBudgetTitle(expense.linkedBudgetId)}</span>
-          )}
-        </div>
-      </TableCell>
-      <TableCell className="text-right">
-        <div className="flex flex-col items-end">
-          <span className={`font-semibold ${isHighAmount ? 'text-amber-600' : 'text-gray-700'}`}>
-            {formatAmount(expense.budget)}
-          </span>
-          {expense.date && (
-            <span className="text-xs text-gray-500">{formatDate(expense.date)}</span>
-          )}
-        </div>
-      </TableCell>
-      <TableCell className="w-16 opacity-0 group-hover:opacity-100 transition-opacity">
-        {onDelete && (
-          <ExpenseActionMenu
-            onDeleteClick={(e) => {
-              e.stopPropagation();
-              onDelete();
-            }}
-          />
-        )}
-      </TableCell>
-    </TableRow>
+    <>
+      <TableRow
+        className="cursor-pointer hover:bg-accent/30"
+        onClick={() => toggleRow(expense.id)}
+      >
+        <TableCell>
+          <div>
+            <span className="font-medium">{expense.title}</span>
+            {expense.date && (
+              <div className="text-xs text-muted-foreground mt-1">
+                {expense.date}
+              </div>
+            )}
+          </div>
+        </TableCell>
+        <TableCell className="text-right">
+          <span className="font-medium">{formatAmount(expense.budget)}</span>
+        </TableCell>
+        <TableCell className="text-right">
+          <div className="flex justify-end space-x-1">
+            {isExpanded ? (
+              <ChevronUp className="h-4 w-4 text-muted-foreground" />
+            ) : (
+              <ChevronDown className="h-4 w-4 text-muted-foreground" />
+            )}
+          </div>
+        </TableCell>
+      </TableRow>
+
+      {isExpanded && (
+        <TableRow className="bg-muted/40">
+          <TableCell colSpan={3} className="p-4">
+            <div className="space-y-4">
+              {/* Budget associé et date */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <Label htmlFor="budgetSelect" className="text-sm">Budget</Label>
+                  {availableBudgets && onUpdate ? (
+                    <Select 
+                      value={editedBudgetId} 
+                      onValueChange={setEditedBudgetId}
+                    >
+                      <SelectTrigger id="budgetSelect" className="h-8">
+                        <SelectValue placeholder="Sélectionner un budget" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {availableBudgets.map(budget => (
+                          <SelectItem key={budget.id} value={budget.id}>
+                            {budget.title}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <div className="text-sm text-muted-foreground p-1">
+                      {selectedBudgetName}
+                    </div>
+                  )}
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="dateInput" className="text-sm">Date</Label>
+                  {onUpdate ? (
+                    <Input
+                      id="dateInput"
+                      type="date"
+                      value={editedDate}
+                      onChange={(e) => setEditedDate(e.target.value)}
+                      className="h-8"
+                    />
+                  ) : (
+                    <div className="text-sm text-muted-foreground p-1">
+                      {expense.date}
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              {/* Titre et montant */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <Label htmlFor="titleInput" className="text-sm">Titre</Label>
+                  {onUpdate ? (
+                    <Input
+                      id="titleInput"
+                      type="text"
+                      value={editedTitle}
+                      onChange={(e) => setEditedTitle(e.target.value)}
+                      className="h-8"
+                      onKeyDown={handleEscape}
+                    />
+                  ) : (
+                    <div className="text-sm text-muted-foreground p-1">
+                      {expense.title}
+                    </div>
+                  )}
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="budgetInput" className="text-sm">Montant</Label>
+                  {onUpdate ? (
+                    <Input
+                      id="budgetInput"
+                      type="text"
+                      value={editedBudget}
+                      onChange={(e) => onBudgetChange(e.target.value)}
+                      className="h-8"
+                      onKeyDown={handleEscape}
+                    />
+                  ) : (
+                    <div className="text-sm text-muted-foreground p-1">
+                      {formatAmount(expense.budget)}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex justify-between pt-2">
+                <div className="flex space-x-2">
+                  {onUpdate && (
+                    <Button 
+                      size="sm" 
+                      variant="secondary"
+                      onClick={() => {
+                        handleSave();
+                        toggleRow(expense.id);
+                      }}
+                    >
+                      Enregistrer
+                    </Button>
+                  )}
+                  {onDelete && (
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDelete(expense.id);
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4 mr-1 text-destructive" />
+                      <span>Supprimer</span>
+                    </Button>
+                  )}
+                </div>
+                <ExpenseShareDialog
+                  expense={expense}
+                  onShareComplete={() => toggleRow(expense.id)}
+                />
+              </div>
+            </div>
+          </TableCell>
+        </TableRow>
+      )}
+    </>
   );
 };
