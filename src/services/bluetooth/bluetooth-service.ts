@@ -117,11 +117,15 @@ export class BluetoothService {
       const encoder = new TextEncoder();
       const data = encoder.encode(jsonString);
       
+      // Créer une DataView à partir de l'ArrayBuffer pour être compatible avec l'API BleClient
+      const buffer = data.buffer;
+      const dataView = new DataView(buffer);
+      
       await BleClient.write(
         deviceId,
         SERVICE_UUID,
         CHARACTERISTIC_UUID,
-        data
+        dataView
       );
       
       console.log('Expense data sent successfully');

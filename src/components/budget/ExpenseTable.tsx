@@ -1,23 +1,14 @@
-
 import React, { useState } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ExpenseTableRow } from "./ExpenseTableRow";
+import { Expense } from "@/services/database/models/expense";
 
 interface ExpenseTableProps {
-  expenses: Array<{
-    id: string;
-    title: string;
-    budget: number;
-    spent: number;
-    type: string;
-    linkedBudgetId?: string;
-    date?: string;
-    dashboardId?: string;
-  }>;
+  expenses: Array<Expense>;
   onEnvelopeClick?: (envelope: any) => void;
   availableBudgets?: Array<{ id: string; title: string }>;
   onDeleteExpense?: (id: string) => void;
-  onUpdateExpense?: (expense: any) => void;
+  onUpdateExpense?: (expense: Expense) => void;
   showDebugInfo?: boolean;
 }
 
@@ -43,7 +34,7 @@ export const ExpenseTable = ({
     }
   };
 
-  const handleUpdate = (updatedExpense: any) => {
+  const handleUpdate = (updatedExpense: Expense) => {
     if (onUpdateExpense) {
       console.log("ExpenseTable - handleUpdate with expense:", updatedExpense);
       onUpdateExpense(updatedExpense);
