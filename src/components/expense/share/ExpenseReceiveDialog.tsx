@@ -34,6 +34,7 @@ export const ExpenseReceiveDialog = ({ onReceiveComplete }: ExpenseReceiveDialog
     isReceivingData,
     receivedData,
     bluetoothAvailable,
+    isNativePlatform,
     startScan,
     connectToDevice,
     disconnectFromDevice,
@@ -43,10 +44,10 @@ export const ExpenseReceiveDialog = ({ onReceiveComplete }: ExpenseReceiveDialog
 
   // Start scan when dialog opens
   useEffect(() => {
-    if (isOpen && !selectedDevice) {
+    if (isOpen && !selectedDevice && isNativePlatform) {
       startScan();
     }
-  }, [isOpen, selectedDevice, startScan]);
+  }, [isOpen, selectedDevice, startScan, isNativePlatform]);
 
   // Disconnection on dialog close
   useEffect(() => {
@@ -184,6 +185,7 @@ export const ExpenseReceiveDialog = ({ onReceiveComplete }: ExpenseReceiveDialog
               onScan={startScan}
               isScanning={isScanning}
               bluetoothAvailable={bluetoothAvailable}
+              isNativePlatform={isNativePlatform}
             />
           )}
         </div>

@@ -35,6 +35,7 @@ export const ExpenseShareDialog = ({
     isConnected,
     isSendingData,
     bluetoothAvailable,
+    isNativePlatform,
     startScan,
     connectToDevice,
     disconnectFromDevice,
@@ -43,10 +44,10 @@ export const ExpenseShareDialog = ({
 
   // Start scan when dialog opens
   useEffect(() => {
-    if (isOpen && !selectedDevice) {
+    if (isOpen && !selectedDevice && isNativePlatform) {
       startScan();
     }
-  }, [isOpen, selectedDevice, startScan]);
+  }, [isOpen, selectedDevice, startScan, isNativePlatform]);
 
   // Disconnection on dialog close
   useEffect(() => {
@@ -152,6 +153,7 @@ export const ExpenseShareDialog = ({
               onScan={startScan}
               isScanning={isScanning}
               bluetoothAvailable={bluetoothAvailable}
+              isNativePlatform={isNativePlatform}
             />
           )}
         </div>

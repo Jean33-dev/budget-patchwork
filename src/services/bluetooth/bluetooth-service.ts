@@ -16,6 +16,9 @@ const CHARACTERISTIC_UUID = '00001235-0000-1000-8000-00805f9b34fb'; // UUID pers
 export class BluetoothService {
   private static instance: BluetoothService;
   private isInitialized = false;
+  private isBrowserEnv = typeof window !== 'undefined' && 
+                         typeof navigator !== 'undefined' &&
+                         !('capacitor' in window);
 
   private constructor() {}
 
@@ -28,7 +31,19 @@ export class BluetoothService {
 
   async initialize(): Promise<boolean> {
     try {
+      // Vérifier si nous sommes dans un navigateur sans l'API Bluetooth
+      if (this.isBrowserEnv) {
+        console.log('Detected browser environment. Web Bluetooth may not be available.');
+        
+        // Vérifier si l'API Web Bluetooth est disponible
+        if (!navigator.bluetooth) {
+          console.error('Web Bluetooth API not available in this browser');
+          return false;
+        }
+      }
+      
       if (!this.isInitialized) {
+        console.log('Initializing Bluetooth...');
         await BleClient.initialize();
         this.isInitialized = true;
         console.log('Bluetooth initialized successfully');
@@ -36,17 +51,34 @@ export class BluetoothService {
       return true;
     } catch (error) {
       console.error('Error initializing Bluetooth:', error);
+      
+      // Message d'erreur plus utilisateur-friendly
+      let errorMessage = "Impossible d'initialiser Bluetooth.";
+      
+      // Message spécifique pour navigateur web
+      if (this.isBrowserEnv) {
+        errorMessage += " Cette fonctionnalité nécessite l'app mobile pour fonctionner correctement.";
+      } else {
+        errorMessage += " Vérifiez que le Bluetooth est activé et que les permissions sont accordées.";
+      }
+      
       toast({
         variant: "destructive",
         title: "Erreur Bluetooth",
-        description: "Impossible d'initialiser Bluetooth. Vérifiez que le Bluetooth est activé et que les permissions sont accordées."
+        description: errorMessage
       });
+      
       return false;
     }
   }
 
   async requestPermissions(): Promise<boolean> {
     try {
+      // Si nous sommes dans un navigateur sans support Bluetooth, retourner false
+      if (this.isBrowserEnv && !navigator.bluetooth) {
+        return false;
+      }
+      
       // Vérifier si le Bluetooth est disponible et activé
       const bluetoothIsAvailable = await BleClient.isEnabled();
       if (!bluetoothIsAvailable) {

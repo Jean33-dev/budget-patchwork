@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useEffect } from 'react';
 import { bluetoothService, ExpenseShareData } from '@/services/bluetooth/bluetooth-service';
 import { BleDevice } from '@capacitor-community/bluetooth-le';
@@ -15,12 +14,36 @@ export const useBluetoothSharing = () => {
   const [isSendingData, setIsSendingData] = useState(false);
   const [receivedData, setReceivedData] = useState<ExpenseShareData | null>(null);
   const [bluetoothAvailable, setBluetoothAvailable] = useState<boolean | null>(null);
+  const [isNativePlatform, setIsNativePlatform] = useState<boolean>(false);
   const { toast } = useToast();
+
+  // Détecter si nous sommes sur une plateforme native
+  useEffect(() => {
+    // Détecter si nous sommes dans Capacitor (environnement natif)
+    const checkPlatform = async () => {
+      const isNative = typeof window !== 'undefined' && 
+                      'capacitor' in window;
+      setIsNativePlatform(isNative);
+      
+      if (!isNative) {
+        console.log("Application running in browser environment. Bluetooth functionality limited.");
+        setBluetoothAvailable(false);
+      }
+    };
+    
+    checkPlatform();
+  }, []);
 
   // Vérifier la disponibilité du Bluetooth au chargement du hook
   useEffect(() => {
     const checkBluetoothAvailability = async () => {
       try {
+        // Ne pas essayer d'initialiser dans un navigateur
+        if (!isNativePlatform) {
+          setBluetoothAvailable(false);
+          return;
+        }
+        
         // Initialiser le service Bluetooth
         const initialized = await bluetoothService.initialize();
         
@@ -45,7 +68,7 @@ export const useBluetoothSharing = () => {
     };
 
     checkBluetoothAvailability();
-  }, []);
+  }, [isNativePlatform]);
 
   const startScan = useCallback(async () => {
     setIsScanning(true);
@@ -97,7 +120,7 @@ export const useBluetoothSharing = () => {
       setIsConnected(false);
       toast({
         title: "Déconnecté",
-        description: "Déconnecté de l'appareil"
+        description: "Déconnect�� de l'appareil"
       });
     }
   }, [selectedDevice, toast]);
@@ -201,6 +224,7 @@ export const useBluetoothSharing = () => {
     isSendingData,
     receivedData,
     bluetoothAvailable,
+    isNativePlatform,
     startScan,
     connectToDevice,
     disconnectFromDevice,
