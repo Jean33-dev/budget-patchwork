@@ -61,7 +61,10 @@ const Expenses = () => {
 
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
-      <ExpensesHeader onNavigate={navigate} />
+      <ExpensesHeader 
+        onNavigate={navigate} 
+        showReceiveButton={activeTab === "ponctuel"} // Afficher le bouton uniquement si l'onglet actif est "ponctuel"
+      />
       
       <Tabs defaultValue="ponctuel" value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-2">

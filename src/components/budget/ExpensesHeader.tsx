@@ -6,9 +6,13 @@ import { ExpenseReceiveDialog } from "../expense/share/ExpenseReceiveDialog";
 
 interface ExpensesHeaderProps {
   onNavigate: NavigateFunction;
+  showReceiveButton?: boolean; // Nouvelle prop pour contrôler l'affichage du bouton
 }
 
-export const ExpensesHeader = ({ onNavigate }: ExpensesHeaderProps) => {
+export const ExpensesHeader = ({ 
+  onNavigate, 
+  showReceiveButton = true // Par défaut, le bouton est affiché
+}: ExpensesHeaderProps) => {
   return (
     <div className="flex items-center justify-between">
       <div className="flex items-center space-x-2">
@@ -23,9 +27,11 @@ export const ExpensesHeader = ({ onNavigate }: ExpensesHeaderProps) => {
         <h1 className="text-xl font-semibold">Dépenses</h1>
       </div>
       <div>
-        <ExpenseReceiveDialog 
-          onReceiveComplete={() => window.location.reload()}
-        />
+        {showReceiveButton && (
+          <ExpenseReceiveDialog 
+            onReceiveComplete={() => window.location.reload()}
+          />
+        )}
       </div>
     </div>
   );
