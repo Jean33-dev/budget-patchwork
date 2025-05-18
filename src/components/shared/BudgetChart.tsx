@@ -5,6 +5,7 @@ interface BudgetData {
   name: string;
   value: number;
   type: "income" | "expense" | "budget";
+  displayName?: string; // Optional property for display purposes
 }
 
 interface BudgetChartProps {
@@ -170,11 +171,25 @@ export const BudgetChart = ({ data, totalIncome = 0, addUnallocated = false }: B
           />
           <Legend
             formatter={(value, entry) => {
-              // Fix TypeScript error by properly typing the entry parameter
-              // The entry parameter from recharts has payload property that contains our data
-              const payload = entry && entry.payload ? entry.payload as (typeof chartData)[0] : undefined;
-              // Use the payload to safely access the name property
-              const displayName = payload ? truncateName(payload.name) : value;
+              // Fix TypeScript error by properly handling the entry payload
+              // Create a type guard function to check if an object is a BudgetData
+              const isBudgetData = (obj: any): obj is BudgetData => {
+                return obj && 
+                  typeof obj === 'object' && 
+                  'name' in obj && 
+                  'type' in obj;
+              };
+              
+              // Safely access the payload and cast only if it matches our expected structure
+              const payload = entry && 
+                              entry.payload && 
+                              typeof entry.payload === 'object' ? 
+                                entry.payload : undefined;
+                                
+              // Get the name to display, using type guard to ensure type safety
+              const displayName = isBudgetData(payload) ? 
+                truncateName(payload.name) : 
+                (typeof value === 'string' ? truncateName(value) : 'Unknown');
               
               return (
                 <span 
@@ -188,7 +203,7 @@ export const BudgetChart = ({ data, totalIncome = 0, addUnallocated = false }: B
                     textOverflow: "ellipsis",
                     whiteSpace: "nowrap"
                   }}
-                  title={payload?.name || value} // Show full name on hover
+                  title={isBudgetData(payload) ? payload.name : (typeof value === 'string' ? value : 'Unknown')} // Show full name on hover
                 >
                   {displayName}
                 </span>
