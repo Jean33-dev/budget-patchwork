@@ -6,7 +6,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Loader2, Send } from "lucide-react";
@@ -14,9 +13,7 @@ import { BluetoothDeviceList } from "./BluetoothDeviceList";
 import { useBluetoothSharing } from "@/hooks/useBluetoothSharing";
 import { Expense } from "@/services/database/models/expense";
 import { ExpenseShareData } from "@/services/bluetooth/bluetooth-service";
-import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { ExpenseShareButton } from "./ExpenseShareButton";
 
 interface ExpenseShareDialogProps {
   expense: Expense;
@@ -27,7 +24,7 @@ export const ExpenseShareDialog = ({
   expense,
   onShareComplete 
 }: ExpenseShareDialogProps) => {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
   const {
     isScanning,
     devices,
@@ -56,6 +53,13 @@ export const ExpenseShareDialog = ({
     }
   }, [isOpen, selectedDevice, disconnectFromDevice]);
 
+  // Handle dialog close
+  useEffect(() => {
+    if (!isOpen && onShareComplete) {
+      onShareComplete();
+    }
+  }, [isOpen, onShareComplete]);
+
   // Format expense data for sharing
   const handleShareExpense = async () => {
     if (!selectedDevice || !isConnected) return;
@@ -70,16 +74,12 @@ export const ExpenseShareDialog = ({
     if (success && onShareComplete) {
       setTimeout(() => {
         setIsOpen(false);
-        onShareComplete();
       }, 1000);
     }
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <ExpenseShareButton onClick={() => {}} />
-      </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Partager la dépense</DialogTitle>

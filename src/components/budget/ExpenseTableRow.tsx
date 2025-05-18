@@ -27,6 +27,7 @@ export const ExpenseTableRow = ({
   onUpdate
 }: ExpenseTableRowProps) => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
 
   return (
     <>
@@ -35,13 +36,13 @@ export const ExpenseTableRow = ({
         <TableCell className="text-right">{formatAmount(expense.budget)}</TableCell>
         <TableCell className="w-16">
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
+            <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
               <Button variant="ghost" className="h-8 w-8 p-0">
                 <span className="sr-only">Ouvrir le menu</span>
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
               <DropdownMenuItem onClick={() => setIsEditDialogOpen(true)}>
                 Modifier
@@ -50,14 +51,15 @@ export const ExpenseTableRow = ({
                 Supprimer
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <ExpenseShareDialog expense={expense} onShareComplete={() => {}} />
+              <DropdownMenuItem onClick={() => setIsShareDialogOpen(true)}>
+                Partager
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </TableCell>
       </TableRow>
 
+      {/* Boîte de dialogue de modification */}
       <EditExpenseDialog
         open={isEditDialogOpen}
         onOpenChange={setIsEditDialogOpen}
@@ -86,6 +88,14 @@ export const ExpenseTableRow = ({
           }
         }}
       />
+
+      {/* Boîte de dialogue de partage */}
+      {isShareDialogOpen && (
+        <ExpenseShareDialog
+          expense={expense}
+          onShareComplete={() => setIsShareDialogOpen(false)}
+        />
+      )}
     </>
   );
 };
