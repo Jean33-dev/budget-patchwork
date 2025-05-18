@@ -8,4 +8,5 @@ export interface Income {
   date: string;
   isRecurring?: boolean;
   dashboardId?: string;
+  isActiveForCurrentMonth?: boolean; // Nouvelle propriété
 }
