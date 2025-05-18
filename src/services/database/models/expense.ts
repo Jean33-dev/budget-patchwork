@@ -9,5 +9,4 @@ export interface Expense {
   date: string;
   isRecurring?: boolean;
   dashboardId?: string;
-  isActiveForCurrentMonth?: boolean; // Nouvelle propriété
 }
