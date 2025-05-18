@@ -38,6 +38,11 @@ const COLORS = {
 // Couleur distincte pour le budget non alloué
 const UNALLOCATED_COLOR = "#64748B"; // Gris bleuté
 
+// Helper to truncate text if needed
+const truncateName = (name: string, maxLength = 20) => {
+  return name.length > maxLength ? `${name.substring(0, maxLength)}...` : name;
+};
+
 export const BudgetChart = ({ data, totalIncome = 0, addUnallocated = false }: BudgetChartProps) => {
   let chartData = [...data];
   
@@ -52,6 +57,13 @@ export const BudgetChart = ({ data, totalIncome = 0, addUnallocated = false }: B
       });
     }
   }
+
+  // Map data to ensure names aren't too long
+  chartData = chartData.map(item => ({
+    ...item,
+    displayName: truncateName(item.name), // For display purposes
+    name: item.name // Keep original name for tooltips
+  }));
 
   const getPercentage = (value: number) => {
     if (totalIncome <= 0) {
@@ -83,6 +95,7 @@ export const BudgetChart = ({ data, totalIncome = 0, addUnallocated = false }: B
             paddingAngle={2} // Espacement entre les segments pour un look plus moderne
             cornerRadius={4} // Coins arrondis pour un aspect plus élégant
             stroke="transparent" // Suppression des bordures pour un aspect plus propre
+            nameKey="displayName" // Use the truncated name for display
           >
             {chartData.length > 0 && (
               <Label
@@ -132,9 +145,9 @@ export const BudgetChart = ({ data, totalIncome = 0, addUnallocated = false }: B
             })}
           </Pie>
           <Tooltip
-            formatter={(value: number, name: string) => [
+            formatter={(value: number, name: string, props: any) => [
               `${value.toFixed(2)} € (${getPercentage(value)}%)`,
-              name
+              props.payload.name // Use original full name in tooltip
             ]}
             contentStyle={{
               backgroundColor: "#FFFFFF",
@@ -156,18 +169,36 @@ export const BudgetChart = ({ data, totalIncome = 0, addUnallocated = false }: B
             cursor={{ fill: "transparent" }} // Désactiver le survol des sections
           />
           <Legend
-            formatter={(value) => (
-              <span style={{ color: "#4A5568", fontSize: "13px", paddingLeft: "4px" }}>
-                {value}
-              </span>
-            )}
+            formatter={(value, entry) => {
+              // Only truncate in the legend display
+              const displayName = truncateName(entry.payload.name);
+              return (
+                <span 
+                  style={{ 
+                    color: "#4A5568", 
+                    fontSize: "13px", 
+                    paddingLeft: "4px",
+                    maxWidth: "120px",
+                    display: "inline-block",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap"
+                  }}
+                  title={entry.payload.name} // Show full name on hover
+                >
+                  {displayName}
+                </span>
+              );
+            }}
             iconType="circle"
             iconSize={8}
             layout="vertical"
             verticalAlign="middle"
             align="right"
             wrapperStyle={{
-              paddingTop: "10px"
+              paddingTop: "10px",
+              maxWidth: "40%", // Limit legend width
+              overflowX: "hidden"
             }}
           />
         </PieChart>
