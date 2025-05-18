@@ -1,6 +1,5 @@
 
 import React, { useState } from "react";
-import { TableCell, TableRow } from "@/components/ui/table";
 import { formatAmount } from "@/utils/format-amount";
 import { MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -29,15 +28,32 @@ export const ExpenseTableRow = ({
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
 
+  const formattedDate = expense.date 
+    ? new Date(expense.date).toLocaleDateString('fr-FR', { 
+        day: 'numeric', 
+        month: 'short' 
+      })
+    : '';
+
   return (
     <>
-      <TableRow key={expense.id} onClick={() => toggleRow(expense.id)} className="cursor-pointer">
-        <TableCell className="font-medium">{expense.title}</TableCell>
-        <TableCell className="text-right">{formatAmount(expense.budget)}</TableCell>
-        <TableCell className="w-16">
+      <div 
+        className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors"
+        onClick={() => toggleRow(expense.id)}
+      >
+        <div className="flex flex-col">
+          <div className="font-medium text-gray-800">{expense.title}</div>
+          {formattedDate && (
+            <div className="text-xs text-gray-500 mt-0.5">{formattedDate}</div>
+          )}
+        </div>
+        <div className="flex items-center space-x-3">
+          <div className="text-right font-semibold text-gray-700">
+            {formatAmount(expense.budget)}
+          </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-              <Button variant="ghost" className="h-8 w-8 p-0">
+              <Button variant="ghost" className="h-8 w-8 p-0 rounded-full">
                 <span className="sr-only">Ouvrir le menu</span>
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
@@ -56,8 +72,8 @@ export const ExpenseTableRow = ({
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-        </TableCell>
-      </TableRow>
+        </div>
+      </div>
 
       {/* Boîte de dialogue de modification */}
       <EditExpenseDialog

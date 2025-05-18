@@ -1,7 +1,10 @@
+
 import React, { useState } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ExpenseTableRow } from "./ExpenseTableRow";
 import { Expense } from "@/services/database/models/expense";
+import { Card } from "@/components/ui/card";
+import { ListMusic } from "lucide-react";
 
 interface ExpenseTableProps {
   expenses: Array<Expense>;
@@ -49,55 +52,36 @@ export const ExpenseTable = ({
   }
 
   return (
-    <div className="rounded-lg border shadow-sm overflow-hidden bg-white">
+    <Card className="overflow-hidden border-none shadow-sm">
       <div className="max-h-[600px] overflow-y-auto">
-        <Table>
-          <TableHeader className="sticky top-0 z-10">
-            <TableRow className="bg-gradient-to-r from-slate-50 to-white">
-              <TableHead className="text-slate-700 font-semibold">Libellé</TableHead>
-              <TableHead className="text-right text-slate-700 font-semibold w-32">Montant</TableHead>
-              <TableHead className="w-16"></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {expenses.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={3} className="text-center py-10 text-gray-500">
-                  <div className="flex flex-col items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400">
-                      <path d="M3 3h18v18H3z"></path>
-                      <path d="M12 8v8"></path>
-                      <path d="M8 12h8"></path>
-                    </svg>
-                    <span>Aucune dépense</span>
-                    <span className="text-xs text-gray-400">Ajoutez des dépenses pour les visualiser ici</span>
+        {expenses.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 text-gray-500">
+            <ListMusic className="h-12 w-12 mb-4 text-gray-300" />
+            <p className="text-lg font-medium">Aucune dépense</p>
+            <p className="text-sm text-gray-400">Ajoutez des dépenses pour les visualiser ici</p>
+          </div>
+        ) : (
+          <div className="divide-y divide-gray-100">
+            {expenses.map((expense) => (
+              <React.Fragment key={expense.id}>
+                <ExpenseTableRow
+                  expense={expense}
+                  isExpanded={expandedRow === expense.id}
+                  toggleRow={toggleRow}
+                  onDelete={onDeleteExpense ? () => onDeleteExpense(expense.id) : undefined}
+                  availableBudgets={availableBudgets}
+                  onUpdate={handleUpdate}
+                />
+                {showDebugInfo && process.env.NODE_ENV === 'development' && (
+                  <div className="px-4 py-1 bg-gray-50 text-xs text-gray-500">
+                    {`Dashboard: ${expense.dashboardId || 'none'}`}
                   </div>
-                </TableCell>
-              </TableRow>
-            ) : (
-              expenses.map((expense) => (
-                <React.Fragment key={expense.id}>
-                  <ExpenseTableRow
-                    expense={expense}
-                    isExpanded={expandedRow === expense.id}
-                    toggleRow={toggleRow}
-                    onDelete={onDeleteExpense ? () => onDeleteExpense(expense.id) : undefined}
-                    availableBudgets={availableBudgets}
-                    onUpdate={handleUpdate}
-                  />
-                  {showDebugInfo && process.env.NODE_ENV === 'development' && (
-                    <TableRow>
-                      <TableCell colSpan={3} className="text-xs text-gray-500">
-                        {`Dashboard: ${expense.dashboardId || 'none'}`}
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </React.Fragment>
-              ))
-            )}
-          </TableBody>
-        </Table>
+                )}
+              </React.Fragment>
+            ))}
+          </div>
+        )}
       </div>
-    </div>
+    </Card>
   );
 };

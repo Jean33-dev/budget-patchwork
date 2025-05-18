@@ -70,7 +70,7 @@ export const PontualExpensesTab = ({
   }, [expenses, budgetId, availableBudgets, isLoading, error, initAttempted, isProcessing]);
   
   return (
-    <>
+    <div className="mt-4">
       {isLoading && (
         <BudgetLoadingState attempt={1} maxAttempts={1} />
       )}
@@ -99,6 +99,6 @@ export const PontualExpensesTab = ({
           showHeader={false}  // Ajout de cette propriété pour masquer l'en-tête
         />
       )}
-    </>
+    </div>
   );
 };
