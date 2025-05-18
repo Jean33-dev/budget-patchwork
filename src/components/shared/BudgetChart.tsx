@@ -170,8 +170,12 @@ export const BudgetChart = ({ data, totalIncome = 0, addUnallocated = false }: B
           />
           <Legend
             formatter={(value, entry) => {
-              // Only truncate in the legend display
-              const displayName = truncateName(entry.payload.name);
+              // Fix TypeScript error by properly typing the entry parameter
+              // The entry parameter from recharts has payload property that contains our data
+              const payload = entry && entry.payload ? entry.payload as (typeof chartData)[0] : undefined;
+              // Use the payload to safely access the name property
+              const displayName = payload ? truncateName(payload.name) : value;
+              
               return (
                 <span 
                   style={{ 
@@ -184,7 +188,7 @@ export const BudgetChart = ({ data, totalIncome = 0, addUnallocated = false }: B
                     textOverflow: "ellipsis",
                     whiteSpace: "nowrap"
                   }}
-                  title={entry.payload.name} // Show full name on hover
+                  title={payload?.name || value} // Show full name on hover
                 >
                   {displayName}
                 </span>
