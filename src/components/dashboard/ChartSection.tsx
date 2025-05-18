@@ -28,6 +28,7 @@ export const ChartSection = ({
   totalIncome, 
   addUnallocated 
 }: ChartSectionProps) => {
+  console.log("ChartSection rendering with data:", data);
   return (
     <Card className="overflow-hidden bg-gradient-to-br from-card to-card/95">
       <CardHeader className="border-b border-border/30">
