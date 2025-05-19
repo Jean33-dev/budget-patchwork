@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/componen
 import { Button } from "@/components/ui/button";
 import { Calendar, Trash2 } from "lucide-react";
 import { Income } from "@/services/database/models/income";
+import { formatAmount } from "@/utils/format-amount";
 
 interface IncomeCardProps {
   income: Income;
@@ -22,7 +23,7 @@ export const IncomeCard = ({ income, onDelete, onClick }: IncomeCardProps) => {
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-gray-600 text-sm">Montant:</span>
-            <span className="font-semibold text-green-600">{income.budget.toFixed(2)} €</span>
+            <span className="font-semibold text-green-600">{formatAmount(income.budget)}</span>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-gray-600 text-sm">Date:</span>
@@ -30,10 +31,6 @@ export const IncomeCard = ({ income, onDelete, onClick }: IncomeCardProps) => {
               <Calendar className="h-4 w-4 mr-1 shrink-0" />
               {income.date}
             </span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-gray-600 text-sm">Type:</span>
-            <span className="font-medium">{income.isRecurring ? "Revenu récurrent" : "Revenu ponctuel"}</span>
           </div>
         </div>
       </CardContent>
