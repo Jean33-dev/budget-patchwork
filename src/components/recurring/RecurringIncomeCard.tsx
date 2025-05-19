@@ -2,7 +2,7 @@
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { formatAmount } from "@/utils/format-amount";
-import { Edit, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { Income } from "@/services/database/models/income";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -44,13 +44,6 @@ export const RecurringIncomeCard = ({
         </div>
       </CardContent>
       <CardFooter className="bg-gray-50 gap-2 justify-end">
-        <Button variant="ghost" size="sm" onClick={(e) => {
-          e.stopPropagation();
-          if (onClick) onClick();
-        }}>
-          <Edit className="h-4 w-4 mr-1" />
-          Modifier
-        </Button>
         <Button 
           variant="ghost" 
           size="sm" 

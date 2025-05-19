@@ -2,7 +2,7 @@
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { formatAmount } from "@/utils/format-amount";
-import { Edit, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { Expense } from "@/services/database/models/expense";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -49,10 +49,6 @@ export const RecurringExpenseCard = ({
         </div>
       </CardContent>
       <CardFooter className="bg-gray-50 gap-2 justify-end">
-        <Button variant="outline" size="sm" onClick={onEdit}>
-          <Edit className="h-4 w-4 mr-1" />
-          Modifier
-        </Button>
         <Button variant="outline" size="sm" className="text-red-500" onClick={onDelete}>
           <Trash2 className="h-4 w-4 mr-1" />
           Supprimer
