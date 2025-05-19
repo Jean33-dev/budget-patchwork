@@ -68,110 +68,125 @@ export const BudgetChart = ({ data, totalIncome = 0, addUnallocated = false }: B
   const outerRadius = 110;
 
   return (
-    <div className="relative w-full h-full min-h-[300px]">
-      <ResponsiveContainer width="100%" height="100%">
-        <PieChart>
-          <Pie
-            data={chartData}
-            cx="50%"
-            cy="50%"
-            labelLine={false}
-            innerRadius={innerRadius}
-            outerRadius={outerRadius}
-            fill="#8884d8"
-            dataKey="value"
-            paddingAngle={2} // Espacement entre les segments pour un look plus moderne
-            cornerRadius={4} // Coins arrondis pour un aspect plus élégant
-            stroke="transparent" // Suppression des bordures pour un aspect plus propre
-          >
-            {chartData.length > 0 && (
-              <Label
-                position="center"
-                content={({ viewBox }) => {
-                  const { cx, cy } = viewBox as { cx: number; cy: number };
-                  const totalValue = chartData.reduce((sum, entry) => sum + entry.value, 0);
-                  return (
-                    <g>
-                      <text
-                        x={cx}
-                        y={cy - 5}
-                        textAnchor="middle"
-                        dominantBaseline="central"
-                        className="fill-muted-foreground font-medium text-sm"
-                      >
-                        Total
-                      </text>
-                      <text
-                        x={cx}
-                        y={cy + 15}
-                        textAnchor="middle"
-                        dominantBaseline="central"
-                        className="fill-foreground font-bold text-base"
-                      >
-                        {totalValue.toFixed(2)} €
-                      </text>
-                    </g>
-                  );
-                }}
-              />
-            )}
-            {chartData.map((entry, index) => {
-              // Couleur spéciale pour le budget non alloué
-              if (entry.name === "Budget non alloué") {
-                return <Cell key={`cell-${index}`} fill={UNALLOCATED_COLOR} />;
-              }
-              
-              // Couleurs normales pour les autres éléments
-              return (
-                <Cell
-                  key={`cell-${index}`}
-                  fill={COLORS[entry.type][index % COLORS[entry.type].length]}
-                  style={{ filter: 'drop-shadow(0px 2px 3px rgba(0, 0, 0, 0.1))' }} // Effet subtil d'ombre
+    <div className="relative w-full h-full min-h-[300px] flex flex-col">
+      <div className="flex-grow">
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie
+              data={chartData}
+              cx="50%"
+              cy="50%"
+              labelLine={false}
+              innerRadius={innerRadius}
+              outerRadius={outerRadius}
+              fill="#8884d8"
+              dataKey="value"
+              paddingAngle={2} // Espacement entre les segments pour un look plus moderne
+              cornerRadius={4} // Coins arrondis pour un aspect plus élégant
+              stroke="transparent" // Suppression des bordures pour un aspect plus propre
+            >
+              {chartData.length > 0 && (
+                <Label
+                  position="center"
+                  content={({ viewBox }) => {
+                    const { cx, cy } = viewBox as { cx: number; cy: number };
+                    const totalValue = chartData.reduce((sum, entry) => sum + entry.value, 0);
+                    return (
+                      <g>
+                        <text
+                          x={cx}
+                          y={cy - 5}
+                          textAnchor="middle"
+                          dominantBaseline="central"
+                          className="fill-muted-foreground font-medium text-sm"
+                        >
+                          Total
+                        </text>
+                        <text
+                          x={cx}
+                          y={cy + 15}
+                          textAnchor="middle"
+                          dominantBaseline="central"
+                          className="fill-foreground font-bold text-base"
+                        >
+                          {totalValue.toFixed(2)} €
+                        </text>
+                      </g>
+                    );
+                  }}
                 />
-              );
-            })}
-          </Pie>
-          <Tooltip
-            formatter={(value: number, name: string) => [
-              `${value.toFixed(2)} € (${getPercentage(value)}%)`,
-              name
-            ]}
-            contentStyle={{
-              backgroundColor: "#FFFFFF",
-              border: "none",
-              borderRadius: "8px",
-              color: "#1A1F2C",
-              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
-              padding: "10px 14px",
-              fontSize: "13px"
-            }}
-            labelStyle={{
-              color: "#1A1F2C",
-              fontWeight: "bold",
-              marginBottom: "4px"
-            }}
-            wrapperStyle={{
-              outline: "none"
-            }}
-            cursor={{ fill: "transparent" }} // Désactiver le survol des sections
-          />
-          <Legend
-            formatter={(value) => (
-              <span style={{ color: "#4A5568", fontSize: "13px", paddingLeft: "4px" }}>
-                {value}
+              )}
+              {chartData.map((entry, index) => {
+                // Couleur spéciale pour le budget non alloué
+                if (entry.name === "Budget non alloué") {
+                  return <Cell key={`cell-${index}`} fill={UNALLOCATED_COLOR} />;
+                }
+                
+                // Couleurs normales pour les autres éléments
+                return (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={COLORS[entry.type][index % COLORS[entry.type].length]}
+                    style={{ filter: 'drop-shadow(0px 2px 3px rgba(0, 0, 0, 0.1))' }} // Effet subtil d'ombre
+                  />
+                );
+              })}
+            </Pie>
+            <Tooltip
+              formatter={(value: number, name: string) => [
+                `${value.toFixed(2)} € (${getPercentage(value)}%)`,
+                name
+              ]}
+              contentStyle={{
+                backgroundColor: "#FFFFFF",
+                border: "none",
+                borderRadius: "8px",
+                color: "#1A1F2C",
+                boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+                padding: "10px 14px",
+                fontSize: "13px"
+              }}
+              labelStyle={{
+                color: "#1A1F2C",
+                fontWeight: "bold",
+                marginBottom: "4px"
+              }}
+              wrapperStyle={{
+                outline: "none"
+              }}
+              cursor={{ fill: "transparent" }} // Désactiver le survol des sections
+            />
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
+      
+      {/* Légende placée en dessous du graphique */}
+      <div className="mt-4 flex flex-wrap justify-center gap-4">
+        {chartData.map((entry, index) => {
+          // Couleur spéciale pour le budget non alloué
+          const color = entry.name === "Budget non alloué" 
+            ? UNALLOCATED_COLOR 
+            : COLORS[entry.type][index % COLORS[entry.type].length];
+            
+          return (
+            <div key={`legend-${index}`} className="flex items-center gap-2">
+              <div 
+                className="w-3 h-3 rounded-sm" 
+                style={{ backgroundColor: color, boxShadow: '0 1px 2px rgba(0,0,0,0.1)' }}
+              />
+              <span className="text-sm text-muted-foreground">
+                {entry.name}
               </span>
-            )}
-            iconType="circle"
-            iconSize={8}
-            layout="vertical"
-            verticalAlign="middle"
-            align="right"
-            wrapperStyle={{
-              paddingTop: "10px"
-            }}
-          />
-        </PieChart>
-      </ResponsiveContainer>
+              <span className="text-sm font-medium">
+                {entry.value.toFixed(2)} €
+              </span>
+              <span className="text-xs text-muted-foreground">
+                ({getPercentage(entry.value)}%)
+              </span>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 };
