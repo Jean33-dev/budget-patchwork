@@ -28,24 +28,23 @@ export const ChartSection = ({
   totalIncome, 
   addUnallocated 
 }: ChartSectionProps) => {
-  console.log("ChartSection rendering with data:", data);
   return (
     <Card className="overflow-hidden bg-gradient-to-br from-card to-card/95">
       <CardHeader className="border-b border-border/30">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2 min-w-0">
+          <div className="flex items-center space-x-2">
             {chartType === "budget" ? (
-              <PieChart className="h-4 w-4 text-muted-foreground mr-1 shrink-0" />
+              <PieChart className="h-4 w-4 text-muted-foreground mr-1" />
             ) : (
-              <BarChart2 className="h-4 w-4 text-muted-foreground mr-1 shrink-0" />
+              <BarChart2 className="h-4 w-4 text-muted-foreground mr-1" />
             )}
-            <CardTitle className="text-base sm:text-lg truncate">
+            <CardTitle className="text-base sm:text-lg">
               {title}
             </CardTitle>
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full shrink-0">
+              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
                 <MoreVertical className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
