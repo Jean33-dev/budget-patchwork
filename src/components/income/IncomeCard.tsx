@@ -1,9 +1,8 @@
 
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "lucide-react";
+import { Calendar, Trash2 } from "lucide-react";
 import { Income } from "@/services/database/models/income";
-import { cn } from "@/lib/utils";
 
 interface IncomeCardProps {
   income: Income;
@@ -13,39 +12,42 @@ interface IncomeCardProps {
 
 export const IncomeCard = ({ income, onDelete, onClick }: IncomeCardProps) => {
   return (
-    <Card className="overflow-hidden hover:shadow-md transition-all" onClick={onClick}>
-      <CardHeader className="bg-primary/5 pb-2">
-        <CardTitle className="flex justify-between items-center gap-2">
-          <span 
-            className={cn(
-              "text-base leading-tight break-words my-auto",
-              income.title.length > 20 ? "line-clamp-2 hover:line-clamp-none" : ""
-            )}
-            title={income.title}
-          >
-            {income.title}
-          </span>
-          <span className="text-lg font-semibold whitespace-nowrap shrink-0">{income.budget.toFixed(2)} €</span>
+    <Card className="overflow-hidden h-full flex flex-col hover:shadow-md transition-shadow border-t-4 border-t-green-500 cursor-pointer" onClick={onClick}>
+      <CardHeader className="bg-gray-50 pb-3">
+        <CardTitle className="text-lg font-medium line-clamp-2" title={income.title}>
+          {income.title}
         </CardTitle>
       </CardHeader>
-      <CardContent className="pt-4">
-        <div className="flex items-center justify-between text-sm text-muted-foreground">
-          <div className="flex items-center">
-            <Calendar className="h-4 w-4 mr-1 shrink-0" />
-            {income.date}
+      <CardContent className="pt-4 flex-grow">
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-gray-600 text-sm">Montant:</span>
+            <span className="font-semibold text-green-600">{income.budget.toFixed(2)} €</span>
           </div>
-          <div>{income.isRecurring ? "Revenu récurrent" : "Revenu ponctuel"}</div>
+          <div className="flex items-center justify-between">
+            <span className="text-gray-600 text-sm">Date:</span>
+            <span className="font-medium flex items-center">
+              <Calendar className="h-4 w-4 mr-1 shrink-0" />
+              {income.date}
+            </span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-gray-600 text-sm">Type:</span>
+            <span className="font-medium">{income.isRecurring ? "Revenu récurrent" : "Revenu ponctuel"}</span>
+          </div>
         </div>
       </CardContent>
-      <CardFooter className="flex justify-between border-t pt-4">
+      <CardFooter className="bg-gray-50 justify-end pt-3 pb-3">
         <Button 
-          variant="destructive" 
+          variant="ghost" 
           size="sm" 
+          className="text-red-500 hover:bg-red-50 hover:text-red-600"
           onClick={(e) => {
             e.stopPropagation();
             onDelete(income.id);
           }}
         >
+          <Trash2 className="h-4 w-4 mr-1" />
           Supprimer
         </Button>
       </CardFooter>

@@ -28,15 +28,17 @@ export const RecurringExpenseCard = ({
     "Date inconnue";
 
   return (
-    <Card className="overflow-hidden">
-      <CardHeader className="bg-gray-50 pb-2">
-        <CardTitle className="text-lg font-medium">{expense.title}</CardTitle>
+    <Card className="overflow-hidden h-full flex flex-col hover:shadow-md transition-shadow border-t-4 border-t-red-500">
+      <CardHeader className="bg-gray-50 pb-3">
+        <CardTitle className="text-lg font-medium line-clamp-2" title={expense.title}>
+          {expense.title}
+        </CardTitle>
       </CardHeader>
-      <CardContent className="pt-4">
+      <CardContent className="pt-4 flex-grow">
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-gray-600 text-sm">Montant:</span>
-            <span className="font-medium">{formatAmount(expense.budget)}</span>
+            <span className="font-medium text-red-600">{formatAmount(expense.budget)}</span>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-gray-600 text-sm">Budget associé:</span>
@@ -48,8 +50,13 @@ export const RecurringExpenseCard = ({
           </div>
         </div>
       </CardContent>
-      <CardFooter className="bg-gray-50 gap-2 justify-end">
-        <Button variant="outline" size="sm" className="text-red-500" onClick={onDelete}>
+      <CardFooter className="bg-gray-50 justify-end pt-3 pb-3">
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="text-red-500 hover:bg-red-50 hover:text-red-600" 
+          onClick={onDelete}
+        >
           <Trash2 className="h-4 w-4 mr-1" />
           Supprimer
         </Button>

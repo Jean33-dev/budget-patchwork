@@ -25,14 +25,16 @@ export const RecurringIncomeCard = ({
 
   return (
     <Card 
-      className="overflow-hidden cursor-pointer"
+      className="overflow-hidden h-full flex flex-col hover:shadow-md transition-shadow border-t-4 border-t-green-500 cursor-pointer"
       onClick={onClick}
     >
-      <CardHeader className="bg-gray-50 pb-2">
-        <CardTitle className="text-lg font-medium">{income.title}</CardTitle>
+      <CardHeader className="bg-gray-50 pb-3">
+        <CardTitle className="text-lg font-medium line-clamp-2" title={income.title}>
+          {income.title}
+        </CardTitle>
       </CardHeader>
-      <CardContent className="pt-4">
-        <div className="space-y-2">
+      <CardContent className="pt-4 flex-grow">
+        <div className="space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-gray-600 text-sm">Montant:</span>
             <span className="font-semibold text-green-600">{formatAmount(income.budget)}</span>
@@ -43,11 +45,11 @@ export const RecurringIncomeCard = ({
           </div>
         </div>
       </CardContent>
-      <CardFooter className="bg-gray-50 gap-2 justify-end">
+      <CardFooter className="bg-gray-50 justify-end pt-3 pb-3">
         <Button 
           variant="ghost" 
           size="sm" 
-          className="text-red-500" 
+          className="text-red-500 hover:bg-red-50 hover:text-red-600" 
           onClick={(e) => {
             e.stopPropagation();
             onDelete(income.id);
