@@ -1,37 +1,46 @@
 
-import { ArrowLeftIcon } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NavigateFunction } from "react-router-dom";
 import { ExpenseReceiveDialog } from "../expense/share/ExpenseReceiveDialog";
 
 interface ExpensesHeaderProps {
   onNavigate: NavigateFunction;
-  showReceiveButton?: boolean; // Nouvelle prop pour contrôler l'affichage du bouton
+  showReceiveButton?: boolean;
 }
 
 export const ExpensesHeader = ({ 
   onNavigate, 
-  showReceiveButton = true // Par défaut, le bouton est affiché
+  showReceiveButton = true 
 }: ExpensesHeaderProps) => {
   return (
-    <div className="flex items-center justify-between">
-      <div className="flex items-center space-x-2">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8"
-          onClick={() => onNavigate(-1)}
-        >
-          <ArrowLeftIcon className="h-4 w-4" />
-        </Button>
-        <h1 className="text-xl font-semibold">Dépenses</h1>
-      </div>
-      <div>
-        {showReceiveButton && (
-          <ExpenseReceiveDialog 
-            onReceiveComplete={() => window.location.reload()}
-          />
-        )}
+    <div className="flex items-center gap-4 sticky top-0 bg-background/95 backdrop-blur-md z-10 py-4 mb-6 border-b">
+      <Button
+        variant="outline"
+        size="icon"
+        className="rounded-full shadow-sm hover:shadow-md hover:bg-primary/10 transition-all"
+        onClick={() => onNavigate(-1)}
+      >
+        <ArrowLeft className="h-4 w-4" />
+      </Button>
+
+      <div className="flex-1 flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-semibold bg-gradient-to-r from-red-600 to-red-400 bg-clip-text text-transparent">
+            Dépenses
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Gérez efficacement vos dépenses
+          </p>
+        </div>
+        
+        <div>
+          {showReceiveButton && (
+            <ExpenseReceiveDialog 
+              onReceiveComplete={() => window.location.reload()}
+            />
+          )}
+        </div>
       </div>
     </div>
   );
