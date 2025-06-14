@@ -1,3 +1,4 @@
+
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -8,10 +9,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useDatabaseRepair } from "@/hooks/useDatabaseRepair";
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
 
+// Mapping devise => symbole
 const currencyOptions = [
-  { value: "EUR", label: "Euro (€)" },
-  { value: "USD", label: "Dollar ($)" },
-  { value: "GBP", label: "Livre (£)" },
+  { value: "EUR", label: "Euro (€)", symbol: "€" },
+  { value: "USD", label: "Dollar ($)", symbol: "$" },
+  { value: "GBP", label: "Livre (£)", symbol: "£" },
 ];
 
 const Settings = () => {
@@ -47,6 +49,9 @@ const Settings = () => {
       navigate(targetPath, { replace: true });
     }
   }, [navigate]);
+
+  // Trouver le symbole correspondant à la devise sélectionnée
+  const selectedSymbol = currencyOptions.find(opt => opt.value === currency)?.symbol || "€";
 
   return (
     <div className="container mx-auto py-8 space-y-6">
@@ -120,7 +125,10 @@ const Settings = () => {
             </div>
             <Select value={currency} onValueChange={(val) => setCurrency(val as any)}>
               <SelectTrigger className="w-36">
-                <SelectValue placeholder="Choisir" />
+                {/* Montre seulement le symbole dans le champ fermé */}
+                <SelectValue>
+                  {selectedSymbol}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {currencyOptions.map((opt) => (
