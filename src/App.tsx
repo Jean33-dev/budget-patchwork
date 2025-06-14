@@ -22,9 +22,12 @@ const AppContent = () => {
   const location = useLocation();
   const showFooter = location.pathname !== '/' && location.pathname !== '/settings';
 
+  // On applique un padding plus large quand le footer est présent, sinon plus petit
+  const paddingBottom = showFooter ? "pb-36" : "pb-8";
+  
   return (
     <>
-      <div className="pb-20">
+      <div className={paddingBottom}>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/settings" element={<Settings />} />
