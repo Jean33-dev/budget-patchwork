@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import {
   Card,
@@ -43,9 +42,12 @@ export const EnvelopeCard = ({
 
   // Calculer le pourcentage d'avancement avec le montant reporté
   const totalBudget = budget + carriedOver;
-  const progress = totalBudget > 0 ? (spent / totalBudget) * 100 : 0;
+  const progressRaw = totalBudget > 0 ? (spent / totalBudget) * 100 : 0;
   const remaining = totalBudget - spent;
   const isOverBudget = remaining < 0;
+
+  // Progress doit être 100% si on est dans le négatif (dépassement)
+  const progress = isOverBudget ? 100 : progressRaw;
 
   // Couleur du badge pour les types
   const getBadgeColor = () => {
@@ -135,11 +137,11 @@ export const EnvelopeCard = ({
           <div className="flex justify-between text-xs">
             <span className="text-gray-500">Progression</span>
             <span className={isOverBudget ? "text-red-600 font-medium" : "text-gray-600"}>
-              {Math.min(progress, 100).toFixed(0)}%
+              {progress.toFixed(0)}%
             </span>
           </div>
           <Progress
-            value={Math.min(progress, 100)}
+            value={progress}
             className={`h-2 ${getProgressColor()}`}
           />
         </div>
