@@ -4,14 +4,19 @@ import { Button } from "@/components/ui/button";
 import { Calendar, Trash2 } from "lucide-react";
 import { Income } from "@/services/database/models/income";
 import { formatAmount } from "@/utils/format-amount";
+import { useTheme } from "@/context/ThemeContext";
 
 interface IncomeCardProps {
   income: Income;
   onDelete: (id: string) => void;
   onClick: () => void;
+  currency?: "EUR" | "USD" | "GBP";
 }
 
-export const IncomeCard = ({ income, onDelete, onClick }: IncomeCardProps) => {
+export const IncomeCard = ({ income, onDelete, onClick, currency }: IncomeCardProps) => {
+  const { currency: globalCurrency } = useTheme();
+  const usedCurrency = currency || globalCurrency;
+
   return (
     <Card className="overflow-hidden h-full flex flex-col hover:shadow-md transition-shadow border-t-4 border-t-green-500 cursor-pointer" onClick={onClick}>
       <CardHeader className="bg-gray-50 pb-3">
@@ -23,7 +28,7 @@ export const IncomeCard = ({ income, onDelete, onClick }: IncomeCardProps) => {
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-gray-600 text-sm">Montant:</span>
-            <span className="font-semibold text-green-600">{formatAmount(income.budget)}</span>
+            <span className="font-semibold text-green-600">{formatAmount(income.budget, usedCurrency)}</span>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-gray-600 text-sm">Date:</span>

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -12,12 +11,14 @@ import { useCategories } from "@/hooks/useCategories";
 import { db } from "@/services/database";
 import { useToast } from "@/hooks/use-toast";
 import { useDashboardContext } from "@/hooks/useDashboardContext";
+import { useTheme } from "@/context/ThemeContext";
 
 const Categories = () => {
   const navigate = useNavigate();
   const [availableBudgets, setAvailableBudgets] = useState<Budget[]>([]);
   const { toast } = useToast();
   const { currentDashboardId } = useDashboardContext();
+  const { currency: globalCurrency } = useTheme();
 
   const { 
     categories, 
@@ -132,6 +133,7 @@ const Categories = () => {
               key={category.id}
               category={category}
               onEdit={handleEditCategory}
+              currency={globalCurrency}
             />
           ))}
         </TabsContent>

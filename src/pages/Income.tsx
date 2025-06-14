@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useRecurringIncome } from "@/hooks/useRecurringIncome";
 import { AddEnvelopeDialog } from "@/components/budget/AddEnvelopeDialog";
@@ -12,10 +11,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
 import { AddButton } from "@/components/budget/AddButton";
 import { EditIncomeDialog } from "@/components/income/EditIncomeDialog";
+import { useTheme } from "@/context/ThemeContext";
 
 const Income = () => {
   const [activeTab, setActiveTab] = useState("ponctuel");
   const { toast } = useToast();
+  const { currency: globalCurrency } = useTheme();
   
   const {
     envelopes: nonRecurringIncomes,
@@ -92,6 +93,7 @@ const Income = () => {
               incomes={filteredNonRecurringIncomes}
               onDelete={handleDeleteNonRecurringIncome}
               onIncomeClick={handleNonRecurringIncomeClick}
+              currency={globalCurrency}
             />
           )}
 
@@ -126,6 +128,7 @@ const Income = () => {
               incomes={recurringIncomes}
               onDelete={handleDeleteRecurringIncome}
               onIncomeClick={handleRecurringIncomeClick}
+              currency={globalCurrency}
             />
           )}
 
@@ -151,4 +154,3 @@ const Income = () => {
 };
 
 export default Income;
-

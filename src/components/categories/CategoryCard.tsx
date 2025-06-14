@@ -8,15 +8,20 @@ import { cn } from "@/lib/utils";
 import { db } from "@/services/database";
 import { useEffect, useState } from "react";
 import { useDashboardContext } from "@/hooks/useDashboardContext";
+import { useTheme } from "@/context/ThemeContext";
+import { formatAmount } from "@/utils/format-amount";
 
 interface CategoryCardProps {
   category: Category;
   onEdit: (category: Category) => void;
+  currency?: "EUR" | "USD" | "GBP";
 }
 
-export const CategoryCard = ({ category, onEdit }: CategoryCardProps) => {
+export const CategoryCard = ({ category, onEdit, currency }: CategoryCardProps) => {
   const [budgetNames, setBudgetNames] = useState<string[]>([]);
   const { currentDashboardId } = useDashboardContext();
+  const { currency: globalCurrency } = useTheme();
+  const usedCurrency = currency || globalCurrency;
 
   useEffect(() => {
     const loadBudgetNames = async () => {
@@ -65,16 +70,16 @@ export const CategoryCard = ({ category, onEdit }: CategoryCardProps) => {
         <div className="space-y-2">
           <div className="flex justify-between items-center">
             <div className="font-semibold">Budget total :</div>
-            <div>{category.total.toFixed(2)} €</div>
+            <div>{formatAmount(category.total, usedCurrency)}</div>
           </div>
           <div className="flex justify-between items-center">
             <div className="font-semibold">Dépenses :</div>
-            <div className={isOverBudget ? "text-budget-expense" : ""}>{category.spent.toFixed(2)} €</div>
+            <div className={isOverBudget ? "text-budget-expense" : ""}>{formatAmount(category.spent, usedCurrency)}</div>
           </div>
           <div className="flex justify-between items-center">
             <div className="font-semibold">Reste :</div>
             <div className={isOverBudget ? "text-budget-expense" : "text-budget-income"}>
-              {remaining.toFixed(2)} €
+              {formatAmount(remaining, usedCurrency)}
             </div>
           </div>
           <div className="space-y-1">
