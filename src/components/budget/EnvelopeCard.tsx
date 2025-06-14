@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import {
   Card,
@@ -23,6 +24,7 @@ interface EnvelopeCardProps {
   onEnvelopeClick: (envelope: any) => void;
   onViewExpenses?: (envelope: any) => void;
   onDeleteEnvelope?: (id: string) => void;
+  currency?: "EUR" | "USD" | "GBP";
 }
 
 export const EnvelopeCard = ({
@@ -35,6 +37,7 @@ export const EnvelopeCard = ({
   onEnvelopeClick,
   onViewExpenses,
   onDeleteEnvelope,
+  currency,
 }: EnvelopeCardProps) => {
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -108,22 +111,22 @@ export const EnvelopeCard = ({
           <div className="space-y-2">
             <div className="flex flex-col">
               <span className="text-xs text-gray-500">Budgété</span>
-              <span className="text-sm font-medium">{formatAmount(budget)}</span>
+              <span className="text-sm font-medium">{formatAmount(budget, currency)}</span>
             </div>
             
             <div className="flex flex-col">
               <span className="text-xs text-gray-500">Disponible</span>
               <span className={`text-sm font-medium ${getRemainingColor()}`}>
-                {formatAmount(remaining)}
+                {formatAmount(remaining, currency)}
               </span>
             </div>
           </div>
           
           <div className="flex flex-col items-end justify-center">
             <span className="text-xs text-gray-500 text-right">Dépenses</span>
-            <span className="text-xl font-bold">{formatAmount(spent)}</span>
+            <span className="text-xl font-bold">{formatAmount(spent, currency)}</span>
             <div className="flex items-baseline gap-1 mt-1">
-              <span className="text-sm">{formatAmount(spent)}/{formatAmount(totalBudget)}</span>
+              <span className="text-sm">{formatAmount(spent, currency)}/{formatAmount(totalBudget, currency)}</span>
             </div>
           </div>
         </div>
@@ -145,7 +148,7 @@ export const EnvelopeCard = ({
       <CardFooter className="pt-2 pb-3 gap-2 flex justify-between">
         <div className="flex flex-col">
           <span className="text-xs text-gray-500">Report</span>
-          <span className="text-sm font-medium">{formatAmount(carriedOver)}</span>
+          <span className="text-sm font-medium">{formatAmount(carriedOver, currency)}</span>
         </div>
         
         <div className="flex gap-2 justify-end">
