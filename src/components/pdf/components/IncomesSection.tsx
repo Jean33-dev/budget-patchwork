@@ -1,7 +1,7 @@
-
 import React from "react";
 import { Text, View } from "@react-pdf/renderer";
 import { styles } from "../styles/pdfStyles";
+import { formatAmount } from "@/utils/format-amount";
 
 interface Income {
   id: string;
@@ -12,9 +12,10 @@ interface Income {
 
 interface IncomesSectionProps {
   incomes?: Income[];
+  currency?: "EUR" | "USD" | "GBP";
 }
 
-export const IncomesSection: React.FC<IncomesSectionProps> = ({ incomes }) => {
+export const IncomesSection: React.FC<IncomesSectionProps> = ({ incomes, currency = "EUR" }) => {
   if (!incomes || !incomes.length) return null;
   
   return (
@@ -28,7 +29,7 @@ export const IncomesSection: React.FC<IncomesSectionProps> = ({ incomes }) => {
         {incomes.map((income) => (
           <View style={styles.tableRow} key={income.id}>
             <Text style={styles.tableCell}>{income.title}</Text>
-            <Text style={styles.tableCellAmount}>{income.budget.toFixed(2)} €</Text>
+            <Text style={styles.tableCellAmount}>{formatAmount(income.budget, currency)}</Text>
           </View>
         ))}
       </View>

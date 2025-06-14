@@ -1,7 +1,7 @@
-
 import React from "react";
 import { Text, View } from "@react-pdf/renderer";
 import { styles } from "../styles/pdfStyles";
+import { formatAmount } from "@/utils/format-amount";
 
 interface Expense {
   id: string;
@@ -13,9 +13,10 @@ interface Expense {
 
 interface ExpensesSectionProps {
   expenses?: Expense[];
+  currency?: "EUR" | "USD" | "GBP";
 }
 
-export const ExpensesSection: React.FC<ExpensesSectionProps> = ({ expenses }) => {
+export const ExpensesSection: React.FC<ExpensesSectionProps> = ({ expenses, currency = "EUR" }) => {
   if (!expenses || !expenses.length) return null;
   
   return (
@@ -33,7 +34,7 @@ export const ExpensesSection: React.FC<ExpensesSectionProps> = ({ expenses }) =>
             <Text style={styles.tableCell}>
               {expense.date ? new Date(expense.date).toLocaleDateString("fr-FR") : "N/A"}
             </Text>
-            <Text style={styles.tableCellAmount}>{expense.budget.toFixed(2)} €</Text>
+            <Text style={styles.tableCellAmount}>{formatAmount(expense.budget, currency)}</Text>
           </View>
         ))}
       </View>

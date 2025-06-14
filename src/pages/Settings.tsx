@@ -6,10 +6,17 @@ import { ArrowLeft, Database, Trash, Moon, Sun } from "lucide-react";
 import { useTheme } from "@/context/ThemeContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useDatabaseRepair } from "@/hooks/useDatabaseRepair";
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
+
+const currencyOptions = [
+  { value: "EUR", label: "Euro (€)" },
+  { value: "USD", label: "Dollar ($)" },
+  { value: "GBP", label: "Livre (£)" },
+];
 
 const Settings = () => {
   const navigate = useNavigate();
-  const { invertColors, toggleInvertColors, darkMode, toggleDarkMode, showToasts, toggleShowToasts } = useTheme();
+  const { invertColors, toggleInvertColors, darkMode, toggleDarkMode, showToasts, toggleShowToasts, currency, setCurrency } = useTheme();
   const { isRepairing, repairDatabase, clearDatabaseCache } = useDatabaseRepair();
 
   // Handler pour un retour "intelligent"
@@ -103,6 +110,26 @@ const Settings = () => {
               checked={showToasts} 
               onCheckedChange={toggleShowToasts} 
             />
+          </div>
+          <div className="flex items-center justify-between py-2">
+            <div>
+              <h3 className="font-medium">Devise utilisée</h3>
+              <p className="text-sm text-muted-foreground">
+                Choisissez la devise qui s'affichera dans toute l'application (montants, PDF, etc).
+              </p>
+            </div>
+            <Select value={currency} onValueChange={(val) => setCurrency(val as any)}>
+              <SelectTrigger className="w-36">
+                <SelectValue placeholder="Choisir" />
+              </SelectTrigger>
+              <SelectContent>
+                {currencyOptions.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </CardContent>
       </Card>

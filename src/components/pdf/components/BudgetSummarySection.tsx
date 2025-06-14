@@ -1,16 +1,18 @@
-
 import React from "react";
 import { Text, View } from "@react-pdf/renderer";
 import { styles } from "../styles/pdfStyles";
+import { formatAmount } from "@/utils/format-amount";
 
 interface BudgetSummarySectionProps {
   totalIncome: number;
   totalExpenses: number;
+  currency?: "EUR" | "USD" | "GBP";
 }
 
 export const BudgetSummarySection: React.FC<BudgetSummarySectionProps> = ({ 
   totalIncome, 
-  totalExpenses 
+  totalExpenses, 
+  currency = "EUR"
 }) => {
   const balance = totalIncome - totalExpenses;
   
@@ -20,16 +22,16 @@ export const BudgetSummarySection: React.FC<BudgetSummarySectionProps> = ({
       <View style={styles.summary}>
         <View style={styles.summaryRow}>
           <Text>Revenus totaux :</Text>
-          <Text>{totalIncome.toFixed(2)} €</Text>
+          <Text>{formatAmount(totalIncome, currency)}</Text>
         </View>
         <View style={styles.summaryRow}>
           <Text>Dépenses totales :</Text>
-          <Text>{totalExpenses.toFixed(2)} €</Text>
+          <Text>{formatAmount(totalExpenses, currency)}</Text>
         </View>
         <View style={styles.summaryRow}>
           <Text>Balance :</Text>
           <Text style={{ color: balance >= 0 ? "#10B981" : "#EF4444" }}>
-            {balance.toFixed(2)} €
+            {formatAmount(balance, currency)}
           </Text>
         </View>
       </View>

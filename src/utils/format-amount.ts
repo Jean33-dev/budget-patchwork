@@ -1,14 +1,19 @@
 
 /**
- * Formate un montant en euros avec le symbole € et deux décimales
+ * Formate un montant dans la devise indiquée, avec le symbole et le bon format
  */
-export const formatAmount = (amount: number | string): string => {
+export const formatAmount = (amount: number | string, currency: "EUR" | "USD" | "GBP" = "EUR"): string => {
   const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
+  let currencyDisplay: "symbol" | "narrowSymbol" = "symbol";
+  let locale = "fr-FR";
+
+  if (currency === "USD") locale = "en-US";
+  if (currency === "GBP") locale = "en-GB";
   
-  // Utiliser l'API Intl pour formater correctement en fonction de la locale
-  return new Intl.NumberFormat('fr-FR', {
-    style: 'currency',
-    currency: 'EUR',
+  return new Intl.NumberFormat(locale, {
+    style: "currency",
+    currency,
+    currencyDisplay,
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
   }).format(numAmount);

@@ -13,7 +13,8 @@ export const BudgetPDFDocument: React.FC<BudgetPDFProps> = ({
   totalExpenses, 
   budgets, 
   incomes, 
-  expenses 
+  expenses,
+  currency = "EUR"
 }) => {
   const date = new Date();
   const formattedDate = new Intl.DateTimeFormat("fr-FR", {
@@ -30,10 +31,10 @@ export const BudgetPDFDocument: React.FC<BudgetPDFProps> = ({
           <Text style={styles.date}>{formattedDate}</Text>
         </View>
 
-        <BudgetSummarySection totalIncome={totalIncome} totalExpenses={totalExpenses} />
-        <BudgetsSection budgets={budgets} />
-        <IncomesSection incomes={incomes} />
-        <ExpensesSection expenses={expenses} />
+        <BudgetSummarySection totalIncome={totalIncome} totalExpenses={totalExpenses} currency={currency} />
+        <BudgetsSection budgets={budgets} currency={currency} />
+        <IncomesSection incomes={incomes} currency={currency} />
+        <ExpensesSection expenses={expenses} currency={currency} />
 
         <View style={styles.footer}>
           <Text>Généré le {formattedDate} • Budget App</Text>

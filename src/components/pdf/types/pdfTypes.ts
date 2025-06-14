@@ -25,6 +25,7 @@ export interface BudgetPDFProps {
     type: "expense";
     date?: string;
   }>;
+  currency?: "EUR" | "USD" | "GBP";
 }
 
 export interface BudgetPDFDownloadProps extends BudgetPDFProps {

@@ -1,8 +1,8 @@
-
 import React, { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useTheme } from "@/context/ThemeContext";
 
 interface MoneyInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'value'> {
   value: number;
@@ -13,6 +13,7 @@ interface MoneyInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElemen
 export const MoneyInput = ({ value = 0, onChange, className, ...props }: MoneyInputProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const isMobile = useIsMobile();
+  const { currencySymbol } = useTheme();
 
   const formatValue = (num: number): string => {
     if (isEditing) {
@@ -81,7 +82,7 @@ export const MoneyInput = ({ value = 0, onChange, className, ...props }: MoneyIn
         step="0.01"
         {...props}
       />
-      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">€</span>
+      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">{currencySymbol}</span>
     </div>
   );
 };

@@ -1,10 +1,10 @@
-
 import React from "react";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import { Button } from "@/components/ui/button";
 import { FileDown } from "lucide-react";
 import { BudgetPDFDocument } from "./components/BudgetPDFDocument";
 import { BudgetPDFDownloadProps } from "./types/pdfTypes";
+import { useTheme } from "@/context/ThemeContext";
 
 export const BudgetPDFDownload = ({ 
   fileName = "rapport-budget.pdf",
@@ -14,8 +14,11 @@ export const BudgetPDFDownload = ({
   incomes,
   expenses,
   className,
-  onClick
+  onClick,
+  currency: currencyProp,
 }: BudgetPDFDownloadProps) => {
+  const { currency } = useTheme();
+
   return (
     <PDFDownloadLink
       document={
@@ -25,6 +28,7 @@ export const BudgetPDFDownload = ({
           budgets={budgets}
           incomes={incomes}
           expenses={expenses}
+          currency={currencyProp || currency}
         />
       }
       fileName={fileName}

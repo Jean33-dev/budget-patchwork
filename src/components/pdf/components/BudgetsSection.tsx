@@ -15,9 +15,10 @@ interface Budget {
 
 interface BudgetsSectionProps {
   budgets: Budget[];
+  currency?: "EUR" | "USD" | "GBP";
 }
 
-export const BudgetsSection: React.FC<BudgetsSectionProps> = ({ budgets }) => {
+export const BudgetsSection: React.FC<BudgetsSectionProps> = ({ budgets, currency = "EUR" }) => {
   const filteredBudgets = budgets.filter(b => b.type === "budget");
   
   if (!filteredBudgets.length) return null;
@@ -41,10 +42,10 @@ export const BudgetsSection: React.FC<BudgetsSectionProps> = ({ budgets }) => {
           return (
             <View style={styles.tableRow} key={budget.id}>
               <Text style={styles.tableCell}>{budget.title}</Text>
-              <Text style={styles.tableCellAmount}>{formatAmount(budget.budget)}</Text>
-              <Text style={styles.tableCellAmount}>{formatAmount(carriedOver)}</Text>
-              <Text style={styles.tableCellAmount}>{formatAmount(budget.spent)}</Text>
-              <Text style={styles.tableCellAmount}>{formatAmount(remaining)}</Text>
+              <Text style={styles.tableCellAmount}>{formatAmount(budget.budget, currency)}</Text>
+              <Text style={styles.tableCellAmount}>{formatAmount(carriedOver, currency)}</Text>
+              <Text style={styles.tableCellAmount}>{formatAmount(budget.spent, currency)}</Text>
+              <Text style={styles.tableCellAmount}>{formatAmount(remaining, currency)}</Text>
             </View>
           );
         })}
@@ -53,19 +54,19 @@ export const BudgetsSection: React.FC<BudgetsSectionProps> = ({ budgets }) => {
         <View style={[styles.tableRow, { backgroundColor: '#f8f9fa' }]}>
           <Text style={[styles.tableCell, { fontWeight: 'bold' }]}>Total</Text>
           <Text style={[styles.tableCellAmount, { fontWeight: 'bold' }]}>
-            {formatAmount(filteredBudgets.reduce((sum, b) => sum + b.budget, 0))}
+            {formatAmount(filteredBudgets.reduce((sum, b) => sum + b.budget, 0), currency)}
           </Text>
           <Text style={[styles.tableCellAmount, { fontWeight: 'bold' }]}>
-            {formatAmount(filteredBudgets.reduce((sum, b) => sum + (b.carriedOver || 0), 0))}
+            {formatAmount(filteredBudgets.reduce((sum, b) => sum + (b.carriedOver || 0), 0), currency)}
           </Text>
           <Text style={[styles.tableCellAmount, { fontWeight: 'bold' }]}>
-            {formatAmount(filteredBudgets.reduce((sum, b) => sum + b.spent, 0))}
+            {formatAmount(filteredBudgets.reduce((sum, b) => sum + b.spent, 0), currency)}
           </Text>
           <Text style={[styles.tableCellAmount, { fontWeight: 'bold' }]}>
             {formatAmount(filteredBudgets.reduce((sum, b) => {
               const totalBudget = b.budget + (b.carriedOver || 0);
               return sum + (totalBudget - b.spent);
-            }, 0))}
+            }, 0), currency)}
           </Text>
         </View>
       </View>
