@@ -120,7 +120,7 @@ const Settings = () => {
             <div>
               <h3 className="font-medium">Devise utilisée</h3>
               <p className="text-sm text-muted-foreground">
-                Choisissez la devise qui s'affichera dans toute l'application (montants, PDF, etc).
+                Choisissez la devise qui s'affichera dans toute l'application.
               </p>
             </div>
             <Select value={currency} onValueChange={(val) => setCurrency(val as any)}>
