@@ -18,6 +18,7 @@ interface ChartSectionProps {
   data: any[];
   totalIncome: number;
   addUnallocated: boolean;
+  currency?: "EUR" | "USD" | "GBP";
 }
 
 export const ChartSection = ({ 
@@ -26,7 +27,8 @@ export const ChartSection = ({
   title, 
   data, 
   totalIncome, 
-  addUnallocated 
+  addUnallocated,
+  currency
 }: ChartSectionProps) => {
   return (
     <Card className="overflow-hidden bg-gradient-to-br from-card to-card/95">
@@ -74,6 +76,7 @@ export const ChartSection = ({
               data={data}
               totalIncome={totalIncome}
               addUnallocated={addUnallocated}
+              currency={currency}
             />
           </div>
         </div>

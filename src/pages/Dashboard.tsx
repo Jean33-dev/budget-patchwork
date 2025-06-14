@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { useDashboardTitle } from "@/hooks/useDashboardTitle";
+import { useTheme } from "@/context/ThemeContext";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -25,6 +26,7 @@ const Dashboard = () => {
   const [showTransitionDialog, setShowTransitionDialog] = useState(false);
   const [nextDate, setNextDate] = useState<Date | null>(null);
   const { dashboardTitle } = useDashboardTitle();
+  const { currency: globalCurrency } = useTheme();
 
   // Utilisation du hook useBudgets pour obtenir toutes les données
   const { 
@@ -75,11 +77,13 @@ const Dashboard = () => {
         totalIncome={totalRevenues}
         totalExpenses={totalExpenses}
         envelopes={envelopes}
+        currency={globalCurrency}
       />
       
       <BudgetStats
         remainingBudget={remainingAmount}
         remainingBudgetAfterExpenses={totalBudgets - totalExpenses}
+        currency={globalCurrency}
       />
 
       <AlertDialog open={showTransitionDialog} onOpenChange={setShowTransitionDialog}>

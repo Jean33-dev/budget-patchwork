@@ -47,6 +47,7 @@ export const DashboardOverview = ({ totalIncome, totalExpenses, envelopes, curre
             data={chartData.data}
             totalIncome={chartData.total}
             addUnallocated={chartData.addUnallocated}
+            currency={usedCurrency}
           />
         </div>
       </div>

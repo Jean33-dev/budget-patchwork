@@ -1,5 +1,6 @@
 
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, Label } from "recharts";
+import { formatAmount } from "@/utils/format-amount";
 
 interface BudgetData {
   name: string;
@@ -11,6 +12,7 @@ interface BudgetChartProps {
   data: BudgetData[];
   totalIncome?: number;
   addUnallocated?: boolean;
+  currency?: "EUR" | "USD" | "GBP";
 }
 
 // Palette de couleurs modernes pour une meilleure expérience visuelle
@@ -38,7 +40,7 @@ const COLORS = {
 // Couleur distincte pour le budget non alloué
 const UNALLOCATED_COLOR = "#64748B"; // Gris bleuté
 
-export const BudgetChart = ({ data, totalIncome = 0, addUnallocated = false }: BudgetChartProps) => {
+export const BudgetChart = ({ data, totalIncome = 0, addUnallocated = false, currency = "EUR" }: BudgetChartProps) => {
   let chartData = [...data];
   
   if (addUnallocated) {
@@ -109,7 +111,7 @@ export const BudgetChart = ({ data, totalIncome = 0, addUnallocated = false }: B
                           dominantBaseline="central"
                           className="fill-foreground font-bold text-base"
                         >
-                          {totalValue.toFixed(2)} €
+                          {formatAmount(totalValue, currency)}
                         </text>
                       </g>
                     );
@@ -134,7 +136,7 @@ export const BudgetChart = ({ data, totalIncome = 0, addUnallocated = false }: B
             </Pie>
             <Tooltip
               formatter={(value: number, name: string) => [
-                `${value.toFixed(2)} € (${getPercentage(value)}%)`,
+                `${formatAmount(value, currency)} (${getPercentage(value)}%)`,
                 name
               ]}
               contentStyle={{
@@ -178,7 +180,7 @@ export const BudgetChart = ({ data, totalIncome = 0, addUnallocated = false }: B
                 {entry.name}
               </span>
               <span className="text-sm font-medium">
-                {entry.value.toFixed(2)} €
+                {formatAmount(entry.value, currency)}
               </span>
               <span className="text-xs text-muted-foreground">
                 ({getPercentage(entry.value)}%)
