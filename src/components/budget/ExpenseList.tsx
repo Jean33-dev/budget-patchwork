@@ -5,6 +5,7 @@ import { ExpenseTable } from "./ExpenseTable";
 import { AddEnvelopeDialog } from "./AddEnvelopeDialog";
 import { Expense, Budget } from "@/hooks/useExpenseManagement";
 import { ExpenseDialogs, useExpenseDialogState } from "./ExpenseDialogs";
+import { useTheme } from "@/context/ThemeContext";
 
 interface ExpenseListProps {
   expenses: Expense[];
@@ -21,7 +22,8 @@ interface ExpenseListProps {
   handleDeleteExpense?: (id: string) => void;
   handleUpdateExpense?: (expense: Expense) => void;
   defaultBudgetId?: string;
-  showHeader?: boolean; // Ajout de cette propriété
+  showHeader?: boolean;
+  currency?: "EUR" | "USD" | "GBP";
 }
 
 export const ExpenseList = ({
@@ -33,9 +35,9 @@ export const ExpenseList = ({
   handleDeleteExpense,
   handleUpdateExpense,
   defaultBudgetId,
-  showHeader = true, // Par défaut, on affiche l'en-tête
+  showHeader = true,
+  currency,
 }: ExpenseListProps) => {
-  // Log pour déboguer
   useEffect(() => {
     console.log("ExpenseList - received expenses:", expenses.length);
     if (expenses.length > 0) {
@@ -45,13 +47,14 @@ export const ExpenseList = ({
     }
   }, [expenses]);
 
-  // Utilisation du hook pour gérer l'état des boîtes de dialogue
   const dialogState = useExpenseDialogState(handleUpdateExpense, handleDeleteExpense);
 
-  // Créer un wrapper pour la fonction de suppression qui accepte un ID
   const handleDelete = handleDeleteExpense 
     ? (id: string) => dialogState.handleDeleteClick({ id } as Expense) 
     : undefined;
+
+  const { currency: globalCurrency } = useTheme();
+  const usedCurrency = currency || globalCurrency;
 
   return (
     <div className="space-y-6">
@@ -71,6 +74,7 @@ export const ExpenseList = ({
         }))}
         onDeleteExpense={handleDelete}
         onUpdateExpense={handleUpdateExpense}
+        currency={usedCurrency}
       />
 
       <AddEnvelopeDialog
