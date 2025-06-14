@@ -13,6 +13,7 @@ interface ExpenseTableProps {
   onDeleteExpense?: (id: string) => void;
   onUpdateExpense?: (expense: Expense) => void;
   showDebugInfo?: boolean;
+  currency?: "EUR" | "USD" | "GBP";
 }
 
 export const ExpenseTable = ({
@@ -21,13 +22,14 @@ export const ExpenseTable = ({
   availableBudgets = [],
   onDeleteExpense,
   onUpdateExpense,
-  showDebugInfo = false
+  showDebugInfo = false,
+  currency,
 }: ExpenseTableProps) => {
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
 
   const toggleRow = (id: string) => {
     setExpandedRow(expandedRow === id ? null : id);
-    
+
     // Si on clique sur une ligne et qu'un gestionnaire d'événements de clic est fourni
     if (onEnvelopeClick) {
       const clickedExpense = expenses.find(expense => expense.id === id);
@@ -46,7 +48,7 @@ export const ExpenseTable = ({
   };
 
   if (process.env.NODE_ENV === 'development') {
-    console.log("ExpenseTable - Expenses with dashboardIds:", 
+    console.log("ExpenseTable - Expenses with dashboardIds:",
       expenses.map(e => ({ id: e.id, title: e.title, dashboardId: e.dashboardId }))
     );
   }
@@ -71,6 +73,7 @@ export const ExpenseTable = ({
                   onDelete={onDeleteExpense ? () => onDeleteExpense(expense.id) : undefined}
                   availableBudgets={availableBudgets}
                   onUpdate={handleUpdate}
+                  currency={currency}
                 />
                 {showDebugInfo && process.env.NODE_ENV === 'development' && (
                   <div className="px-4 py-1 bg-gray-50 text-xs text-gray-500">
@@ -85,3 +88,4 @@ export const ExpenseTable = ({
     </Card>
   );
 };
+
