@@ -8,13 +8,15 @@ interface TransitionEnvelopeGridProps {
   onOptionChange: (envelopeId: string, option: TransitionOption) => void;
   onTransferTargetChange?: (envelopeId: string, targetId: string) => void;
   onMultiTransferChange?: (envelopeId: string, transfers: { targetId: string; targetTitle: string; amount: number }[]) => void;
+  currency?: "EUR" | "USD" | "GBP";
 }
 
 export const TransitionEnvelopeGrid = ({ 
   envelopes, 
   onOptionChange,
   onTransferTargetChange,
-  onMultiTransferChange
+  onMultiTransferChange,
+  currency = "EUR"
 }: TransitionEnvelopeGridProps) => {
   return (
     <div className="grid gap-4">
@@ -26,6 +28,7 @@ export const TransitionEnvelopeGrid = ({
           onOptionChange={onOptionChange}
           onTransferTargetChange={onTransferTargetChange}
           onMultiTransferChange={onMultiTransferChange}
+          currency={currency}
         />
       ))}
     </div>

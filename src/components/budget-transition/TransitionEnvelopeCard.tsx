@@ -12,6 +12,7 @@ interface TransitionEnvelopeCardProps {
   onOptionChange: (envelopeId: string, option: TransitionOption) => void;
   onTransferTargetChange?: (envelopeId: string, targetId: string) => void;
   onMultiTransferChange?: (envelopeId: string, transfers: { targetId: string; targetTitle: string; amount: number }[]) => void;
+  currency?: "EUR" | "USD" | "GBP";
 }
 
 export const TransitionEnvelopeCard = ({
@@ -19,7 +20,8 @@ export const TransitionEnvelopeCard = ({
   otherEnvelopes,
   onOptionChange,
   onTransferTargetChange,
-  onMultiTransferChange
+  onMultiTransferChange,
+  currency = "EUR"
 }: TransitionEnvelopeCardProps) => {
   const isMobile = useIsMobile();
   
@@ -60,7 +62,7 @@ export const TransitionEnvelopeCard = ({
 
   return (
     <div className={`flex ${isMobile ? 'flex-col' : 'flex-col sm:flex-row'} items-start sm:items-center justify-between gap-4 p-4 border rounded-lg`}>
-      <EnvelopeCardHeader envelope={envelope} />
+      <EnvelopeCardHeader envelope={envelope} currency={currency} />
       
       <div className="flex flex-col gap-2 w-full sm:w-auto">
         <OptionSelector

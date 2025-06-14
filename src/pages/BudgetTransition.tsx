@@ -22,6 +22,7 @@ import { BudgetPDFDownload } from "@/components/pdf/BudgetPDF";
 import { useBudgets } from "@/hooks/useBudgets";
 import { useDashboardContext } from "@/hooks/useDashboardContext";
 import { useDashboardTitle } from "@/hooks/useDashboardTitle";
+import { useTheme } from "@/context/ThemeContext";
 
 export const BudgetTransition = () => {
   const navigate = useNavigate();
@@ -30,6 +31,7 @@ export const BudgetTransition = () => {
   const { totalRevenues, totalExpenses, budgets } = useBudgets();
   const { currentDashboardId } = useDashboardContext();
   const { dashboardTitle } = useDashboardTitle();
+  const { currency: globalCurrency } = useTheme();
   
   // Vérifier que nous avons bien un dashboard actif
   if (!currentDashboardId) {
@@ -95,6 +97,7 @@ export const BudgetTransition = () => {
           onOptionChange={handleOptionChange}
           onTransferTargetChange={handleTransferTargetChange}
           onMultiTransferChange={handleMultiTransferChange}
+          currency={globalCurrency}
         />
 
         <TransitionActionButtons 
