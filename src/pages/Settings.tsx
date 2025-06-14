@@ -3,14 +3,14 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { ArrowLeft, Database, Trash } from "lucide-react";
+import { ArrowLeft, Database, Trash, Moon, Sun } from "lucide-react";
 import { useTheme } from "@/context/ThemeContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useDatabaseRepair } from "@/hooks/useDatabaseRepair";
 
 const Settings = () => {
   const navigate = useNavigate();
-  const { invertColors, toggleInvertColors, showToasts, toggleShowToasts } = useTheme();
+  const { invertColors, toggleInvertColors, darkMode, toggleDarkMode, showToasts, toggleShowToasts } = useTheme();
   const { isRepairing, repairDatabase, clearDatabaseCache } = useDatabaseRepair();
 
   return (
@@ -36,20 +36,37 @@ const Settings = () => {
         <CardContent className="space-y-6">
           <div className="flex items-center justify-between py-2">
             <div>
-              <h3 className="font-medium">Couleurs inversées</h3>
+              <h3 className="font-medium flex items-center">
+                Mode sombre
+                {darkMode ? <Moon className="ml-2 h-4 w-4" /> : <Sun className="ml-2 h-4 w-4" />}
+              </h3>
               <p className="text-sm text-muted-foreground">
-                Inverser les couleurs de l'interface pour un meilleur contraste
+                Activez un thème sombre dédié agréable et professionnel
               </p>
             </div>
             <Switch 
-              checked={invertColors} 
-              onCheckedChange={toggleInvertColors} 
+              checked={darkMode} 
+              onCheckedChange={toggleDarkMode}
+              aria-label="Activer le mode sombre"
             />
           </div>
-
           <div className="flex items-center justify-between py-2">
             <div>
-              <h3 className="font-medium">Notifications </h3>
+              <h3 className="font-medium">Couleurs inversées (expérimental)</h3>
+              <p className="text-sm text-muted-foreground">
+                Inverser toutes les couleurs (peut rendre l'interface imprévisible)
+              </p>
+            </div>
+            <Switch 
+              checked={invertColors && !darkMode} 
+              onCheckedChange={toggleInvertColors}
+              aria-label="Activer l'inversion des couleurs"
+              disabled={darkMode}
+            />
+          </div>
+          <div className="flex items-center justify-between py-2">
+            <div>
+              <h3 className="font-medium">Notifications</h3>
               <p className="text-sm text-muted-foreground">
                 Afficher les notifications temporaires dans l'application
               </p>
@@ -113,3 +130,4 @@ const Settings = () => {
 };
 
 export default Settings;
+

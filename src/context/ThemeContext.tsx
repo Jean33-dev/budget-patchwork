@@ -4,6 +4,8 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 type ThemeContextType = {
   invertColors: boolean;
   toggleInvertColors: () => void;
+  darkMode: boolean;
+  toggleDarkMode: () => void;
   showToasts: boolean;
   toggleShowToasts: () => void;
 };
@@ -12,37 +14,65 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   const [invertColors, setInvertColors] = useState<boolean>(() => {
-    // Récupérer la préférence de l'utilisateur depuis le localStorage
     const savedPreference = localStorage.getItem("invertColors");
     return savedPreference === "true";
   });
 
+  const [darkMode, setDarkMode] = useState<boolean>(() => {
+    const saved = localStorage.getItem("darkMode");
+    return saved ? saved === "true" : false;
+  });
+
   const [showToasts, setShowToasts] = useState<boolean>(() => {
-    // Récupérer la préférence des toasts depuis le localStorage
     const savedToastPreference = localStorage.getItem("showToasts");
-    // Par défaut, les toasts sont activés (null ou "true")
     return savedToastPreference !== "false";
   });
 
-  // Mettre à jour la classe du document en fonction de la préférence
+  // Appliquer la classe du Dark Mode sur l'élément root
   useEffect(() => {
-    if (invertColors) {
-      document.documentElement.classList.add("invert-colors");
+    if (darkMode) {
+      document.documentElement.classList.add("dark");
     } else {
-      document.documentElement.classList.remove("invert-colors");
+      document.documentElement.classList.remove("dark");
     }
-    
-    // Sauvegarder la préférence dans localStorage
-    localStorage.setItem("invertColors", invertColors.toString());
-  }, [invertColors]);
+    // Pour garantir la priorité, le dark mode retire invert-colors si activé simultanément
+    if (darkMode && document.documentElement.classList.contains("invert-colors")) {
+      document.documentElement.classList.remove("invert-colors");
+      setInvertColors(false);
+    }
+    localStorage.setItem("darkMode", darkMode.toString());
+  }, [darkMode]);
 
-  // Sauvegarder la préférence des toasts
+  // Mettre à jour la classe du document en fonction de la préférence d'inversion
+  useEffect(() => {
+    if (!darkMode) {
+      if (invertColors) {
+        document.documentElement.classList.add("invert-colors");
+      } else {
+        document.documentElement.classList.remove("invert-colors");
+      }
+    }
+    localStorage.setItem("invertColors", invertColors.toString());
+  }, [invertColors, darkMode]);
+
   useEffect(() => {
     localStorage.setItem("showToasts", showToasts.toString());
   }, [showToasts]);
 
   const toggleInvertColors = () => {
+    // Désactive le dark mode si l'inversion est activée
+    if (!invertColors && darkMode) {
+      setDarkMode(false);
+    }
     setInvertColors(prev => !prev);
+  };
+
+  const toggleDarkMode = () => {
+    // Désactive l'inversion s'il y a activation du dark mode
+    if (!darkMode && invertColors) {
+      setInvertColors(false);
+    }
+    setDarkMode(prev => !prev);
   };
 
   const toggleShowToasts = () => {
@@ -50,11 +80,13 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <ThemeContext.Provider value={{ 
-      invertColors, 
+    <ThemeContext.Provider value={{
+      invertColors,
       toggleInvertColors,
+      darkMode,
+      toggleDarkMode,
       showToasts,
-      toggleShowToasts
+      toggleShowToasts,
     }}>
       {children}
     </ThemeContext.Provider>
@@ -68,3 +100,4 @@ export const useTheme = (): ThemeContextType => {
   }
   return context;
 };
+
