@@ -7,6 +7,7 @@ import { RecurringExpenseGrid } from "@/components/recurring/RecurringExpenseGri
 import { RecurringExpenseEmptyState } from "@/components/recurring/RecurringExpenseEmptyState";
 import { Expense } from "@/services/database/models/expense";
 import { AddButton } from "@/components/budget/AddButton";
+import { useTheme } from "@/context/ThemeContext";
 
 const RecurringExpenses = () => {
   const {
@@ -22,6 +23,8 @@ const RecurringExpenses = () => {
   
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editExpense, setEditExpense] = useState<Expense | null>(null);
+
+  const { currency: globalCurrency } = useTheme();
 
   const handleEdit = (expense: Expense) => {
     setEditExpense(expense);
@@ -75,6 +78,7 @@ const RecurringExpenses = () => {
           onDelete={handleDeleteExpense}
           onEdit={handleEdit}
           currentDate={currentDate}
+          currency={globalCurrency}
         />
       )}
 
@@ -106,3 +110,4 @@ const RecurringExpenses = () => {
 };
 
 export default RecurringExpenses;
+

@@ -8,6 +8,7 @@ interface RecurringExpenseGridProps {
   onDelete: (id: string) => void;
   onEdit: (expense: Expense) => void;
   currentDate: string;
+  currency?: "EUR" | "USD" | "GBP"; // <--- Ajout de la prop currency
 }
 
 export const RecurringExpenseGrid = ({
@@ -15,7 +16,8 @@ export const RecurringExpenseGrid = ({
   getBudgetName,
   onDelete,
   onEdit,
-  currentDate
+  currentDate,
+  currency
 }: RecurringExpenseGridProps) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -27,6 +29,7 @@ export const RecurringExpenseGrid = ({
           onDelete={() => onDelete(expense.id)}
           onEdit={() => onEdit(expense)}
           currentDate={currentDate}
+          currency={currency} // <--- Passe la devise à la carte
         />
       ))}
     </div>

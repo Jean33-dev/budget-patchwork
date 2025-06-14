@@ -7,6 +7,7 @@ import { Expense } from "@/services/database/models/expense";
 import { Budget } from "@/hooks/useBudgets";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { useTheme } from "@/context/ThemeContext";
 
 interface RecurringExpensesTabProps {
   recurringExpenses: Expense[];
@@ -24,6 +25,7 @@ interface RecurringExpensesTabProps {
   handleUpdateExpense: (expense: Expense) => void;
   getBudgetName: (id: string) => string;
   currentDate: string;
+  currency?: "EUR" | "USD" | "GBP";
 }
 
 export const RecurringExpensesTab = ({
@@ -34,11 +36,14 @@ export const RecurringExpensesTab = ({
   handleDeleteExpense,
   handleUpdateExpense,
   getBudgetName,
-  currentDate
+  currentDate,
+  currency
 }: RecurringExpensesTabProps) => {
   const { toast } = useToast();
   const [addRecurringDialogOpen, setAddRecurringDialogOpen] = useState(false);
   const [editRecurringExpense, setEditRecurringExpense] = useState<Expense | null>(null);
+  const { currency: globalCurrency } = useTheme();
+  const usedCurrency = currency || globalCurrency;
 
   useEffect(() => {
     if (!addRecurringDialogOpen) {
@@ -99,6 +104,7 @@ export const RecurringExpensesTab = ({
           onDelete={handleDeleteExpense}
           onEdit={handleEditRecurringExpense}
           currentDate={currentDate}
+          currency={usedCurrency}
         />
       )}
 
@@ -125,3 +131,4 @@ export const RecurringExpensesTab = ({
     </>
   );
 };
+

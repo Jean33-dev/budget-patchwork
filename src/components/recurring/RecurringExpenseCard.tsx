@@ -6,6 +6,7 @@ import { Trash2 } from "lucide-react";
 import { Expense } from "@/services/database/models/expense";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { useTheme } from "@/context/ThemeContext";
 
 interface RecurringExpenseCardProps {
   expense: Expense;
@@ -13,6 +14,7 @@ interface RecurringExpenseCardProps {
   onDelete: () => void;
   onEdit: () => void;
   currentDate: string;
+  currency?: "EUR" | "USD" | "GBP"; // Ajout de la prop currency
 }
 
 export const RecurringExpenseCard = ({
@@ -20,8 +22,12 @@ export const RecurringExpenseCard = ({
   budgetName,
   onDelete,
   onEdit,
-  currentDate
+  currentDate,
+  currency,
 }: RecurringExpenseCardProps) => {
+  const { currency: globalCurrency } = useTheme();
+  const usedCurrency = currency || globalCurrency; // Utilise la prop ou celle du contexte
+
   // Format the date nicely for display
   const formattedDate = expense.date ? 
     format(new Date(expense.date), "MMMM yyyy", { locale: fr }) : 
@@ -38,7 +44,7 @@ export const RecurringExpenseCard = ({
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-gray-600 text-sm">Montant:</span>
-            <span className="font-medium text-red-600">{formatAmount(expense.budget)}</span>
+            <span className="font-medium text-red-600">{formatAmount(expense.budget, usedCurrency)}</span>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-gray-600 text-sm">Budget associé:</span>
