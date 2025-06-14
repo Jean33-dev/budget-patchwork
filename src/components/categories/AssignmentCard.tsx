@@ -5,6 +5,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
+import { formatAmount } from "@/utils/format-amount";
+import { useTheme } from "@/context/ThemeContext";
 
 interface AssignmentCardProps {
   category: Category;
@@ -21,6 +23,8 @@ export const AssignmentCard = ({
   onRemove,
   getAvailableBudgets 
 }: AssignmentCardProps) => {
+  const { currency } = useTheme();
+  
   // S'assurer que category.budgets est un tableau
   const budgets = Array.isArray(category.budgets) ? category.budgets : [];
   
@@ -56,7 +60,7 @@ export const AssignmentCard = ({
                       value={budget.id}
                       className="cursor-pointer hover:bg-accent"
                     >
-                      {budget.title} ({budget.budget}€)
+                      {budget.title} ({formatAmount(budget.budget, currency)})
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -75,7 +79,9 @@ export const AssignmentCard = ({
             <ul className="list-disc pl-4 space-y-1">
               {assignedBudgets.map((budget) => (
                 <li key={budget.id} className="flex items-center justify-between">
-                  <span>{budget.title} ({budget.budget}€)</span>
+                  <span>
+                    {budget.title} ({formatAmount(budget.budget, currency)})
+                  </span>
                   <Button
                     variant="ghost"
                     size="icon"
