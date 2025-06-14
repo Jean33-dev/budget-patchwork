@@ -1,4 +1,3 @@
-
 import { toast } from "@/components/ui/use-toast";
 import { TransitionEnvelope } from "@/types/transition";
 import { db } from "@/services/database";
@@ -90,32 +89,23 @@ export const processEnvelopeTransitions = async (envelopes: TransitionEnvelope[]
         
         case "carry":
           console.log(`[LOG] 🔄 Report du montant restant pour ${envelope.title}...`);
-          if (remainingAmount > 0) {
-            console.log(`[LOG] 🔄 - Montant à reporter: ${remainingAmount}`);
-            console.log(`[LOG] 🔄 - Ancien carriedOver: ${budgetToProcess.carriedOver || 0}`);
-            console.log(`[LOG] 🔄 - Nouveau carriedOver à définir: ${remainingAmount}`);
-            
-            // IMPORTANT: Log avant la mise à jour
-            console.log(`[LOG] 🔍 AVANT updateBudgetCarriedOver - Budget ID: ${envelope.id}, Nouveau montant: ${remainingAmount}`);
-            
-            await updateBudgetCarriedOver(envelope.id, remainingAmount);
-            
-            // IMPORTANT: Log après la mise à jour
-            const budgetAfterCarry = await db.getBudgets().then(budgets => budgets.find(b => b.id === envelope.id));
-            if (budgetAfterCarry) {
-              console.log(`[LOG] 🔍 APRÈS updateBudgetCarriedOver - Budget ID: ${envelope.id}, carriedOver actuel: ${budgetAfterCarry.carriedOver}`);
-              
-              if (budgetAfterCarry.carriedOver !== remainingAmount) {
-                console.log(`[LOG] ❌ ERREUR: La mise à jour de carriedOver a échoué! Valeur attendue: ${remainingAmount}, Valeur actuelle: ${budgetAfterCarry.carriedOver}`);
-              } else {
-                console.log(`[LOG] ✅ La mise à jour de carriedOver a réussi.`);
-              }
+          // Maintenant, reporter TOUJOURS le montant réel (même s'il est négatif)
+          console.log(`[LOG] 🔄 - Montant à reporter (positif ou négatif): ${remainingAmount}`);
+          console.log(`[LOG] 🔄 - Ancien carriedOver: ${budgetToProcess.carriedOver || 0}`);
+          console.log(`[LOG] 🔄 - Nouveau carriedOver à définir: ${remainingAmount}`);
+          // IMPORTANT: Log avant la mise à jour
+          console.log(`[LOG] 🔍 AVANT updateBudgetCarriedOver - Budget ID: ${envelope.id}, Nouveau montant: ${remainingAmount}`);
+          await updateBudgetCarriedOver(envelope.id, remainingAmount);
+          // IMPORTANT: Log après la mise à jour
+          const budgetAfterCarry = await db.getBudgets().then(budgets => budgets.find(b => b.id === envelope.id));
+          if (budgetAfterCarry) {
+            console.log(`[LOG] 🔍 APRÈS updateBudgetCarriedOver - Budget ID: ${envelope.id}, carriedOver actuel: ${budgetAfterCarry.carriedOver}`);
+            if (budgetAfterCarry.carriedOver !== remainingAmount) {
+              console.log(`[LOG] ❌ ERREUR: La mise à jour de carriedOver a échoué! Valeur attendue: ${remainingAmount}, Valeur actuelle: ${budgetAfterCarry.carriedOver}`);
+            } else {
+              console.log(`[LOG] ✅ La mise à jour de carriedOver a réussi.`);
             }
-          } else {
-            console.log(`[LOG] 🔄 Rien à reporter (montant restant ≤ 0), carriedOver mis à 0`);
-            await updateBudgetCarriedOver(envelope.id, 0);
           }
-          
           // Réinitialiser le 'spent'
           console.log(`[LOG] 🔄 Réinitialisation de spent à 0`);
           await updateBudgetSpent(envelope.id, 0);
