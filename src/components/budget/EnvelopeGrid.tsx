@@ -17,6 +17,7 @@ interface EnvelopeGridProps {
   onEnvelopeClick: (envelope: Envelope) => void;
   onViewExpenses?: (envelope: Envelope) => void;
   onDeleteEnvelope?: (id: string) => void;
+  currency?: "EUR" | "USD" | "GBP";
 }
 
 export const EnvelopeGrid = ({
@@ -24,6 +25,7 @@ export const EnvelopeGrid = ({
   onEnvelopeClick,
   onViewExpenses,
   onDeleteEnvelope,
+  currency,
 }: EnvelopeGridProps) => {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6">
@@ -41,6 +43,7 @@ export const EnvelopeGrid = ({
             onEnvelopeClick={onEnvelopeClick}
             onViewExpenses={onViewExpenses}
             onDeleteEnvelope={onDeleteEnvelope}
+            currency={currency}
           />
         </div>
       ))}

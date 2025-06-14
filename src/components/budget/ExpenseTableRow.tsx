@@ -15,6 +15,7 @@ interface ExpenseTableRowProps {
   onDelete?: () => void;
   availableBudgets?: Array<{ id: string; title: string }>;
   onUpdate?: (expense: Expense) => void;
+  currency?: "EUR" | "USD" | "GBP";
 }
 
 export const ExpenseTableRow = ({
@@ -23,7 +24,8 @@ export const ExpenseTableRow = ({
   toggleRow,
   onDelete,
   availableBudgets,
-  onUpdate
+  onUpdate,
+  currency
 }: ExpenseTableRowProps) => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
@@ -49,7 +51,7 @@ export const ExpenseTableRow = ({
         </div>
         <div className="flex items-center space-x-3">
           <div className="text-right font-semibold text-gray-700">
-            {formatAmount(expense.budget)}
+            {formatAmount(expense.budget, currency)}
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
