@@ -1,4 +1,3 @@
-
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { BudgetsHeader } from "@/components/budget/BudgetsHeader";
@@ -14,6 +13,7 @@ import { useBudgetInteractions } from "@/hooks/useBudgetInteractions";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, RefreshCw, PlusCircle } from "lucide-react";
 import { AddButton } from "@/components/budget/AddButton";
+import { useTheme } from "@/context/ThemeContext";
 
 const BudgetsPage = () => {
   const navigate = useNavigate();
@@ -52,6 +52,8 @@ const BudgetsPage = () => {
     handleDeleteClick,
     handleDeleteConfirm
   } = useBudgetInteractions(navigate);
+
+  const { currency: globalCurrency } = useTheme();
 
   useEffect(() => {
     console.log("BudgetsPage: initialization status changed:", initializationSuccess);
@@ -120,7 +122,9 @@ const BudgetsPage = () => {
         label="Ajouter un budget"
       />
 
-      {remainingAmount !== undefined && <RemainingAmountAlert remainingAmount={remainingAmount} />}
+      {remainingAmount !== undefined && (
+        <RemainingAmountAlert remainingAmount={remainingAmount} currency={globalCurrency} />
+      )}
 
       {budgets.length === 0 ? (
         <EmptyBudgetState />
