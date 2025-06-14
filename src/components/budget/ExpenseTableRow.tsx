@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { formatAmount } from "@/utils/format-amount";
 import { MoreHorizontal, Pencil, Trash2, Share2 } from "lucide-react";
@@ -40,7 +39,7 @@ export const ExpenseTableRow = ({
   return (
     <>
       <div 
-        className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors"
+        className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors rounded-lg hover:shadow-md duration-200"
         onClick={() => toggleRow(expense.id)}
       >
         <div className="flex flex-col">
@@ -80,7 +79,6 @@ export const ExpenseTableRow = ({
         </div>
       </div>
 
-      {/* Boîte de dialogue de modification */}
       <EditExpenseDialog
         open={isEditDialogOpen}
         onOpenChange={setIsEditDialogOpen}
@@ -110,7 +108,6 @@ export const ExpenseTableRow = ({
         }}
       />
 
-      {/* Boîte de dialogue de partage */}
       {isShareDialogOpen && (
         <ExpenseShareDialog
           expense={expense}
