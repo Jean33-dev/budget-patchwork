@@ -7,6 +7,7 @@ import { Expense } from "@/services/database/models/expense";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useTheme } from "@/context/ThemeContext";
+import React from "react";
 
 interface RecurringExpenseCardProps {
   expense: Expense;
@@ -14,7 +15,7 @@ interface RecurringExpenseCardProps {
   onDelete: () => void;
   onEdit: () => void;
   currentDate: string;
-  currency?: "EUR" | "USD" | "GBP"; // Ajout de la prop currency
+  currency?: "EUR" | "USD" | "GBP";
 }
 
 export const RecurringExpenseCard = ({
@@ -26,15 +27,34 @@ export const RecurringExpenseCard = ({
   currency,
 }: RecurringExpenseCardProps) => {
   const { currency: globalCurrency } = useTheme();
-  const usedCurrency = currency || globalCurrency; // Utilise la prop ou celle du contexte
+  const usedCurrency = currency || globalCurrency;
 
   // Format the date nicely for display
   const formattedDate = expense.date ? 
     format(new Date(expense.date), "MMMM yyyy", { locale: fr }) : 
     "Date inconnue";
 
+  // Pour empêcher l'ouverture du dialog lors d'un clic sur le bouton de suppression
+  const handleCardClick: React.MouseEventHandler<HTMLDivElement> = (e) => {
+    // Ne pas ouvrir le dialog si le bouton supprimer est cliqué
+    // (bouton stoppe la propagation)
+    onEdit();
+  };
+
   return (
-    <Card className="overflow-hidden h-full flex flex-col hover:shadow-md transition-shadow border-t-4 border-t-red-500">
+    <Card 
+      className="overflow-hidden h-full flex flex-col hover:shadow-md transition-shadow border-t-4 border-t-red-500 cursor-pointer"
+      onClick={handleCardClick}
+      tabIndex={0}
+      aria-label={`Modifier la dépense récurrente ${expense.title}`}
+      role="button"
+      onKeyDown={e => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onEdit();
+        }
+      }}
+    >
       <CardHeader className="bg-gray-50 pb-3">
         <CardTitle className="text-lg font-medium line-clamp-2" title={expense.title}>
           {expense.title}
@@ -61,7 +81,10 @@ export const RecurringExpenseCard = ({
           variant="ghost" 
           size="sm" 
           className="text-red-500 hover:bg-red-50 hover:text-red-600" 
-          onClick={onDelete}
+          onClick={e => {
+            e.stopPropagation(); // Pour ne pas déclencher onEdit
+            onDelete();
+          }}
         >
           <Trash2 className="h-4 w-4 mr-1" />
           Supprimer
