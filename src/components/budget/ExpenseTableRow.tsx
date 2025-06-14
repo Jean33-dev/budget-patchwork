@@ -1,7 +1,7 @@
 
 import React, { useState } from "react";
 import { formatAmount } from "@/utils/format-amount";
-import { MoreHorizontal } from "lucide-react";
+import { MoreHorizontal, Pencil, Trash2, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { EditExpenseDialog } from "./EditExpenseDialog";
@@ -63,13 +63,16 @@ export const ExpenseTableRow = ({
             <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
               <DropdownMenuItem onClick={() => setIsEditDialogOpen(true)}>
+                <Pencil className="h-4 w-4 mr-2 text-muted-foreground" />
                 Modifier
               </DropdownMenuItem>
               <DropdownMenuItem onClick={onDelete}>
+                <Trash2 className="h-4 w-4 mr-2 text-destructive" />
                 Supprimer
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => setIsShareDialogOpen(true)}>
+                <Share2 className="h-4 w-4 mr-2 text-muted-foreground" />
                 Partager
               </DropdownMenuItem>
             </DropdownMenuContent>
