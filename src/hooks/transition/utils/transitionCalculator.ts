@@ -1,4 +1,3 @@
-
 import { toast } from "@/components/ui/use-toast";
 import { TransitionEnvelope } from "@/types/transition";
 import { db } from "@/services/database";
@@ -86,13 +85,14 @@ export const calculateTransitionAmounts = async (envelopes: TransitionEnvelope[]
       previousCarriedOver: budgetToProcess.carriedOver || 0,
       spent: budgetToProcess.spent,
       expensesTotal: totalExpenseAmount,
-      remainingAmount: Math.max(0, remainingAmount),
+      // reporter le montant négatif si c'est le cas
+      remainingAmount: remainingAmount,
       option: envelope.transitionOption,
       transferTargetId: envelope.transferTargetId,
       multiTransfers: envelope.multiTransfers
     });
     
-    console.log(`[LOG] ✅ Plan de transition créé pour ${budgetToProcess.title}: montant à reporter = ${Math.max(0, remainingAmount)}`);
+    console.log(`[LOG] ✅ Plan de transition créé pour ${budgetToProcess.title}: montant à reporter = ${remainingAmount}`);
   }
   
   console.log(`[LOG] 📝 RÉCAPITULATIF DU PLAN DE TRANSITION:`);
