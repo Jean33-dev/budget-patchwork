@@ -1,6 +1,7 @@
 
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, Label } from "recharts";
 import { formatAmount } from "@/utils/format-amount";
+import { useIsMobile } from "@/hooks/use-mobile"; // Ajout du hook
 
 interface BudgetData {
   name: string;
@@ -41,6 +42,8 @@ const COLORS = {
 const UNALLOCATED_COLOR = "#64748B"; // Gris bleuté
 
 export const BudgetChart = ({ data, totalIncome = 0, addUnallocated = false, currency = "EUR" }: BudgetChartProps) => {
+  const isMobile = useIsMobile(); // usage du hook
+
   let chartData = [...data];
   
   if (addUnallocated) {
@@ -162,33 +165,36 @@ export const BudgetChart = ({ data, totalIncome = 0, addUnallocated = false, cur
         </ResponsiveContainer>
       </div>
       
-      {/* Légende placée en dessous du graphique */}
-      <div className="mt-4 flex flex-wrap justify-center gap-4">
-        {chartData.map((entry, index) => {
-          // Couleur spéciale pour le budget non alloué
-          const color = entry.name === "Budget non alloué" 
-            ? UNALLOCATED_COLOR 
-            : COLORS[entry.type][index % COLORS[entry.type].length];
-            
-          return (
-            <div key={`legend-${index}`} className="flex items-center gap-2">
-              <div 
-                className="w-3 h-3 rounded-sm" 
-                style={{ backgroundColor: color, boxShadow: '0 1px 2px rgba(0,0,0,0.1)' }}
-              />
-              <span className="text-sm text-muted-foreground">
-                {entry.name}
-              </span>
-              <span className="text-sm font-medium">
-                {formatAmount(entry.value, currency)}
-              </span>
-              <span className="text-xs text-muted-foreground">
-                ({getPercentage(entry.value)}%)
-              </span>
-            </div>
-          );
-        })}
-      </div>
+      {/* Légende placée en dessous du graphique, cachée en mobile */}
+      {!isMobile && (
+        <div className="mt-4 flex flex-wrap justify-center gap-4">
+          {chartData.map((entry, index) => {
+            // Couleur spéciale pour le budget non alloué
+            const color = entry.name === "Budget non alloué" 
+              ? UNALLOCATED_COLOR 
+              : COLORS[entry.type][index % COLORS[entry.type].length];
+              
+            return (
+              <div key={`legend-${index}`} className="flex items-center gap-2">
+                <div 
+                  className="w-3 h-3 rounded-sm" 
+                  style={{ backgroundColor: color, boxShadow: '0 1px 2px rgba(0,0,0,0.1)' }}
+                />
+                <span className="text-sm text-muted-foreground">
+                  {entry.name}
+                </span>
+                <span className="text-sm font-medium">
+                  {formatAmount(entry.value, currency)}
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  ({getPercentage(entry.value)}%)
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };
+
