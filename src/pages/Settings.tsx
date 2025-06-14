@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -13,13 +12,42 @@ const Settings = () => {
   const { invertColors, toggleInvertColors, darkMode, toggleDarkMode, showToasts, toggleShowToasts } = useTheme();
   const { isRepairing, repairDatabase, clearDatabaseCache } = useDatabaseRepair();
 
+  // Handler pour un retour "intelligent"
+  const handleBack = React.useCallback(() => {
+    // Vérifie s'il y a bien une page précédente dans l'historique
+    if (window.history.length > 1) {
+      navigate(-1);
+      // Avec navigate(-1) l'utilisateur pourrait rester bloqué sur /settings (rafraîchi ou arrivée directe)
+      setTimeout(() => {
+        // On vérifie si l'on est toujours sur la page des paramètres
+        if (window.location.pathname === "/settings") {
+          let targetPath = "/dashboard";
+          // On tente de récupérer un dashboardId en localStorage si possible
+          const dashboardId = localStorage.getItem("currentDashboardId");
+          if (dashboardId) {
+            targetPath = `/dashboard/${dashboardId}`;
+          }
+          navigate(targetPath, { replace: true });
+        }
+      }, 100); // Laisse le temps au navigate(-1)
+    } else {
+      // Cas où il n'y a jamais eu de page précédente : force redirection
+      let targetPath = "/dashboard";
+      const dashboardId = localStorage.getItem("currentDashboardId");
+      if (dashboardId) {
+        targetPath = `/dashboard/${dashboardId}`;
+      }
+      navigate(targetPath, { replace: true });
+    }
+  }, [navigate]);
+
   return (
     <div className="container mx-auto py-8 space-y-6">
       <div className="flex items-center gap-4">
         <Button 
           variant="outline" 
           size="icon"
-          onClick={() => navigate(-1)}
+          onClick={handleBack}
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
@@ -130,4 +158,3 @@ const Settings = () => {
 };
 
 export default Settings;
-
