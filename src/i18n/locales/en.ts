@@ -273,6 +273,7 @@ const enTranslations: Record<string, string> = {
   "income.loading": "Loading incomes...",
   "income.loadingRecurring": "Loading recurring incomes...",
   "income.empty": "No income found",
+  "income.emptyRecurring": "No recurring income found",
   "income.toast.errorTitle": "Error",
   "income.toast.typeMustBeIncome": "Type must be 'income'",
 };

@@ -216,6 +216,7 @@ const esTranslations: Record<string, string> = {
   "income.loading": "Cargando ingresos...",
   "income.loadingRecurring": "Cargando ingresos recurrentes...",
   "income.empty": "No se encontró ningún ingreso",
+  "income.emptyRecurring": "No se encontró ningún ingreso recurrente",
   "income.toast.errorTitle": "Error",
   "income.toast.typeMustBeIncome": "El tipo debe ser 'income'",
 };
