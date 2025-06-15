@@ -1,7 +1,9 @@
+
 import React from "react";
 import { Text, View } from "@react-pdf/renderer";
 import { styles } from "../styles/pdfStyles";
 import { formatAmount } from "@/utils/format-amount";
+import { translations } from "@/i18n/translations";
 
 interface Expense {
   id: string;
@@ -14,25 +16,33 @@ interface Expense {
 interface ExpensesSectionProps {
   expenses?: Expense[];
   currency?: "EUR" | "USD" | "GBP";
+  language?: string;
 }
 
-export const ExpensesSection: React.FC<ExpensesSectionProps> = ({ expenses, currency = "EUR" }) => {
+export const ExpensesSection: React.FC<ExpensesSectionProps> = ({
+  expenses,
+  currency = "EUR",
+  language = "fr"
+}) => {
   if (!expenses || !expenses.length) return null;
-  
+
+  const t = (key: string) =>
+    translations[language]?.[key] ?? translations["en"]?.[key] ?? key;
+
   return (
     <View style={styles.section}>
-      <Text style={styles.sectionTitle}>Dépenses</Text>
+      <Text style={styles.sectionTitle}>{t("pdf.expenses")}</Text>
       <View style={styles.table}>
         <View style={[styles.tableRow, styles.tableHeader]}>
-          <Text style={styles.tableCell}>Nom</Text>
-          <Text style={styles.tableCell}>Date</Text>
-          <Text style={styles.tableCellAmount}>Montant</Text>
+          <Text style={styles.tableCell}>{t("pdf.name")}</Text>
+          <Text style={styles.tableCell}>{t("pdf.date")}</Text>
+          <Text style={styles.tableCellAmount}>{t("pdf.amount")}</Text>
         </View>
         {expenses.map((expense) => (
           <View style={styles.tableRow} key={expense.id}>
             <Text style={styles.tableCell}>{expense.title}</Text>
             <Text style={styles.tableCell}>
-              {expense.date ? new Date(expense.date).toLocaleDateString("fr-FR") : "N/A"}
+              {expense.date ? new Date(expense.date).toLocaleDateString(language === "fr" ? "fr-FR" : "en-US") : "N/A"}
             </Text>
             <Text style={styles.tableCellAmount}>{formatAmount(expense.budget, currency)}</Text>
           </View>
