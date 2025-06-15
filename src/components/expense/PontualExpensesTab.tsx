@@ -1,10 +1,10 @@
-
 import { ExpenseList } from "@/components/budget/ExpenseList";
 import { BudgetLoadingState } from "@/components/budget/BudgetLoadingState";
 import { ExpenseErrorState } from "@/components/budget/ExpenseErrorState";
 import { Expense } from "@/services/database/models/expense";
 import { Budget } from "@/hooks/useBudgets";
 import { useEffect } from "react";
+import { useTheme } from "@/context/ThemeContext";
 
 interface PontualExpensesTabProps {
   isLoading: boolean;
@@ -45,6 +45,7 @@ export const PontualExpensesTab = ({
   handleRetry,
   budgetId
 }: PontualExpensesTabProps) => {
+  const { t } = useTheme();
   
   // Log pour déboguer
   useEffect(() => {
@@ -83,6 +84,8 @@ export const PontualExpensesTab = ({
           handleRetry={handleRetry}
           handleForceReload={forceReload}
           handleClearCacheAndReload={() => window.location.reload()}
+          title={t("expenses.errorTitle")}
+          description={t("expenses.errorLoading")}
         />
       )}
       
