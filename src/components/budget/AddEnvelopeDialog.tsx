@@ -1,6 +1,8 @@
+
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { EnvelopeForm } from "./EnvelopeForm";
+import { useTheme } from "@/context/ThemeContext";
 
 interface AddEnvelopeDialogProps {
   type: "income" | "expense" | "budget";
@@ -82,7 +84,7 @@ export const AddEnvelopeDialog = ({
     onOpenChange(false);
   };
 
-  const { t } = require("@/context/ThemeContext").useTheme();
+  const { t } = useTheme();
 
   const getTypeLabel = (type: "income" | "expense" | "budget") => {
     switch (type) {
@@ -99,10 +101,9 @@ export const AddEnvelopeDialog = ({
 
   const getDialogTitle = () => {
     if (dialogTitle) return dialogTitle;
-    return t("envelopeForm.dialogTitle", {
-      type: getTypeLabel(type),
-      isRecurring: isRecurring ? t("envelopeForm.recurringSuffix") : "",
-    });
+    return t("envelopeForm.dialogTitle")
+      .replace("{type}", getTypeLabel(type))
+      .replace("{isRecurring}", isRecurring ? t("envelopeForm.recurringSuffix") : "");
   };
 
   return (
