@@ -1,6 +1,7 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
+import { useTheme } from "@/context/ThemeContext";
 
 interface TransitionActionButtonsProps {
   onCancel: () => void;
@@ -13,19 +14,20 @@ export const TransitionActionButtons = ({
   onConfirm,
   isProcessing
 }: TransitionActionButtonsProps) => {
+  const { t } = useTheme();
   return (
     <div className="flex justify-between pt-4 border-t">
       <Button 
         variant="outline" 
         onClick={onCancel}
       >
-        Annuler
+        {t("dashboard.cancel")}
       </Button>
       <Button 
         onClick={onConfirm}
         disabled={isProcessing}
       >
-        {isProcessing ? "Traitement en cours..." : "Confirmer la transition"}
+        {isProcessing ? t("transition.processing") : t("transition.confirm")}
       </Button>
     </div>
   );
