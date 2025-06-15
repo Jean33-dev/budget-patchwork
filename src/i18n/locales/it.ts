@@ -204,6 +204,11 @@ const itTranslations: Record<string, string> = {
   "budgetCard.badgeIncome": "Entrata",
   "budgetCard.badgeExpense": "Spesa",
   "budgetCard.badgeDefault": "Busta",
+  "expense.actions.actions": "Azioni",
+  "expense.actions.edit": "Modifica",
+  "expense.actions.delete": "Elimina",
+  "expense.actions.share": "Condividi",
+  "expense.actions.openMenu": "Apri il menu azioni spesa"
 };
 
 export default itTranslations;

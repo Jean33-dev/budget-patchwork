@@ -1,3 +1,4 @@
+
 const enTranslations: Record<string, string> = {
   "settings.title": "Settings",
   "settings.display": "Display",
@@ -206,5 +207,12 @@ const enTranslations: Record<string, string> = {
   "envelopeForm.linkedBudgetLabel": "Linked budget",
   "envelopeForm.linkedBudgetPlaceholder": "Select a budget",
   "envelopeForm.noBudgets": "No budget available. Please create a budget first.",
+  // ----------- ADDED FOR ACTIONS -----------
+  "expense.actions.actions": "Actions",
+  "expense.actions.edit": "Edit",
+  "expense.actions.delete": "Delete",
+  "expense.actions.share": "Share",
+  "expense.actions.openMenu": "Open expense actions menu"
 };
 export default enTranslations;
+
