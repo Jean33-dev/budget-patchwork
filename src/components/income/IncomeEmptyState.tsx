@@ -1,12 +1,13 @@
 
 import React from 'react';
+import { useTheme } from "@/context/ThemeContext";
 
 interface IncomeEmptyStateProps {
   onAddClick?: () => void;
 }
 
 export const IncomeEmptyState = ({ onAddClick }: IncomeEmptyStateProps) => {
-  const { t } = require("@/context/ThemeContext").useTheme(); // Hook dans le composant
+  const { t } = useTheme();
 
   return (
     <div className="text-center py-8">
