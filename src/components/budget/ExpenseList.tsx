@@ -6,7 +6,7 @@ import { Expense, Budget } from "@/hooks/useExpenseManagement";
 import { ExpenseDialogs, useExpenseDialogState } from "./ExpenseDialogs";
 import { useTheme } from "@/context/ThemeContext";
 import { ExpenseEmptyState } from "./ExpenseEmptyState";
-import { Button } from "@/components/Button";
+import { Button } from "@/components/ui/button";
 
 interface ExpenseListProps {
   expenses: Expense[];
