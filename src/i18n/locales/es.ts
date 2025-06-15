@@ -163,5 +163,8 @@ const esTranslations: Record<string, string> = {
   "budgetCard.badgeIncome": "Ingreso",
   "budgetCard.badgeExpense": "Gasto",
   "budgetCard.badgeDefault": "Sobre",
+  "transition.remaining": "Saldo restante", // AÑADIDO
+  "transition.selectOptionPlaceholder": "Seleccionar opción", // AÑADIDO
+  "transition.selectEnvelopePlaceholder": "Seleccionar sobre", // AÑADIDO
 };
 export default esTranslations;
