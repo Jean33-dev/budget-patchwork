@@ -17,8 +17,7 @@ export const OverviewStats = ({
   balance,
   currency
 }: OverviewStatsProps) => {
-  // Prend la devise du context si non forcée via prop
-  const { currency: globalCurrency } = useTheme();
+  const { currency: globalCurrency, t } = useTheme();
   const usedCurrency = currency || globalCurrency;
 
   return (
@@ -30,7 +29,7 @@ export const OverviewStats = ({
               <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
                 <TrendingUp className="h-5 w-5 text-budget-income" />
               </div>
-              <h3 className="text-base font-medium">Revenus Totaux</h3>
+              <h3 className="text-base font-medium">{t("overview.totalIncome")}</h3>
             </div>
             <div className="text-lg font-semibold text-gradient-success">
               {formatAmount(totalIncome, usedCurrency)}
@@ -41,7 +40,7 @@ export const OverviewStats = ({
               <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
                 <TrendingDown className="h-5 w-5 text-budget-expense" />
               </div>
-              <h3 className="text-base font-medium">Dépenses Totales</h3>
+              <h3 className="text-base font-medium">{t("overview.totalExpenses")}</h3>
             </div>
             <div className="text-lg font-semibold text-gradient-danger">
               {formatAmount(totalExpenses, usedCurrency)}
@@ -52,7 +51,7 @@ export const OverviewStats = ({
               <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
                 <Wallet className="h-5 w-5 text-blue-600 dark:text-blue-400" />
               </div>
-              <h3 className="text-base font-medium">Solde</h3>
+              <h3 className="text-base font-medium">{t("overview.balance")}</h3>
             </div>
             <div className={`text-lg font-semibold ${balance >= 0 ? "text-gradient-success" : "text-gradient-danger"}`}>
               {balance >= 0
