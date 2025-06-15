@@ -1,27 +1,28 @@
 
-import dashboard from "./dashboard";
-import budgets from "./budgets";
-import expenses from "./expenses";
-import pdf from "./pdf";
-import bluetooth from "./bluetooth";
-import footer from "./footer";
-import envelope from "./envelope";
-import settings from "./settings";
-import transition from "./transition";
-import home from "./home";
+import settings from './settings';
+import dashboard from './dashboard';
+import home from './home';
+import budgets from './budgets';
+import expenses from './expenses';
+import footer from './footer';
+import pdf from './pdf';
+import bluetooth from './bluetooth';
+import envelope from './envelope';
+import transition from './transition';
+import income from './income';
 
-const frTranslations: Record<string, string> = {
+const frTranslations = {
   ...settings,
   ...dashboard,
+  ...home,
   ...budgets,
   ...expenses,
+  ...footer,
   ...pdf,
   ...bluetooth,
-  ...footer,
   ...envelope,
   ...transition,
-  ...home,
-  // Ajoutez d’autres imports ou objets ici si d’autres sections apparaissent
+  ...income,
 };
 
 export default frTranslations;
