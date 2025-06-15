@@ -26,18 +26,16 @@ export const RecurringExpenseCard = ({
   currentDate,
   currency,
 }: RecurringExpenseCardProps) => {
-  const { currency: globalCurrency } = useTheme();
+  const { currency: globalCurrency, t } = useTheme();
   const usedCurrency = currency || globalCurrency;
 
   // Format the date nicely for display
   const formattedDate = expense.date ? 
     format(new Date(expense.date), "MMMM yyyy", { locale: fr }) : 
-    "Date inconnue";
+    t("recurring.unknownDate");
 
   // Pour empêcher l'ouverture du dialog lors d'un clic sur le bouton de suppression
   const handleCardClick: React.MouseEventHandler<HTMLDivElement> = (e) => {
-    // Ne pas ouvrir le dialog si le bouton supprimer est cliqué
-    // (bouton stoppe la propagation)
     onEdit();
   };
 
@@ -46,7 +44,7 @@ export const RecurringExpenseCard = ({
       className="overflow-hidden h-full flex flex-col hover:shadow-md transition-shadow border-t-4 border-t-red-500 cursor-pointer"
       onClick={handleCardClick}
       tabIndex={0}
-      aria-label={`Modifier la dépense récurrente ${expense.title}`}
+      aria-label={t("recurring.editExpenseLabel", { title: expense.title })}
       role="button"
       onKeyDown={e => {
         if (e.key === "Enter" || e.key === " ") {
@@ -63,15 +61,15 @@ export const RecurringExpenseCard = ({
       <CardContent className="pt-4 flex-grow">
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-gray-600 text-sm">Montant:</span>
+            <span className="text-gray-600 text-sm">{t("recurring.amount")}:</span>
             <span className="font-medium text-red-600">{formatAmount(expense.budget, usedCurrency)}</span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-gray-600 text-sm">Budget associé:</span>
-            <span className="font-medium">{budgetName || "Aucun"}</span>
+            <span className="text-gray-600 text-sm">{t("recurring.linkedBudget")}:</span>
+            <span className="font-medium">{budgetName || t("recurring.noBudget")}</span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-gray-600 text-sm">Date:</span>
+            <span className="text-gray-600 text-sm">{t("recurring.date")}:</span>
             <span className="font-medium">{formattedDate}</span>
           </div>
         </div>
@@ -87,7 +85,7 @@ export const RecurringExpenseCard = ({
           }}
         >
           <Trash2 className="h-4 w-4 mr-1" />
-          Supprimer
+          {t("recurring.delete")}
         </Button>
       </CardFooter>
     </Card>

@@ -208,7 +208,15 @@ const itTranslations: Record<string, string> = {
   "expense.actions.edit": "Modifica",
   "expense.actions.delete": "Elimina",
   "expense.actions.share": "Condividi",
-  "expense.actions.openMenu": "Apri il menu azioni spesa"
+  "expense.actions.openMenu": "Apri il menu azioni spesa",
+  // ----------- AGGIUNTE PER RECURRING CARD -----------
+  "recurring.amount": "Importo",
+  "recurring.linkedBudget": "Budget associato",
+  "recurring.noBudget": "Nessuno",
+  "recurring.date": "Data",
+  "recurring.unknownDate": "Data sconosciuta",
+  "recurring.delete": "Elimina",
+  "recurring.editExpenseLabel": "Modifica spesa ricorrente {title}"
 };
 
 export default itTranslations;

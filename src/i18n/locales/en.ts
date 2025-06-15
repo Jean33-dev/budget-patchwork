@@ -1,4 +1,3 @@
-
 const enTranslations: Record<string, string> = {
   "settings.title": "Settings",
   "settings.display": "Display",
@@ -212,7 +211,14 @@ const enTranslations: Record<string, string> = {
   "expense.actions.edit": "Edit",
   "expense.actions.delete": "Delete",
   "expense.actions.share": "Share",
-  "expense.actions.openMenu": "Open expense actions menu"
+  "expense.actions.openMenu": "Open expense actions menu",
+  // ----------- ADDED FOR RECURRING CARD -----------
+  "recurring.amount": "Amount",
+  "recurring.linkedBudget": "Linked budget",
+  "recurring.noBudget": "None",
+  "recurring.date": "Date",
+  "recurring.unknownDate": "Unknown date",
+  "recurring.delete": "Delete",
+  "recurring.editExpenseLabel": "Edit recurring expense {title}"
 };
 export default enTranslations;
-
