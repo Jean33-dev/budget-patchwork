@@ -14,7 +14,7 @@ interface IncomeCardProps {
 }
 
 export const IncomeCard = ({ income, onDelete, onClick, currency }: IncomeCardProps) => {
-  const { currency: globalCurrency } = useTheme();
+  const { currency: globalCurrency, t } = useTheme();
   const usedCurrency = currency || globalCurrency;
 
   return (
@@ -27,11 +27,11 @@ export const IncomeCard = ({ income, onDelete, onClick, currency }: IncomeCardPr
       <CardContent className="pt-4 flex-grow">
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-gray-600 text-sm">Montant:</span>
+            <span className="text-gray-600 text-sm">{t("income.card.amount")}</span>
             <span className="font-semibold text-green-600">{formatAmount(income.budget, usedCurrency)}</span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-gray-600 text-sm">Date:</span>
+            <span className="text-gray-600 text-sm">{t("income.card.date")}</span>
             <span className="font-medium flex items-center">
               <Calendar className="h-4 w-4 mr-1 shrink-0" />
               {income.date}
@@ -50,7 +50,7 @@ export const IncomeCard = ({ income, onDelete, onClick, currency }: IncomeCardPr
           }}
         >
           <Trash2 className="h-4 w-4 mr-1" />
-          Supprimer
+          {t("income.card.delete")}
         </Button>
       </CardFooter>
     </Card>

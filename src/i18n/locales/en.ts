@@ -276,6 +276,9 @@ const enTranslations: Record<string, string> = {
   "income.emptyRecurring": "No recurring income found",
   "income.toast.errorTitle": "Error",
   "income.toast.typeMustBeIncome": "Type must be 'income'",
+  "income.card.amount": "Amount:",
+  "income.card.date": "Date:",
+  "income.card.delete": "Delete",
 };
 
 export default enTranslations;
