@@ -15,17 +15,23 @@ export const BudgetStats = ({
   remainingBudgetAfterExpenses,
   currency
 }: BudgetStatsProps) => {
-  const { currency: globalCurrency } = useTheme();
+  const { currency: globalCurrency, t } = useTheme();
   const usedCurrency = currency || globalCurrency;
 
   return (
     <div className="space-y-4">
+      <div className="mb-2">
+        <h2 className="text-xl font-bold">{t("footer.synthese")}</h2>
+        <div className="text-muted-foreground text-sm">
+          {t("stats.overviewSubtitle")}
+        </div>
+      </div>
       <Card className="overflow-hidden">
         <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-border/30">
           <div className="p-4 sm:p-6 flex flex-col">
             <span className="text-sm text-muted-foreground mb-1.5 flex items-center">
               <ArrowDown className="h-3.5 w-3.5 mr-1.5 text-blue-500" />
-              Revenu restant à répartir
+              {t("stats.remainingIncome")}
             </span>
             <span className={`text-lg sm:text-xl font-semibold ${remainingBudget < 0 ? 'text-red-500' : 'text-blue-800'}`}>
               {formatAmount(remainingBudget, usedCurrency)}
@@ -34,7 +40,7 @@ export const BudgetStats = ({
           <div className="p-4 sm:p-6 flex flex-col">
             <span className="text-sm text-muted-foreground mb-1.5 flex items-center">
               <ArrowUp className="h-3.5 w-3.5 mr-1.5 text-green-500" />
-              Budget restant
+              {t("stats.remainingBudget")}
             </span>
             <span className={`text-lg sm:text-xl font-semibold ${remainingBudgetAfterExpenses < 0 ? 'text-red-500' : 'text-blue-800'}`}>
               {formatAmount(remainingBudgetAfterExpenses, usedCurrency)}

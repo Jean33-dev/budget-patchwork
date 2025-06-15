@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { BudgetChart } from "../shared/BudgetChart";
 import { ChartType } from "@/hooks/useChartData";
+import { useTheme } from "@/context/ThemeContext";
 
 interface ChartSectionProps {
   chartType: ChartType;
@@ -30,6 +31,7 @@ export const ChartSection = ({
   addUnallocated,
   currency
 }: ChartSectionProps) => {
+  const { t } = useTheme();
   return (
     <Card className="overflow-hidden bg-gradient-to-br from-card to-card/95">
       <CardHeader className="border-b border-border/30">
@@ -41,7 +43,10 @@ export const ChartSection = ({
               <BarChart2 className="h-4 w-4 text-muted-foreground mr-1" />
             )}
             <CardTitle className="text-base sm:text-lg">
-              {title}
+              {chartType === "budget"
+                ? t("charts.title.budgets")
+                : t("charts.title.categories")
+              }
             </CardTitle>
           </div>
           <DropdownMenu>
@@ -56,14 +61,14 @@ export const ChartSection = ({
                 className={chartType === "budget" ? "bg-accent/40" : ""}
               >
                 <PieChart className="h-4 w-4 mr-2" />
-                Voir les budgets
+                {t("charts.title.budgets")}
               </DropdownMenuItem>
               <DropdownMenuItem 
                 onClick={() => onChartTypeChange("category")}
                 className={chartType === "category" ? "bg-accent/40" : ""}
               >
                 <BarChart2 className="h-4 w-4 mr-2" />
-                Voir les catégories
+                {t("charts.title.categories")}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
