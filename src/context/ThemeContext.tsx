@@ -57,6 +57,16 @@ const translations: Record<string, Record<string, string>> = {
     // -------- HOME --------
     "home.title": "Mes Tableaux de Bord",
     "home.noDashboard": "Aucun tableau de bord trouvé. Créez votre premier tableau de bord!",
+    // --- NOUVELLES CLÉS POUR BUDGETS ---
+    "budgets.title": "Gestion des Budgets",
+    "budgets.desc": "Créez et gérez vos budgets mensuels",
+    "envelopes.income": "Revenus",
+    "envelopes.expense": "Dépenses",
+    "envelopes.budget": "Budgets",
+    "envelopes.add": "Ajouter",
+    "envelopes.add.income": "un revenu",
+    "envelopes.add.expense": "une dépense",
+    "envelopes.add.budget": "un budget"
   },
   en: {
     "settings.title": "Settings",
@@ -101,6 +111,16 @@ const translations: Record<string, Record<string, string>> = {
     // -------- HOME --------
     "home.title": "My Dashboards",
     "home.noDashboard": "No dashboard found. Create your first dashboard!",
+    // --- NEW KEYS FOR BUDGETS ---
+    "budgets.title": "Budget Management",
+    "budgets.desc": "Create and manage your monthly budgets",
+    "envelopes.income": "Income",
+    "envelopes.expense": "Expenses",
+    "envelopes.budget": "Budgets",
+    "envelopes.add": "Add",
+    "envelopes.add.income": "an income",
+    "envelopes.add.expense": "an expense",
+    "envelopes.add.budget": "a budget"
   },
   es: {
     "settings.title": "Configuración",
@@ -145,6 +165,16 @@ const translations: Record<string, Record<string, string>> = {
     // -------- HOME --------
     "home.title": "Mis Tableros",
     "home.noDashboard": "No se encontró ningún tablero. ¡Cree su primer tablero!",
+    // --- NUEVAS CLAVES PARA BUDGETS ---
+    "budgets.title": "Gestión de Presupuestos",
+    "budgets.desc": "Crea y administra tus presupuestos mensuales",
+    "envelopes.income": "Ingresos",
+    "envelopes.expense": "Gastos",
+    "envelopes.budget": "Presupuestos",
+    "envelopes.add": "Agregar",
+    "envelopes.add.income": "un ingreso",
+    "envelopes.add.expense": "un gasto",
+    "envelopes.add.budget": "un presupuesto"
   },
   de: {
     "settings.title": "Einstellungen",
@@ -189,6 +219,16 @@ const translations: Record<string, Record<string, string>> = {
     // -------- HOME --------
     "home.title": "Meine Übersichten",
     "home.noDashboard": "Kein Dashboard gefunden. Erstellen Sie Ihr erstes Dashboard!",
+    // --- NEUE SCHLÜSSEL FÜR BUDGETS ---
+    "budgets.title": "Budgetverwaltung",
+    "budgets.desc": "Erstellen und verwalten Sie Ihre monatlichen Budgets",
+    "envelopes.income": "Einkommen",
+    "envelopes.expense": "Ausgaben",
+    "envelopes.budget": "Budgets",
+    "envelopes.add": "Hinzufügen",
+    "envelopes.add.income": "ein Einkommen",
+    "envelopes.add.expense": "eine Ausgabe",
+    "envelopes.add.budget": "ein Budget"
   },
   it: {
     "settings.title": "Impostazioni",
@@ -233,6 +273,16 @@ const translations: Record<string, Record<string, string>> = {
     // -------- HOME --------
     "home.title": "I miei cruscotti",
     "home.noDashboard": "Nessuna dashboard trovata. Crea la tua prima dashboard!",
+    // --- NUOVE CHIAVI PER BUDGETS ---
+    "budgets.title": "Gestione Budget",
+    "budgets.desc": "Crea e gestisci i tuoi budget mensili",
+    "envelopes.income": "Entrate",
+    "envelopes.expense": "Spese",
+    "envelopes.budget": "Budget",
+    "envelopes.add": "Aggiungi",
+    "envelopes.add.income": "un'entrata",
+    "envelopes.add.expense": "una spesa",
+    "envelopes.add.budget": "un budget"
   }
 };
 
