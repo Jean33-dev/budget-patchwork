@@ -5,6 +5,7 @@ import { MoneyInput } from "../shared/MoneyInput";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { DialogFooter } from "@/components/ui/dialog";
+import { useTheme } from "@/context/ThemeContext";
 
 interface EnvelopeFormProps {
   type: "income" | "expense" | "budget";
@@ -33,14 +34,15 @@ export const EnvelopeForm = ({
   onSubmit,
   availableBudgets = []
 }: EnvelopeFormProps) => {
+  const { t } = useTheme();
   const getTypeLabel = (type: "income" | "expense" | "budget") => {
     switch (type) {
       case "income":
-        return "revenu";
+        return t("envelopeForm.type.income");
       case "expense":
-        return "dépense";
+        return t("envelopeForm.type.expense");
       case "budget":
-        return "budget";
+        return t("envelopeForm.type.budget");
       default:
         return "";
     }
@@ -49,19 +51,19 @@ export const EnvelopeForm = ({
   return (
     <form onSubmit={onSubmit} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="title">Titre</Label>
+        <Label htmlFor="title">{t("envelopeForm.titleLabel")}</Label>
         <Input
           id="title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder={`Entrez le titre du ${getTypeLabel(type)}`}
+          placeholder={t(`envelopeForm.titlePlaceholder`, { type: getTypeLabel(type) })}
           required
         />
       </div>
 
       {(type === "expense" || type === "income") && (
         <div className="space-y-2">
-          <Label htmlFor="date">Date</Label>
+          <Label htmlFor="date">{t("envelopeForm.dateLabel")}</Label>
           <Input
             id="date"
             type="date"
@@ -74,10 +76,10 @@ export const EnvelopeForm = ({
 
       {type === "expense" && (
         <div className="space-y-2">
-          <Label>Budget associé</Label>
+          <Label>{t("envelopeForm.linkedBudgetLabel")}</Label>
           <Select value={linkedBudgetId} onValueChange={setLinkedBudgetId} required>
             <SelectTrigger>
-              <SelectValue placeholder="Sélectionnez un budget" />
+              <SelectValue placeholder={t("envelopeForm.linkedBudgetPlaceholder")} />
             </SelectTrigger>
             <SelectContent>
               {availableBudgets.map((budget) => (
@@ -89,14 +91,14 @@ export const EnvelopeForm = ({
           </Select>
           {availableBudgets.length === 0 && (
             <p className="text-sm text-red-500">
-              Aucun budget disponible. Veuillez d'abord créer un budget.
+              {t("envelopeForm.noBudgets")}
             </p>
           )}
         </div>
       )}
 
       <div className="space-y-2">
-        <Label htmlFor="budget">Montant</Label>
+        <Label htmlFor="budget">{t("envelopeForm.amountLabel")}</Label>
         <MoneyInput
           id="budget"
           value={budget}
@@ -105,7 +107,9 @@ export const EnvelopeForm = ({
         />
       </div>
       <DialogFooter>
-        <Button type="submit">Ajouter {getTypeLabel(type)}</Button>
+        <Button type="submit">
+          {t("envelopeForm.addButton", { type: getTypeLabel(type) })}
+        </Button>
       </DialogFooter>
     </form>
   );

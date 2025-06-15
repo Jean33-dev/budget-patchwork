@@ -192,5 +192,19 @@ const esTranslations: Record<string, string> = {
   "transition.remaining": "Saldo restante", // AÑADIDO
   "transition.selectOptionPlaceholder": "Seleccionar opción", // AÑADIDO
   "transition.selectEnvelopePlaceholder": "Seleccionar sobre", // AÑADIDO
+  "envelopeForm.titleLabel": "Título",
+  "envelopeForm.titlePlaceholder": "Ingrese el título de {type}",
+  "envelopeForm.amountLabel": "Cantidad",
+  "envelopeForm.addButton": "Agregar {type}",
+  "envelopeForm.type.income": "ingreso",
+  "envelopeForm.type.expense": "gasto",
+  "envelopeForm.type.budget": "presupuesto",
+  "envelopeForm.dialogTitle": "Agregar un nuevo {type}{isRecurring}",
+  "envelopeForm.recurringSuffix": " recurrente",
+  "envelopeForm.dateLabel": "Fecha",
+  "envelopeForm.linkedBudgetLabel": "Presupuesto asociado",
+  "envelopeForm.linkedBudgetPlaceholder": "Selecciona un presupuesto",
+  "envelopeForm.noBudgets": "No hay presupuestos disponibles. Por favor, crea uno primero.",
 };
+
 export default esTranslations;

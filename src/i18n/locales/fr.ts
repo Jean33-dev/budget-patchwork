@@ -192,6 +192,19 @@ const frTranslations: Record<string, string> = {
   "budgetCard.badgeIncome": "Revenu",
   "budgetCard.badgeExpense": "Dépense",
   "budgetCard.badgeDefault": "Enveloppe",
+  "envelopeForm.titleLabel": "Titre",
+  "envelopeForm.titlePlaceholder": "Entrez le titre du {type}",
+  "envelopeForm.amountLabel": "Montant",
+  "envelopeForm.addButton": "Ajouter {type}",
+  "envelopeForm.type.income": "revenu",
+  "envelopeForm.type.expense": "dépense",
+  "envelopeForm.type.budget": "budget",
+  "envelopeForm.dialogTitle": "Ajouter un nouveau {type}{isRecurring}",
+  "envelopeForm.recurringSuffix": " récurrent",
+  "envelopeForm.dateLabel": "Date",
+  "envelopeForm.linkedBudgetLabel": "Budget associé",
+  "envelopeForm.linkedBudgetPlaceholder": "Sélectionnez un budget",
+  "envelopeForm.noBudgets": "Aucun budget disponible. Veuillez d'abord créer un budget.",
 };
 
 export default frTranslations;
