@@ -153,5 +153,10 @@ const enTranslations: Record<string, string> = {
   "pdf.totalIncome": "Total Income",
   "pdf.totalExpenses": "Total Expenses",
   "pdf.balance": "Balance",
+  "budgets.errorTitle": "Loading error",
+  "budgets.errorLoading": "Unable to load the database. Please try one of the following solutions:",
+  "budgets.retry": "Just retry",
+  "budgets.resetAll": "Reset completely",
+  "budgets.remainingError": "The total of budgets exceeds your revenues. Try reducing some budgets.",
 };
 export default enTranslations;

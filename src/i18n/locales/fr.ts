@@ -87,7 +87,7 @@ const frTranslations: Record<string, string> = {
   "expenses.addRecurringExpense": "Ajouter une dépense récurrente",
   "expenses.loadingRecurring": "Chargement des dépenses récurrentes...",
   "expenses.errorTitle": "Erreur de chargement",
-  "expenses.errorLoading": "Une erreur est survenue lors du chargement des dépenses",
+  "expenses.errorLoading": "Impossible de charger la base de données. Veuillez essayer l'une des solutions suivantes :",
   "expenses.typeMustBeExpense": "Le type doit être 'expense'",
   "expenses.editRecurring": "Modifier la dépense récurrente",
   "footer.synthese": "Synthèse",
@@ -153,5 +153,10 @@ const frTranslations: Record<string, string> = {
   "pdf.totalIncome": "Revenus totaux",
   "pdf.totalExpenses": "Dépenses totales",
   "pdf.balance": "Solde",
+  "budgets.errorTitle": "Erreur de chargement",
+  "budgets.errorLoading": "Impossible de charger la base de données. Veuillez essayer l'une des solutions suivantes :",
+  "budgets.retry": "Réessayer simplement",
+  "budgets.resetAll": "Réinitialiser complètement",
+  "budgets.remainingError": "Le total des budgets dépasse vos revenus. Essayez de réduire certains budgets.",
 };
 export default frTranslations;

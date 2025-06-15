@@ -87,7 +87,7 @@ const itTranslations: Record<string, string> = {
   "expenses.addRecurringExpense": "Aggiungi spesa ricorrente",
   "expenses.loadingRecurring": "Caricamento spese ricorrenti...",
   "expenses.errorTitle": "Errore di caricamento",
-  "expenses.errorLoading": "Si è verificato un errore durante il caricamento delle spese",
+  "expenses.errorLoading": "Impossibile caricare il database. Prova una delle seguenti soluzioni:",
   "expenses.typeMustBeExpense": "Tipo deve essere 'expense'",
   "expenses.editRecurring": "Modifica spesa ricorrente",
   "footer.synthese": "Sintesi",
@@ -153,5 +153,10 @@ const itTranslations: Record<string, string> = {
   "pdf.totalIncome": "Entrate totali",
   "pdf.totalExpenses": "Spese totali",
   "pdf.balance": "Saldo",
+  "budgets.errorTitle": "Errore di caricamento",
+  "budgets.errorLoading": "Impossibile caricare il database. Prova una delle seguenti soluzioni:",
+  "budgets.retry": "Riprova semplicemente",
+  "budgets.resetAll": "Reimposta completamente",
+  "budgets.remainingError": "Il totale dei budget supera le tue entrate. Prova a ridurre alcuni budget.",
 };
 export default itTranslations;

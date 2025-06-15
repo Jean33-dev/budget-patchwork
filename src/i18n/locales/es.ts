@@ -87,7 +87,7 @@ const esTranslations: Record<string, string> = {
   "expenses.addRecurringExpense": "Agregar gasto recurrente",
   "expenses.loadingRecurring": "Cargando gastos recurrentes...",
   "expenses.errorTitle": "Error de carga",
-  "expenses.errorLoading": "Ocurrió un error al cargar los gastos",
+  "expenses.errorLoading": "No se puede cargar la base de datos. Prueba una de las siguientes soluciones:",
   "expenses.typeMustBeExpense": "Tipo debe ser 'expense'",
   "expenses.editRecurring": "Editar gasto recurrente",
   "footer.synthese": "Síntesis",

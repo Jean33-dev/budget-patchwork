@@ -87,7 +87,7 @@ const deTranslations: Record<string, string> = {
   "expenses.addRecurringExpense": "Wiederkehrende Ausgabe hinzufügen",
   "expenses.loadingRecurring": "Wiederkehrende Ausgaben werden geladen...",
   "expenses.errorTitle": "Ladefehler",
-  "expenses.errorLoading": "Beim Laden der Ausgaben ist ein Fehler aufgetreten",
+  "expenses.errorLoading": "Datenbank kann nicht geladen werden. Probieren Sie eine der folgenden Lösungen:",
   "expenses.typeMustBeExpense": "Typ muss 'expense' sein",
   "expenses.editRecurring": "Wiederkehrende Ausgabe bearbeiten",
   "footer.synthese": "Übersicht",
@@ -153,5 +153,10 @@ const deTranslations: Record<string, string> = {
   "pdf.totalIncome": "Gesamteinnahmen",
   "pdf.totalExpenses": "Gesamtausgaben",
   "pdf.balance": "Saldo",
+  "budgets.errorTitle": "Ladefehler",
+  "budgets.errorLoading": "Datenbank kann nicht geladen werden. Probieren Sie eine der folgenden Lösungen:",
+  "budgets.retry": "Einfach erneut versuchen",
+  "budgets.resetAll": "Komplett zurücksetzen",
+  "budgets.remainingError": "Die Summe der Budgets übersteigt Ihre Einnahmen. Versuchen Sie, einige Budgets zu reduzieren.",
 };
 export default deTranslations;

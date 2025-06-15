@@ -1,3 +1,4 @@
+
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { BudgetsHeader } from "@/components/budget/BudgetsHeader";
@@ -53,7 +54,7 @@ const BudgetsPage = () => {
     handleDeleteConfirm
   } = useBudgetInteractions(navigate);
 
-  const { currency: globalCurrency } = useTheme();
+  const { currency: globalCurrency, t } = useTheme();
 
   useEffect(() => {
     console.log("BudgetsPage: initialization status changed:", initializationSuccess);
@@ -69,7 +70,6 @@ const BudgetsPage = () => {
         setRetryCount(prev => prev + 1);
         initializeDatabase();
       }, 3000);
-      
       return () => clearTimeout(timer);
     }
   }, [initializationSuccess, retryCount, initializeDatabase]);
@@ -92,18 +92,18 @@ const BudgetsPage = () => {
           <div className="flex items-start">
             <AlertCircle className="h-5 w-5 text-destructive mr-2 mt-0.5" />
             <div>
-              <h3 className="font-semibold text-destructive">Erreur de chargement</h3>
+              <h3 className="font-semibold text-destructive">{t("budgets.errorTitle") || "Erreur de chargement"}</h3>
               <p className="text-sm mt-1">
-                Impossible de charger la base de données. Veuillez essayer l'une des solutions suivantes:
+                {t("budgets.errorLoading") || "Impossible de charger la base de données. Veuillez essayer l'une des solutions suivantes:"}
               </p>
               <div className="mt-4 space-y-2">
                 <Button onClick={handleManualRefresh} className="mr-2" variant="outline">
                   <RefreshCw className="h-4 w-4 mr-2" />
-                  Réessayer simplement
+                  {t("budgets.retry") || "Réessayer simplement"}
                 </Button>
                 <Button onClick={handleForceReset} variant="destructive">
                   <RefreshCw className="h-4 w-4 mr-2" />
-                  Réinitialiser complètement
+                  {t("budgets.resetAll") || "Réinitialiser complètement"}
                 </Button>
               </div>
             </div>
@@ -119,7 +119,7 @@ const BudgetsPage = () => {
 
       <AddButton 
         onClick={() => setAddDialogOpen(true)}
-        label="Ajouter un budget"
+        label={t('envelopes.add') + " " + t('envelopes.add.budget')}
       />
 
       {remainingAmount !== undefined && (
