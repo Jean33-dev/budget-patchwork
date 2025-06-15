@@ -80,7 +80,7 @@ export const PINSetup: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) => 
             autoComplete="off"
           >
             <div className="flex items-center justify-center gap-2 mb-1" ref={otpContainerRef}>
-              {/* Slot OTP input invisible (mais utilisable au clavier) */}
+              {/* Slot OTP input totalement masqué */}
               <div className="relative">
                 <InputOTP
                   maxLength={4}
@@ -92,9 +92,9 @@ export const PINSetup: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) => 
                   pattern="\d*"
                   autoFocus
                   className="otp-mask-input"
-                  // on désactive le caret natif
                 >
-                  <InputOTPGroup>
+                  {/* Ajout d'une classe sur le groupe pour cibler les slots */}
+                  <InputOTPGroup className="otp-mask-slot-group">
                     {[0, 1, 2, 3].map((idx) => (
                       <InputOTPSlot key={idx} index={idx} />
                     ))}
@@ -116,14 +116,17 @@ export const PINSetup: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) => 
                     </div>
                   ))}
                 </div>
-                {/* Style pour rendre texte transparent mais caret visible */}
+                {/* Style pour rendre le contenu des slots transparent mais garder le caret + overlay */}
                 <style>
                   {`
                     .otp-mask-input input {
                       color: transparent !important;
-                      caret-color: #6366f1 !important; /* Ex: couleur primaire */
+                      caret-color: #6366f1 !important;
                       font-size: 1.25rem !important;
                       font-weight: bold;
+                    }
+                    .otp-mask-slot-group > div {
+                      color: transparent !important;
                     }
                     .otp-mask-input input::selection {
                       background: none;
