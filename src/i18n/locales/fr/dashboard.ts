@@ -1,0 +1,27 @@
+
+const dashboard = {
+  "dashboard.title": "Tableau de bord",
+  "dashboard.statsTitle": "Statistiques",
+  "dashboard.monthTransition": "Transition vers un nouveau mois",
+  "dashboard.confirmTransition": "Configurer la transition",
+  "dashboard.transitionAlert": "Attention : Sauvegardez vos données",
+  "dashboard.transitionWarning": "En passant au nouveau mois, vos dépenses et revenus du dashboard \"{dashboardTitle}\" seront réinitialisés. Ces données seront définitivement perdues.",
+  "dashboard.cancel": "Annuler",
+  "dashboard.stats.remaining": "Budget restant",
+  "dashboard.stats.remainingAfter": "Budget restant après dépenses",
+  "dashboard.createDashboardTitle": "Créer un nouveau tableau de bord",
+  "dashboard.newDashboard": "Nouveau tableau de bord",
+  "dashboard.nameLabel": "Nom du tableau de bord",
+  "dashboard.namePlaceholder": "Entrez le nom du tableau de bord",
+  "dashboard.create": "Créer",
+  "dashboard.creating": "Création...",
+  "dashboard.errorRequired": "Le nom du tableau de bord est requis",
+  "dashboard.rename": "Renommer",
+  "dashboard.delete": "Supprimer",
+  "dashboard.confirmDeleteTitle": "Êtes-vous sûr ?",
+  "dashboard.confirmDeleteDescription": "Cette action est irréversible. Le tableau de bord sera définitivement supprimé.",
+  "dashboard.confirmDeleteAction": "Supprimer",
+  "dashboard.untitledDashboard": "Sans titre",
+  "dashboard.newMonth": "Nouveau mois",
+};
+export default dashboard;

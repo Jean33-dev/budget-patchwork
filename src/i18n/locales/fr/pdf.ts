@@ -1,0 +1,25 @@
+
+const pdf = {
+  "pdf.download": "Télécharger PDF",
+  "pdf.downloading": "Génération...",
+  "pdf.reportTitle": "Rapport Budgétaire",
+  "pdf.summary": "Synthèse",
+  "pdf.budgets": "Budgets",
+  "pdf.incomes": "Revenus",
+  "pdf.expenses": "Dépenses",
+  "pdf.source": "Source",
+  "pdf.amount": "Montant",
+  "pdf.name": "Nom",
+  "pdf.date": "Date",
+  "pdf.budget": "Budget",
+  "pdf.spent": "Dépensé",
+  "pdf.remaining": "Restant",
+  "pdf.total": "Total",
+  "pdf.footer": "Rapport généré le {{date}}.",
+  "pdf.carriedOver": "Reporté",
+  "pdf.totalIncome": "Revenus totaux",
+  "pdf.totalExpenses": "Dépenses totales",
+  "pdf.balance": "Solde",
+  "transition.pdfExportSuccess": "PDF exporté avec succès. Vous pouvez maintenant procéder à la transition.",
+};
+export default pdf;
