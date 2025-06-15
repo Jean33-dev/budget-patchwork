@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -8,6 +7,7 @@ import { useTheme } from "@/context/ThemeContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useDatabaseRepair } from "@/hooks/useDatabaseRepair";
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
+import { usePinProtection } from "@/hooks/usePinProtection";
 
 // Mapping devise => symbole
 const currencyOptions = [
@@ -20,6 +20,8 @@ const Settings = () => {
   const navigate = useNavigate();
   const { invertColors, toggleInvertColors, darkMode, toggleDarkMode, showToasts, toggleShowToasts, currency, setCurrency } = useTheme();
   const { isRepairing, repairDatabase, clearDatabaseCache } = useDatabaseRepair();
+  const { hasPin, clearPin } = usePinProtection();
+  const [showPinCleared, setShowPinCleared] = React.useState(false);
 
   // Handler pour un retour "intelligent"
   const handleBack = React.useCallback(() => {
@@ -52,6 +54,15 @@ const Settings = () => {
 
   // Trouver le symbole correspondant à la devise sélectionnée
   const selectedSymbol = currencyOptions.find(opt => opt.value === currency)?.symbol || "€";
+
+  const handleLogout = () => {
+    clearPin();
+    setShowPinCleared(true);
+    // On affiche un message 2 secondes puis on reload
+    setTimeout(() => {
+      window.location.reload();
+    }, 1200);
+  };
 
   return (
     <div className="container mx-auto py-8 space-y-6">
@@ -188,6 +199,29 @@ const Settings = () => {
           </div>
         </CardContent>
       </Card>
+
+      {hasPin && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Déconnexion sécurisée</CardTitle>
+            <CardDescription>
+              Supprime votre code PIN et déconnecte l’accès à l’application. Il vous sera demandé d’en recréer un à la prochaine ouverture.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button
+              variant="destructive"
+              onClick={handleLogout}
+              className="w-full"
+            >
+              Se déconnecter / Réinitialiser le code PIN
+            </Button>
+            {showPinCleared && (
+              <p className="text-green-600 text-sm mt-4">Déconnexion réussie.</p>
+            )}
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };
