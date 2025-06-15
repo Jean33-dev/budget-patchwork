@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { EnvelopeListHeader } from "./EnvelopeListHeader";
 import { ExpenseTable } from "./ExpenseTable";
@@ -6,6 +5,7 @@ import { AddEnvelopeDialog } from "./AddEnvelopeDialog";
 import { Expense, Budget } from "@/hooks/useExpenseManagement";
 import { ExpenseDialogs, useExpenseDialogState } from "./ExpenseDialogs";
 import { useTheme } from "@/context/ThemeContext";
+import { ExpenseEmptyState } from "./ExpenseEmptyState";
 
 interface ExpenseListProps {
   expenses: Expense[];
@@ -65,17 +65,22 @@ export const ExpenseList = ({
         />
       )}
 
-      <ExpenseTable
-        expenses={expenses}
-        onEnvelopeClick={dialogState.handleEditClick}
-        availableBudgets={availableBudgets.map(budget => ({
-          id: budget.id,
-          title: budget.title,
-        }))}
-        onDeleteExpense={handleDelete}
-        onUpdateExpense={handleUpdateExpense}
-        currency={usedCurrency}
-      />
+      {/* Affiche l'état vide si aucune dépense */}
+      {expenses.length === 0 ? (
+        <ExpenseEmptyState />
+      ) : (
+        <ExpenseTable
+          expenses={expenses}
+          onEnvelopeClick={dialogState.handleEditClick}
+          availableBudgets={availableBudgets.map(budget => ({
+            id: budget.id,
+            title: budget.title,
+          }))}
+          onDeleteExpense={handleDelete}
+          onUpdateExpense={handleUpdateExpense}
+          currency={usedCurrency}
+        />
+      )}
 
       <AddEnvelopeDialog
         open={addDialogOpen}

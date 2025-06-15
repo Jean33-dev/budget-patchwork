@@ -1,3 +1,4 @@
+
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NavigateFunction } from "react-router-dom";
@@ -9,9 +10,9 @@ interface ExpensesHeaderProps {
   showReceiveButton?: boolean;
 }
 
-export const ExpensesHeader = ({ 
-  onNavigate, 
-  showReceiveButton = true 
+export const ExpensesHeader = ({
+  onNavigate,
+  showReceiveButton = true
 }: ExpensesHeaderProps) => {
   const { t } = useTheme();
   return (
@@ -34,11 +35,12 @@ export const ExpensesHeader = ({
             {t("expenses.subtitle")}
           </p>
         </div>
-        
+
         <div>
           {showReceiveButton && (
-            <ExpenseReceiveDialog 
+            <ExpenseReceiveDialog
               onReceiveComplete={() => window.location.reload()}
+              triggerLabel={t("expenses.receive")}
             />
           )}
         </div>
