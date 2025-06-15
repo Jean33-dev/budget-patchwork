@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Text, View } from "@react-pdf/renderer";
 import { styles } from "../styles/pdfStyles";
@@ -66,7 +65,7 @@ export const BudgetsSection: React.FC<BudgetsSectionProps> = ({ budgets, currenc
             </View>
           );
         })}
-        {/* Summary row */}
+        {/* Ligne de résumé */}
         <View style={[styles.tableRow, { backgroundColor: '#f8f9fa' }]}>
           <Text style={[styles.tableCell, { fontWeight: 'bold' }]}>{t("pdf.total")}</Text>
           <Text style={[styles.tableCellAmount, { fontWeight: 'bold' }]}>
@@ -89,4 +88,3 @@ export const BudgetsSection: React.FC<BudgetsSectionProps> = ({ budgets, currenc
     </View>
   );
 };
-

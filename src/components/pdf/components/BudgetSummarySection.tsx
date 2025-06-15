@@ -19,22 +19,21 @@ function getTranslation(language: string, key: string): string {
   if (translations["en"] && translations["en"][key]) {
     return translations["en"][key];
   }
-  // Log missing key for debug
   if (process.env.NODE_ENV !== "production") {
     console.warn(`[TRANSLATION MISSING] ${key} (${language})`);
   }
-  return key; // fallback
+  return key;
 }
 
-export const BudgetSummarySection: React.FC<BudgetSummarySectionProps> = ({ 
-  totalIncome, 
-  totalExpenses, 
+export const BudgetSummarySection: React.FC<BudgetSummarySectionProps> = ({
+  totalIncome,
+  totalExpenses,
   currency = "EUR",
   language = "fr"
 }) => {
   const t = (key: string) => getTranslation(language, key);
   const balance = totalIncome - totalExpenses;
-  
+
   return (
     <View style={styles.section}>
       <Text style={styles.sectionTitle}>{t("pdf.summary")}</Text>

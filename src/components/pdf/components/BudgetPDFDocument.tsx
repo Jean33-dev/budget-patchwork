@@ -9,7 +9,7 @@ import { ExpensesSection } from "./ExpensesSection";
 import { translations } from "@/i18n/translations";
 import { BudgetPDFProps } from "../types/pdfTypes";
 
-// Utilitaire pour traduction :
+// Fonction centralisée pour la traduction PDF
 function getTranslation(language: string, key: string): string {
   if (translations[language] && translations[language][key]) {
     return translations[language][key];
@@ -23,11 +23,11 @@ function getTranslation(language: string, key: string): string {
   return key;
 }
 
-export const BudgetPDFDocument: React.FC<BudgetPDFProps & { language?: string }> = ({ 
-  totalIncome, 
-  totalExpenses, 
-  budgets, 
-  incomes, 
+export const BudgetPDFDocument: React.FC<BudgetPDFProps & { language?: string }> = ({
+  totalIncome,
+  totalExpenses,
+  budgets,
+  incomes,
   expenses,
   currency = "EUR",
   language = "fr"
@@ -50,23 +50,23 @@ export const BudgetPDFDocument: React.FC<BudgetPDFProps & { language?: string }>
           <Text style={styles.date}>{formattedDate}</Text>
         </View>
 
-        <BudgetSummarySection 
+        <BudgetSummarySection
           totalIncome={totalIncome}
           totalExpenses={totalExpenses}
           currency={currency}
           language={language}
         />
-        <BudgetsSection 
+        <BudgetsSection
           budgets={budgets}
           currency={currency}
           language={language}
         />
-        <IncomesSection 
+        <IncomesSection
           incomes={incomes}
           currency={currency}
           language={language}
         />
-        <ExpensesSection 
+        <ExpensesSection
           expenses={expenses}
           currency={currency}
           language={language}

@@ -12,14 +12,12 @@ interface Expense {
   type: "expense";
   date?: string;
 }
-
 interface ExpensesSectionProps {
   expenses?: Expense[];
   currency?: "EUR" | "USD" | "GBP";
   language?: string;
 }
 
-// Utilitaire pour traduction :
 function getTranslation(language: string, key: string): string {
   if (translations[language] && translations[language][key]) {
     return translations[language][key];

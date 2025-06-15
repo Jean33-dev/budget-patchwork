@@ -11,14 +11,12 @@ interface Income {
   budget: number;
   type: "income";
 }
-
 interface IncomesSectionProps {
   incomes?: Income[];
   currency?: "EUR" | "USD" | "GBP";
   language?: string;
 }
 
-// Utilitaire pour traduction :
 function getTranslation(language: string, key: string): string {
   if (translations[language] && translations[language][key]) {
     return translations[language][key];
