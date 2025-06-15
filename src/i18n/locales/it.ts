@@ -209,6 +209,17 @@ const itTranslations: Record<string, string> = {
   "expense.actions.delete": "Elimina",
   "expense.actions.share": "Condividi",
   "expense.actions.openMenu": "Apri il menu azioni spesa",
+  // ----------- AGGIUNTE PER DIALOG ---
+  "editBudgetDialog.title": "Modifica budget",
+  "editBudgetDialog.labelTitle": "Titolo budget",
+  "editBudgetDialog.placeholderTitle": "Inserisci il titolo del budget",
+  "editBudgetDialog.labelBudget": "Importo budget",
+  "editBudgetDialog.save": "Salva modifiche",
+  "editExpenseDialog.title": "Modifica spesa",
+  "editExpenseDialog.labelTitle": "Titolo spesa",
+  "editExpenseDialog.labelAmount": "Importo",
+  "editExpenseDialog.labelDate": "Data",
+  "editExpenseDialog.save": "Salva",
   // ----------- AGGIUNTE PER RECURRING CARD -----------
   "recurring.amount": "Importo",
   "recurring.linkedBudget": "Budget associato",

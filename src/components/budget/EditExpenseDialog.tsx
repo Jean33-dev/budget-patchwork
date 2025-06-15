@@ -1,15 +1,10 @@
 
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { MoneyInput } from "@/components/shared/MoneyInput";
 import { Input } from "@/components/ui/input";
+import { useTheme } from "@/context/ThemeContext";
 
 interface EditExpenseDialogProps {
   open: boolean;
@@ -34,15 +29,16 @@ export const EditExpenseDialog = ({
   onDateChange,
   onSubmit,
 }: EditExpenseDialogProps) => {
+  const { t } = useTheme();
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Modifier la dépense</DialogTitle>
+          <DialogTitle>{t("editExpenseDialog.title")}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="title">Titre de la dépense</Label>
+            <Label htmlFor="title">{t("editExpenseDialog.labelTitle")}</Label>
             <Input
               id="title"
               value={title}
@@ -50,7 +46,7 @@ export const EditExpenseDialog = ({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="amount">Montant</Label>
+            <Label htmlFor="amount">{t("editExpenseDialog.labelAmount")}</Label>
             <MoneyInput
               id="amount"
               value={budget}
@@ -58,7 +54,7 @@ export const EditExpenseDialog = ({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="date">Date</Label>
+            <Label htmlFor="date">{t("editExpenseDialog.labelDate")}</Label>
             <Input
               id="date"
               type="date"
@@ -68,7 +64,7 @@ export const EditExpenseDialog = ({
           </div>
         </div>
         <DialogFooter>
-          <Button onClick={onSubmit}>Enregistrer</Button>
+          <Button onClick={onSubmit}>{t("editExpenseDialog.save")}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

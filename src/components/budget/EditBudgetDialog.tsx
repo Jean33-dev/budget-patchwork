@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { MoneyInput } from "@/components/shared/MoneyInput";
 import { Button } from "@/components/ui/button";
 import { Budget } from "@/hooks/useBudgets";
+import { useTheme } from "@/context/ThemeContext";
 
 interface EditBudgetDialogProps {
   open: boolean;
@@ -25,24 +26,25 @@ export const EditBudgetDialog = ({
   onBudgetChange,
   onSubmit,
 }: EditBudgetDialogProps) => {
+  const { t } = useTheme();
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Modifier le budget</DialogTitle>
+          <DialogTitle>{t("editBudgetDialog.title")}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="title">Titre du budget</Label>
+            <Label htmlFor="title">{t("editBudgetDialog.labelTitle")}</Label>
             <Input
               id="title"
               value={title}
               onChange={(e) => onTitleChange(e.target.value)}
-              placeholder="Entrez le titre du budget"
+              placeholder={t("editBudgetDialog.placeholderTitle")}
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="budget">Montant du budget</Label>
+            <Label htmlFor="budget">{t("editBudgetDialog.labelBudget")}</Label>
             <MoneyInput
               id="budget"
               value={budget}
@@ -51,7 +53,7 @@ export const EditBudgetDialog = ({
           </div>
         </div>
         <DialogFooter>
-          <Button onClick={onSubmit}>Enregistrer les modifications</Button>
+          <Button onClick={onSubmit}>{t("editBudgetDialog.save")}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
