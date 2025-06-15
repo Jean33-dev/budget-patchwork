@@ -1,128 +1,225 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
 
-type SupportedCurrency = "EUR" | "USD" | "GBP";
-const currencyLabels: Record<SupportedCurrency, string> = {
-  EUR: "€",
-  USD: "$",
-  GBP: "£",
+import React, { createContext, useContext, useState } from "react";
+
+// Liste des langues disponibles
+export const supportedLanguages = [
+  { value: "fr", label: "Français" },
+  { value: "en", label: "English" },
+  { value: "es", label: "Español" },
+  { value: "de", label: "Deutsch" },
+  { value: "it", label: "Italiano" },
+];
+
+// Dictionnaire simplifié pour démo
+const translations: Record<string, Record<string, string>> = {
+  fr: {
+    "settings.title": "Paramètres",
+    "settings.display": "Affichage",
+    "settings.displayDesc": "Personnalisez l'apparence de l'application",
+    "settings.darkMode": "Mode sombre",
+    "settings.darkModeDesc": "Activez un thème sombre dédié agréable et professionnel",
+    "settings.invertColors": "Couleurs inversées (expérimental)",
+    "settings.invertColorsDesc": "Inverser toutes les couleurs (peut rendre l'interface imprévisible)",
+    "settings.notifications": "Notifications",
+    "settings.notificationsDesc": "Afficher les notifications temporaires dans l'application",
+    "settings.currency": "Devise utilisée",
+    "settings.currencyDesc": "Choisissez la devise qui s'affichera dans toute l'application.",
+    "settings.language": "Langue",
+    "settings.languageDesc": "Sélectionnez la langue de l'application.",
+    "settings.maintenance": "Maintenance de la base de données",
+    "settings.maintenanceDesc": "Outils de réparation en cas de problème avec la base de données",
+    "settings.resetConnection": "Réinitialiser la connexion",
+    "settings.resetConnectionDesc": "Réinitialise la connexion à la base de données en cas de problème de communication",
+    "settings.repairing": "Réparation en cours...",
+    "settings.repair": "Réparer la connexion",
+    "settings.advancedCleanup": "Nettoyage avancé",
+    "settings.advancedCleanupDesc": "Supprime le cache de la base de données et force une réinitialisation complète",
+    "settings.cleaning": "Nettoyage en cours...",
+    "settings.clean": "Nettoyer le cache",
+    "settings.cleanWarn": "Attention : Utilisez cette option uniquement en dernier recours. Les données ne seront pas perdues, mais l'application peut être temporairement indisponible pendant la réinitialisation.",
+    "settings.logoutTitle": "Déconnexion sécurisée",
+    "settings.logoutDesc": "Supprime votre code PIN et déconnecte l’accès à l’application. Il vous sera demandé d’en recréer un à la prochaine ouverture.",
+    "settings.logout": "Se déconnecter / Réinitialiser le code PIN",
+    "settings.logoutSuccess": "Déconnexion réussie.",
+    "settings.back": "Retour",
+  },
+  en: {
+    "settings.title": "Settings",
+    "settings.display": "Display",
+    "settings.displayDesc": "Customize the appearance of the app",
+    "settings.darkMode": "Dark mode",
+    "settings.darkModeDesc": "Enable a dedicated, professional dark theme",
+    "settings.invertColors": "Inverted colors (experimental)",
+    "settings.invertColorsDesc": "Invert all colors (may make interface unpredictable)",
+    "settings.notifications": "Notifications",
+    "settings.notificationsDesc": "Show temporary notifications in the app",
+    "settings.currency": "Currency used",
+    "settings.currencyDesc": "Choose the currency displayed throughout the app.",
+    "settings.language": "Language",
+    "settings.languageDesc": "Select the application language.",
+    "settings.maintenance": "Database maintenance",
+    "settings.maintenanceDesc": "Repair tools in case of problems with the database",
+    "settings.resetConnection": "Reset connection",
+    "settings.resetConnectionDesc": "Reset the database connection if there is a communication issue",
+    "settings.repairing": "Repairing...",
+    "settings.repair": "Repair connection",
+    "settings.advancedCleanup": "Advanced cleanup",
+    "settings.advancedCleanupDesc": "Deletes the database cache and forces a full reset",
+    "settings.cleaning": "Cleaning...",
+    "settings.clean": "Clean cache",
+    "settings.cleanWarn": "Warning: Only use this as a last resort. Your data won't be lost, but the app may be temporarily unavailable while resetting.",
+    "settings.logoutTitle": "Secure logout",
+    "settings.logoutDesc": "Deletes your PIN and signs you out. You'll need to set a new one next time.",
+    "settings.logout": "Logout / Reset PIN code",
+    "settings.logoutSuccess": "Logout successful.",
+    "settings.back": "Back",
+  },
+  es: {
+    "settings.title": "Configuración",
+    "settings.display": "Visualización",
+    "settings.displayDesc": "Personaliza la apariencia de la aplicación",
+    "settings.darkMode": "Modo oscuro",
+    "settings.darkModeDesc": "Activa un tema oscuro dedicado, agradable y profesional",
+    "settings.invertColors": "Colores invertidos (experimental)",
+    "settings.invertColorsDesc": "Invierte todos los colores (puede hacer la interfaz impredecible)",
+    "settings.notifications": "Notificaciones",
+    "settings.notificationsDesc": "Mostrar notificaciones temporales en la aplicación",
+    "settings.currency": "Moneda utilizada",
+    "settings.currencyDesc": "Elige la moneda que se mostrará en toda la aplicación.",
+    "settings.language": "Idioma",
+    "settings.languageDesc": "Selecciona el idioma de la aplicación.",
+    "settings.maintenance": "Mantenimiento de la base de datos",
+    "settings.maintenanceDesc": "Herramientas de reparación para problemas con la base de datos",
+    "settings.resetConnection": "Restablecer conexión",
+    "settings.resetConnectionDesc": "Restablece la conexión si hay un problema",
+    "settings.repairing": "Reparando...",
+    "settings.repair": "Reparar conexión",
+    "settings.advancedCleanup": "Limpieza avanzada",
+    "settings.advancedCleanupDesc": "Elimina la caché de la base de datos y fuerza un reinicio completo",
+    "settings.cleaning": "Limpiando...",
+    "settings.clean": "Limpiar caché",
+    "settings.cleanWarn": "Atención: utiliza esta opción solo como último recurso. Los datos no se perderán, pero la app puede estar temporalmente indisponible.",
+    "settings.logoutTitle": "Cierre seguro de sesión",
+    "settings.logoutDesc": "Elimina el PIN y cierra la sesión. Se te pedirá configurar uno nuevo al volver.",
+    "settings.logout": "Cerrar sesión / Restablecer PIN",
+    "settings.logoutSuccess": "Cierre de sesión exitoso.",
+    "settings.back": "Atrás",
+  },
+  de: {
+    "settings.title": "Einstellungen",
+    "settings.display": "Anzeige",
+    "settings.displayDesc": "Passen Sie das Aussehen der App an",
+    "settings.darkMode": "Dunkler Modus",
+    "settings.darkModeDesc": "Aktivieren Sie ein dediziertes, professionelles dunkles Thema",
+    "settings.invertColors": "Invertierte Farben (experimentell)",
+    "settings.invertColorsDesc": "Alle Farben invertieren (die Oberfläche kann unvorhersehbar werden)",
+    "settings.notifications": "Benachrichtigungen",
+    "settings.notificationsDesc": "Zeigen Sie temporäre Benachrichtigungen in der App an",
+    "settings.currency": "Verwendete Währung",
+    "settings.currencyDesc": "Wählen Sie die Währung, die in der ganzen App angezeigt wird.",
+    "settings.language": "Sprache",
+    "settings.languageDesc": "Wählen Sie die Anwendungssprache.",
+    "settings.maintenance": "Datenbankwartung",
+    "settings.maintenanceDesc": "Reparaturwerkzeuge bei Problemen mit der Datenbank",
+    "settings.resetConnection": "Verbindung zurücksetzen",
+    "settings.resetConnectionDesc": "Setzt die Verbindung zurück, wenn ein Problem besteht",
+    "settings.repairing": "Wird repariert...",
+    "settings.repair": "Verbindung reparieren",
+    "settings.advancedCleanup": "Erweiterte Bereinigung",
+    "settings.advancedCleanupDesc": "Löscht den Datenbank-Cache und erzwingt einen vollständigen Reset",
+    "settings.cleaning": "Wird bereinigt...",
+    "settings.clean": "Cache bereinigen",
+    "settings.cleanWarn": "Achtung: Nur im Notfall verwenden. Ihre Daten gehen nicht verloren, aber die App kann vorübergehend nicht verfügbar sein.",
+    "settings.logoutTitle": "Sicheres Abmelden",
+    "settings.logoutDesc": "Entfernt Ihre PIN und meldet Sie ab. Sie müssen beim nächsten Öffnen eine neue vergeben.",
+    "settings.logout": "Abmelden / PIN zurücksetzen",
+    "settings.logoutSuccess": "Abmeldung erfolgreich.",
+    "settings.back": "Zurück",
+  },
+  it: {
+    "settings.title": "Impostazioni",
+    "settings.display": "Aspetto",
+    "settings.displayDesc": "Personalizza l'aspetto dell'app",
+    "settings.darkMode": "Modalità scura",
+    "settings.darkModeDesc": "Attiva un tema scuro dedicato e professionale",
+    "settings.invertColors": "Colori invertiti (sperimentale)",
+    "settings.invertColorsDesc": "Inverti tutti i colori (l'interfaccia può risultare imprevedibile)",
+    "settings.notifications": "Notifiche",
+    "settings.notificationsDesc": "Mostra notifiche temporanee nell'app",
+    "settings.currency": "Valuta utilizzata",
+    "settings.currencyDesc": "Scegli la valuta visualizzata in tutta l'app.",
+    "settings.language": "Lingua",
+    "settings.languageDesc": "Seleziona la lingua dell'app.",
+    "settings.maintenance": "Manutenzione database",
+    "settings.maintenanceDesc": "Strumenti di riparazione in caso di problemi con il database",
+    "settings.resetConnection": "Ripristina connessione",
+    "settings.resetConnectionDesc": "Ripristina la connessione al database in caso di problemi",
+    "settings.repairing": "Riparazione in corso...",
+    "settings.repair": "Ripara connessione",
+    "settings.advancedCleanup": "Pulizia avanzata",
+    "settings.advancedCleanupDesc": "Elimina la cache del database e forza un reset completo",
+    "settings.cleaning": "Pulizia...",
+    "settings.clean": "Pulisci cache",
+    "settings.cleanWarn": "Attenzione: utilizzare solo come ultima risorsa. I dati non andranno persi, ma l'app potrebbe essere temporaneamente non disponibile.",
+    "settings.logoutTitle": "Disconnessione sicura",
+    "settings.logoutDesc": "Rimuove il codice PIN e ti disconnette. Dovrai crearne uno nuovo al prossimo accesso.",
+    "settings.logout": "Disconnetti / Reimposta PIN",
+    "settings.logoutSuccess": "Disconnessione riuscita.",
+    "settings.back": "Indietro",
+  }
 };
 
-type ThemeContextType = {
+interface ThemeContextProps {
   invertColors: boolean;
   toggleInvertColors: () => void;
   darkMode: boolean;
   toggleDarkMode: () => void;
   showToasts: boolean;
   toggleShowToasts: () => void;
-  currency: SupportedCurrency;
-  currencySymbol: string;
-  setCurrency: (currency: SupportedCurrency) => void;
-};
+  currency: string;
+  setCurrency: (currency: string) => void;
+  language: string;
+  setLanguage: (lang: string) => void;
+  t: (key: string) => string;
+}
 
-const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+const ThemeContext = createContext<ThemeContextProps | undefined>(undefined);
 
-export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
-  const [invertColors, setInvertColors] = useState<boolean>(() => {
-    const savedPreference = localStorage.getItem("invertColors");
-    return savedPreference === "true";
-  });
+export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [invertColors, setInvertColors] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
+  const [showToasts, setShowToasts] = useState(true);
+  const [currency, setCurrency] = useState("EUR");
+  const [language, setLanguage] = useState("fr"); // Default to French
 
-  const [darkMode, setDarkMode] = useState<boolean>(() => {
-    const saved = localStorage.getItem("darkMode");
-    return saved ? saved === "true" : false;
-  });
-
-  const [showToasts, setShowToasts] = useState<boolean>(() => {
-    const savedToastPreference = localStorage.getItem("showToasts");
-    return savedToastPreference !== "false";
-  });
-
-  const [currency, setCurrencyState] = useState<SupportedCurrency>(() => {
-    const saved = localStorage.getItem("currency");
-    if (saved === "USD" || saved === "GBP") return saved;
-    return "EUR";
-  });
-
-  useEffect(() => {
-    localStorage.setItem("currency", currency);
-  }, [currency]);
-
-  const setCurrency = (newCurrency: SupportedCurrency) => {
-    setCurrencyState(newCurrency);
-  };
-
-  // Appliquer la classe du Dark Mode sur l'élément root
-  useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-    // Pour garantir la priorité, le dark mode retire invert-colors si activé simultanément
-    if (darkMode && document.documentElement.classList.contains("invert-colors")) {
-      document.documentElement.classList.remove("invert-colors");
-      setInvertColors(false);
-    }
-    localStorage.setItem("darkMode", darkMode.toString());
-  }, [darkMode]);
-
-  // Mettre à jour la classe du document en fonction de la préférence d'inversion
-  useEffect(() => {
-    if (!darkMode) {
-      if (invertColors) {
-        document.documentElement.classList.add("invert-colors");
-      } else {
-        document.documentElement.classList.remove("invert-colors");
-      }
-    }
-    localStorage.setItem("invertColors", invertColors.toString());
-  }, [invertColors, darkMode]);
-
-  useEffect(() => {
-    localStorage.setItem("showToasts", showToasts.toString());
-  }, [showToasts]);
-
-  const toggleInvertColors = () => {
-    // Désactive le dark mode si l'inversion est activée
-    if (!invertColors && darkMode) {
-      setDarkMode(false);
-    }
-    setInvertColors(prev => !prev);
-  };
-
-  const toggleDarkMode = () => {
-    // Désactive l'inversion s'il y a activation du dark mode
-    if (!darkMode && invertColors) {
-      setInvertColors(false);
-    }
-    setDarkMode(prev => !prev);
-  };
-
-  const toggleShowToasts = () => {
-    setShowToasts(prev => !prev);
+  // Simple translation function
+  const t = (key: string) => {
+    return translations[language]?.[key] ?? translations["en"]?.[key] ?? key;
   };
 
   return (
-    <ThemeContext.Provider value={{
-      invertColors,
-      toggleInvertColors,
-      darkMode,
-      toggleDarkMode,
-      showToasts,
-      toggleShowToasts,
-      currency,
-      currencySymbol: currencyLabels[currency],
-      setCurrency,
-    }}>
+    <ThemeContext.Provider
+      value={{
+        invertColors,
+        toggleInvertColors: () => setInvertColors((v) => !v),
+        darkMode,
+        toggleDarkMode: () => setDarkMode((v) => !v),
+        showToasts,
+        toggleShowToasts: () => setShowToasts((v) => !v),
+        currency,
+        setCurrency,
+        language,
+        setLanguage,
+        t,
+      }}
+    >
       {children}
     </ThemeContext.Provider>
   );
 };
 
-export const useTheme = (): ThemeContextType => {
-  const context = useContext(ThemeContext);
-  if (!context) {
-    throw new Error("useTheme must be used within a ThemeProvider");
-  }
-  return context;
-};
+export function useTheme() {
+  const ctx = useContext(ThemeContext);
+  if (!ctx) throw new Error("useTheme must be used within ThemeProvider");
+  return ctx;
+}
