@@ -1,35 +1,41 @@
+
 import React from "react";
 import { Text, View } from "@react-pdf/renderer";
 import { styles } from "../styles/pdfStyles";
 import { formatAmount } from "@/utils/format-amount";
+import { translations } from "@/i18n/translations";
 
 interface BudgetSummarySectionProps {
   totalIncome: number;
   totalExpenses: number;
   currency?: "EUR" | "USD" | "GBP";
+  language?: string;
 }
 
 export const BudgetSummarySection: React.FC<BudgetSummarySectionProps> = ({ 
   totalIncome, 
   totalExpenses, 
-  currency = "EUR"
+  currency = "EUR",
+  language = "fr"
 }) => {
+  const t = (key: string) =>
+    translations[language]?.[key] ?? translations["en"]?.[key] ?? key;
   const balance = totalIncome - totalExpenses;
   
   return (
     <View style={styles.section}>
-      <Text style={styles.sectionTitle}>Résumé</Text>
+      <Text style={styles.sectionTitle}>{t("pdf.summary")}</Text>
       <View style={styles.summary}>
         <View style={styles.summaryRow}>
-          <Text>Revenus totaux :</Text>
+          <Text>{t("pdf.totalIncome")} :</Text>
           <Text>{formatAmount(totalIncome, currency)}</Text>
         </View>
         <View style={styles.summaryRow}>
-          <Text>Dépenses totales :</Text>
+          <Text>{t("pdf.totalExpenses")} :</Text>
           <Text>{formatAmount(totalExpenses, currency)}</Text>
         </View>
         <View style={styles.summaryRow}>
-          <Text>Balance :</Text>
+          <Text>{t("pdf.balance")} :</Text>
           <Text style={{ color: balance >= 0 ? "#10B981" : "#EF4444" }}>
             {formatAmount(balance, currency)}
           </Text>
@@ -38,3 +44,4 @@ export const BudgetSummarySection: React.FC<BudgetSummarySectionProps> = ({
     </View>
   );
 };
+

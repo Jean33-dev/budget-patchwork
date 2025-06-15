@@ -3,6 +3,7 @@ import React from "react";
 import { Text, View } from "@react-pdf/renderer";
 import { styles } from "../styles/pdfStyles";
 import { formatAmount } from "@/utils/format-amount";
+import { translations } from "@/i18n/translations";
 
 interface Budget {
   id: string;
@@ -10,29 +11,32 @@ interface Budget {
   budget: number;
   spent: number;
   type: "income" | "expense" | "budget";
-  carriedOver?: number; // Added the carriedOver property
+  carriedOver?: number;
 }
 
 interface BudgetsSectionProps {
   budgets: Budget[];
   currency?: "EUR" | "USD" | "GBP";
+  language?: string;
 }
 
-export const BudgetsSection: React.FC<BudgetsSectionProps> = ({ budgets, currency = "EUR" }) => {
+export const BudgetsSection: React.FC<BudgetsSectionProps> = ({ budgets, currency = "EUR", language = "fr" }) => {
+  const t = (key: string) =>
+    translations[language]?.[key] ?? translations["en"]?.[key] ?? key;
   const filteredBudgets = budgets.filter(b => b.type === "budget");
   
   if (!filteredBudgets.length) return null;
   
   return (
     <View style={styles.section}>
-      <Text style={styles.sectionTitle}>Budgets</Text>
+      <Text style={styles.sectionTitle}>{t("pdf.budgets")}</Text>
       <View style={styles.table}>
         <View style={[styles.tableRow, styles.tableHeader]}>
-          <Text style={styles.tableCell}>Nom</Text>
-          <Text style={styles.tableCellAmount}>Budget</Text>
-          <Text style={styles.tableCellAmount}>Reporté</Text>
-          <Text style={styles.tableCellAmount}>Dépensé</Text>
-          <Text style={styles.tableCellAmount}>Restant</Text>
+          <Text style={styles.tableCell}>{t("pdf.name")}</Text>
+          <Text style={styles.tableCellAmount}>{t("pdf.budget")}</Text>
+          <Text style={styles.tableCellAmount}>{t("pdf.carriedOver")}</Text>
+          <Text style={styles.tableCellAmount}>{t("pdf.spent")}</Text>
+          <Text style={styles.tableCellAmount}>{t("pdf.remaining")}</Text>
         </View>
         {filteredBudgets.map((budget) => {
           const carriedOver = budget.carriedOver || 0;
@@ -49,10 +53,9 @@ export const BudgetsSection: React.FC<BudgetsSectionProps> = ({ budgets, currenc
             </View>
           );
         })}
-        
         {/* Summary row */}
         <View style={[styles.tableRow, { backgroundColor: '#f8f9fa' }]}>
-          <Text style={[styles.tableCell, { fontWeight: 'bold' }]}>Total</Text>
+          <Text style={[styles.tableCell, { fontWeight: 'bold' }]}>{t("pdf.total")}</Text>
           <Text style={[styles.tableCellAmount, { fontWeight: 'bold' }]}>
             {formatAmount(filteredBudgets.reduce((sum, b) => sum + b.budget, 0), currency)}
           </Text>
@@ -73,3 +76,4 @@ export const BudgetsSection: React.FC<BudgetsSectionProps> = ({ budgets, currenc
     </View>
   );
 };
+

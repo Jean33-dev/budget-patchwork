@@ -18,7 +18,7 @@ export const BudgetPDFDownload = ({
   onClick,
   currency: currencyProp,
 }: BudgetPDFDownloadProps) => {
-  const { currency, t } = useTheme();
+  const { currency, t, language } = useTheme();
 
   return (
     <PDFDownloadLink
@@ -30,6 +30,7 @@ export const BudgetPDFDownload = ({
           incomes={incomes}
           expenses={expenses}
           currency={currencyProp || currency}
+          language={language}
         />
       }
       fileName={fileName}
@@ -50,4 +51,3 @@ export const BudgetPDFDownload = ({
     </PDFDownloadLink>
   );
 };
-
