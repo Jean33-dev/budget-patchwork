@@ -158,5 +158,16 @@ const enTranslations: Record<string, string> = {
   "budgets.retry": "Just retry",
   "budgets.resetAll": "Reset completely",
   "budgets.remainingError": "The total of budgets exceeds your revenues. Try reducing some budgets.",
+  // Ajout des clés pour EnvelopeCard
+  "budgetCard.budgeted": "Budgeted",
+  "budgetCard.spent": "Spent",
+  "budgetCard.available": "Available",
+  "budgetCard.progression": "Progression",
+  "budgetCard.carriedOver": "Carried over",
+  "budgetCard.viewExpenses": "View expenses",
+  "budgetCard.badgeBudget": "Budget",
+  "budgetCard.badgeIncome": "Income",
+  "budgetCard.badgeExpense": "Expense",
+  "budgetCard.badgeDefault": "Envelope",
 };
 export default enTranslations;

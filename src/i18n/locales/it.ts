@@ -158,5 +158,15 @@ const itTranslations: Record<string, string> = {
   "budgets.retry": "Riprova semplicemente",
   "budgets.resetAll": "Reimposta completamente",
   "budgets.remainingError": "Il totale dei budget supera le tue entrate. Prova a ridurre alcuni budget.",
+  "budgetCard.budgeted": "Budget",
+  "budgetCard.spent": "Spese",
+  "budgetCard.available": "Disponibile",
+  "budgetCard.progression": "Avanzamento",
+  "budgetCard.carriedOver": "Riportato",
+  "budgetCard.viewExpenses": "Vedi spese",
+  "budgetCard.badgeBudget": "Budget",
+  "budgetCard.badgeIncome": "Entrata",
+  "budgetCard.badgeExpense": "Spesa",
+  "budgetCard.badgeDefault": "Busta",
 };
 export default itTranslations;

@@ -153,5 +153,15 @@ const esTranslations: Record<string, string> = {
   "pdf.totalIncome": "Ingresos totales",
   "pdf.totalExpenses": "Gastos totales",
   "pdf.balance": "Saldo",
+  "budgetCard.budgeted": "Presupuestado",
+  "budgetCard.spent": "Gastos",
+  "budgetCard.available": "Disponible",
+  "budgetCard.progression": "Progreso",
+  "budgetCard.carriedOver": "Reportado",
+  "budgetCard.viewExpenses": "Ver gastos",
+  "budgetCard.badgeBudget": "Presupuesto",
+  "budgetCard.badgeIncome": "Ingreso",
+  "budgetCard.badgeExpense": "Gasto",
+  "budgetCard.badgeDefault": "Sobre",
 };
 export default esTranslations;

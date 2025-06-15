@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import {
   Card,
@@ -12,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Eye, Trash2 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { formatAmount } from "@/utils/format-amount";
+import { useTheme } from "@/context/ThemeContext";
 
 interface EnvelopeCardProps {
   id: string;
@@ -39,6 +41,7 @@ export const EnvelopeCard = ({
   currency,
 }: EnvelopeCardProps) => {
   const [isDeleting, setIsDeleting] = useState(false);
+  const { t } = useTheme();
 
   // Calculer le pourcentage d'avancement avec le montant reporté
   const totalBudget = budget + carriedOver;
@@ -61,6 +64,13 @@ export const EnvelopeCard = ({
       default:
         return "bg-gray-500 hover:bg-gray-600";
     }
+  };
+
+  const getBadgeText = () => {
+    if (type === "budget") return t("budgetCard.badgeBudget");
+    if (type === "income") return t("budgetCard.badgeIncome");
+    if (type === "expense") return t("budgetCard.badgeExpense");
+    return t("budgetCard.badgeDefault");
   };
 
   const handleDeleteClick = (e: React.MouseEvent) => {
@@ -103,7 +113,7 @@ export const EnvelopeCard = ({
             {title}
           </CardTitle>
           <Badge className={`${getBadgeColor()} ml-2 shrink-0`}>
-            {type === "budget" ? "Budget" : type === "income" ? "Revenu" : "Dépense"}
+            {getBadgeText()}
           </Badge>
         </div>
       </CardHeader>
@@ -112,12 +122,12 @@ export const EnvelopeCard = ({
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
             <div className="flex flex-col">
-              <span className="text-xs text-gray-500">Budgété</span>
+              <span className="text-xs text-gray-500">{t("budgetCard.budgeted")}</span>
               <span className="text-sm font-medium">{formatAmount(budget, currency)}</span>
             </div>
             
             <div className="flex flex-col">
-              <span className="text-xs text-gray-500">Disponible</span>
+              <span className="text-xs text-gray-500">{t("budgetCard.available")}</span>
               <span className={`text-sm font-medium ${getRemainingColor()}`}>
                 {formatAmount(remaining, currency)}
               </span>
@@ -125,7 +135,7 @@ export const EnvelopeCard = ({
           </div>
           
           <div className="flex flex-col items-end justify-center">
-            <span className="text-xs text-gray-500 text-right">Dépenses</span>
+            <span className="text-xs text-gray-500 text-right">{t("budgetCard.spent")}</span>
             <span className="text-xl font-bold">{formatAmount(spent, currency)}</span>
             <div className="flex items-baseline gap-1 mt-1">
               <span className="text-sm">{formatAmount(spent, currency)}/{formatAmount(totalBudget, currency)}</span>
@@ -135,7 +145,7 @@ export const EnvelopeCard = ({
 
         <div className="space-y-1">
           <div className="flex justify-between text-xs">
-            <span className="text-gray-500">Progression</span>
+            <span className="text-gray-500">{t("budgetCard.progression")}</span>
             <span className={isOverBudget ? "text-red-600 font-medium" : "text-gray-600"}>
               {progress.toFixed(0)}%
             </span>
@@ -149,7 +159,7 @@ export const EnvelopeCard = ({
 
       <CardFooter className="pt-2 pb-3 gap-2 flex justify-between">
         <div className="flex flex-col">
-          <span className="text-xs text-gray-500">Report</span>
+          <span className="text-xs text-gray-500">{t("budgetCard.carriedOver")}</span>
           <span className="text-sm font-medium">{formatAmount(carriedOver, currency)}</span>
         </div>
         
@@ -162,7 +172,7 @@ export const EnvelopeCard = ({
               className="h-8 text-xs bg-white hover:bg-blue-50 text-blue-600 border-blue-200 hover:border-blue-300"
             >
               <Eye className="h-3.5 w-3.5 mr-1" />
-              Voir dépenses
+              {t("budgetCard.viewExpenses")}
             </Button>
           )}
           {onDeleteEnvelope && (
@@ -180,3 +190,4 @@ export const EnvelopeCard = ({
     </Card>
   );
 };
+
