@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { TransitionPageHeader } from "@/components/budget-transition/TransitionPageHeader";
@@ -137,7 +136,7 @@ export const BudgetTransition = () => {
               fileName={pdfFileName}
               totalIncome={totalRevenues}
               totalExpenses={totalExpenses}
-              budgets={dashboardBudgets} // Use filtered budgets
+              budgets={dashboardBudgets}
               className="w-full"
               onClick={handlePDFExported}
             />
@@ -155,4 +154,3 @@ export const BudgetTransition = () => {
 };
 
 export default BudgetTransition;
-
