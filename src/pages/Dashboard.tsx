@@ -87,9 +87,7 @@ const Dashboard = () => {
         remainingBudget={remainingAmount}
         remainingBudgetAfterExpenses={totalBudgets - totalExpenses}
         currency={globalCurrency}
-        statsTitle={t("dashboard.statsTitle")}
-        remainingLabel={t("dashboard.stats.remaining")}
-        remainingAfterLabel={t("dashboard.stats.remainingAfter")}
+        // Les labels seront traduits directement dans BudgetStats (à faire ensuite)
       />
 
       <AlertDialog open={showTransitionDialog} onOpenChange={setShowTransitionDialog}>
@@ -99,7 +97,6 @@ const Dashboard = () => {
             <AlertDialogDescription className="space-y-4">
               <div>
                 {t("dashboard.monthTransition") + " ?"}
-                {/* On ne peut pas interpoler dashboardTitle sans le remplacer dans les traductions, ci-dessous, version simple */}
               </div>
 
               <Alert variant="destructive" className="mt-4">
@@ -107,7 +104,6 @@ const Dashboard = () => {
                 <AlertTitle>{t("dashboard.transitionAlert")}</AlertTitle>
                 <AlertDescription>
                   <p className="text-sm">
-                    {/* Phrase avec dashboardTitle */}
                     {t("dashboard.transitionWarning").replace("{dashboardTitle}", dashboardTitle || t("dashboard.title"))}
                   </p>
                 </AlertDescription>
@@ -127,3 +123,4 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+
