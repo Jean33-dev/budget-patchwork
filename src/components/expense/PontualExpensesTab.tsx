@@ -1,4 +1,3 @@
-
 import { ExpenseList } from "@/components/budget/ExpenseList";
 import { BudgetLoadingState } from "@/components/budget/BudgetLoadingState";
 import { ExpenseErrorState } from "@/components/budget/ExpenseErrorState";
@@ -85,13 +84,7 @@ export const PontualExpensesTab = ({
           handleRetry={handleRetry}
           handleForceReload={forceReload}
           handleClearCacheAndReload={() => window.location.reload()}
-        >
-          <span>
-            <strong>{t("expenses.errorTitle")}</strong>
-            <br />
-            {t("expenses.errorLoading")}
-          </span>
-        </ExpenseErrorState>
+        />
       )}
       
       {!isLoading && !error && (
@@ -104,7 +97,7 @@ export const PontualExpensesTab = ({
           handleDeleteExpense={handleDeleteExpense}
           handleUpdateExpense={handleUpdateExpense}
           defaultBudgetId={budgetId}
-          showHeader={false}  // Ajout de cette propriété pour masquer l'en-tête
+          showHeader={false}
         />
       )}
     </div>
