@@ -48,6 +48,10 @@ export const EnvelopeForm = ({
     }
   };
 
+  // We'll format placeholders and button text with string concatenation
+  const titlePlaceholder = t("envelopeForm.titlePlaceholder")?.replace("{type}", getTypeLabel(type));
+  const addButtonLabel = t("envelopeForm.addButton")?.replace("{type}", getTypeLabel(type));
+
   return (
     <form onSubmit={onSubmit} className="space-y-4">
       <div className="space-y-2">
@@ -56,7 +60,7 @@ export const EnvelopeForm = ({
           id="title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder={t(`envelopeForm.titlePlaceholder`, { type: getTypeLabel(type) })}
+          placeholder={titlePlaceholder}
           required
         />
       </div>
@@ -108,7 +112,7 @@ export const EnvelopeForm = ({
       </div>
       <DialogFooter>
         <Button type="submit">
-          {t("envelopeForm.addButton", { type: getTypeLabel(type) })}
+          {addButtonLabel}
         </Button>
       </DialogFooter>
     </form>
