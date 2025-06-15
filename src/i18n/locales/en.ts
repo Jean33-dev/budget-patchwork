@@ -108,6 +108,7 @@ const enTranslations: Record<string, string> = {
   "expenses.disconnect": "Disconnect",
   "expenses.emptyTitle": "No expenses",
   "expenses.emptyDescription": "Add expenses to see them here.",
+  "expenses.emptyRecurringDescription": "No recurring expenses found.",
   "footer.synthese": "Overview",
   "footer.budgets": "Budgets",
   "footer.depenses": "Expenses",

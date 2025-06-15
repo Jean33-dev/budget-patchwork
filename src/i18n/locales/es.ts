@@ -108,6 +108,7 @@ const esTranslations: Record<string, string> = {
   "expenses.disconnect": "Desconectar",
   "expenses.emptyTitle": "Sin gastos",
   "expenses.emptyDescription": "Agrega gastos para verlos aquí.",
+  "expenses.emptyRecurringDescription": "No se encontraron gastos recurrentes.",
   "footer.synthese": "Síntesis",
   "footer.budgets": "Presupuestos",
   "footer.depenses": "Gastos",
