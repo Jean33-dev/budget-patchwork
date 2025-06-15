@@ -12,14 +12,27 @@ interface BudgetSummarySectionProps {
   language?: string;
 }
 
+function getTranslation(language: string, key: string): string {
+  if (translations[language] && translations[language][key]) {
+    return translations[language][key];
+  }
+  if (translations["en"] && translations["en"][key]) {
+    return translations["en"][key];
+  }
+  // Log missing key for debug
+  if (process.env.NODE_ENV !== "production") {
+    console.warn(`[TRANSLATION MISSING] ${key} (${language})`);
+  }
+  return key; // fallback
+}
+
 export const BudgetSummarySection: React.FC<BudgetSummarySectionProps> = ({ 
   totalIncome, 
   totalExpenses, 
   currency = "EUR",
   language = "fr"
 }) => {
-  const t = (key: string) =>
-    translations[language]?.[key] ?? translations["en"]?.[key] ?? key;
+  const t = (key: string) => getTranslation(language, key);
   const balance = totalIncome - totalExpenses;
   
   return (
@@ -44,4 +57,3 @@ export const BudgetSummarySection: React.FC<BudgetSummarySectionProps> = ({
     </View>
   );
 };
-

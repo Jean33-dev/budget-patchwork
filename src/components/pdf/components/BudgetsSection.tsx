@@ -20,9 +20,22 @@ interface BudgetsSectionProps {
   language?: string;
 }
 
+// Utilitaire pour traduction :
+function getTranslation(language: string, key: string): string {
+  if (translations[language] && translations[language][key]) {
+    return translations[language][key];
+  }
+  if (translations["en"] && translations["en"][key]) {
+    return translations["en"][key];
+  }
+  if (process.env.NODE_ENV !== "production") {
+    console.warn(`[TRANSLATION MISSING] ${key} (${language})`);
+  }
+  return key;
+}
+
 export const BudgetsSection: React.FC<BudgetsSectionProps> = ({ budgets, currency = "EUR", language = "fr" }) => {
-  const t = (key: string) =>
-    translations[language]?.[key] ?? translations["en"]?.[key] ?? key;
+  const t = (key: string) => getTranslation(language, key);
   const filteredBudgets = budgets.filter(b => b.type === "budget");
   
   if (!filteredBudgets.length) return null;

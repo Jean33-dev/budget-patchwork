@@ -9,6 +9,20 @@ import { ExpensesSection } from "./ExpensesSection";
 import { translations } from "@/i18n/translations";
 import { BudgetPDFProps } from "../types/pdfTypes";
 
+// Utilitaire pour traduction :
+function getTranslation(language: string, key: string): string {
+  if (translations[language] && translations[language][key]) {
+    return translations[language][key];
+  }
+  if (translations["en"] && translations["en"][key]) {
+    return translations["en"][key];
+  }
+  if (process.env.NODE_ENV !== "production") {
+    console.warn(`[TRANSLATION MISSING] ${key} (${language})`);
+  }
+  return key;
+}
+
 export const BudgetPDFDocument: React.FC<BudgetPDFProps & { language?: string }> = ({ 
   totalIncome, 
   totalExpenses, 
@@ -16,13 +30,11 @@ export const BudgetPDFDocument: React.FC<BudgetPDFProps & { language?: string }>
   incomes, 
   expenses,
   currency = "EUR",
-  language = "fr" // fallback français si jamais
+  language = "fr"
 }) => {
   const date = new Date();
 
-  // On prend la traduction du PDF selon la langue
-  const t = (key: string) =>
-    translations[language]?.[key] ?? translations["en"]?.[key] ?? key;
+  const t = (key: string) => getTranslation(language, key);
 
   const formattedDate = new Intl.DateTimeFormat(language === "fr" ? "fr-FR" : "en-US", {
     year: "numeric",

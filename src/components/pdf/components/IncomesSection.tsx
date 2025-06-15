@@ -18,6 +18,20 @@ interface IncomesSectionProps {
   language?: string;
 }
 
+// Utilitaire pour traduction :
+function getTranslation(language: string, key: string): string {
+  if (translations[language] && translations[language][key]) {
+    return translations[language][key];
+  }
+  if (translations["en"] && translations["en"][key]) {
+    return translations["en"][key];
+  }
+  if (process.env.NODE_ENV !== "production") {
+    console.warn(`[TRANSLATION MISSING] ${key} (${language})`);
+  }
+  return key;
+}
+
 export const IncomesSection: React.FC<IncomesSectionProps> = ({
   incomes,
   currency = "EUR",
@@ -25,8 +39,7 @@ export const IncomesSection: React.FC<IncomesSectionProps> = ({
 }) => {
   if (!incomes || !incomes.length) return null;
 
-  const t = (key: string) =>
-    translations[language]?.[key] ?? translations["en"]?.[key] ?? key;
+  const t = (key: string) => getTranslation(language, key);
 
   return (
     <View style={styles.section}>
