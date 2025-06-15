@@ -80,7 +80,9 @@ export const ExpenseReceiveDialog = ({ onReceiveComplete }: ExpenseReceiveDialog
       <DialogTrigger asChild>
         <Button variant="outline" className="flex items-center gap-1.5">
           <BluetoothSearching size={16} />
-          <span>{t("bluetooth.receive")}</span>
+          <span>
+            {t("bluetooth.receive")}
+          </span>
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
