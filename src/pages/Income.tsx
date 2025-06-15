@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useRecurringIncome } from "@/hooks/useRecurringIncome";
 import { AddEnvelopeDialog } from "@/components/budget/AddEnvelopeDialog";
@@ -71,10 +70,7 @@ const Income = () => {
 
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
-      <IncomeHeader 
-        title={t("income.header.title")}
-        description={t("income.header.subtitle")}
-      />
+      <IncomeHeader />
 
       <Tabs defaultValue="ponctuel" value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-2">
@@ -158,4 +154,3 @@ const Income = () => {
 };
 
 export default Income;
-

@@ -2,15 +2,18 @@
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useTheme } from "@/context/ThemeContext";
 
 interface IncomeHeaderProps {
-  title: string;
-  description: string;
+  title?: string;
+  description?: string;
 }
 
 export const IncomeHeader = ({ title, description }: IncomeHeaderProps) => {
   const navigate = useNavigate();
+  const { t } = useTheme();
 
+  // Utiliser les clés de traduction par défaut si title/description non fournis
   return (
     <div className="flex items-center gap-4 sticky top-0 bg-background/95 backdrop-blur-md z-10 py-4 mb-6 border-b">
       <Button
@@ -24,10 +27,10 @@ export const IncomeHeader = ({ title, description }: IncomeHeaderProps) => {
 
       <div className="flex-1">
         <h1 className="text-xl font-semibold bg-gradient-to-r from-green-600 to-green-400 bg-clip-text text-transparent">
-          {title}
+          {title || t("income.header.title")}
         </h1>
         <p className="text-sm text-muted-foreground">
-          {description}
+          {description || t("income.header.subtitle")}
         </p>
       </div>
     </div>
