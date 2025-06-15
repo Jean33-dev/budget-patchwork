@@ -14,8 +14,8 @@ import { BluetoothDeviceList } from "./BluetoothDeviceList";
 import { useBluetoothSharing } from "@/hooks/useBluetoothSharing";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Budget } from "@/hooks/useBudgets";
 import { useBudgets } from "@/hooks/useBudgets";
+import { useTheme } from "@/context/ThemeContext";
 
 interface ExpenseReceiveDialogProps {
   onReceiveComplete?: () => void;
@@ -25,7 +25,8 @@ export const ExpenseReceiveDialog = ({ onReceiveComplete }: ExpenseReceiveDialog
   const [isOpen, setIsOpen] = useState(false);
   const [selectedBudgetId, setSelectedBudgetId] = useState<string>("");
   const { budgets, dashboardId } = useBudgets();
-  
+  const { t } = useTheme();
+
   const {
     isScanning,
     devices,
@@ -65,9 +66,8 @@ export const ExpenseReceiveDialog = ({ onReceiveComplete }: ExpenseReceiveDialog
 
   const handleImportExpense = async () => {
     if (!receivedData || !selectedBudgetId || !dashboardId) return;
-    
     const success = await importReceivedExpense(selectedBudgetId, dashboardId);
-    
+
     if (success && onReceiveComplete) {
       setTimeout(() => {
         setIsOpen(false);
@@ -81,14 +81,14 @@ export const ExpenseReceiveDialog = ({ onReceiveComplete }: ExpenseReceiveDialog
       <DialogTrigger asChild>
         <Button variant="outline" className="flex items-center gap-1.5">
           <BluetoothSearching size={16} />
-          <span>Recevoir</span>
+          <span>{t("expenses.receive")}</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Recevoir une dépense</DialogTitle>
+          <DialogTitle>{t("expenses.receiveExpenseTitle")}</DialogTitle>
           <DialogDescription>
-            Connectez-vous à un appareil pour recevoir des données de dépense
+            {t("expenses.receiveExpenseDesc")}
           </DialogDescription>
         </DialogHeader>
 
@@ -96,31 +96,31 @@ export const ExpenseReceiveDialog = ({ onReceiveComplete }: ExpenseReceiveDialog
           {receivedData ? (
             <div className="space-y-4">
               <div className="rounded-md bg-muted/50 p-4">
-                <h4 className="text-sm font-medium mb-2">Données reçues</h4>
+                <h4 className="text-sm font-medium mb-2">{t("expenses.receiveDataTitle")}</h4>
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Titre</span>
+                    <span className="text-muted-foreground">{t("expenses.receiveFieldTitle")}</span>
                     <span className="font-medium">{receivedData.title}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Montant</span>
+                    <span className="text-muted-foreground">{t("expenses.receiveFieldAmount")}</span>
                     <span className="font-medium">{receivedData.amount.toFixed(2)} €</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Date</span>
+                    <span className="text-muted-foreground">{t("expenses.receiveFieldDate")}</span>
                     <span className="font-medium">{receivedData.date}</span>
                   </div>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">Sélectionner un budget</label>
+                <label className="text-sm font-medium">{t("expenses.selectBudget")}</label>
                 <Select
                   value={selectedBudgetId}
                   onValueChange={setSelectedBudgetId}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Sélectionnez un budget" />
+                    <SelectValue placeholder={t("expenses.selectBudgetPlaceholder")} />
                   </SelectTrigger>
                   <SelectContent>
                     {budgets.map((budget) => (
@@ -138,19 +138,19 @@ export const ExpenseReceiveDialog = ({ onReceiveComplete }: ExpenseReceiveDialog
                 disabled={!selectedBudgetId}
               >
                 <Download className="mr-2 h-4 w-4" />
-                Importer la dépense
+                {t("expenses.importExpense")}
               </Button>
             </div>
           ) : selectedDevice && isConnected ? (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h4 className="text-sm font-medium">Connecté à</h4>
+                  <h4 className="text-sm font-medium">{t("expenses.connectedTo")}</h4>
                   <p className="text-sm text-muted-foreground">
-                    {selectedDevice.name || "Appareil sans nom"}
+                    {selectedDevice.name || t("expenses.unnamedDevice")}
                   </p>
                 </div>
-                <Badge variant="outline" className="bg-green-50">Connecté</Badge>
+                <Badge variant="outline" className="bg-green-50">{t("expenses.connected")}</Badge>
               </div>
               
               <Button
@@ -161,12 +161,12 @@ export const ExpenseReceiveDialog = ({ onReceiveComplete }: ExpenseReceiveDialog
                 {isReceivingData ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Réception en cours...
+                    {t("expenses.receiving")}
                   </>
                 ) : (
                   <>
                     <Download className="mr-2 h-4 w-4" />
-                    Recevoir les données
+                    {t("expenses.receiveData")}
                   </>
                 )}
               </Button>
@@ -175,7 +175,7 @@ export const ExpenseReceiveDialog = ({ onReceiveComplete }: ExpenseReceiveDialog
                 onClick={disconnectFromDevice}
                 className="w-full"
               >
-                Déconnecter
+                {t("expenses.disconnect")}
               </Button>
             </div>
           ) : (

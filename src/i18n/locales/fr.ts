@@ -91,6 +91,21 @@ const frTranslations: Record<string, string> = {
   "expenses.typeMustBeExpense": "Le type doit être 'expense'",
   "expenses.editRecurring": "Modifier la dépense récurrente",
   "expenses.receive": "Recevoir",
+  "expenses.receiveExpenseTitle": "Recevoir une dépense",
+  "expenses.receiveExpenseDesc": "Connectez-vous à un appareil pour recevoir une dépense via Bluetooth",
+  "expenses.receiveDataTitle": "Données reçues",
+  "expenses.receiveFieldTitle": "Titre",
+  "expenses.receiveFieldAmount": "Montant",
+  "expenses.receiveFieldDate": "Date",
+  "expenses.selectBudget": "Sélectionner un budget",
+  "expenses.selectBudgetPlaceholder": "Sélectionnez un budget",
+  "expenses.importExpense": "Importer la dépense",
+  "expenses.connectedTo": "Connecté à",
+  "expenses.unnamedDevice": "Appareil sans nom",
+  "expenses.connected": "Connecté",
+  "expenses.receiving": "Réception en cours...",
+  "expenses.receiveData": "Recevoir les données",
+  "expenses.disconnect": "Déconnecter",
   "expenses.emptyTitle": "Aucune dépense",
   "expenses.emptyDescription": "Ajoutez des dépenses pour les visualiser ici",
   "footer.synthese": "Synthèse",
@@ -177,4 +192,5 @@ const frTranslations: Record<string, string> = {
   "budgetCard.badgeExpense": "Dépense",
   "budgetCard.badgeDefault": "Enveloppe",
 };
+
 export default frTranslations;
