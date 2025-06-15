@@ -162,6 +162,9 @@ const frTranslations: Record<string, string> = {
   "pdf.total": "Total",
   "pdf.footer": "Rapport généré le {{date}}.",
   "pdf.carriedOver": "Reporté",
+  "pdf.totalIncome": "Revenus totaux",
+  "pdf.totalExpenses": "Dépenses totales",
+  "pdf.balance": "Solde",
 };
 
 // --- ENGLISH ---
@@ -317,6 +320,9 @@ const enTranslations: Record<string, string> = {
   "pdf.total": "Total",
   "pdf.footer": "Report generated on {{date}}.",
   "pdf.carriedOver": "Carried Over",
+  "pdf.totalIncome": "Total Income",
+  "pdf.totalExpenses": "Total Expenses",
+  "pdf.balance": "Balance",
 };
 
 // --- ESPAÑOL ---
@@ -472,6 +478,9 @@ const esTranslations: Record<string, string> = {
   "pdf.total": "Total",
   "pdf.footer": "Informe generado el {{date}}.",
   "pdf.carriedOver": "Reportado",
+  "pdf.totalIncome": "Ingresos totales",
+  "pdf.totalExpenses": "Gastos totales",
+  "pdf.balance": "Saldo",
 };
 
 // --- DEUTSCH ---
@@ -627,6 +636,9 @@ const deTranslations: Record<string, string> = {
   "pdf.total": "Gesamt",
   "pdf.footer": "Bericht erstellt am {{date}}.",
   "pdf.carriedOver": "Übertragen",
+  "pdf.totalIncome": "Gesamteinnahmen",
+  "pdf.totalExpenses": "Gesamtausgaben",
+  "pdf.balance": "Saldo",
 };
 
 // --- ITALIANO ---
@@ -782,6 +794,9 @@ const itTranslations: Record<string, string> = {
   "pdf.total": "Totale",
   "pdf.footer": "Rapporto generato il {{date}}.",
   "pdf.carriedOver": "Riportato",
+  "pdf.totalIncome": "Entrate totali",
+  "pdf.totalExpenses": "Spese totali",
+  "pdf.balance": "Saldo",
 };
 
 /**
