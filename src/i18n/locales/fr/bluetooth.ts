@@ -30,5 +30,6 @@ const bluetooth = {
   "bluetooth.availableDevices": "Appareils disponibles",
   "bluetooth.noDevicesFound": "Aucun appareil trouvé",
   "bluetooth.search": "Rechercher",
+  "bluetooth.receive": "Recevoir",
 };
 export default bluetooth;

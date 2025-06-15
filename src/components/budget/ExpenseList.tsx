@@ -113,7 +113,7 @@ export const ExpenseList = ({
       <Button
         onClick={() => console.log("Receive expense clicked")}
       >
-        {t("bluetooth.receiveExpense")}
+        {t("bluetooth.receive")}
       </Button>
     </div>
   );
