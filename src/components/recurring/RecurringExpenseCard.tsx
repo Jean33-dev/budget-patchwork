@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { formatAmount } from "@/utils/format-amount";
@@ -39,12 +38,15 @@ export const RecurringExpenseCard = ({
     onEdit();
   };
 
+  // Prepare aria-label text
+  const editExpenseLabel = t("recurring.editExpenseLabel").replace("{title}", expense.title);
+
   return (
     <Card 
       className="overflow-hidden h-full flex flex-col hover:shadow-md transition-shadow border-t-4 border-t-red-500 cursor-pointer"
       onClick={handleCardClick}
       tabIndex={0}
-      aria-label={t("recurring.editExpenseLabel", { title: expense.title })}
+      aria-label={editExpenseLabel}
       role="button"
       onKeyDown={e => {
         if (e.key === "Enter" || e.key === " ") {
