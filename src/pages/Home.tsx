@@ -9,12 +9,15 @@ import { ErrorBoundary } from "@/components/error-boundary/ErrorBoundary";
 import { DashboardGridErrorBoundary } from "@/components/dashboard/DashboardGridErrorBoundary";
 import { DashboardCardSkeleton } from "@/components/dashboard/DashboardCardSkeleton";
 import { HomeFooter } from "@/components/dashboard/HomeFooter";
+import { useTheme } from "@/context/ThemeContext";
 
 const Home = () => {
   const { dashboards, isLoading, createDashboard, updateDashboard, deleteDashboard } = useDashboardManagement();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [currentDashboard, setCurrentDashboard] = useState<{id: string, title: string} | null>(null);
+
+  const { t } = useTheme();
 
   const handleEditDashboard = (id: string, currentTitle: string) => {
     setCurrentDashboard({ id, title: currentTitle });
@@ -30,7 +33,7 @@ const Home = () => {
   return (
     <ErrorBoundary>
       <div className="container mx-auto py-8 space-y-8">
-        <h1 className="text-4xl font-bold">Mes Tableaux de Bord</h1>
+        <h1 className="text-4xl font-bold">{t("home.title")}</h1>
         
         <DashboardGridErrorBoundary>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -51,7 +54,7 @@ const Home = () => {
               ))
             ) : (
               <div className="col-span-full text-center py-8 text-gray-500">
-                Aucun tableau de bord trouvé. Créez votre premier tableau de bord!
+                {t("home.noDashboard")}
               </div>
             )}
 
@@ -81,3 +84,4 @@ const Home = () => {
 };
 
 export default Home;
+

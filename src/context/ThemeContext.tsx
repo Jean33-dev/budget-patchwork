@@ -54,6 +54,9 @@ const translations: Record<string, Record<string, string>> = {
     "dashboard.cancel": "Annuler",
     "dashboard.stats.remaining": "Budget restant",
     "dashboard.stats.remainingAfter": "Budget restant après dépenses",
+    // -------- HOME --------
+    "home.title": "Mes Tableaux de Bord",
+    "home.noDashboard": "Aucun tableau de bord trouvé. Créez votre premier tableau de bord!",
   },
   en: {
     "settings.title": "Settings",
@@ -95,6 +98,9 @@ const translations: Record<string, Record<string, string>> = {
     "dashboard.cancel": "Cancel",
     "dashboard.stats.remaining": "Remaining budget",
     "dashboard.stats.remainingAfter": "Remaining after expenses",
+    // -------- HOME --------
+    "home.title": "My Dashboards",
+    "home.noDashboard": "No dashboard found. Create your first dashboard!",
   },
   es: {
     "settings.title": "Configuración",
@@ -136,6 +142,9 @@ const translations: Record<string, Record<string, string>> = {
     "dashboard.cancel": "Cancelar",
     "dashboard.stats.remaining": "Presupuesto restante",
     "dashboard.stats.remainingAfter": "Presupuesto después de gastos",
+    // -------- HOME --------
+    "home.title": "Mis Tableros",
+    "home.noDashboard": "No se encontró ningún tablero. ¡Cree su primer tablero!",
   },
   de: {
     "settings.title": "Einstellungen",
@@ -177,6 +186,9 @@ const translations: Record<string, Record<string, string>> = {
     "dashboard.cancel": "Abbrechen",
     "dashboard.stats.remaining": "Verbleibendes Budget",
     "dashboard.stats.remainingAfter": "Verbleibend nach Ausgaben",
+    // -------- HOME --------
+    "home.title": "Meine Übersichten",
+    "home.noDashboard": "Kein Dashboard gefunden. Erstellen Sie Ihr erstes Dashboard!",
   },
   it: {
     "settings.title": "Impostazioni",
@@ -218,6 +230,9 @@ const translations: Record<string, Record<string, string>> = {
     "dashboard.cancel": "Annulla",
     "dashboard.stats.remaining": "Budget residuo",
     "dashboard.stats.remainingAfter": "Residuo dopo spese",
+    // -------- HOME --------
+    "home.title": "I miei cruscotti",
+    "home.noDashboard": "Nessuna dashboard trovata. Crea la tua prima dashboard!",
   }
 };
 
