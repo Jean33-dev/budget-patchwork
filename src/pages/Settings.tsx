@@ -1,9 +1,11 @@
+
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { ArrowLeft, Database, Trash, Moon, Sun } from "lucide-react";
-import { useTheme, supportedLanguages } from "@/context/ThemeContext";
+import { useTheme } from "@/context/ThemeContext";
+import { supportedLanguages } from "@/i18n/translations";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useDatabaseRepair } from "@/hooks/useDatabaseRepair";
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
