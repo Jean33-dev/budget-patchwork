@@ -1,5 +1,7 @@
-
 import React, { createContext, useContext, useState } from "react";
+
+// --- TYPES DEVISE ---
+export type Currency = "EUR" | "USD" | "GBP";
 
 // Liste des langues disponibles
 export const supportedLanguages = [
@@ -176,8 +178,9 @@ interface ThemeContextProps {
   toggleDarkMode: () => void;
   showToasts: boolean;
   toggleShowToasts: () => void;
-  currency: string;
-  setCurrency: (currency: string) => void;
+  currency: Currency;
+  setCurrency: (currency: Currency) => void;
+  currencySymbol: string;
   language: string;
   setLanguage: (lang: string) => void;
   t: (key: string) => string;
@@ -189,8 +192,18 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [invertColors, setInvertColors] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [showToasts, setShowToasts] = useState(true);
-  const [currency, setCurrency] = useState("EUR");
+  const [currency, setCurrency] = useState<Currency>("EUR");
   const [language, setLanguage] = useState("fr"); // Default to French
+
+  // Remonter le symbole pour tous les usages
+  const currencySymbol = React.useMemo(() => {
+    switch (currency) {
+      case "EUR": return "€";
+      case "USD": return "$";
+      case "GBP": return "£";
+      default: return "";
+    }
+  }, [currency]);
 
   // Simple translation function
   const t = (key: string) => {
@@ -208,6 +221,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         toggleShowToasts: () => setShowToasts((v) => !v),
         currency,
         setCurrency,
+        currencySymbol,
         language,
         setLanguage,
         t,
