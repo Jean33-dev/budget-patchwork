@@ -4,6 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { useTheme } from "@/context/ThemeContext";
 
 interface CreateDashboardDialogProps {
   open: boolean;
@@ -19,11 +20,12 @@ export const CreateDashboardDialog = ({
   const [name, setName] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const { t } = useTheme();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) {
-      setError("Le nom du tableau de bord est requis");
+      setError(t("dashboard.errorRequired") ?? "Le nom du tableau de bord est requis");
       return;
     }
     
@@ -42,16 +44,16 @@ export const CreateDashboardDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Créer un nouveau tableau de bord</DialogTitle>
+          <DialogTitle>{t("dashboard.createDashboardTitle") ?? "Créer un nouveau tableau de bord"}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="dashboard-name">Nom du tableau de bord</Label>
+            <Label htmlFor="dashboard-name">{t("dashboard.nameLabel") ?? "Nom du tableau de bord"}</Label>
             <Input
               id="dashboard-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Entrez le nom du tableau de bord"
+              placeholder={t("dashboard.namePlaceholder") ?? "Entrez le nom du tableau de bord"}
               autoFocus
               className={error ? "border-red-500" : ""}
               disabled={isLoading}
@@ -70,10 +72,10 @@ export const CreateDashboardDialog = ({
               className="mr-2"
               disabled={isLoading}
             >
-              Annuler
+              {t("dashboard.cancel") ?? "Annuler"}
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? "Création..." : "Créer"}
+              {isLoading ? (t("dashboard.creating") ?? "Création...") : (t("dashboard.create") ?? "Créer")}
             </Button>
           </DialogFooter>
         </form>
@@ -81,3 +83,4 @@ export const CreateDashboardDialog = ({
     </Dialog>
   );
 };
+
