@@ -112,18 +112,17 @@ export const BudgetTransition = () => {
                 <AlertTitle>{t("transition.dialogAlertTitle")}</AlertTitle>
                 <AlertDescription>
                   <p className="text-sm">
-                    {t("transition.dialogDesc", {
-                      dashboardTitle: dashboardTitle || t("dashboard.untitledDashboard"),
-                    })}
+                    {t("transition.dialogDesc").replace(
+                      "{{dashboardTitle}}",
+                      dashboardTitle || t("dashboard.untitledDashboard")
+                    )}
                   </p>
-                  
                   <div className="flex items-center gap-2 mt-2">
                     <FileText className="h-4 w-4" />
                     <span className="text-xs font-medium">{t("transition.dialogRecommendation")}</span>
                   </div>
                 </AlertDescription>
               </Alert>
-              
               {pdfExported && (
                 <p className="text-xs text-green-600 dark:text-green-400 text-center mt-2">
                   {t("transition.pdfExportSuccess")}
