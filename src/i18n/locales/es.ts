@@ -205,6 +205,7 @@ const esTranslations: Record<string, string> = {
   "envelopeForm.linkedBudgetLabel": "Presupuesto asociado",
   "envelopeForm.linkedBudgetPlaceholder": "Selecciona un presupuesto",
   "envelopeForm.noBudgets": "No hay presupuestos disponibles. Por favor, crea uno primero.",
+  "bluetooth.receive": "Recibir",
 };
 
 export default esTranslations;

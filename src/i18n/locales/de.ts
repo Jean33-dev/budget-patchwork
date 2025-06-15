@@ -158,5 +158,6 @@ const deTranslations: Record<string, string> = {
   "budgets.retry": "Einfach erneut versuchen",
   "budgets.resetAll": "Komplett zurücksetzen",
   "budgets.remainingError": "Die Summe der Budgets übersteigt Ihre Einnahmen. Versuchen Sie, einige Budgets zu reduzieren.",
+  "bluetooth.receive": "Empfangen",
 };
 export default deTranslations;
