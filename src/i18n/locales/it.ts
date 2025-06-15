@@ -259,7 +259,19 @@ const itTranslations: Record<string, string> = {
   "bluetooth.retry": "Riprova",
   "bluetooth.availableDevices": "Dispositivi disponibili",
   "bluetooth.noDevicesFound": "Nessun dispositivo trovato",
-  "bluetooth.search": "Cerca"
+  "bluetooth.search": "Cerca",
+  // ----------- Aggiunte per la pagina entrate -----------
+  "income.header.title": "Gestione delle Entrate",
+  "income.header.subtitle": "Gestisci efficacemente le tue fonti di entrata",
+  "income.tabs.oneTime": "Entrate singole",
+  "income.tabs.recurring": "Entrate ricorrenti",
+  "income.addOneTime": "Aggiungi un'entrata singola",
+  "income.addRecurring": "Aggiungi un'entrata ricorrente",
+  "income.loading": "Caricamento entrate...",
+  "income.loadingRecurring": "Caricamento entrate ricorrenti...",
+  "income.empty": "Nessuna entrata trovata",
+  "income.toast.errorTitle": "Errore",
+  "income.toast.typeMustBeIncome": "Il tipo deve essere 'income'",
 };
 
 export default itTranslations;

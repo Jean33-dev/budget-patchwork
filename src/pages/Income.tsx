@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useRecurringIncome } from "@/hooks/useRecurringIncome";
 import { AddEnvelopeDialog } from "@/components/budget/AddEnvelopeDialog";
@@ -16,8 +17,8 @@ import { useTheme } from "@/context/ThemeContext";
 const Income = () => {
   const [activeTab, setActiveTab] = useState("ponctuel");
   const { toast } = useToast();
-  const { currency: globalCurrency } = useTheme();
-  
+  const { currency: globalCurrency, t } = useTheme();
+
   const {
     envelopes: nonRecurringIncomes,
     addDialogOpen: addNonRecurringDialogOpen,
@@ -60,8 +61,8 @@ const Income = () => {
     } else {
       toast({
         variant: "destructive",
-        title: "Erreur",
-        description: "Le type doit être 'income'"
+        title: t("income.toast.errorTitle"),
+        description: t("income.toast.typeMustBeIncome")
       });
     }
   };
@@ -70,22 +71,25 @@ const Income = () => {
 
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
-      <IncomeHeader title="Gestion des Revenus" />
-      
+      <IncomeHeader 
+        title={t("income.header.title")}
+        description={t("income.header.subtitle")}
+      />
+
       <Tabs defaultValue="ponctuel" value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="ponctuel">Revenus ponctuels</TabsTrigger>
-          <TabsTrigger value="recurrent">Revenus récurrents</TabsTrigger>
+          <TabsTrigger value="ponctuel">{t("income.tabs.oneTime")}</TabsTrigger>
+          <TabsTrigger value="recurrent">{t("income.tabs.recurring")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="ponctuel" className="mt-4">
           <AddButton
             onClick={() => setAddNonRecurringDialogOpen(true)}
-            label="Ajouter un revenu ponctuel"
+            label={t("income.addOneTime")}
           />
 
           {isNonRecurringLoading ? (
-            <div className="text-center py-8">Chargement des revenus...</div>
+            <div className="text-center py-8">{t("income.loading")}</div>
           ) : filteredNonRecurringIncomes.length === 0 ? (
             <IncomeEmptyState />
           ) : (
@@ -116,11 +120,11 @@ const Income = () => {
         <TabsContent value="recurrent" className="mt-4">
           <AddButton
             onClick={() => setAddRecurringDialogOpen(true)}
-            label="Ajouter un revenu récurrent"
+            label={t("income.addRecurring")}
           />
 
           {isRecurringLoading ? (
-            <div className="text-center py-8">Chargement des revenus récurrents...</div>
+            <div className="text-center py-8">{t("income.loadingRecurring")}</div>
           ) : recurringIncomes.length === 0 ? (
             <RecurringIncomeEmptyState onAddClick={() => setAddRecurringDialogOpen(true)} />
           ) : (
@@ -154,3 +158,4 @@ const Income = () => {
 };
 
 export default Income;
+

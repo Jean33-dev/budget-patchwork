@@ -43,7 +43,7 @@ const deTranslations: Record<string, string> = {
   "dashboard.nameLabel": "Dashboard-Name",
   "dashboard.namePlaceholder": "Geben Sie den Dashboard-Namen ein",
   "dashboard.create": "Erstellen",
-  "dashboard.creating": "Erstellen...",
+  "dashboard.creating": "Wird erstellt...",
   "dashboard.errorRequired": "Dashboard-Name ist erforderlich",
   "dashboard.rename": "Umbenennen",
   "dashboard.delete": "Löschen",
@@ -159,5 +159,17 @@ const deTranslations: Record<string, string> = {
   "budgets.resetAll": "Komplett zurücksetzen",
   "budgets.remainingError": "Die Summe der Budgets übersteigt Ihre Einnahmen. Versuchen Sie, einige Budgets zu reduzieren.",
   "bluetooth.receive": "Empfangen",
+  // ----------- Ergänzungen für die Einnahmenseite -----------
+  "income.header.title": "Einnahmenverwaltung",
+  "income.header.subtitle": "Verwalten Sie effektiv Ihre Einnahmequellen",
+  "income.tabs.oneTime": "Einmalige Einnahmen",
+  "income.tabs.recurring": "Wiederkehrende Einnahmen",
+  "income.addOneTime": "Einmalige Einnahme hinzufügen",
+  "income.addRecurring": "Wiederkehrende Einnahme hinzufügen",
+  "income.loading": "Einnahmen werden geladen...",
+  "income.loadingRecurring": "Wiederkehrende Einnahmen werden geladen...",
+  "income.empty": "Keine Einnahmen gefunden",
+  "income.toast.errorTitle": "Fehler",
+  "income.toast.typeMustBeIncome": "Typ muss 'income' sein",
 };
 export default deTranslations;

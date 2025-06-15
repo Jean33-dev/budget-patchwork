@@ -206,6 +206,18 @@ const esTranslations: Record<string, string> = {
   "envelopeForm.linkedBudgetPlaceholder": "Selecciona un presupuesto",
   "envelopeForm.noBudgets": "No hay presupuestos disponibles. Por favor, crea uno primero.",
   "bluetooth.receive": "Recibir",
+  // ----------- Añadidos para la página de ingresos -----------
+  "income.header.title": "Gestión de Ingresos",
+  "income.header.subtitle": "Gestione eficientemente sus fuentes de ingresos",
+  "income.tabs.oneTime": "Ingresos puntuales",
+  "income.tabs.recurring": "Ingresos recurrentes",
+  "income.addOneTime": "Agregar un ingreso puntual",
+  "income.addRecurring": "Agregar un ingreso recurrente",
+  "income.loading": "Cargando ingresos...",
+  "income.loadingRecurring": "Cargando ingresos recurrentes...",
+  "income.empty": "No se encontró ningún ingreso",
+  "income.toast.errorTitle": "Error",
+  "income.toast.typeMustBeIncome": "El tipo debe ser 'income'",
 };
 
 export default esTranslations;

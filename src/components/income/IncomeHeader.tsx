@@ -5,9 +5,10 @@ import { useNavigate } from "react-router-dom";
 
 interface IncomeHeaderProps {
   title: string;
+  description: string;
 }
 
-export const IncomeHeader = ({ title }: IncomeHeaderProps) => {
+export const IncomeHeader = ({ title, description }: IncomeHeaderProps) => {
   const navigate = useNavigate();
 
   return (
@@ -26,7 +27,7 @@ export const IncomeHeader = ({ title }: IncomeHeaderProps) => {
           {title}
         </h1>
         <p className="text-sm text-muted-foreground">
-          Gérez efficacement vos sources de revenus
+          {description}
         </p>
       </div>
     </div>

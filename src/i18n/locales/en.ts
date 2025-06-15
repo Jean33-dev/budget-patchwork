@@ -262,6 +262,19 @@ const enTranslations: Record<string, string> = {
   "bluetooth.retry": "Retry",
   "bluetooth.availableDevices": "Available devices",
   "bluetooth.noDevicesFound": "No device found",
-  "bluetooth.search": "Search"
+  "bluetooth.search": "Search",
+  // ----------- Additions for income page -----------
+  "income.header.title": "Income Management",
+  "income.header.subtitle": "Efficiently manage your sources of income",
+  "income.tabs.oneTime": "One-off incomes",
+  "income.tabs.recurring": "Recurring incomes",
+  "income.addOneTime": "Add a one-off income",
+  "income.addRecurring": "Add a recurring income",
+  "income.loading": "Loading incomes...",
+  "income.loadingRecurring": "Loading recurring incomes...",
+  "income.empty": "No income found",
+  "income.toast.errorTitle": "Error",
+  "income.toast.typeMustBeIncome": "Type must be 'income'",
 };
+
 export default enTranslations;
