@@ -38,9 +38,8 @@ export const PINSetup: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) => 
     }, 850);
   };
 
-  // Helper pour afficher le PIN ou le masquer selon l'état showPin et étape
-  const displayedPin = showPin ? (step === 1 ? pin : confirmPin) : "";
-  const slotsValue = (step === 1 ? pin : confirmPin).split("");
+  // Helper pour l'entrée courante/slots
+  const currentValue = step === 1 ? pin : confirmPin;
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-background px-4 animate-fade-in">
@@ -75,8 +74,8 @@ export const PINSetup: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) => 
             <div className="flex items-center justify-center gap-2 mb-1">
               <InputOTP
                 maxLength={4}
-                type={showPin ? "text" : "number"}
-                value={step === 1 ? pin : confirmPin}
+                type="text" // toujours text pour éviter l'erreur selectionRange
+                value={currentValue}
                 onChange={step === 1 ? setPin : setConfirmPin}
                 containerClassName="justify-center"
                 inputMode="numeric"
@@ -86,14 +85,12 @@ export const PINSetup: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) => 
                 <InputOTPGroup>
                   {[0, 1, 2, 3].map((idx) => (
                     <InputOTPSlot key={idx} index={idx}>
-                      {
-                        // Optionally show the digit or a • for masking
-                        showPin
-                          ? slotsValue[idx] || ""
-                          : (step === 1 ? pin : confirmPin)[idx]
-                            ? "•"
-                            : ""
-                      }
+                      {/* Affiche le chiffre ou un • selon showPin */}
+                      {currentValue[idx]
+                        ? showPin
+                          ? currentValue[idx]
+                          : "•"
+                        : ""}
                     </InputOTPSlot>
                   ))}
                 </InputOTPGroup>
