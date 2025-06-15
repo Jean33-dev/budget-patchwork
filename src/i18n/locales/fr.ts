@@ -161,6 +161,8 @@ const frTranslations: Record<string, string> = {
   "budgets.retry": "Réessayer simplement",
   "budgets.resetAll": "Réinitialiser complètement",
   "budgets.remainingError": "Le total des budgets dépasse vos revenus. Essayez de réduire certains budgets.",
+  "budgets.emptyState": "Aucun budget trouvé. Créez votre premier budget en cliquant sur \"Ajouter un budget\".",
+  // Ajout des clés pour EnvelopeCard
   "budgetCard.budgeted": "Budgété",
   "budgetCard.spent": "Dépenses",
   "budgetCard.available": "Disponible",

@@ -153,6 +153,13 @@ const esTranslations: Record<string, string> = {
   "pdf.totalIncome": "Ingresos totales",
   "pdf.totalExpenses": "Gastos totales",
   "pdf.balance": "Saldo",
+  "budgets.errorTitle": "Error de carga",
+  "budgets.errorLoading": "No se puede cargar la base de datos. Prueba una de las siguientes soluciones:",
+  "budgets.retry": "Just retry",
+  "budgets.resetAll": "Reset completely",
+  "budgets.remainingError": "El total de los presupuestos supera tus ingresos. Intenta reducir algunos presupuestos.",
+  "budgets.emptyState": "No se encontró ningún presupuesto. ¡Cree su primer presupuesto haciendo clic en \"Agregar un presupuesto\"!",
+  // Ajout des claves para EnvelopeCard
   "budgetCard.budgeted": "Presupuestado",
   "budgetCard.spent": "Gastos",
   "budgetCard.available": "Disponible",

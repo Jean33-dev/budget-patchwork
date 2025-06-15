@@ -161,6 +161,7 @@ const itTranslations: Record<string, string> = {
   "budgets.retry": "Riprova semplicemente",
   "budgets.resetAll": "Reimposta completamente",
   "budgets.remainingError": "Il totale dei budget supera le tue entrate. Prova a ridurre alcuni budget.",
+  "budgets.emptyState": "Nessun budget trovato. Crea il tuo primo budget cliccando su \"Aggiungi un budget\".",
   "budgetCard.budgeted": "Budget",
   "budgetCard.spent": "Spese",
   "budgetCard.available": "Disponibile",
