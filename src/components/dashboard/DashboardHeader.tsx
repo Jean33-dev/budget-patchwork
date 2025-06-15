@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { useState } from "react";
@@ -45,7 +46,7 @@ export const DashboardHeader = ({ currentDate, onMonthChange, onBackClick }: Das
               {dashboardTitle ? ` - ${dashboardTitle}` : ""}
             </h1>
             <p className="text-sm text-muted-foreground">
-              Vue d'ensemble de vos finances
+              {t("stats.overviewSubtitle")}
             </p>
           </div>
           
