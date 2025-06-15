@@ -146,6 +146,22 @@ const frTranslations: Record<string, string> = {
   "transition.dialogRecommendation": "Nous vous recommandons d'exporter vos données en PDF avant de continuer.",
   "transition.pdfExportSuccess": "PDF exporté avec succès. Vous pouvez maintenant procéder à la transition.",
   "dashboard.untitledDashboard": "Sans titre",
+  // --------- CLÉS PDF MANQUANTES ---------
+  "pdf.reportTitle": "Rapport Budgétaire",
+  "pdf.summary": "Synthèse",
+  "pdf.budgets": "Budgets",
+  "pdf.incomes": "Revenus",
+  "pdf.expenses": "Dépenses",
+  "pdf.source": "Source",
+  "pdf.amount": "Montant",
+  "pdf.name": "Nom",
+  "pdf.date": "Date",
+  "pdf.budget": "Budget",
+  "pdf.spent": "Dépensé",
+  "pdf.remaining": "Restant",
+  "pdf.total": "Total",
+  "pdf.footer": "Rapport généré le {{date}}.",
+  "pdf.carriedOver": "Reporté",
 };
 
 // --- ENGLISH ---
@@ -285,6 +301,22 @@ const enTranslations: Record<string, string> = {
   "transition.dialogRecommendation": "We recommend exporting your data as PDF before continuing.",
   "transition.pdfExportSuccess": "PDF exported successfully. You can now proceed with the transition.",
   "dashboard.untitledDashboard": "Untitled",
+  // --------- MISSING PDF KEYS ---------
+  "pdf.reportTitle": "Budget Report",
+  "pdf.summary": "Summary",
+  "pdf.budgets": "Budgets",
+  "pdf.incomes": "Income",
+  "pdf.expenses": "Expenses",
+  "pdf.source": "Source",
+  "pdf.amount": "Amount",
+  "pdf.name": "Name",
+  "pdf.date": "Date",
+  "pdf.budget": "Budget",
+  "pdf.spent": "Spent",
+  "pdf.remaining": "Remaining",
+  "pdf.total": "Total",
+  "pdf.footer": "Report generated on {{date}}.",
+  "pdf.carriedOver": "Carried Over",
 };
 
 // --- ESPAÑOL ---
@@ -424,6 +456,22 @@ const esTranslations: Record<string, string> = {
   "transition.dialogRecommendation": "Le recomendamos exportar sus datos en PDF antes de continuar.",
   "transition.pdfExportSuccess": "PDF exportado con éxito. Ahora puede proceder con la transición.",
   "dashboard.untitledDashboard": "Sin título",
+  // --------- CLAVES PDF FALTANTES ---------
+  "pdf.reportTitle": "Informe Presupuestario",
+  "pdf.summary": "Resumen",
+  "pdf.budgets": "Presupuestos",
+  "pdf.incomes": "Ingresos",
+  "pdf.expenses": "Gastos",
+  "pdf.source": "Fuente",
+  "pdf.amount": "Cantidad",
+  "pdf.name": "Nombre",
+  "pdf.date": "Fecha",
+  "pdf.budget": "Presupuesto",
+  "pdf.spent": "Gastado",
+  "pdf.remaining": "Restante",
+  "pdf.total": "Total",
+  "pdf.footer": "Informe generado el {{date}}.",
+  "pdf.carriedOver": "Reportado",
 };
 
 // --- DEUTSCH ---
@@ -563,6 +611,22 @@ const deTranslations: Record<string, string> = {
   "transition.dialogRecommendation": "Wir empfehlen, Ihre Daten vor dem Fortfahren als PDF zu exportieren.",
   "transition.pdfExportSuccess": "PDF erfolgreich exportiert. Sie können nun mit dem Übergang fortfahren.",
   "dashboard.untitledDashboard": "Ohne Titel",
+  // --------- FEHLENDE PDF-SCHLÜSSEL ---------
+  "pdf.reportTitle": "Budgetbericht",
+  "pdf.summary": "Zusammenfassung",
+  "pdf.budgets": "Budgets",
+  "pdf.incomes": "Einnahmen",
+  "pdf.expenses": "Ausgaben",
+  "pdf.source": "Quelle",
+  "pdf.amount": "Betrag",
+  "pdf.name": "Name",
+  "pdf.date": "Datum",
+  "pdf.budget": "Budget",
+  "pdf.spent": "Ausgegeben",
+  "pdf.remaining": "Verbleibend",
+  "pdf.total": "Gesamt",
+  "pdf.footer": "Bericht erstellt am {{date}}.",
+  "pdf.carriedOver": "Übertragen",
 };
 
 // --- ITALIANO ---
@@ -702,6 +766,22 @@ const itTranslations: Record<string, string> = {
   "transition.dialogRecommendation": "Ti consigliamo di esportare i tuoi dati in PDF prima di continuare.",
   "transition.pdfExportSuccess": "PDF esportato con successo. Ora puoi procedere con la transizione.",
   "dashboard.untitledDashboard": "Senza titolo",
+  // --------- CHIAVI PDF MANCANTI ---------
+  "pdf.reportTitle": "Rapporto Budget",
+  "pdf.summary": "Sintesi",
+  "pdf.budgets": "Budget",
+  "pdf.incomes": "Entrate",
+  "pdf.expenses": "Spese",
+  "pdf.source": "Fonte",
+  "pdf.amount": "Importo",
+  "pdf.name": "Nome",
+  "pdf.date": "Data",
+  "pdf.budget": "Budget",
+  "pdf.spent": "Speso",
+  "pdf.remaining": "Residuo",
+  "pdf.total": "Totale",
+  "pdf.footer": "Rapporto generato il {{date}}.",
+  "pdf.carriedOver": "Riportato",
 };
 
 /**
