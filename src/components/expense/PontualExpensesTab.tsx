@@ -1,3 +1,4 @@
+
 import { ExpenseList } from "@/components/budget/ExpenseList";
 import { BudgetLoadingState } from "@/components/budget/BudgetLoadingState";
 import { ExpenseErrorState } from "@/components/budget/ExpenseErrorState";
@@ -84,9 +85,13 @@ export const PontualExpensesTab = ({
           handleRetry={handleRetry}
           handleForceReload={forceReload}
           handleClearCacheAndReload={() => window.location.reload()}
-          title={t("expenses.errorTitle")}
-          description={t("expenses.errorLoading")}
-        />
+        >
+          <span>
+            <strong>{t("expenses.errorTitle")}</strong>
+            <br />
+            {t("expenses.errorLoading")}
+          </span>
+        </ExpenseErrorState>
       )}
       
       {!isLoading && !error && (
