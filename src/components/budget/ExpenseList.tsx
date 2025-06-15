@@ -109,12 +109,6 @@ export const ExpenseList = ({
         setEditableDate={dialogState.setEditableDate}
         onConfirmEdit={dialogState.handleConfirmEdit}
       />
-
-      <Button
-        onClick={() => console.log("Receive expense clicked")}
-      >
-        {t("bluetooth.receive")}
-      </Button>
     </div>
   );
 };
