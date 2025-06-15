@@ -227,7 +227,39 @@ const itTranslations: Record<string, string> = {
   "recurring.date": "Data",
   "recurring.unknownDate": "Data sconosciuta",
   "recurring.delete": "Elimina",
-  "recurring.editExpenseLabel": "Modifica spesa ricorrente {title}"
+  "recurring.editExpenseLabel": "Modifica spesa ricorrente {title}",
+  // ----------- BLUETOOTH SHARING DIALOGS -----------
+  "bluetooth.shareExpenseTitle": "Condividi la spesa",
+  "bluetooth.shareExpenseDesc": "Condividi questa spesa con un altro dispositivo via Bluetooth",
+  "bluetooth.detailsTitle": "Dettagli della spesa",
+  "bluetooth.detailsFieldTitle": "Titolo",
+  "bluetooth.detailsFieldAmount": "Importo",
+  "bluetooth.detailsFieldDate": "Data",
+  "bluetooth.unknownDate": "Non specificato",
+  "bluetooth.connectedTo": "Connesso a",
+  "bluetooth.unnamedDevice": "Dispositivo senza nome",
+  "bluetooth.connected": "Connesso",
+  "bluetooth.sending": "Invio in corso...",
+  "bluetooth.sendData": "Invia dati",
+  "bluetooth.disconnect": "Disconnetti",
+  "bluetooth.receiveExpense": "Ricevi una spesa",
+  "bluetooth.receiveExpenseTitle": "Ricevi una spesa",
+  "bluetooth.receiveExpenseDesc": "Collegati a un dispositivo per ricevere una spesa via Bluetooth",
+  "bluetooth.selectBudget": "Seleziona un budget",
+  "bluetooth.selectBudgetPlaceholder": "Seleziona un budget",
+  "bluetooth.importExpense": "Importa spesa",
+  "bluetooth.receiving": "Ricezione in corso...",
+  "bluetooth.receiveData": "Ricevi dati",
+  // BluetoothDeviceList specific
+  "bluetooth.bluetooth": "Bluetooth",
+  "bluetooth.mobileRequiredTitle": "App mobile richiesta",
+  "bluetooth.mobileRequiredDesc": "La condivisione Bluetooth è disponibile solo nell'app mobile. Installa l'app sul tuo dispositivo per usare questa funzionalità.",
+  "bluetooth.bluetoothNotAvailableTitle": "Bluetooth non disponibile",
+  "bluetooth.bluetoothNotAvailableDesc": "Attiva il Bluetooth e controlla i permessi dell'applicazione.",
+  "bluetooth.retry": "Riprova",
+  "bluetooth.availableDevices": "Dispositivi disponibili",
+  "bluetooth.noDevicesFound": "Nessun dispositivo trovato",
+  "bluetooth.search": "Cerca"
 };
 
 export default itTranslations;

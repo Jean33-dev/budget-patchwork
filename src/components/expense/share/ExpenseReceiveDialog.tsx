@@ -81,14 +81,14 @@ export const ExpenseReceiveDialog = ({ onReceiveComplete }: ExpenseReceiveDialog
       <DialogTrigger asChild>
         <Button variant="outline" className="flex items-center gap-1.5">
           <BluetoothSearching size={16} />
-          <span>{t("expenses.receive")}</span>
+          <span>{t("bluetooth.receiveExpense")}</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{t("expenses.receiveExpenseTitle")}</DialogTitle>
+          <DialogTitle>{t("bluetooth.receiveExpenseTitle")}</DialogTitle>
           <DialogDescription>
-            {t("expenses.receiveExpenseDesc")}
+            {t("bluetooth.receiveExpenseDesc")}
           </DialogDescription>
         </DialogHeader>
 
@@ -96,31 +96,31 @@ export const ExpenseReceiveDialog = ({ onReceiveComplete }: ExpenseReceiveDialog
           {receivedData ? (
             <div className="space-y-4">
               <div className="rounded-md bg-muted/50 p-4">
-                <h4 className="text-sm font-medium mb-2">{t("expenses.receiveDataTitle")}</h4>
+                <h4 className="text-sm font-medium mb-2">{t("bluetooth.detailsTitle")}</h4>
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">{t("expenses.receiveFieldTitle")}</span>
+                    <span className="text-muted-foreground">{t("bluetooth.detailsFieldTitle")}</span>
                     <span className="font-medium">{receivedData.title}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">{t("expenses.receiveFieldAmount")}</span>
+                    <span className="text-muted-foreground">{t("bluetooth.detailsFieldAmount")}</span>
                     <span className="font-medium">{receivedData.amount.toFixed(2)} €</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">{t("expenses.receiveFieldDate")}</span>
+                    <span className="text-muted-foreground">{t("bluetooth.detailsFieldDate")}</span>
                     <span className="font-medium">{receivedData.date}</span>
                   </div>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">{t("expenses.selectBudget")}</label>
+                <label className="text-sm font-medium">{t("bluetooth.selectBudget")}</label>
                 <Select
                   value={selectedBudgetId}
                   onValueChange={setSelectedBudgetId}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder={t("expenses.selectBudgetPlaceholder")} />
+                    <SelectValue placeholder={t("bluetooth.selectBudgetPlaceholder")} />
                   </SelectTrigger>
                   <SelectContent>
                     {budgets.map((budget) => (
@@ -138,19 +138,19 @@ export const ExpenseReceiveDialog = ({ onReceiveComplete }: ExpenseReceiveDialog
                 disabled={!selectedBudgetId}
               >
                 <Download className="mr-2 h-4 w-4" />
-                {t("expenses.importExpense")}
+                {t("bluetooth.importExpense")}
               </Button>
             </div>
           ) : selectedDevice && isConnected ? (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h4 className="text-sm font-medium">{t("expenses.connectedTo")}</h4>
+                  <h4 className="text-sm font-medium">{t("bluetooth.connectedTo")}</h4>
                   <p className="text-sm text-muted-foreground">
-                    {selectedDevice.name || t("expenses.unnamedDevice")}
+                    {selectedDevice.name || t("bluetooth.unnamedDevice")}
                   </p>
                 </div>
-                <Badge variant="outline" className="bg-green-50">{t("expenses.connected")}</Badge>
+                <Badge variant="outline" className="bg-green-50">{t("bluetooth.connected")}</Badge>
               </div>
               
               <Button
@@ -161,12 +161,12 @@ export const ExpenseReceiveDialog = ({ onReceiveComplete }: ExpenseReceiveDialog
                 {isReceivingData ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    {t("expenses.receiving")}
+                    {t("bluetooth.receiving")}
                   </>
                 ) : (
                   <>
                     <Download className="mr-2 h-4 w-4" />
-                    {t("expenses.receiveData")}
+                    {t("bluetooth.receiveData")}
                   </>
                 )}
               </Button>
@@ -175,7 +175,7 @@ export const ExpenseReceiveDialog = ({ onReceiveComplete }: ExpenseReceiveDialog
                 onClick={disconnectFromDevice}
                 className="w-full"
               >
-                {t("expenses.disconnect")}
+                {t("bluetooth.disconnect")}
               </Button>
             </div>
           ) : (
