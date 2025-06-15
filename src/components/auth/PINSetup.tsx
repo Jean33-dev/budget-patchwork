@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { Button } from "@/components/ui/button";
 import { usePinProtection } from "@/hooks/usePinProtection";
@@ -14,6 +14,7 @@ export const PINSetup: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) => 
   const [showPin, setShowPin] = useState(false);
   const [success, setSuccess] = useState(false);
   const { setPin: savePin } = usePinProtection();
+  const otpContainerRef = useRef<HTMLDivElement>(null);
 
   const handleNext = () => {
     if (pin.length !== 4) {
@@ -38,8 +39,16 @@ export const PINSetup: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) => 
     }, 850);
   };
 
-  // Helper pour l'entrée courante/slots
   const currentValue = step === 1 ? pin : confirmPin;
+
+  // Focus sur le premier slot à l'arrivée à chaque étape (UX)
+  useEffect(() => {
+    // focus sur input OTP enfant
+    if (otpContainerRef.current) {
+      const firstInput = otpContainerRef.current.querySelector("input");
+      if (firstInput) (firstInput as HTMLInputElement).focus();
+    }
+  }, [step]);
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-background px-4 animate-fade-in">
@@ -62,7 +71,6 @@ export const PINSetup: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) => 
               ? "Choisissez un code PIN à 4 chiffres."
               : "Veuillez saisir à nouveau votre code PIN pour confirmer."}
           </p>
-          {/* OTP Input */}
           <form
             onSubmit={e => {
               e.preventDefault();
@@ -71,30 +79,58 @@ export const PINSetup: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) => 
             className="space-y-4"
             autoComplete="off"
           >
-            <div className="flex items-center justify-center gap-2 mb-1">
-              <InputOTP
-                maxLength={4}
-                type="text" // toujours text pour éviter l'erreur selectionRange
-                value={currentValue}
-                onChange={step === 1 ? setPin : setConfirmPin}
-                containerClassName="justify-center"
-                inputMode="numeric"
-                pattern="\d*"
-                autoFocus
-              >
-                <InputOTPGroup>
+            <div className="flex items-center justify-center gap-2 mb-1" ref={otpContainerRef}>
+              {/* Slot OTP input invisible (mais utilisable au clavier) */}
+              <div className="relative">
+                <InputOTP
+                  maxLength={4}
+                  type="text"
+                  value={currentValue}
+                  onChange={step === 1 ? setPin : setConfirmPin}
+                  containerClassName="justify-center"
+                  inputMode="numeric"
+                  pattern="\d*"
+                  autoFocus
+                  className="otp-mask-input"
+                  // on désactive le caret natif
+                >
+                  <InputOTPGroup>
+                    {[0, 1, 2, 3].map((idx) => (
+                      <InputOTPSlot key={idx} index={idx} />
+                    ))}
+                  </InputOTPGroup>
+                </InputOTP>
+                {/* Overlay pour le masquage/révélation du contenu */}
+                <div className="absolute inset-0 flex pointer-events-none">
                   {[0, 1, 2, 3].map((idx) => (
-                    <InputOTPSlot key={idx} index={idx}>
-                      {/* Affiche le chiffre ou un • selon showPin */}
+                    <div
+                      key={idx}
+                      className="flex-1 flex items-center justify-center text-lg font-bold select-none"
+                      style={{ minWidth: 40, minHeight: 40 }}
+                    >
                       {currentValue[idx]
                         ? showPin
                           ? currentValue[idx]
                           : "•"
                         : ""}
-                    </InputOTPSlot>
+                    </div>
                   ))}
-                </InputOTPGroup>
-              </InputOTP>
+                </div>
+                {/* Style pour rendre texte transparent mais caret visible */}
+                <style>
+                  {`
+                    .otp-mask-input input {
+                      color: transparent !important;
+                      caret-color: #6366f1 !important; /* Ex: couleur primaire */
+                      font-size: 1.25rem !important;
+                      font-weight: bold;
+                    }
+                    .otp-mask-input input::selection {
+                      background: none;
+                    }
+                  `}
+                </style>
+              </div>
               <button
                 type="button"
                 aria-label={showPin ? "Masquer le code" : "Afficher le code"}
