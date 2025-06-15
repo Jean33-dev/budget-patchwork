@@ -1,4 +1,3 @@
-
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NavigateFunction } from "react-router-dom";
@@ -40,7 +39,6 @@ export const ExpensesHeader = ({
           {showReceiveButton && (
             <ExpenseReceiveDialog
               onReceiveComplete={() => window.location.reload()}
-              triggerLabel={t("expenses.receive")}
             />
           )}
         </div>
