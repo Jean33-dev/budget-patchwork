@@ -1,4 +1,3 @@
-
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NavigateFunction } from "react-router-dom";
@@ -39,8 +38,6 @@ export const ExpensesHeader = ({
         <div>
           {showReceiveButton && (
             <ExpenseReceiveDialog
-              // Remplacement du texte du bouton par la bonne clé
-              triggerLabel={t("bluetooth.receive")}
               onReceiveComplete={() => window.location.reload()}
             />
           )}
@@ -49,4 +46,3 @@ export const ExpensesHeader = ({
     </div>
   );
 };
-
