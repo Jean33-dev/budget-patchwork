@@ -1,4 +1,3 @@
-
 import { BudgetManager } from './managers/budget-manager';
 import { ExpenseManager } from './managers/expense-manager';
 import { IncomeManager } from './managers/income-manager';
@@ -11,6 +10,7 @@ import { IIncomeManager } from './interfaces/IIncomeManager';
 import { ICategoryManager } from './interfaces/ICategoryManager';
 import { IDashboardManager } from './interfaces/IDashboardManager';
 import { IQueryManager } from './interfaces/IQueryManager';
+import { PinManager } from './managers/pin-manager';
 
 /**
  * Factory that creates and coordinates all specialized database managers
@@ -22,6 +22,7 @@ export class DatabaseManagerFactory {
   private categoryManager: ICategoryManager;
   private dashboardManager: IDashboardManager;
   private queryManager: IQueryManager;
+  private pinManager: PinManager;
   
   constructor() {
     this.queryManager = new QueryManager();
@@ -30,6 +31,7 @@ export class DatabaseManagerFactory {
     this.incomeManager = new IncomeManager();
     this.categoryManager = new CategoryManager();
     this.dashboardManager = new DashboardManager();
+    this.pinManager = new PinManager();
   }
   
   /**
@@ -51,6 +53,7 @@ export class DatabaseManagerFactory {
     this.incomeManager.setDb(dbInstance);
     this.categoryManager.setDb(dbInstance);
     this.dashboardManager.setDb(dbInstance);
+    this.pinManager.setDb(dbInstance);
     
     // Set all managers as initialized
     this.budgetManager.setInitialized(true);
@@ -58,6 +61,7 @@ export class DatabaseManagerFactory {
     this.incomeManager.setInitialized(true);
     this.categoryManager.setInitialized(true);
     this.dashboardManager.setInitialized(true);
+    this.pinManager.setInitialized(true);
     
     // Ensure all managers have a query manager reference
     this.budgetManager.setQueryManager(this.queryManager);
@@ -65,6 +69,7 @@ export class DatabaseManagerFactory {
     this.incomeManager.setQueryManager(this.queryManager);
     this.categoryManager.setQueryManager(this.queryManager);
     this.dashboardManager.setQueryManager(this.queryManager);
+    this.pinManager.setQueryManager(this.queryManager);
   }
   
   getBudgetManager(): IBudgetManager {
@@ -89,5 +94,9 @@ export class DatabaseManagerFactory {
   
   getQueryManager(): IQueryManager {
     return this.queryManager;
+  }
+  
+  getPinManager(): PinManager {
+    return this.pinManager;
   }
 }

@@ -1,62 +1,61 @@
 
-import { useCallback, useState } from "react";
+import { useCallback, useState, useEffect } from "react";
+import { DatabaseManager } from "@/services/database/database-manager";
 
-const PIN_KEY = "app_user_pin";
-const PIN_LOCKED_KEY = "app_user_locked";
+const dbm = new DatabaseManager();
 
-export function hasPin(): boolean {
-  return !!localStorage.getItem(PIN_KEY);
-}
-
-export function verifyPin(input: string): boolean {
-  return input === localStorage.getItem(PIN_KEY);
-}
-
-export function setPin(pin: string) {
-  localStorage.setItem(PIN_KEY, pin);
-  localStorage.removeItem(PIN_LOCKED_KEY);
-}
-
-export function clearPin() {
-  localStorage.removeItem(PIN_KEY);
-  localStorage.removeItem(PIN_LOCKED_KEY);
-}
-
-export function lockApp() {
-  localStorage.setItem(PIN_LOCKED_KEY, "1");
-}
-
-export function unlockApp() {
-  localStorage.removeItem(PIN_LOCKED_KEY);
-}
-
-export function isLocked(): boolean {
-  return !!localStorage.getItem(PIN_LOCKED_KEY);
-}
-
-/**
- * Hook centralisé pour gérer le déverrouillage PIN
- */
 export function usePinProtection() {
-  const [locked, setLocked] = useState(() => hasPin() && isLocked());
+  const [locked, setLocked] = useState<boolean | null>(null);
+  const [hasPin, setHasPin] = useState<boolean>(false);
 
-  const unlock = useCallback(() => {
-    unlockApp();
-    setLocked(false);
+  // Charge l'état du PIN et du verrouillage depuis la BDD asynchrone
+  const refreshState = useCallback(async () => {
+    await dbm.init();
+    const [pinSet, lockedStatus] = await Promise.all([
+      dbm.hasPin(),
+      dbm.isLocked()
+    ]);
+    setHasPin(pinSet);
+    setLocked(pinSet && lockedStatus);
   }, []);
 
-  const lock = useCallback(() => {
-    lockApp();
-    setLocked(true);
+  useEffect(() => {
+    refreshState();
+  }, [refreshState]);
+
+  // Toutes les actions sont asynchrones !
+  const unlock = useCallback(async () => {
+    await dbm.unlockApp();
+    await refreshState();
+  }, [refreshState]);
+
+  const lock = useCallback(async () => {
+    await dbm.lockApp();
+    await refreshState();
+  }, [refreshState]);
+
+  const setPin = useCallback(async (pin: string) => {
+    await dbm.setPin(pin);
+    await refreshState();
+  }, [refreshState]);
+
+  const clearPin = useCallback(async () => {
+    await dbm.clearPin();
+    await refreshState();
+  }, [refreshState]);
+
+  const verifyPin = useCallback(async (input: string) => {
+    return dbm.verifyPin(input);
   }, []);
 
   return {
     locked,
-    hasPin: hasPin(),
+    hasPin,
     unlock,
     lock,
     setPin,
     clearPin,
     verifyPin,
+    refreshState,
   };
 }

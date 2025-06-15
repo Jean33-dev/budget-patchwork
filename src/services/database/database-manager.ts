@@ -1,4 +1,3 @@
-
 import { Income } from './models/income';
 import { Expense } from './models/expense';
 import { Budget } from './models/budget';
@@ -14,6 +13,7 @@ import { ExpenseOperationsManager } from './managers/expense-operations-manager'
 import { IncomeOperationsManager } from './managers/income-operations-manager';
 import { CategoryOperationsManager } from './managers/category-operations-manager';
 import { DashboardOperationsManager } from './managers/dashboard-operations-manager';
+import { PinManager } from './managers/pin-manager';
 
 export class DatabaseManager extends DatabaseManagerImpl implements IDatabaseManager {
   private managerFactory: DatabaseManagerFactory;
@@ -24,6 +24,7 @@ export class DatabaseManager extends DatabaseManagerImpl implements IDatabaseMan
   private incomeManager: IncomeOperationsManager;
   private categoryManager: CategoryOperationsManager;
   private dashboardManager: DashboardOperationsManager;
+  private pinManager: PinManager;
 
   constructor() {
     super();
@@ -35,6 +36,7 @@ export class DatabaseManager extends DatabaseManagerImpl implements IDatabaseMan
     this.incomeManager = new IncomeOperationsManager(this.ensureInitialized.bind(this), this.managerFactory);
     this.categoryManager = new CategoryOperationsManager(this.ensureInitialized.bind(this), this.managerFactory);
     this.dashboardManager = new DashboardOperationsManager(this.ensureInitialized.bind(this), this.managerFactory);
+    this.pinManager = this.managerFactory.getPinManager();
   }
 
   async init(): Promise<boolean> {
@@ -169,5 +171,28 @@ export class DatabaseManager extends DatabaseManagerImpl implements IDatabaseMan
 
   async resetCategoryExpenses(categoryId: string): Promise<void> {
     return this.categoryManager.resetCategoryExpenses(categoryId);
+  }
+
+  // PIN management
+  async setPin(pin: string) {
+    await this.pinManager.setPin(pin);
+  }
+  async clearPin() {
+    await this.pinManager.clearPin();
+  }
+  async lockApp() {
+    await this.pinManager.lockApp();
+  }
+  async unlockApp() {
+    await this.pinManager.unlockApp();
+  }
+  async isLocked(): Promise<boolean> {
+    return this.pinManager.isLocked();
+  }
+  async hasPin(): Promise<boolean> {
+    return this.pinManager.hasPin();
+  }
+  async verifyPin(input: string): Promise<boolean> {
+    return this.pinManager.verifyPin(input);
   }
 }
