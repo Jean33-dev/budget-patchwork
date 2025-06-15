@@ -6,6 +6,7 @@ import { Expense, Budget } from "@/hooks/useExpenseManagement";
 import { ExpenseDialogs, useExpenseDialogState } from "./ExpenseDialogs";
 import { useTheme } from "@/context/ThemeContext";
 import { ExpenseEmptyState } from "./ExpenseEmptyState";
+import { Button } from "@/components/Button";
 
 interface ExpenseListProps {
   expenses: Expense[];
@@ -38,6 +39,8 @@ export const ExpenseList = ({
   showHeader = true,
   currency,
 }: ExpenseListProps) => {
+  const { t } = useTheme();
+
   useEffect(() => {
     console.log("ExpenseList - received expenses:", expenses.length);
     if (expenses.length > 0) {
@@ -57,7 +60,7 @@ export const ExpenseList = ({
   const usedCurrency = currency || globalCurrency;
 
   return (
-    <div className="space-y-6">
+    <div>
       {showHeader && (
         <EnvelopeListHeader
           type="expense"
@@ -106,6 +109,12 @@ export const ExpenseList = ({
         setEditableDate={dialogState.setEditableDate}
         onConfirmEdit={dialogState.handleConfirmEdit}
       />
+
+      <Button
+        onClick={() => console.log("Receive expense clicked")}
+      >
+        {t("bluetooth.receiveExpense")}
+      </Button>
     </div>
   );
 };
