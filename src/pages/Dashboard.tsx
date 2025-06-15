@@ -26,15 +26,15 @@ const Dashboard = () => {
   const [showTransitionDialog, setShowTransitionDialog] = useState(false);
   const [nextDate, setNextDate] = useState<Date | null>(null);
   const { dashboardTitle } = useDashboardTitle();
-  const { currency: globalCurrency } = useTheme();
+  const { currency: globalCurrency, t, language } = useTheme();
 
   // Utilisation du hook useBudgets pour obtenir toutes les données
-  const { 
-    budgets, 
-    totalRevenues, 
-    totalExpenses, 
+  const {
+    budgets,
+    totalRevenues,
+    totalExpenses,
     totalBudgets,
-    remainingAmount 
+    remainingAmount
   } = useBudgets();
 
   const handleMonthChange = (newDate: Date) => {
@@ -71,47 +71,53 @@ const Dashboard = () => {
         currentDate={currentDate}
         onMonthChange={handleMonthChange}
         onBackClick={() => navigate("/")}
+        // Si DashboardHeader a des textes, les remplacer par t("...")
       />
-      
+
+      <h1 className="text-3xl font-bold">{t("dashboard.title")}</h1>
+
       <DashboardOverview
         totalIncome={totalRevenues}
         totalExpenses={totalExpenses}
         envelopes={envelopes}
         currency={globalCurrency}
       />
-      
+
       <BudgetStats
         remainingBudget={remainingAmount}
         remainingBudgetAfterExpenses={totalBudgets - totalExpenses}
         currency={globalCurrency}
+        statsTitle={t("dashboard.statsTitle")}
+        remainingLabel={t("dashboard.stats.remaining")}
+        remainingAfterLabel={t("dashboard.stats.remainingAfter")}
       />
 
       <AlertDialog open={showTransitionDialog} onOpenChange={setShowTransitionDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Transition vers un nouveau mois</AlertDialogTitle>
+            <AlertDialogTitle>{t("dashboard.monthTransition")}</AlertDialogTitle>
             <AlertDialogDescription className="space-y-4">
               <div>
-                Voulez-vous configurer la transition des budgets vers le nouveau mois ? 
-                Cela vous permettra de définir comment chaque budget doit être géré pour le mois suivant.
+                {t("dashboard.monthTransition") + " ?"}
+                {/* On ne peut pas interpoler dashboardTitle sans le remplacer dans les traductions, ci-dessous, version simple */}
               </div>
-              
+
               <Alert variant="destructive" className="mt-4">
                 <AlertTriangle className="h-4 w-4" />
-                <AlertTitle>Attention : Sauvegardez vos données</AlertTitle>
+                <AlertTitle>{t("dashboard.transitionAlert")}</AlertTitle>
                 <AlertDescription>
                   <p className="text-sm">
-                    En passant au nouveau mois, vos dépenses et revenus du dashboard "{dashboardTitle || "Sans titre"}" seront réinitialisés.
-                    Ces données seront définitivement perdues.
+                    {/* Phrase avec dashboardTitle */}
+                    {t("dashboard.transitionWarning").replace("{dashboardTitle}", dashboardTitle || t("dashboard.title"))}
                   </p>
                 </AlertDescription>
               </Alert>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={handleTransitionCancel}>Annuler</AlertDialogCancel>
+            <AlertDialogCancel onClick={handleTransitionCancel}>{t("dashboard.cancel")}</AlertDialogCancel>
             <AlertDialogAction onClick={handleTransitionConfirm}>
-              Configurer la transition
+              {t("dashboard.confirmTransition")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -44,6 +44,16 @@ const translations: Record<string, Record<string, string>> = {
     "settings.logout": "Se déconnecter / Réinitialiser le code PIN",
     "settings.logoutSuccess": "Déconnexion réussie.",
     "settings.back": "Retour",
+    // -------- DASHBOARD --------
+    "dashboard.title": "Tableau de bord",
+    "dashboard.statsTitle": "Statistiques",
+    "dashboard.monthTransition": "Transition vers un nouveau mois",
+    "dashboard.confirmTransition": "Configurer la transition",
+    "dashboard.transitionAlert": "Attention : Sauvegardez vos données",
+    "dashboard.transitionWarning": "En passant au nouveau mois, vos dépenses et revenus du dashboard \"{dashboardTitle}\" seront réinitialisés. Ces données seront définitivement perdues.",
+    "dashboard.cancel": "Annuler",
+    "dashboard.stats.remaining": "Budget restant",
+    "dashboard.stats.remainingAfter": "Budget restant après dépenses",
   },
   en: {
     "settings.title": "Settings",
@@ -75,6 +85,16 @@ const translations: Record<string, Record<string, string>> = {
     "settings.logout": "Logout / Reset PIN code",
     "settings.logoutSuccess": "Logout successful.",
     "settings.back": "Back",
+    // -------- DASHBOARD --------
+    "dashboard.title": "Dashboard",
+    "dashboard.statsTitle": "Statistics",
+    "dashboard.monthTransition": "Month transition",
+    "dashboard.confirmTransition": "Configure transition",
+    "dashboard.transitionAlert": "Warning: Save your data",
+    "dashboard.transitionWarning": "When switching to the new month, your expenses and income for the dashboard \"{dashboardTitle}\" will be reset. This data will be permanently lost.",
+    "dashboard.cancel": "Cancel",
+    "dashboard.stats.remaining": "Remaining budget",
+    "dashboard.stats.remainingAfter": "Remaining after expenses",
   },
   es: {
     "settings.title": "Configuración",
@@ -106,6 +126,16 @@ const translations: Record<string, Record<string, string>> = {
     "settings.logout": "Cerrar sesión / Restablecer PIN",
     "settings.logoutSuccess": "Cierre de sesión exitoso.",
     "settings.back": "Atrás",
+    // -------- DASHBOARD --------
+    "dashboard.title": "Tablero",
+    "dashboard.statsTitle": "Estadísticas",
+    "dashboard.monthTransition": "Transición de mes",
+    "dashboard.confirmTransition": "Configurar transición",
+    "dashboard.transitionAlert": "Advertencia: ¡Guarde sus datos!",
+    "dashboard.transitionWarning": "Al pasar al nuevo mes, sus gastos e ingresos del tablero \"{dashboardTitle}\" serán reiniciados. Estos datos se perderán permanentemente.",
+    "dashboard.cancel": "Cancelar",
+    "dashboard.stats.remaining": "Presupuesto restante",
+    "dashboard.stats.remainingAfter": "Presupuesto después de gastos",
   },
   de: {
     "settings.title": "Einstellungen",
@@ -137,6 +167,16 @@ const translations: Record<string, Record<string, string>> = {
     "settings.logout": "Abmelden / PIN zurücksetzen",
     "settings.logoutSuccess": "Abmeldung erfolgreich.",
     "settings.back": "Zurück",
+    // -------- DASHBOARD --------
+    "dashboard.title": "Übersicht",
+    "dashboard.statsTitle": "Statistiken",
+    "dashboard.monthTransition": "Monatswechsel",
+    "dashboard.confirmTransition": "Übergang konfigurieren",
+    "dashboard.transitionAlert": "Achtung: Speichern Sie Ihre Daten",
+    "dashboard.transitionWarning": "Beim Wechsel zum neuen Monat werden Ihre Ausgaben und Einnahmen für das Dashboard \"{dashboardTitle}\" zurückgesetzt. Diese Daten gehen dauerhaft verloren.",
+    "dashboard.cancel": "Abbrechen",
+    "dashboard.stats.remaining": "Verbleibendes Budget",
+    "dashboard.stats.remainingAfter": "Verbleibend nach Ausgaben",
   },
   it: {
     "settings.title": "Impostazioni",
@@ -168,6 +208,16 @@ const translations: Record<string, Record<string, string>> = {
     "settings.logout": "Disconnetti / Reimposta PIN",
     "settings.logoutSuccess": "Disconnessione riuscita.",
     "settings.back": "Indietro",
+    // -------- DASHBOARD --------
+    "dashboard.title": "Cruscotto",
+    "dashboard.statsTitle": "Statistiche",
+    "dashboard.monthTransition": "Transizione di mese",
+    "dashboard.confirmTransition": "Configura transizione",
+    "dashboard.transitionAlert": "Attenzione: Salva i tuoi dati",
+    "dashboard.transitionWarning": "Quando si passa al nuovo mese, le spese e i ricavi del cruscotto \"{dashboardTitle}\" verranno azzerati. Questi dati andranno persi definitivamente.",
+    "dashboard.cancel": "Annulla",
+    "dashboard.stats.remaining": "Budget residuo",
+    "dashboard.stats.remainingAfter": "Residuo dopo spese",
   }
 };
 
