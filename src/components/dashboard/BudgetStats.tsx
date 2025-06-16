@@ -1,30 +1,26 @@
-
 import { Card } from "@/components/ui/card";
 import { ArrowDown, ArrowUp } from "lucide-react";
 import { formatAmount } from "@/utils/format-amount";
 import { useTheme } from "@/context/ThemeContext";
-
 interface BudgetStatsProps {
   remainingBudget: number;
   remainingBudgetAfterExpenses: number;
   currency?: "EUR" | "USD" | "GBP";
 }
-
 export const BudgetStats = ({
   remainingBudget,
   remainingBudgetAfterExpenses,
   currency
 }: BudgetStatsProps) => {
-  const { currency: globalCurrency, t } = useTheme();
+  const {
+    currency: globalCurrency,
+    t
+  } = useTheme();
   const usedCurrency = currency || globalCurrency;
-
-  return (
-    <div className="space-y-4">
+  return <div className="space-y-4">
       <div className="mb-2">
-        <h2 className="text-xl font-bold">{t("footer.synthese")}</h2>
-        <div className="text-muted-foreground text-sm">
-          {t("stats.overviewSubtitle")}
-        </div>
+        
+        
       </div>
       <Card className="overflow-hidden">
         <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-border/30">
@@ -48,6 +44,5 @@ export const BudgetStats = ({
           </div>
         </div>
       </Card>
-    </div>
-  );
+    </div>;
 };
