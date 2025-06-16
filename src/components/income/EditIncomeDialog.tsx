@@ -83,6 +83,7 @@ export const EditIncomeDialog = ({
             setLinkedBudgetId={() => {}}
             date={selectedIncome.date}
             setDate={updateIncomeDate}
+            submitButtonText={t("income.save")}
             onSubmit={(e) => {
               e.preventDefault();
               if (selectedIncome) {
