@@ -40,6 +40,13 @@ const expensesTranslations = {
   "expense.actions.edit": "Editar",
   "expense.actions.delete": "Eliminar",
   "expense.actions.share": "Compartir",
+  "recurring.amount": "Cantidad",
+  "recurring.linkedBudget": "Presupuesto vinculado",
+  "recurring.noBudget": "Sin presupuesto",
+  "recurring.date": "Fecha",
+  "recurring.delete": "Eliminar",
+  "recurring.unknownDate": "Fecha desconocida",
+  "recurring.editExpenseLabel": "Editar el gasto {title}",
 };
 
 export default expensesTranslations;

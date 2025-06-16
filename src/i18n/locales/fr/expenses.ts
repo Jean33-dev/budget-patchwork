@@ -40,5 +40,12 @@ const expenses = {
   "expense.actions.edit": "Modifier",
   "expense.actions.delete": "Supprimer",
   "expense.actions.share": "Partager",
+  "recurring.amount": "Montant",
+  "recurring.linkedBudget": "Budget lié",
+  "recurring.noBudget": "Aucun budget",
+  "recurring.date": "Date",
+  "recurring.delete": "Supprimer",
+  "recurring.unknownDate": "Date inconnue",
+  "recurring.editExpenseLabel": "Modifier la dépense {title}",
 };
 export default expenses;
