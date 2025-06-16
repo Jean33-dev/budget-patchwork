@@ -1,3 +1,4 @@
+
 const deTranslations: Record<string, string> = {
   "settings.title": "Einstellungen",
   "settings.display": "Anzeige",
@@ -106,7 +107,7 @@ const deTranslations: Record<string, string> = {
   "charts.title.budgets": "Budgetverteilung",
   "charts.title.categories": "Verteilung nach Kategorien",
   "charts.unallocatedBudget": "Nicht zugewiesenes Budget",
-  "stats.remainingIncome": "Reddito rimanente da allocare",
+  "stats.remainingIncome": "Verbleibendes Einkommen zur Zuteilung",
   "stats.remainingBudget": "Verbleibendes Budget",
   "stats.overviewSubtitle": "Überblick über Ihre Finanzen",
   // -------- MONATSWECHSEL --------
@@ -215,17 +216,7 @@ const deTranslations: Record<string, string> = {
   "budgetCard.progression": "Fortschritt",
   
   // Ajout de la traduction pour le graphique
-  "charts.total": "Gesamt",
-  
-  // Ajout des traductions manquantes pour la page synthèse
-  "overview.totalIncome": "Gesamteinnahmen", 
-  "overview.totalExpenses": "Gesamtausgaben",
-  "overview.balance": "Saldo",
-  "stats.remainingBudget": "Verbleibendes Budget",
-  "stats.overviewSubtitle": "Überblick über Ihre Finanzen",
-  "charts.title.budgets": "Budgetverteilung",
-  "charts.title.categories": "Verteilung nach Kategorien", 
-  "charts.unallocatedBudget": "Nicht zugewiesenes Budget",
+  "charts.total": "Gesamt"
 };
 
 export default deTranslations;
