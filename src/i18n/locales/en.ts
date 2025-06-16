@@ -1,3 +1,4 @@
+
 const enTranslations: Record<string, string> = {
   "settings.title": "Settings",
   "settings.display": "Display",
@@ -287,12 +288,12 @@ const enTranslations: Record<string, string> = {
   "categories.back": "Back",
   "categories.tabs.categories": "Categories",
   "categories.tabs.assignments": "Assignments",
-  "categories.card.budgetsAssigned": "Associated budgets",
+  "categories.card.budgetsAssigned": "Assigned budgets",
   "categories.card.noBudgetsAssigned": "No budget assigned",
   "categories.card.totalBudget": "Total budget",
   "categories.card.expenses": "Expenses",
   "categories.card.remaining": "Remaining",
-  "categories.card.progression": "Progression",
+  "categories.card.progression": "Progress",
   "categories.assignment.assignBudget": "Assign a budget",
   "categories.assignment.selectBudget": "Select a budget",
   "categories.assignment.allBudgetsAssigned": "All available budgets have already been assigned.",
@@ -300,7 +301,7 @@ const enTranslations: Record<string, string> = {
   "categories.assignment.noBudgetAssigned": "No budget assigned",
   "categories.edit.title": "Edit category",
   "categories.edit.nameLabel": "Category name",
-  "categories.edit.namePlaceholder": "Enter the category name",
+  "categories.edit.namePlaceholder": "Enter category name",
   "categories.edit.cancel": "Cancel",
   "categories.edit.save": "Save",
   "categories.toast.errorTitle": "Error",
@@ -310,6 +311,12 @@ const enTranslations: Record<string, string> = {
   "categories.toast.categoryModified": "Category modified",
   "categories.toast.categoryModifiedDesc": "The category has been successfully modified.",
   "categories.toast.categoryNameEmpty": "Category name cannot be empty.",
+  "categories.default.necessary.name": "Necessary",
+  "categories.default.necessary.description": "Essential expenses like housing, food, etc.",
+  "categories.default.pleasure.name": "Pleasure",
+  "categories.default.pleasure.description": "Leisure, outings, shopping, etc.",
+  "categories.default.savings.name": "Savings",
+  "categories.default.savings.description": "Savings and investments",
 };
 
 export default enTranslations;

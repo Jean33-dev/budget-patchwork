@@ -307,6 +307,12 @@ const itTranslations: Record<string, string> = {
   "categories.toast.categoryModified": "Categoria modificata",
   "categories.toast.categoryModifiedDesc": "La categoria è stata modificata con successo.",
   "categories.toast.categoryNameEmpty": "Il nome della categoria non può essere vuoto.",
+  "categories.default.necessary.name": "Necessario",
+  "categories.default.necessary.description": "Spese essenziali come alloggio, alimentazione, ecc.",
+  "categories.default.pleasure.name": "Piacere",
+  "categories.default.pleasure.description": "Tempo libero, uscite, shopping, ecc.",
+  "categories.default.savings.name": "Risparmi",
+  "categories.default.savings.description": "Risparmi e investimenti",
 };
 
 export default itTranslations;

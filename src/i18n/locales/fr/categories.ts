@@ -28,6 +28,12 @@ const categories = {
   "categories.toast.categoryModified": "Catégorie modifiée",
   "categories.toast.categoryModifiedDesc": "La catégorie a été modifiée avec succès.",
   "categories.toast.categoryNameEmpty": "Le nom de la catégorie ne peut pas être vide.",
+  "categories.default.necessary.name": "Nécessaire",
+  "categories.default.necessary.description": "Dépenses essentielles comme le logement, l'alimentation, etc.",
+  "categories.default.pleasure.name": "Plaisir",
+  "categories.default.pleasure.description": "Loisirs, sorties, shopping, etc.",
+  "categories.default.savings.name": "Épargne",
+  "categories.default.savings.description": "Économies et investissements",
 };
 
 export default categories;

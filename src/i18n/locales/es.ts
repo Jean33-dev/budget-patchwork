@@ -1,3 +1,4 @@
+
 const esTranslations: Record<string, string> = {
   "settings.title": "Configuración",
   "settings.display": "Visualización",
@@ -226,11 +227,11 @@ const esTranslations: Record<string, string> = {
   "income.edit.title": "Editar Ingreso",
   // ----------- Additions for categories page -----------
   "categories.title": "Gestión de Categorías",
-  "categories.subtitle": "Organice y rastree sus gastos por categoría",
+  "categories.subtitle": "Organiza y rastrea tus gastos por categoría",
   "categories.back": "Atrás",
   "categories.tabs.categories": "Categorías",
   "categories.tabs.assignments": "Asignaciones",
-  "categories.card.budgetsAssigned": "Presupuestos asociados",
+  "categories.card.budgetsAssigned": "Presupuestos asignados",
   "categories.card.noBudgetsAssigned": "Ningún presupuesto asignado",
   "categories.card.totalBudget": "Presupuesto total",
   "categories.card.expenses": "Gastos",
@@ -243,16 +244,22 @@ const esTranslations: Record<string, string> = {
   "categories.assignment.noBudgetAssigned": "Ningún presupuesto asignado",
   "categories.edit.title": "Editar categoría",
   "categories.edit.nameLabel": "Nombre de la categoría",
-  "categories.edit.namePlaceholder": "Ingrese el nombre de la categoría",
+  "categories.edit.namePlaceholder": "Ingresa el nombre de la categoría",
   "categories.edit.cancel": "Cancelar",
   "categories.edit.save": "Guardar",
   "categories.toast.errorTitle": "Error",
-  "categories.toast.errorLoadBudgets": "No se pueden cargar los presupuestos",
-  "categories.toast.errorAssignBudget": "No se puede asignar el presupuesto",
-  "categories.toast.errorRemoveBudget": "No se puede quitar el presupuesto",
+  "categories.toast.errorLoadBudgets": "No se pudieron cargar los presupuestos",
+  "categories.toast.errorAssignBudget": "No se pudo asignar el presupuesto",
+  "categories.toast.errorRemoveBudget": "No se pudo quitar el presupuesto",
   "categories.toast.categoryModified": "Categoría modificada",
-  "categories.toast.categoryModifiedDesc": "La categoría ha sido modificada con éxito.",
+  "categories.toast.categoryModifiedDesc": "La categoría ha sido modificada exitosamente.",
   "categories.toast.categoryNameEmpty": "El nombre de la categoría no puede estar vacío.",
+  "categories.default.necessary.name": "Necesario",
+  "categories.default.necessary.description": "Gastos esenciales como vivienda, alimentación, etc.",
+  "categories.default.pleasure.name": "Placer",
+  "categories.default.pleasure.description": "Ocio, salidas, compras, etc.",
+  "categories.default.savings.name": "Ahorros",
+  "categories.default.savings.description": "Ahorros e inversiones",
 };
 
 export default esTranslations;

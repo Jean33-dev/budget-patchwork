@@ -6,38 +6,38 @@ import { db } from "@/services/database";
 import { useDashboardContext } from "./useDashboardContext";
 import { useTheme } from "@/context/ThemeContext";
 
-const defaultCategories: Category[] = [
-  { 
-    id: "necessaire", 
-    name: "Nécessaire", 
-    budgets: [],
-    total: 0,
-    spent: 0,
-    description: "Dépenses essentielles comme le logement, l'alimentation, etc."
-  },
-  { 
-    id: "plaisir", 
-    name: "Plaisir", 
-    budgets: [],
-    total: 0,
-    spent: 0,
-    description: "Loisirs, sorties, shopping, etc."
-  },
-  { 
-    id: "epargne", 
-    name: "Épargne", 
-    budgets: [],
-    total: 0,
-    spent: 0,
-    description: "Économies et investissements"
-  }
-];
-
 export const useCategoryManagement = () => {
   const { toast } = useToast();
   const [categories, setCategories] = useState<Category[]>([]);
   const { currentDashboardId } = useDashboardContext();
   const { t } = useTheme();
+
+  const getDefaultCategories = (): Category[] => [
+    { 
+      id: "necessaire", 
+      name: t("categories.default.necessary.name"), 
+      budgets: [],
+      total: 0,
+      spent: 0,
+      description: t("categories.default.necessary.description")
+    },
+    { 
+      id: "plaisir", 
+      name: t("categories.default.pleasure.name"), 
+      budgets: [],
+      total: 0,
+      spent: 0,
+      description: t("categories.default.pleasure.description")
+    },
+    { 
+      id: "epargne", 
+      name: t("categories.default.savings.name"), 
+      budgets: [],
+      total: 0,
+      spent: 0,
+      description: t("categories.default.savings.description")
+    }
+  ];
 
   const loadCategories = async () => {
     try {
@@ -47,6 +47,7 @@ export const useCategoryManagement = () => {
       
       if (!dbCategories || dbCategories.length === 0) {
         console.log("Aucune catégorie trouvée, création des catégories par défaut...");
+        const defaultCategories = getDefaultCategories();
         for (const category of defaultCategories) {
           await db.addCategory({
             ...category,
@@ -54,6 +55,20 @@ export const useCategoryManagement = () => {
           });
         }
         dbCategories = defaultCategories;
+      } else {
+        // Mettre à jour les noms et descriptions des catégories existantes avec les traductions
+        const defaultCategories = getDefaultCategories();
+        dbCategories = dbCategories.map(category => {
+          const defaultCategory = defaultCategories.find(def => def.id === category.id);
+          return {
+            id: category.id,
+            name: defaultCategory ? defaultCategory.name : category.name,
+            budgets: Array.isArray(category.budgets) ? category.budgets : [],
+            total: Number(category.total) || 0,
+            spent: Number(category.spent) || 0,
+            description: defaultCategory ? defaultCategory.description : (category.description || '')
+          };
+        });
       }
 
       // S'assurer que toutes les catégories ont les bonnes propriétés
@@ -82,7 +97,7 @@ export const useCategoryManagement = () => {
   useEffect(() => {
     console.log("useEffect: Chargement des catégories pour le dashboard:", currentDashboardId);
     loadCategories();
-  }, [currentDashboardId]);
+  }, [currentDashboardId, t]); // Ajouter t comme dépendance pour recharger lors du changement de langue
 
   const refreshCategories = async () => {
     console.log("Début du rafraîchissement des catégories pour le dashboard:", currentDashboardId);
