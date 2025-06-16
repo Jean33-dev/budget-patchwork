@@ -1,3 +1,4 @@
+
 const envelope = {
   "envelopes.income": "Revenus",
   "envelopes.expense": "Dépenses", 
@@ -39,6 +40,16 @@ const envelope = {
   
   // Ajout de la traduction pour le graphique
   "charts.total": "Total",
+  
+  // Ajout des traductions manquantes pour la page synthèse
+  "overview.totalIncome": "Revenus totaux",
+  "overview.totalExpenses": "Dépenses totales",
+  "overview.balance": "Solde",
+  "stats.remainingBudget": "Budget restant",
+  "stats.overviewSubtitle": "Aperçu de vos finances",
+  "charts.title.budgets": "Répartition des budgets",
+  "charts.title.categories": "Répartition par catégories",
+  "charts.unallocatedBudget": "Budget non alloué",
 };
 
 export default envelope;
