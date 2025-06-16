@@ -1,3 +1,4 @@
+
 const itTranslations: Record<string, string> = {
   "settings.title": "Impostazioni",
   "settings.display": "Aspetto",
@@ -277,7 +278,6 @@ const itTranslations: Record<string, string> = {
   "income.card.date": "Data:",
   "income.card.delete": "Elimina",
   "income.edit.title": "Modifica Entrata",
-  "expenses.receive": "Ricevi",
 };
 
 export default itTranslations;
