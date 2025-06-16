@@ -1,4 +1,5 @@
 
+
 const income = {
   "income.header.title": "Gestion des revenus",
   "income.header.subtitle": "Gérez efficacement vos sources de revenus",
@@ -16,5 +17,7 @@ const income = {
   "income.card.date": "Date :",
   "income.card.delete": "Supprimer",
   "income.edit.title": "Modifier le revenu",
+  "income.save": "Enregistrer",
 };
 export default income;
+

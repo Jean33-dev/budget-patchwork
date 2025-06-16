@@ -1,4 +1,5 @@
 
+
 const expenses = {
   "expenses.title": "Dépenses",
   "expenses.subtitle": "Gérez efficacement vos dépenses",
@@ -30,6 +31,7 @@ const expenses = {
   "expenses.emptyTitle": "Aucune dépense",
   "expenses.emptyDescription": "Ajoutez des dépenses pour les visualiser ici",
   "expenses.emptyRecurringDescription": "Aucune dépense récurrente trouvée",
+  "expenses.save": "Enregistrer",
   "editExpenseDialog.title": "Modifier la dépense",
   "editExpenseDialog.labelTitle": "Titre",
   "editExpenseDialog.labelAmount": "Montant",
@@ -49,3 +51,4 @@ const expenses = {
   "recurring.editExpenseLabel": "Modifier la dépense {title}",
 };
 export default expenses;
+

@@ -1,4 +1,5 @@
 
+
 const incomeTranslations = {
   "income.header.title": "Gestión de Ingresos",
   "income.header.subtitle": "Gestione eficientemente sus fuentes de ingresos",
@@ -16,6 +17,8 @@ const incomeTranslations = {
   "income.card.date": "Fecha:",
   "income.card.delete": "Eliminar",
   "income.edit.title": "Editar Ingreso",
+  "income.save": "Guardar",
 };
 
 export default incomeTranslations;
+

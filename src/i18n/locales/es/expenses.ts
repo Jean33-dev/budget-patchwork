@@ -1,4 +1,5 @@
 
+
 const expensesTranslations = {
   "expenses.title": "Gastos",
   "expenses.subtitle": "Gestiona eficientemente tus gastos",
@@ -30,6 +31,7 @@ const expensesTranslations = {
   "expenses.emptyTitle": "Sin gastos",
   "expenses.emptyDescription": "Agrega gastos para visualizarlos aquí",
   "expenses.emptyRecurringDescription": "No se encontró ningún gasto recurrente",
+  "expenses.save": "Guardar",
   "editExpenseDialog.title": "Editar gasto",
   "editExpenseDialog.labelTitle": "Título",
   "editExpenseDialog.labelAmount": "Cantidad",
@@ -50,3 +52,4 @@ const expensesTranslations = {
 };
 
 export default expensesTranslations;
+
