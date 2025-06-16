@@ -1,4 +1,3 @@
-
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MoneyInput } from "../shared/MoneyInput";
@@ -19,6 +18,7 @@ interface EnvelopeFormProps {
   setDate: (date: string) => void;
   onSubmit: (e: React.FormEvent) => void;
   availableBudgets?: Array<{ id: string; title: string }>;
+  submitButtonText?: string;
 }
 
 export const EnvelopeForm = ({
@@ -32,7 +32,8 @@ export const EnvelopeForm = ({
   date,
   setDate,
   onSubmit,
-  availableBudgets = []
+  availableBudgets = [],
+  submitButtonText
 }: EnvelopeFormProps) => {
   const { t } = useTheme();
   const getTypeLabel = (type: "income" | "expense" | "budget") => {
@@ -50,7 +51,7 @@ export const EnvelopeForm = ({
 
   // We'll format placeholders and button text with string concatenation
   const titlePlaceholder = t("envelopeForm.titlePlaceholder")?.replace("{type}", getTypeLabel(type));
-  const addButtonLabel = t("envelopeForm.addButton")?.replace("{type}", getTypeLabel(type));
+  const addButtonLabel = submitButtonText || t("envelopeForm.addButton")?.replace("{type}", getTypeLabel(type));
 
   return (
     <form onSubmit={onSubmit} className="space-y-4">
