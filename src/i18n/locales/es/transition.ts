@@ -1,0 +1,32 @@
+
+const transitionTranslations = {
+  "transition.header": "Transición al próximo mes",
+  "transition.description": "Estás configurando la transición presupuestaria. Esta operación le permite definir cómo se gestionarán los saldos restantes de sus presupuestos.",
+  "transition.optionsTitle": "Opciones disponibles:",
+  "transition.option.reset": "Reiniciar",
+  "transition.option.resetDesc": "El saldo restante se pierde",
+  "transition.option.carry": "Reportar todo",
+  "transition.option.carryDesc": "Todo el saldo se reporta",
+  "transition.option.transfer": "Transferir",
+  "transition.option.transferDesc": "Mueve el saldo a otro presupuesto",
+  "transition.option.multiTransfer": "Multi-transfers",
+  "transition.option.multiTransferDesc": "Distribuya el saldo entre varios presupuestos",
+  "transition.consequencesTitle": "¿Qué ocurrirá?",
+  "transition.consequence.one": "Todos los gastos puntuales serán eliminados",
+  "transition.consequence.two": "Se conservarán los gastos e ingresos recurrentes",
+  "transition.consequence.three": "Los saldos presupuestarios se ajustarán según tus elecciones",
+  "transition.consequence.four": "Los contadores de gastos se reiniciarán",
+  "transition.warning": "Esta operación es irreversible. Exporta tus datos en PDF antes de confirmar la transición.",
+  "transition.confirm": "Confirmar transición",
+  "transition.processing": "Procesando...",
+  "transition.dialogTitle": "Atención: Datos en peligro",
+  "transition.dialogAlertTitle": "Guarde sus datos antes de continuar",
+  "transition.dialogDesc": "La transición al nuevo mes reiniciará todos los gastos e ingresos del tablero actual ({dashboardTitle}). Una vez realizada esta operación, los datos del mes actual se perderán definitivamente.",
+  "transition.dialogRecommendation": "Le recomendamos exportar sus datos en PDF antes de continuar.",
+  "transition.pdfExportSuccess": "PDF exportado con éxito. Ahora puede proceder con la transición.",
+  "transition.remaining": "Saldo restante",
+  "transition.selectOptionPlaceholder": "Seleccionar opción",
+  "transition.selectEnvelopePlaceholder": "Seleccionar sobre",
+};
+
+export default transitionTranslations;
