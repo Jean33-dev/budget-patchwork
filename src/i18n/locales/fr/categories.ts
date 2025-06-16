@@ -1,0 +1,33 @@
+
+const categories = {
+  "categories.title": "Gestion des Catégories",
+  "categories.subtitle": "Organisez et suivez vos dépenses par catégorie",
+  "categories.back": "Retour",
+  "categories.tabs.categories": "Catégories",
+  "categories.tabs.assignments": "Assignations",
+  "categories.card.budgetsAssigned": "Budgets associés",
+  "categories.card.noBudgetsAssigned": "Aucun budget assigné",
+  "categories.card.totalBudget": "Budget total",
+  "categories.card.expenses": "Dépenses",
+  "categories.card.remaining": "Reste",
+  "categories.card.progression": "Progression",
+  "categories.assignment.assignBudget": "Assigner un budget",
+  "categories.assignment.selectBudget": "Sélectionner un budget",
+  "categories.assignment.allBudgetsAssigned": "Tous les budgets disponibles ont déjà été assignés.",
+  "categories.assignment.currentlyAssigned": "Budgets actuellement assignés :",
+  "categories.assignment.noBudgetAssigned": "Aucun budget assigné",
+  "categories.edit.title": "Modifier la catégorie",
+  "categories.edit.nameLabel": "Nom de la catégorie",
+  "categories.edit.namePlaceholder": "Entrez le nom de la catégorie",
+  "categories.edit.cancel": "Annuler",
+  "categories.edit.save": "Modifier",
+  "categories.toast.errorTitle": "Erreur",
+  "categories.toast.errorLoadBudgets": "Impossible de charger les budgets",
+  "categories.toast.errorAssignBudget": "Impossible d'assigner le budget",
+  "categories.toast.errorRemoveBudget": "Impossible de retirer le budget",
+  "categories.toast.categoryModified": "Catégorie modifiée",
+  "categories.toast.categoryModifiedDesc": "La catégorie a été modifiée avec succès.",
+  "categories.toast.categoryNameEmpty": "Le nom de la catégorie ne peut pas être vide.",
+};
+
+export default categories;

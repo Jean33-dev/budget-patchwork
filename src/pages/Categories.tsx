@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -18,7 +19,7 @@ const Categories = () => {
   const [availableBudgets, setAvailableBudgets] = useState<Budget[]>([]);
   const { toast } = useToast();
   const { currentDashboardId } = useDashboardContext();
-  const { currency: globalCurrency } = useTheme();
+  const { currency: globalCurrency, t } = useTheme();
 
   const { 
     categories, 
@@ -49,8 +50,8 @@ const Categories = () => {
       console.error("Erreur lors du chargement des budgets:", error);
       toast({
         variant: "destructive",
-        title: "Erreur",
-        description: "Impossible de charger les budgets"
+        title: t("categories.toast.errorTitle"),
+        description: t("categories.toast.errorLoadBudgets")
       });
     }
   };
@@ -79,8 +80,8 @@ const Categories = () => {
       console.error("Erreur lors de l'assignation du budget:", error);
       toast({
         variant: "destructive",
-        title: "Erreur",
-        description: "Impossible d'assigner le budget"
+        title: t("categories.toast.errorTitle"),
+        description: t("categories.toast.errorAssignBudget")
       });
     }
   };
@@ -93,8 +94,8 @@ const Categories = () => {
       console.error("Erreur lors du retrait du budget:", error);
       toast({
         variant: "destructive",
-        title: "Erreur",
-        description: "Impossible de retirer le budget"
+        title: t("categories.toast.errorTitle"),
+        description: t("categories.toast.errorRemoveBudget")
       });
     }
   };
@@ -113,18 +114,18 @@ const Categories = () => {
 
         <div className="flex-1">
           <h1 className="text-xl font-semibold bg-gradient-to-r from-purple-600 to-purple-400 bg-clip-text text-transparent">
-            Gestion des Catégories
+            {t("categories.title")}
           </h1>
           <p className="text-sm text-muted-foreground">
-            Organisez et suivez vos dépenses par catégorie
+            {t("categories.subtitle")}
           </p>
         </div>
       </div>
 
       <Tabs defaultValue="categories" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="categories">Catégories</TabsTrigger>
-          <TabsTrigger value="assignments">Assignations</TabsTrigger>
+          <TabsTrigger value="categories">{t("categories.tabs.categories")}</TabsTrigger>
+          <TabsTrigger value="assignments">{t("categories.tabs.assignments")}</TabsTrigger>
         </TabsList>
         
         <TabsContent value="categories" className="space-y-4 mt-4">

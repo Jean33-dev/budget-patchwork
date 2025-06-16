@@ -4,6 +4,7 @@ import { Category } from "@/types/categories";
 import { useToast } from "@/hooks/use-toast";
 import { db } from "@/services/database";
 import { useDashboardContext } from "./useDashboardContext";
+import { useTheme } from "@/context/ThemeContext";
 
 const defaultCategories: Category[] = [
   { 
@@ -36,6 +37,7 @@ export const useCategoryManagement = () => {
   const { toast } = useToast();
   const [categories, setCategories] = useState<Category[]>([]);
   const { currentDashboardId } = useDashboardContext();
+  const { t } = useTheme();
 
   const loadCategories = async () => {
     try {
@@ -70,8 +72,8 @@ export const useCategoryManagement = () => {
       console.error("Erreur lors du chargement des catégories:", error);
       toast({
         variant: "destructive",
-        title: "Erreur",
-        description: "Impossible de charger les catégories"
+        title: t("categories.toast.errorTitle"),
+        description: t("categories.toast.errorLoadBudgets")
       });
     }
   };
@@ -92,8 +94,8 @@ export const useCategoryManagement = () => {
     if (!newName.trim()) {
       toast({
         variant: "destructive",
-        title: "Erreur",
-        description: "Le nom de la catégorie ne peut pas être vide."
+        title: t("categories.toast.errorTitle"),
+        description: t("categories.toast.categoryNameEmpty")
       });
       return false;
     }
@@ -118,8 +120,8 @@ export const useCategoryManagement = () => {
       setCategories(updatedCategories);
 
       toast({
-        title: "Catégorie modifiée",
-        description: "La catégorie a été modifiée avec succès."
+        title: t("categories.toast.categoryModified"),
+        description: t("categories.toast.categoryModifiedDesc")
       });
 
       return true;
@@ -127,8 +129,8 @@ export const useCategoryManagement = () => {
       console.error("Erreur lors de la mise à jour du nom:", error);
       toast({
         variant: "destructive",
-        title: "Erreur",
-        description: "Impossible de modifier le nom de la catégorie"
+        title: t("categories.toast.errorTitle"),
+        description: t("categories.toast.errorLoadBudgets")
       });
       return false;
     }

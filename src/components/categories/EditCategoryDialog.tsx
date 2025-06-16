@@ -11,6 +11,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { useTheme } from "@/context/ThemeContext";
 
 interface EditCategoryDialogProps {
   category: Category | null;
@@ -26,6 +27,7 @@ export const EditCategoryDialog = ({
   onSave,
 }: EditCategoryDialogProps) => {
   const [newCategoryName, setNewCategoryName] = useState("");
+  const { t } = useTheme();
 
   useEffect(() => {
     if (category) {
@@ -48,26 +50,26 @@ export const EditCategoryDialog = ({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            Modifier la catégorie
+            {t("categories.edit.title")}
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="categoryName">Nom de la catégorie</Label>
+            <Label htmlFor="categoryName">{t("categories.edit.nameLabel")}</Label>
             <Input
               id="categoryName"
               value={newCategoryName}
               onChange={(e) => setNewCategoryName(e.target.value)}
-              placeholder="Entrez le nom de la catégorie"
+              placeholder={t("categories.edit.namePlaceholder")}
             />
           </div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Annuler
+            {t("categories.edit.cancel")}
           </Button>
           <Button onClick={handleSave}>
-            Modifier
+            {t("categories.edit.save")}
           </Button>
         </DialogFooter>
       </DialogContent>
