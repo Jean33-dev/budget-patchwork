@@ -2,6 +2,7 @@
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, Label } from "recharts";
 import { formatAmount } from "@/utils/format-amount";
 import { useIsMobile } from "@/hooks/use-mobile"; // Ajout du hook
+import { useTheme } from "@/context/ThemeContext";
 
 interface BudgetData {
   name: string;
@@ -43,6 +44,7 @@ const UNALLOCATED_COLOR = "#64748B"; // Gris bleuté
 
 export const BudgetChart = ({ data, totalIncome = 0, addUnallocated = false, currency = "EUR" }: BudgetChartProps) => {
   const isMobile = useIsMobile(); // usage du hook
+  const { t } = useTheme();
 
   let chartData = [...data];
   
@@ -51,7 +53,7 @@ export const BudgetChart = ({ data, totalIncome = 0, addUnallocated = false, cur
     const remainingBudget = totalIncome - totalAllocated;
     if (remainingBudget > 0) {
       chartData.push({
-        name: "Budget non alloué",
+        name: t("charts.unallocatedBudget"),
         value: remainingBudget,
         type: "budget" as const,
       });
@@ -123,7 +125,7 @@ export const BudgetChart = ({ data, totalIncome = 0, addUnallocated = false, cur
               )}
               {chartData.map((entry, index) => {
                 // Couleur spéciale pour le budget non alloué
-                if (entry.name === "Budget non alloué") {
+                if (entry.name === t("charts.unallocatedBudget")) {
                   return <Cell key={`cell-${index}`} fill={UNALLOCATED_COLOR} />;
                 }
                 
@@ -170,7 +172,7 @@ export const BudgetChart = ({ data, totalIncome = 0, addUnallocated = false, cur
         <div className="mt-4 flex flex-wrap justify-center gap-4">
           {chartData.map((entry, index) => {
             // Couleur spéciale pour le budget non alloué
-            const color = entry.name === "Budget non alloué" 
+            const color = entry.name === t("charts.unallocatedBudget")
               ? UNALLOCATED_COLOR 
               : COLORS[entry.type][index % COLORS[entry.type].length];
               
@@ -197,4 +199,3 @@ export const BudgetChart = ({ data, totalIncome = 0, addUnallocated = false, cur
     </div>
   );
 };
-

@@ -1,4 +1,3 @@
-
 import settings from './settings';
 import dashboard from './dashboard';
 import home from './home';
@@ -11,7 +10,7 @@ import envelope from './envelope';
 import transition from './transition';
 import income from './income';
 
-const frTranslations = {
+const frTranslations: Record<string, string> = {
   ...settings,
   ...dashboard,
   ...home,
@@ -23,6 +22,9 @@ const frTranslations = {
   ...envelope,
   ...transition,
   ...income,
+  "charts.title.budgets": "Répartition des budgets",
+  "charts.title.categories": "Répartition par catégories",
+  "charts.unallocatedBudget": "Budget non alloué",
 };
 
 export default frTranslations;

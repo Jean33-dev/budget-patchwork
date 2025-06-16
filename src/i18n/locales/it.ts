@@ -1,4 +1,3 @@
-
 const itTranslations: Record<string, string> = {
   "settings.title": "Impostazioni",
   "settings.display": "Aspetto",
@@ -138,6 +137,7 @@ const itTranslations: Record<string, string> = {
   "overview.balance": "Saldo",
   "charts.title.budgets": "Distribuzione dei budget",
   "charts.title.categories": "Distribuzione per categoria",
+  "charts.unallocatedBudget": "Budget non allocato",
   "stats.remainingIncome": "Reddito rimanente da allocare",
   "stats.remainingBudget": "Budget rimanente",
   "stats.overviewSubtitle": "Panoramica delle tue finanze",
