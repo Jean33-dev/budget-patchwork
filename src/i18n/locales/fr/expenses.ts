@@ -30,5 +30,15 @@ const expenses = {
   "expenses.emptyTitle": "Aucune dépense",
   "expenses.emptyDescription": "Ajoutez des dépenses pour les visualiser ici",
   "expenses.emptyRecurringDescription": "Aucune dépense récurrente trouvée",
+  "editExpenseDialog.title": "Modifier la dépense",
+  "editExpenseDialog.labelTitle": "Titre",
+  "editExpenseDialog.labelAmount": "Montant",
+  "editExpenseDialog.labelDate": "Date",
+  "editExpenseDialog.save": "Enregistrer",
+  "expense.actions.openMenu": "Ouvrir le menu",
+  "expense.actions.actions": "Actions",
+  "expense.actions.edit": "Modifier",
+  "expense.actions.delete": "Supprimer",
+  "expense.actions.share": "Partager",
 };
 export default expenses;
