@@ -213,6 +213,9 @@ const deTranslations: Record<string, string> = {
   "categories.default.savings.name": "Ersparnisse",
   "categories.default.savings.description": "Ersparnisse und Investitionen",
   "budgetCard.progression": "Fortschritt",
+  
+  // Ajout de la traduction pour le graphique
+  "charts.total": "Gesamt",
 };
 
 export default deTranslations;

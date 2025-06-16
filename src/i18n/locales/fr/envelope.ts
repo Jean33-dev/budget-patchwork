@@ -1,4 +1,3 @@
-
 const envelope = {
   "envelopes.income": "Revenus",
   "envelopes.expense": "Dépenses", 
@@ -37,6 +36,9 @@ const envelope = {
 
   // Ajout de la traduction manquante pour l'allocation restante
   "stats.remainingIncome": "Revenus restants à répartir",
+  
+  // Ajout de la traduction pour le graphique
+  "charts.total": "Total",
 };
 
 export default envelope;

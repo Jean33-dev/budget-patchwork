@@ -1,7 +1,7 @@
 
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, Label } from "recharts";
 import { formatAmount } from "@/utils/format-amount";
-import { useIsMobile } from "@/hooks/use-mobile"; // Ajout du hook
+import { useIsMobile } from "@/hooks/use-mobile";
 import { useTheme } from "@/context/ThemeContext";
 
 interface BudgetData {
@@ -43,7 +43,7 @@ const COLORS = {
 const UNALLOCATED_COLOR = "#64748B"; // Gris bleuté
 
 export const BudgetChart = ({ data, totalIncome = 0, addUnallocated = false, currency = "EUR" }: BudgetChartProps) => {
-  const isMobile = useIsMobile(); // usage du hook
+  const isMobile = useIsMobile();
   const { t } = useTheme();
 
   let chartData = [...data];
@@ -88,9 +88,9 @@ export const BudgetChart = ({ data, totalIncome = 0, addUnallocated = false, cur
               outerRadius={outerRadius}
               fill="#8884d8"
               dataKey="value"
-              paddingAngle={2} // Espacement entre les segments pour un look plus moderne
-              cornerRadius={4} // Coins arrondis pour un aspect plus élégant
-              stroke="transparent" // Suppression des bordures pour un aspect plus propre
+              paddingAngle={2}
+              cornerRadius={4}
+              stroke="transparent"
             >
               {chartData.length > 0 && (
                 <Label
@@ -107,7 +107,7 @@ export const BudgetChart = ({ data, totalIncome = 0, addUnallocated = false, cur
                           dominantBaseline="central"
                           className="fill-muted-foreground font-medium text-sm"
                         >
-                          Total
+                          {t("charts.total")}
                         </text>
                         <text
                           x={cx}
