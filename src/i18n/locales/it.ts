@@ -261,17 +261,23 @@ const itTranslations: Record<string, string> = {
   "bluetooth.noDevicesFound": "Nessun dispositivo trovato",
   "bluetooth.search": "Cerca",
   // ----------- Aggiunte per la pagina entrate -----------
-  "income.header.title": "Gestione delle Entrate",
-  "income.header.subtitle": "Gestisci efficacemente le tue fonti di entrata",
-  "income.tabs.oneTime": "Entrate singole",
+  "income.header.title": "Gestione Entrate",
+  "income.header.subtitle": "Gestisci efficacemente le tue fonti di reddito",
+  "income.tabs.oneTime": "Entrate una tantum",
   "income.tabs.recurring": "Entrate ricorrenti",
-  "income.addOneTime": "Aggiungi un'entrata singola",
-  "income.addRecurring": "Aggiungi un'entrata ricorrente",
+  "income.addOneTime": "Aggiungi entrata una tantum",
+  "income.addRecurring": "Aggiungi entrata ricorrente",
   "income.loading": "Caricamento entrate...",
   "income.loadingRecurring": "Caricamento entrate ricorrenti...",
   "income.empty": "Nessuna entrata trovata",
+  "income.emptyRecurring": "Nessuna entrata ricorrente trovata",
   "income.toast.errorTitle": "Errore",
   "income.toast.typeMustBeIncome": "Il tipo deve essere 'income'",
+  "income.card.amount": "Importo:",
+  "income.card.date": "Data:",
+  "income.card.delete": "Elimina",
+  "income.edit.title": "Modifica Entrata",
+  "expenses.receive": "Ricevi",
 };
 
 export default itTranslations;

@@ -1,3 +1,4 @@
+
 const esTranslations: Record<string, string> = {
   "settings.title": "Configuración",
   "settings.display": "Visualización",
@@ -219,10 +220,10 @@ const esTranslations: Record<string, string> = {
   "income.emptyRecurring": "No se encontró ningún ingreso recurrente",
   "income.toast.errorTitle": "Error",
   "income.toast.typeMustBeIncome": "El tipo debe ser 'income'",
-  // Traducciones añadidas para income card
   "income.card.amount": "Cantidad:",
   "income.card.date": "Fecha:",
   "income.card.delete": "Eliminar",
+  "income.edit.title": "Editar Ingreso",
 };
 
 export default esTranslations;

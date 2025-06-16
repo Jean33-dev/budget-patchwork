@@ -2,6 +2,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { EnvelopeForm } from "@/components/budget/EnvelopeForm";
 import { Income } from "@/services/database";
+import { useTheme } from "@/context/ThemeContext";
 
 interface EditIncomeDialogProps {
   open: boolean;
@@ -35,6 +36,8 @@ export const EditIncomeDialog = ({
   setSelectedIncome,
   onEditIncome
 }: EditIncomeDialogProps) => {
+  const { t } = useTheme();
+
   // These functions update individual properties of selectedIncome
   const updateIncomeTitle = (title: string) => {
     if (selectedIncome) {
@@ -67,7 +70,7 @@ export const EditIncomeDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Modifier le revenu</DialogTitle>
+          <DialogTitle>{t("income.edit.title")}</DialogTitle>
         </DialogHeader>
         {selectedIncome && (
           <EnvelopeForm
