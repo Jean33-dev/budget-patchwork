@@ -1,8 +1,9 @@
+
 import { useState } from "react";
 import { useRecurringIncome } from "@/hooks/useRecurringIncome";
 import { AddEnvelopeDialog } from "@/components/budget/AddEnvelopeDialog";
 import { IncomeHeader } from "@/components/income/IncomeHeader";
-import { useIncomeManagement } from "@/hooks/useIncomeManagement";
+import { useIncomeManagement } from "@/hooks/income";
 import { IncomeGrid } from "@/components/income/IncomeGrid";
 import { IncomeEmptyState } from "@/components/income/IncomeEmptyState";
 import { RecurringIncomeGrid } from "@/components/recurring/RecurringIncomeGrid";
@@ -66,6 +67,15 @@ const Income = () => {
     }
   };
 
+  const handleEditNonRecurringIncomeWrapper = (editedIncome: { 
+    title: string; 
+    budget: number; 
+    type: "income"; 
+    date: string 
+  }) => {
+    handleEditNonRecurringIncome(editedIncome, selectedNonRecurringIncome);
+  };
+
   const filteredNonRecurringIncomes = nonRecurringIncomes.filter(income => !income.isRecurring);
 
   return (
@@ -109,7 +119,7 @@ const Income = () => {
             onOpenChange={setEditNonRecurringDialogOpen}
             selectedIncome={selectedNonRecurringIncome}
             setSelectedIncome={setSelectedNonRecurringIncome}
-            onEditIncome={handleEditNonRecurringIncome}
+            onEditIncome={handleEditNonRecurringIncomeWrapper}
           />
         </TabsContent>
 
