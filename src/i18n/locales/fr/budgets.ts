@@ -8,5 +8,10 @@ const budgets = {
   "budgets.resetAll": "Réinitialiser complètement",
   "budgets.remainingError": "Le total des budgets dépasse vos revenus. Essayez de réduire certains budgets.",
   "budgets.emptyState": "Aucun budget trouvé. Créez votre premier budget en cliquant sur \"Ajouter un budget\".",
+  "editBudgetDialog.title": "Modifier le budget",
+  "editBudgetDialog.labelTitle": "Titre",
+  "editBudgetDialog.placeholderTitle": "Entrez le titre du budget",
+  "editBudgetDialog.labelBudget": "Montant du budget",
+  "editBudgetDialog.save": "Enregistrer",
 };
 export default budgets;

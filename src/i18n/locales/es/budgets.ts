@@ -18,6 +18,11 @@ const budgetsTranslations = {
   "budgetCard.badgeIncome": "Ingreso",
   "budgetCard.badgeExpense": "Gasto",
   "budgetCard.badgeDefault": "Sobre",
+  "editBudgetDialog.title": "Editar presupuesto",
+  "editBudgetDialog.labelTitle": "Título",
+  "editBudgetDialog.placeholderTitle": "Ingrese el título del presupuesto",
+  "editBudgetDialog.labelBudget": "Monto del presupuesto",
+  "editBudgetDialog.save": "Guardar",
 };
 
 export default budgetsTranslations;
