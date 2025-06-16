@@ -1,4 +1,3 @@
-
 const deTranslations: Record<string, string> = {
   "settings.title": "Einstellungen",
   "settings.display": "Anzeige",
@@ -213,6 +212,7 @@ const deTranslations: Record<string, string> = {
   "categories.default.pleasure.description": "Freizeit, Ausgehen, Einkaufen, etc.",
   "categories.default.savings.name": "Ersparnisse",
   "categories.default.savings.description": "Ersparnisse und Investitionen",
+  "budgetCard.progression": "Fortschritt",
 };
 
 export default deTranslations;
