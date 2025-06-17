@@ -5,7 +5,7 @@ import { AddEnvelopeDialog } from "@/components/budget/AddEnvelopeDialog";
 import { RecurringExpenseHeader } from "@/components/recurring/RecurringExpenseHeader";
 import { RecurringExpenseGrid } from "@/components/recurring/RecurringExpenseGrid";
 import { RecurringExpenseEmptyState } from "@/components/recurring/RecurringExpenseEmptyState";
-import { Expense } from "@/services/database/models/expense";
+import { Expense } from "@/services/database";
 import { AddButton } from "@/components/budget/AddButton";
 import { useTheme } from "@/context/ThemeContext";
 
@@ -24,7 +24,7 @@ const RecurringExpenses = () => {
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editExpense, setEditExpense] = useState<Expense | null>(null);
 
-  const { currency: globalCurrency } = useTheme();
+  const { currency: globalCurrency, t } = useTheme();
 
   const handleEdit = (expense: Expense) => {
     setEditExpense(expense);
@@ -64,11 +64,11 @@ const RecurringExpenses = () => {
       {/* Garder uniquement ce bouton en haut */}
       <AddButton 
         onClick={openAddDialog} 
-        label="Ajouter une dépense récurrente" 
+        label={t("expenses.addRecurringExpense")} 
       />
 
       {isLoading ? (
-        <div className="text-center py-8">Chargement des dépenses récurrentes...</div>
+        <div className="text-center py-8">{t("expenses.loadingRecurring")}</div>
       ) : recurringExpenses.length === 0 ? (
         <RecurringExpenseEmptyState onAddClick={openAddDialog} />
       ) : (
@@ -103,11 +103,11 @@ const RecurringExpenses = () => {
           linkedBudgetId: editExpense.linkedBudgetId,
           date: editExpense.date,
         } : undefined}
-        dialogTitle={editExpense ? "Modifier la dépense récurrente" : "Ajouter une dépense récurrente"}
+        dialogTitle={editExpense ? t("expenses.editRecurring") : t("expenses.addRecurringExpense")}
+        submitButtonText={editExpense ? t("expenses.save") : undefined}
       />
     </div>
   );
 };
 
 export default RecurringExpenses;
-

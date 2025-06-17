@@ -1,14 +1,14 @@
 
-import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { EnvelopeForm } from "./EnvelopeForm";
+import { useState, useEffect } from "react";
 import { useTheme } from "@/context/ThemeContext";
 
 interface AddEnvelopeDialogProps {
   type: "income" | "expense" | "budget";
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onAdd: (envelope: { 
+  onAdd: (data: { 
     title: string; 
     budget: number; 
     type: "income" | "expense" | "budget";
@@ -17,15 +17,15 @@ interface AddEnvelopeDialogProps {
     isRecurring?: boolean;
   }) => void;
   availableBudgets?: Array<{ id: string; title: string }>;
-  defaultBudgetId?: string;
   isRecurring?: boolean;
-  dialogTitle?: string;
   defaultValues?: {
     title: string;
     budget: number;
     linkedBudgetId?: string;
     date: string;
   };
+  dialogTitle?: string;
+  submitButtonText?: string;
 }
 
 export const AddEnvelopeDialog = ({ 
@@ -34,85 +34,64 @@ export const AddEnvelopeDialog = ({
   onOpenChange, 
   onAdd,
   availableBudgets = [],
-  defaultBudgetId,
   isRecurring = false,
+  defaultValues,
   dialogTitle,
-  defaultValues
+  submitButtonText
 }: AddEnvelopeDialogProps) => {
-  const [title, setTitle] = useState(defaultValues?.title || "");
-  const [budget, setBudget] = useState(defaultValues?.budget || 0);
-  const [linkedBudgetId, setLinkedBudgetId] = useState(defaultValues?.linkedBudgetId || defaultBudgetId || "");
-  const [date, setDate] = useState(defaultValues?.date || new Date().toISOString().split('T')[0]);
+  const [title, setTitle] = useState("");
+  const [budget, setBudget] = useState(0);
+  const [linkedBudgetId, setLinkedBudgetId] = useState("");
+  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const { t } = useTheme();
 
-  // Update form when defaultValues changes
+  // Reset form when dialog opens/closes or when switching between add/edit modes
   useEffect(() => {
-    if (defaultValues) {
-      setTitle(defaultValues.title || "");
-      setBudget(defaultValues.budget || 0);
-      setLinkedBudgetId(defaultValues.linkedBudgetId || defaultBudgetId || "");
-      setDate(defaultValues.date || new Date().toISOString().split('T')[0]);
-    } else {
+    if (open && defaultValues) {
+      // Editing mode
+      setTitle(defaultValues.title);
+      setBudget(defaultValues.budget);
+      setLinkedBudgetId(defaultValues.linkedBudgetId || "");
+      setDate(defaultValues.date);
+    } else if (open && !defaultValues) {
+      // Adding mode
       setTitle("");
       setBudget(0);
-      setLinkedBudgetId(defaultBudgetId || "");
+      setLinkedBudgetId("");
       setDate(new Date().toISOString().split('T')[0]);
     }
-  }, [defaultValues, defaultBudgetId, open]);
+  }, [open, defaultValues]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (type === "expense" && !linkedBudgetId) {
-      alert("Veuillez sélectionner un budget pour cette dépense");
-      return;
-    }
-
-    onAdd({ 
-      title, 
-      budget, 
+    const data = {
+      title,
+      budget,
       type,
       linkedBudgetId: type === "expense" ? linkedBudgetId : undefined,
       date,
       isRecurring
-    });
+    };
     
-    // Reset form fields after submission
-    setTitle("");
-    setBudget(0);
-    setLinkedBudgetId(defaultBudgetId || "");
-    setDate(new Date().toISOString().split('T')[0]);
+    onAdd(data);
     onOpenChange(false);
   };
 
-  const { t } = useTheme();
-
-  const getTypeLabel = (type: "income" | "expense" | "budget") => {
-    switch (type) {
-      case "income":
-        return t("envelopeForm.type.income");
-      case "expense":
-        return t("envelopeForm.type.expense");
-      case "budget":
-        return t("envelopeForm.type.budget");
-      default:
-        return "";
+  const getDefaultDialogTitle = () => {
+    if (isRecurring) {
+      return type === "expense" ? t("expenses.addRecurringExpense") : t("income.addRecurring");
     }
-  };
-
-  const getDialogTitle = () => {
-    if (dialogTitle) return dialogTitle;
-    return t("envelopeForm.dialogTitle")
-      .replace("{type}", getTypeLabel(type))
-      .replace("{isRecurring}", isRecurring ? t("envelopeForm.recurringSuffix") : "");
+    return type === "expense" ? t("expenses.addExpense") : 
+           type === "income" ? t("income.addOneTime") : 
+           t("budgets.addBudget");
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>
-            {getDialogTitle()}
-          </DialogTitle>
+          <DialogTitle>{dialogTitle || getDefaultDialogTitle()}</DialogTitle>
         </DialogHeader>
         <EnvelopeForm
           type={type}
@@ -126,6 +105,7 @@ export const AddEnvelopeDialog = ({
           setDate={setDate}
           onSubmit={handleSubmit}
           availableBudgets={availableBudgets}
+          submitButtonText={submitButtonText}
         />
       </DialogContent>
     </Dialog>

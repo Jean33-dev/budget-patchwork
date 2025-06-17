@@ -1,3 +1,4 @@
+
 import { AddButton } from "@/components/budget/AddButton";
 import { AddEnvelopeDialog } from "@/components/budget/AddEnvelopeDialog";
 import { RecurringExpenseGrid } from "@/components/recurring/RecurringExpenseGrid";
@@ -128,6 +129,7 @@ export const RecurringExpensesTab = ({
         dialogTitle={
           editRecurringExpense ? t("expenses.editRecurring") : t("expenses.addRecurringExpense")
         }
+        submitButtonText={editRecurringExpense ? t("expenses.save") : undefined}
       />
     </>
   );
