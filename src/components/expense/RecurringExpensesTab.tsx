@@ -129,7 +129,7 @@ export const RecurringExpensesTab = ({
         dialogTitle={
           editRecurringExpense ? t("expenses.editRecurring") : t("expenses.addRecurringExpense")
         }
-        submitButtonText={editRecurringExpense ? t("expenses.save") : undefined}
+        submitButtonText={editRecurringExpense ? t("editRecurringExpenseDialog.save") : undefined}
       />
     </>
   );
