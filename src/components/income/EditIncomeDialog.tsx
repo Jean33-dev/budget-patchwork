@@ -66,6 +66,14 @@ export const EditIncomeDialog = ({
     }
   };
 
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (selectedIncome) {
+      onEditIncome(selectedIncome);
+      onOpenChange(false); // Fermer la boîte de dialogue après la modification
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
@@ -84,12 +92,7 @@ export const EditIncomeDialog = ({
             date={selectedIncome.date}
             setDate={updateIncomeDate}
             submitButtonText={t("income.save")}
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (selectedIncome) {
-                onEditIncome(selectedIncome);
-              }
-            }}
+            onSubmit={handleSubmit}
           />
         )}
       </DialogContent>
