@@ -10,6 +10,8 @@ const dialogsTranslations = {
   "editExpenseDialog.labelAmount": "Amount",
   "editExpenseDialog.labelDate": "Date",
   "editExpenseDialog.save": "Save",
+  "editRecurringExpenseDialog.title": "Edit recurring expense",
+  "editRecurringExpenseDialog.save": "Save",
 };
 
 export default dialogsTranslations;
