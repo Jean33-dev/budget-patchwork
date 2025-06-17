@@ -104,7 +104,7 @@ const RecurringExpenses = () => {
           date: editExpense.date,
         } : undefined}
         dialogTitle={editExpense ? t("expenses.editRecurring") : t("expenses.addRecurringExpense")}
-        submitButtonText={editExpense ? t("editRecurringExpenseDialog.save") : undefined}
+        submitButtonText={editExpense ? t("expenses.save") : undefined}
       />
     </div>
   );
