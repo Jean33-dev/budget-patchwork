@@ -1,4 +1,3 @@
-
 const enTranslations: Record<string, string> = {
   "settings.title": "Settings",
   "settings.display": "Display",
@@ -126,6 +125,7 @@ const enTranslations: Record<string, string> = {
   "charts.title.budgets": "Budget allocation",
   "charts.title.categories": "Category allocation",
   "charts.unallocatedBudget": "Unallocated budget",
+  "charts.total": "Total",
   "stats.remainingIncome": "Income remaining to allocate",
   "stats.remainingBudget": "Remaining budget",
   "stats.overviewSubtitle": "Overview of your finances",
