@@ -11,6 +11,7 @@ const expensesTranslations = {
   "expenses.errorLoading": "An error occurred while loading expenses",
   "expenses.typeMustBeExpense": "Type must be 'expense'",
   "expenses.editRecurring": "Edit recurring expense",
+  "expenses.save": "Save",
   "expenses.receive": "Receive",
   "expenses.receiveExpenseTitle": "Receive an expense",
   "expenses.receiveExpenseDesc": "Connect to a device to receive an expense via Bluetooth",
