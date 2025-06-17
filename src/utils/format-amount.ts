@@ -4,18 +4,25 @@
  */
 export const formatAmount = (amount: number | string, currency: "EUR" | "USD" | "GBP" = "EUR"): string => {
   const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
-  let locale = "fr-FR";
-
-  if (currency ===  "USD") locale = "en-US";
-  if (currency === "GBP") locale = "en-GB";
   
-  return new Intl.NumberFormat(locale, {
+  // Définir les options de formatage spécifiques pour chaque devise
+  let formatOptions: Intl.NumberFormatOptions = {
     style: "currency",
     currency,
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-    // Cette option permet d'utiliser des espaces comme séparateur de milliers pour EUR
-    // Nous utiliserons les formats standards pour USD et GBP
     useGrouping: true
-  }).format(numAmount);
+  };
+
+  // Paramètres spécifiques par devise pour éviter les problèmes d'affichage dans les PDFs
+  switch (currency) {
+    case "EUR":
+      return new Intl.NumberFormat("fr-FR", formatOptions).format(numAmount);
+    case "USD":
+      return new Intl.NumberFormat("en-US", formatOptions).format(numAmount);
+    case "GBP":
+      return new Intl.NumberFormat("en-GB", formatOptions).format(numAmount);
+    default:
+      return new Intl.NumberFormat("fr-FR", formatOptions).format(numAmount);
+  }
 };
