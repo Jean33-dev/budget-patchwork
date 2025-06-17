@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { EnvelopeListHeader } from "./EnvelopeListHeader";
 import { ExpenseTable } from "./ExpenseTable";
@@ -94,7 +95,6 @@ export const ExpenseList = ({
           id: budget.id,
           title: budget.title,
         }))}
-        defaultBudgetId={defaultBudgetId}
       />
 
       <ExpenseDialogs
