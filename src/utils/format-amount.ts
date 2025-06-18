@@ -1,6 +1,7 @@
 
 /**
  * Formate un montant dans la devise indiquée, avec le symbole et le bon format
+ * Utilise uniquement du formatage manuel pour éviter les problèmes Unicode avec @react-pdf/renderer
  */
 export const formatAmount = (amount: number | string, currency: "EUR" | "USD" | "GBP" = "EUR"): string => {
   const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
@@ -10,24 +11,34 @@ export const formatAmount = (amount: number | string, currency: "EUR" | "USD" | 
     return "0,00 €";
   }
   
-  // Formatage manuel pour éviter les problèmes avec le PDF
+  // Obtenir la valeur absolue pour le formatage
   const absAmount = Math.abs(numAmount);
-  const fixedAmount = absAmount.toFixed(2);
   
-  // Séparer la partie entière et décimale
-  const [integerPart, decimalPart] = fixedAmount.split('.');
+  // Convertir en centimes pour éviter les problèmes de précision
+  const cents = Math.round(absAmount * 100);
+  const euros = Math.floor(cents / 100);
+  const centimes = cents % 100;
   
-  // Ajouter les espaces comme séparateurs de milliers de façon plus simple
+  // Convertir la partie entière en string
+  const integerStr = euros.toString();
+  
+  // Ajouter les séparateurs de milliers manuellement
   let formattedInteger = '';
-  for (let i = 0; i < integerPart.length; i++) {
-    if (i > 0 && (integerPart.length - i) % 3 === 0) {
+  const len = integerStr.length;
+  
+  for (let i = 0; i < len; i++) {
+    // Ajouter un espace tous les 3 chiffres en partant de la droite
+    if (i > 0 && (len - i) % 3 === 0) {
       formattedInteger += ' ';
     }
-    formattedInteger += integerPart[i];
+    formattedInteger += integerStr[i];
   }
   
-  // Construire le montant final avec virgule comme séparateur décimal
-  const finalAmount = `${formattedInteger},${decimalPart}`;
+  // Formater les centimes avec un zéro devant si nécessaire
+  const formattedCentimes = centimes.toString().padStart(2, '0');
+  
+  // Construire le montant final
+  const finalAmount = `${formattedInteger},${formattedCentimes}`;
   
   // Ajouter le signe négatif si nécessaire
   const sign = numAmount < 0 ? '-' : '';
@@ -47,6 +58,6 @@ export const formatAmount = (amount: number | string, currency: "EUR" | "USD" | 
       break;
   }
   
-  // Format français : montant + espace + symbole
+  // Format final : signe + montant + espace + symbole
   return `${sign}${finalAmount} ${symbol}`;
 };
