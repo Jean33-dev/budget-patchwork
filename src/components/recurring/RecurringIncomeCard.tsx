@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar, Trash2 } from "lucide-react";
 import { Income } from "@/services/database/models/income";
 import { formatAmount } from "@/utils/format-amount";
+import { formatDateFrench } from "@/utils/date-format";
 import { useTheme } from "@/context/ThemeContext";
 
 interface RecurringIncomeCardProps {
@@ -34,7 +35,7 @@ export const RecurringIncomeCard = ({ income, onDelete, onClick, currency }: Rec
             <span className="text-gray-600 text-sm">Date:</span>
             <span className="font-medium flex items-center">
               <Calendar className="h-4 w-4 mr-1 shrink-0" />
-              {income.date}
+              {formatDateFrench(income.date)}
             </span>
           </div>
         </div>
