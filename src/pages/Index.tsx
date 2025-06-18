@@ -4,7 +4,6 @@ import { DashboardOverview } from "@/components/dashboard/DashboardOverview";
 import { EnvelopeList } from "@/components/budget/EnvelopeList";
 import { AddEnvelopeDialog } from "@/components/budget/AddEnvelopeDialog";
 import { useToast } from "@/components/ui/use-toast";
-import { useTheme } from "@/context/ThemeContext";
 
 interface Envelope {
   id: string;
@@ -18,11 +17,10 @@ interface Envelope {
 
 const Index = () => {
   const { toast } = useToast();
-  const { t, currencySymbol } = useTheme();
   const [envelopes, setEnvelopes] = useState<Envelope[]>([
     { 
       id: "1", 
-      title: t("index.salary"),
+      title: "Salaire", 
       budget: 5000, 
       spent: 5000, 
       type: "income",
@@ -30,7 +28,7 @@ const Index = () => {
     },
     { 
       id: "2", 
-      title: t("index.freelance"),
+      title: "Freelance", 
       budget: 1000, 
       spent: 800, 
       type: "income",
@@ -38,29 +36,29 @@ const Index = () => {
     },
     { 
       id: "3", 
-      title: t("index.rent"),
+      title: "Loyer", 
       budget: 1500, 
       spent: 1500, 
       type: "expense", 
-      category: t("index.housing"),
+      category: "Logement",
       date: new Date().toISOString().split('T')[0]
     },
     { 
       id: "4", 
-      title: t("index.groceries"),
+      title: "Courses", 
       budget: 600, 
       spent: 450, 
       type: "expense", 
-      category: t("index.food"),
+      category: "Alimentation",
       date: new Date().toISOString().split('T')[0]
     },
     { 
       id: "5", 
-      title: t("index.leisure"),
+      title: "Loisirs", 
       budget: 200, 
       spent: 180, 
       type: "expense", 
-      category: t("index.leisure"),
+      category: "Loisirs",
       date: new Date().toISOString().split('T')[0]
     },
   ]);
@@ -94,17 +92,15 @@ const Index = () => {
     
     setEnvelopes([...envelopes, envelope]);
     toast({
-      title: t("index.success"),
-      description: newEnvelope.type === "income"
-        ? t("index.toast.income")
-        : t("index.toast.expense"),
+      title: "Succès",
+      description: `Nouvelle enveloppe ${newEnvelope.type === "income" ? "de revenu" : "de dépense"} créée`,
     });
   };
 
   const handleEnvelopeClick = (envelope: Envelope) => {
     toast({
       title: envelope.title,
-      description: `${t("index.budget")}: ${envelope.budget.toFixed(2)} ${currencySymbol}, ${t("index.spent")}: ${envelope.spent.toFixed(2)} ${currencySymbol}${envelope.category ? `, ${t("index.category")}: ${envelope.category}` : ""}`,
+      description: `Budget : ${envelope.budget.toFixed(2)} €, Dépensé : ${envelope.spent.toFixed(2)} €${envelope.category ? `, Catégorie : ${envelope.category}` : ""}`,
     });
   };
 
@@ -115,7 +111,7 @@ const Index = () => {
 
   return (
     <div className="container mx-auto py-8 space-y-8">
-      <h1 className="text-4xl font-bold">{t("index.title")}</h1>
+      <h1 className="text-4xl font-bold">Tableau de Bord Budget</h1>
       
       <DashboardOverview
         totalIncome={totalIncome}

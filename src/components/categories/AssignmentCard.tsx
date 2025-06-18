@@ -23,7 +23,7 @@ export const AssignmentCard = ({
   onRemove,
   getAvailableBudgets 
 }: AssignmentCardProps) => {
-  const { currency, t } = useTheme();
+  const { currency } = useTheme();
   
   // S'assurer que category.budgets est un tableau
   const budgets = Array.isArray(category.budgets) ? category.budgets : [];
@@ -46,12 +46,12 @@ export const AssignmentCard = ({
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
-          <Label>{t("categories.assignment.assignBudget")}</Label>
+          <Label>Assigner un budget</Label>
           <div className="relative">
             {unassignedBudgets.length > 0 ? (
               <Select onValueChange={handleAssign}>
                 <SelectTrigger>
-                  <SelectValue placeholder={t("categories.assignment.selectBudget")} />
+                  <SelectValue placeholder="Sélectionner un budget" />
                 </SelectTrigger>
                 <SelectContent>
                   {unassignedBudgets.map((budget) => (
@@ -67,14 +67,14 @@ export const AssignmentCard = ({
               </Select>
             ) : (
               <div className="text-sm text-gray-500">
-                {t("categories.assignment.allBudgetsAssigned")}
+                Tous les budgets disponibles ont déjà été assignés.
               </div>
             )}
           </div>
         </div>
 
         <div className="text-sm">
-          <p className="font-medium mb-2">{t("categories.assignment.currentlyAssigned")}</p>
+          <p className="font-medium mb-2">Budgets actuellement assignés :</p>
           {assignedBudgets.length > 0 ? (
             <ul className="list-disc pl-4 space-y-1">
               {assignedBudgets.map((budget) => (
@@ -94,7 +94,7 @@ export const AssignmentCard = ({
               ))}
             </ul>
           ) : (
-            <p className="text-gray-500">{t("categories.assignment.noBudgetAssigned")}</p>
+            <p className="text-gray-500">Aucun budget assigné</p>
           )}
         </div>
       </CardContent>

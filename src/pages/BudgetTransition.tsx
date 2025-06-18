@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { TransitionPageHeader } from "@/components/budget-transition/TransitionPageHeader";
@@ -30,8 +31,9 @@ export const BudgetTransition = () => {
   const { totalRevenues, totalExpenses, budgets } = useBudgets();
   const { currentDashboardId } = useDashboardContext();
   const { dashboardTitle } = useDashboardTitle();
-  const { currency: globalCurrency, t } = useTheme();
+  const { currency: globalCurrency } = useTheme();
   
+  // Vérifier que nous avons bien un dashboard actif
   if (!currentDashboardId) {
     console.error("BudgetTransition: Aucun dashboard sélectionné");
   } else {
@@ -53,24 +55,30 @@ export const BudgetTransition = () => {
 
   const handleBack = () => navigate("/dashboard/budget");
   
+  // Afficher la boîte de dialogue de confirmation au lieu de procéder immédiatement
   const handleConfirmClick = () => {
     setShowConfirmDialog(true);
   };
   
+  // Procéder à la transition une fois confirmé
   const handleFinalConfirm = () => {
     handleTransitionConfirm();
     setShowConfirmDialog(false);
   };
   
+  // Génération du nom du fichier PDF avec l'ID du dashboard
   const pdfFileName = `rapport-budget-${currentDashboardId}-avant-transition-${new Date().toISOString().slice(0, 10)}.pdf`;
   
+  // Marqueur lorsque le PDF est exporté
   const handlePDFExported = () => {
     setPdfExported(true);
   };
 
+  // Add debug logs
   console.log("BudgetTransition rendering with envelopes:", envelopes);
   console.log(`BudgetTransition pour le dashboard: ${currentDashboardId}`);
 
+  // Filter only the budgets for the current dashboard
   const dashboardBudgets = budgets.filter(budget => 
     String(budget.dashboardId) === String(currentDashboardId)
   );
@@ -103,29 +111,28 @@ export const BudgetTransition = () => {
       <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>
-              {t("transition.dialogTitle")}
-            </AlertDialogTitle>
+            <AlertDialogTitle>Attention : Données en danger</AlertDialogTitle>
             <AlertDialogDescription className="space-y-4">
               <Alert variant="destructive" className="mt-4">
                 <AlertTriangle className="h-4 w-4" />
-                <AlertTitle>{t("transition.dialogAlertTitle")}</AlertTitle>
+                <AlertTitle>Sauvegardez vos données avant de continuer</AlertTitle>
                 <AlertDescription>
                   <p className="text-sm">
-                    {t("transition.dialogDesc").replace(
-                      "{{dashboardTitle}}",
-                      dashboardTitle || t("dashboard.untitledDashboard")
-                    )}
+                    La transition vers un nouveau mois va réinitialiser toutes vos dépenses et revenus 
+                    du dashboard actuel ({dashboardTitle || "Sans titre"}).
+                    Une fois cette opération effectuée, les données du mois actuel seront définitivement perdues.
                   </p>
+                  
                   <div className="flex items-center gap-2 mt-2">
                     <FileText className="h-4 w-4" />
-                    <span className="text-xs font-medium">{t("transition.dialogRecommendation")}</span>
+                    <span className="text-xs font-medium">Nous vous recommandons d'exporter vos données en PDF avant de continuer.</span>
                   </div>
                 </AlertDescription>
               </Alert>
+              
               {pdfExported && (
                 <p className="text-xs text-green-600 dark:text-green-400 text-center mt-2">
-                  {t("transition.pdfExportSuccess")}
+                  PDF exporté avec succès. Vous pouvez maintenant procéder à la transition.
                 </p>
               )}
             </AlertDialogDescription>
@@ -135,16 +142,14 @@ export const BudgetTransition = () => {
               fileName={pdfFileName}
               totalIncome={totalRevenues}
               totalExpenses={totalExpenses}
-              budgets={dashboardBudgets}
+              budgets={dashboardBudgets} // Use filtered budgets
               className="w-full"
               onClick={handlePDFExported}
             />
             <AlertDialogAction onClick={handleFinalConfirm} className="w-full">
-              {t("transition.confirm")}
+              Confirmer la transition
             </AlertDialogAction>
-            <AlertDialogCancel className="w-full mt-0">
-              {t("dashboard.cancel")}
-            </AlertDialogCancel>
+            <AlertDialogCancel className="w-full mt-0">Annuler</AlertDialogCancel>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -152,4 +157,5 @@ export const BudgetTransition = () => {
   );
 };
 
+// Add default export to fix the error in App.tsx
 export default BudgetTransition;

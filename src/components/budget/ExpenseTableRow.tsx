@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { formatAmount } from "@/utils/format-amount";
 import { MoreHorizontal, Pencil, Trash2, Share2 } from "lucide-react";
@@ -7,7 +6,6 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { EditExpenseDialog } from "./EditExpenseDialog";
 import { ExpenseShareDialog } from "@/components/expense/share/ExpenseShareDialog";
 import { Expense } from "@/services/database/models/expense";
-import { useTheme } from "@/context/ThemeContext";
 
 interface ExpenseTableRowProps {
   expense: Expense;
@@ -30,8 +28,6 @@ export const ExpenseTableRow = ({
 }: ExpenseTableRowProps) => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
-
-  const { t } = useTheme();
 
   const formattedDate = expense.date 
     ? new Date(expense.date).toLocaleDateString('fr-FR', { 
@@ -59,24 +55,24 @@ export const ExpenseTableRow = ({
           <DropdownMenu>
             <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
               <Button variant="ghost" className="h-8 w-8 p-0 rounded-full">
-                <span className="sr-only">{t("expense.actions.openMenu")}</span>
+                <span className="sr-only">Ouvrir le menu</span>
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-              <DropdownMenuLabel>{t("expense.actions.actions")}</DropdownMenuLabel>
+              <DropdownMenuLabel>Actions</DropdownMenuLabel>
               <DropdownMenuItem onClick={() => setIsEditDialogOpen(true)}>
                 <Pencil className="h-4 w-4 mr-2 text-muted-foreground" />
-                {t("expense.actions.edit")}
+                Modifier
               </DropdownMenuItem>
               <DropdownMenuItem onClick={onDelete}>
                 <Trash2 className="h-4 w-4 mr-2 text-destructive" />
-                {t("expense.actions.delete")}
+                Supprimer
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => setIsShareDialogOpen(true)}>
                 <Share2 className="h-4 w-4 mr-2 text-muted-foreground" />
-                {t("expense.actions.share")}
+                Partager
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -121,4 +117,3 @@ export const ExpenseTableRow = ({
     </>
   );
 };
-

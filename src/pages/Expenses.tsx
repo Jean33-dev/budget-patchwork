@@ -10,7 +10,6 @@ import { PontualExpensesTab } from "@/components/expense/PontualExpensesTab";
 import { RecurringExpensesTab } from "@/components/expense/RecurringExpensesTab";
 import { ProcessingIndicator } from "@/components/expense/ProcessingIndicator";
 import { AddButton } from "@/components/budget/AddButton";
-import { useTheme } from "@/context/ThemeContext";
 
 const Expenses = () => {
   const navigate = useNavigate();
@@ -18,8 +17,7 @@ const Expenses = () => {
   const budgetId = searchParams.get('budgetId');
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("ponctuel");
-  const { t } = useTheme();
-
+  
   const {
     expenses,
     availableBudgets,
@@ -51,11 +49,11 @@ const Expenses = () => {
       console.error("Erreur détectée dans la page Expenses:", error);
       toast({
         variant: "destructive",
-        title: t("expenses.errorTitle"),
-        description: t("expenses.errorLoading")
+        title: "Erreur de chargement",
+        description: "Une erreur est survenue lors du chargement des dépenses"
       });
     }
-  }, [error, isLoading, isProcessing, toast, t]);
+  }, [error, isLoading, isProcessing, toast]);
 
   const handleRetry = async () => {
     forceReload();
@@ -65,19 +63,19 @@ const Expenses = () => {
     <div className="container mx-auto px-4 py-6 space-y-6">
       <ExpensesHeader 
         onNavigate={navigate} 
-        showReceiveButton={activeTab === "ponctuel"}
+        showReceiveButton={activeTab === "ponctuel"} // Afficher le bouton uniquement si l'onglet actif est "ponctuel"
       />
-
+      
       <Tabs defaultValue="ponctuel" value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="ponctuel">{t("expenses.tabPontual")}</TabsTrigger>
-          <TabsTrigger value="recurrent">{t("expenses.tabRecurring")}</TabsTrigger>
+          <TabsTrigger value="ponctuel">Dépenses du mois</TabsTrigger>
+          <TabsTrigger value="recurrent">Dépenses récurrentes</TabsTrigger>
         </TabsList>
 
         <TabsContent value="ponctuel" className="mt-4">
           <AddButton 
             onClick={() => setAddDialogOpen(true)}
-            label={t("expenses.addExpense")}
+            label="Ajouter une dépense"
           />
 
           <PontualExpensesTab
@@ -108,7 +106,6 @@ const Expenses = () => {
             handleUpdateExpense={handleUpdateRecurringExpense}
             getBudgetName={getBudgetName}
             currentDate={currentDate}
-            currency={undefined}
           />
         </TabsContent>
       </Tabs>

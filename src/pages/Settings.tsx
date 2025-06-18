@@ -1,16 +1,15 @@
+
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { ArrowLeft, Database, Trash, Moon, Sun } from "lucide-react";
 import { useTheme } from "@/context/ThemeContext";
-import { supportedLanguages } from "@/i18n/translations";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useDatabaseRepair } from "@/hooks/useDatabaseRepair";
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
-import { usePinProtection } from "@/hooks/usePinProtection";
 
-// Mapping devise => symbole (ajoute la traduction dans le label via t)
+// Mapping devise => symbole
 const currencyOptions = [
   { value: "EUR", label: "Euro (€)", symbol: "€" },
   { value: "USD", label: "Dollar ($)", symbol: "$" },
@@ -19,27 +18,29 @@ const currencyOptions = [
 
 const Settings = () => {
   const navigate = useNavigate();
-  const { invertColors, toggleInvertColors, darkMode, toggleDarkMode, showToasts, toggleShowToasts, currency, setCurrency, language, setLanguage, t } = useTheme();
+  const { invertColors, toggleInvertColors, darkMode, toggleDarkMode, showToasts, toggleShowToasts, currency, setCurrency } = useTheme();
   const { isRepairing, repairDatabase, clearDatabaseCache } = useDatabaseRepair();
-  const { hasPin, clearPin } = usePinProtection();
-  const [showPinCleared, setShowPinCleared] = React.useState(false);
 
   // Handler pour un retour "intelligent"
   const handleBack = React.useCallback(() => {
     // Vérifie s'il y a bien une page précédente dans l'historique
     if (window.history.length > 1) {
       navigate(-1);
+      // Avec navigate(-1) l'utilisateur pourrait rester bloqué sur /settings (rafraîchi ou arrivée directe)
       setTimeout(() => {
+        // On vérifie si l'on est toujours sur la page des paramètres
         if (window.location.pathname === "/settings") {
           let targetPath = "/dashboard";
+          // On tente de récupérer un dashboardId en localStorage si possible
           const dashboardId = localStorage.getItem("currentDashboardId");
           if (dashboardId) {
             targetPath = `/dashboard/${dashboardId}`;
           }
           navigate(targetPath, { replace: true });
         }
-      }, 100);
+      }, 100); // Laisse le temps au navigate(-1)
     } else {
+      // Cas où il n'y a jamais eu de page précédente : force redirection
       let targetPath = "/dashboard";
       const dashboardId = localStorage.getItem("currentDashboardId");
       if (dashboardId) {
@@ -52,14 +53,6 @@ const Settings = () => {
   // Trouver le symbole correspondant à la devise sélectionnée
   const selectedSymbol = currencyOptions.find(opt => opt.value === currency)?.symbol || "€";
 
-  const handleLogout = () => {
-    clearPin();
-    setShowPinCleared(true);
-    setTimeout(() => {
-      window.location.reload();
-    }, 1200);
-  };
-
   return (
     <div className="container mx-auto py-8 space-y-6">
       <div className="flex items-center gap-4">
@@ -70,52 +63,52 @@ const Settings = () => {
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
-        <h1 className="text-3xl font-bold">{t("settings.title")}</h1>
+        <h1 className="text-3xl font-bold">Paramètres</h1>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>{t("settings.display")}</CardTitle>
+          <CardTitle>Affichage</CardTitle>
           <CardDescription>
-            {t("settings.displayDesc")}
+            Personnalisez l'apparence de l'application
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="flex items-center justify-between py-2">
             <div>
               <h3 className="font-medium flex items-center">
-                {t("settings.darkMode")}
+                Mode sombre
                 {darkMode ? <Moon className="ml-2 h-4 w-4" /> : <Sun className="ml-2 h-4 w-4" />}
               </h3>
               <p className="text-sm text-muted-foreground">
-                {t("settings.darkModeDesc")}
+                Activez un thème sombre dédié agréable et professionnel
               </p>
             </div>
             <Switch 
               checked={darkMode} 
               onCheckedChange={toggleDarkMode}
-              aria-label={t("settings.darkMode")}
+              aria-label="Activer le mode sombre"
             />
           </div>
           <div className="flex items-center justify-between py-2">
             <div>
-              <h3 className="font-medium">{t("settings.invertColors")}</h3>
+              <h3 className="font-medium">Couleurs inversées (expérimental)</h3>
               <p className="text-sm text-muted-foreground">
-                {t("settings.invertColorsDesc")}
+                Inverser toutes les couleurs (peut rendre l'interface imprévisible)
               </p>
             </div>
             <Switch 
               checked={invertColors && !darkMode} 
               onCheckedChange={toggleInvertColors}
-              aria-label={t("settings.invertColors")}
+              aria-label="Activer l'inversion des couleurs"
               disabled={darkMode}
             />
           </div>
           <div className="flex items-center justify-between py-2">
             <div>
-              <h3 className="font-medium">{t("settings.notifications")}</h3>
+              <h3 className="font-medium">Notifications</h3>
               <p className="text-sm text-muted-foreground">
-                {t("settings.notificationsDesc")}
+                Afficher les notifications temporaires dans l'application
               </p>
             </div>
             <Switch 
@@ -125,9 +118,9 @@ const Settings = () => {
           </div>
           <div className="flex items-center justify-between py-2">
             <div>
-              <h3 className="font-medium">{t("settings.currency")}</h3>
+              <h3 className="font-medium">Devise utilisée</h3>
               <p className="text-sm text-muted-foreground">
-                {t("settings.currencyDesc")}
+                Choisissez la devise qui s'affichera dans toute l'application.
               </p>
             </div>
             <Select value={currency} onValueChange={(val) => setCurrency(val as any)}>
@@ -148,20 +141,20 @@ const Settings = () => {
           </div>
         </CardContent>
       </Card>
-      
+
       <Card>
         <CardHeader>
-          <CardTitle>{t("settings.maintenance")}</CardTitle>
+          <CardTitle>Maintenance de la base de données</CardTitle>
           <CardDescription>
-            {t("settings.maintenanceDesc")}
+            Outils de réparation en cas de problème avec la base de données
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="flex flex-col gap-4">
             <div className="space-y-2">
-              <h3 className="font-medium">{t("settings.resetConnection")}</h3>
+              <h3 className="font-medium">Réinitialiser la connexion</h3>
               <p className="text-sm text-muted-foreground">
-                {t("settings.resetConnectionDesc")}
+                Réinitialise la connexion à la base de données en cas de problème de communication
               </p>
               <Button 
                 onClick={repairDatabase} 
@@ -170,14 +163,14 @@ const Settings = () => {
                 variant="outline"
               >
                 <Database className="mr-2 h-4 w-4" />
-                {isRepairing ? t("settings.repairing") : t("settings.repair")}
+                {isRepairing ? "Réparation en cours..." : "Réparer la connexion"}
               </Button>
             </div>
             
             <div className="pt-4 border-t space-y-2">
-              <h3 className="font-medium">{t("settings.advancedCleanup")}</h3>
+              <h3 className="font-medium">Nettoyage avancé</h3>
               <p className="text-sm text-muted-foreground">
-                {t("settings.advancedCleanupDesc")}
+                Supprime le cache de la base de données et force une réinitialisation complète
               </p>
               <Button 
                 onClick={clearDatabaseCache} 
@@ -186,38 +179,15 @@ const Settings = () => {
                 variant="destructive"
               >
                 <Trash className="mr-2 h-4 w-4" />
-                {isRepairing ? t("settings.cleaning") : t("settings.clean")}
+                {isRepairing ? "Nettoyage en cours..." : "Nettoyer le cache"}
               </Button>
               <p className="text-xs text-muted-foreground mt-2">
-                {t("settings.cleanWarn")}
+                Attention : Utilisez cette option uniquement en dernier recours. Les données ne seront pas perdues, mais l'application peut être temporairement indisponible pendant la réinitialisation.
               </p>
             </div>
           </div>
         </CardContent>
       </Card>
-      
-      {hasPin && (
-        <Card>
-          <CardHeader>
-            <CardTitle>{t("settings.logoutTitle")}</CardTitle>
-            <CardDescription>
-              {t("settings.logoutDesc")}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button
-              variant="destructive"
-              onClick={handleLogout}
-              className="w-full"
-            >
-              {t("settings.logout")}
-            </Button>
-            {showPinCleared && (
-              <p className="text-green-600 text-sm mt-4">{t("settings.logoutSuccess")}</p>
-            )}
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 };

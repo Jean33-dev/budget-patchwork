@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { CalendarPlus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { BudgetPDFDownload } from "@/components/pdf/BudgetPDF";
-import { useTheme } from "@/context/ThemeContext";
 
 interface DashboardActionsProps {
   totalRevenues: number;
@@ -17,7 +16,7 @@ export const DashboardActions = ({
   budgets
 }: DashboardActionsProps) => {
   const navigate = useNavigate();
-  const { t } = useTheme();
+  
   return (
     <div className="flex justify-end gap-2 mb-4">
       <BudgetPDFDownload
@@ -34,7 +33,7 @@ export const DashboardActions = ({
         className="flex items-center gap-2"
       >
         <CalendarPlus className="h-4 w-4" />
-        {t("dashboard.newMonth")}
+        Nouveau mois
       </Button>
     </div>
   );

@@ -2,7 +2,6 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { EnvelopeForm } from "@/components/budget/EnvelopeForm";
 import { Income } from "@/services/database";
-import { useTheme } from "@/context/ThemeContext";
 
 interface EditIncomeDialogProps {
   open: boolean;
@@ -36,8 +35,6 @@ export const EditIncomeDialog = ({
   setSelectedIncome,
   onEditIncome
 }: EditIncomeDialogProps) => {
-  const { t } = useTheme();
-
   // These functions update individual properties of selectedIncome
   const updateIncomeTitle = (title: string) => {
     if (selectedIncome) {
@@ -66,19 +63,11 @@ export const EditIncomeDialog = ({
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (selectedIncome) {
-      onEditIncome(selectedIncome);
-      onOpenChange(false); // Fermer la boîte de dialogue après la modification
-    }
-  };
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{t("income.edit.title")}</DialogTitle>
+          <DialogTitle>Modifier le revenu</DialogTitle>
         </DialogHeader>
         {selectedIncome && (
           <EnvelopeForm
@@ -91,8 +80,12 @@ export const EditIncomeDialog = ({
             setLinkedBudgetId={() => {}}
             date={selectedIncome.date}
             setDate={updateIncomeDate}
-            submitButtonText={t("income.save")}
-            onSubmit={handleSubmit}
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (selectedIncome) {
+                onEditIncome(selectedIncome);
+              }
+            }}
           />
         )}
       </DialogContent>

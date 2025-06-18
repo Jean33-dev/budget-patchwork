@@ -42,7 +42,7 @@ export const RecurringExpensesTab = ({
   const { toast } = useToast();
   const [addRecurringDialogOpen, setAddRecurringDialogOpen] = useState(false);
   const [editRecurringExpense, setEditRecurringExpense] = useState<Expense | null>(null);
-  const { currency: globalCurrency, t } = useTheme();
+  const { currency: globalCurrency } = useTheme();
   const usedCurrency = currency || globalCurrency;
 
   useEffect(() => {
@@ -64,8 +64,8 @@ export const RecurringExpensesTab = ({
     } else {
       toast({
         variant: "destructive",
-        title: t("expenses.errorTitle"),
-        description: t("expenses.typeMustBeExpense")
+        title: "Erreur",
+        description: "Le type doit être 'expense'"
       });
     }
   };
@@ -90,11 +90,11 @@ export const RecurringExpensesTab = ({
     <>
       <AddButton
         onClick={openAddRecurringDialog}
-        label={t("expenses.addRecurringExpense")}
+        label="Ajouter une dépense récurrente"
       />
 
       {isLoading ? (
-        <div className="text-center py-8">{t("expenses.loadingRecurring")}</div>
+        <div className="text-center py-8">Chargement des dépenses récurrentes...</div>
       ) : recurringExpenses.length === 0 ? (
         <RecurringExpenseEmptyState onAddClick={openAddRecurringDialog} />
       ) : (
@@ -126,11 +126,9 @@ export const RecurringExpensesTab = ({
           linkedBudgetId: editRecurringExpense.linkedBudgetId,
           date: editRecurringExpense.date,
         } : undefined}
-        dialogTitle={
-          editRecurringExpense ? t("expenses.editRecurring") : t("expenses.addRecurringExpense")
-        }
-        submitButtonText={editRecurringExpense ? t("expenses.save") : undefined}
+        dialogTitle={editRecurringExpense ? "Modifier la dépense récurrente" : "Ajouter une dépense récurrente"}
       />
     </>
   );
 };
+

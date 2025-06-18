@@ -1,13 +1,10 @@
-
 import { Settings, HelpCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { AdBanner } from "@/components/shared/AdBanner";
-import { useTheme } from "@/context/ThemeContext";
 
 export const HomeFooter = () => {
   const navigate = useNavigate();
-  const { t } = useTheme();
 
   return (
     <footer className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-md border-t py-3 px-4 z-50 shadow-lg">
@@ -20,7 +17,7 @@ export const HomeFooter = () => {
           onClick={() => navigate("/help")}
         >
           <HelpCircle className="h-5 w-5" />
-          <span className="hidden sm:inline">{t("footer.aide")}</span>
+          <span className="hidden sm:inline">Aide</span>
         </Button>
         
         <Button
@@ -30,10 +27,9 @@ export const HomeFooter = () => {
           onClick={() => navigate("/settings")}
         >
           <Settings className="h-5 w-5" />
-          <span className="hidden sm:inline">{t("footer.parametres")}</span>
+          <span className="hidden sm:inline">Paramètres</span>
         </Button>
       </div>
     </footer>
   );
 };
-

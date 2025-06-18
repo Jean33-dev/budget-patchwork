@@ -14,7 +14,6 @@ import { useBluetoothSharing } from "@/hooks/useBluetoothSharing";
 import { Expense } from "@/services/database/models/expense";
 import { ExpenseShareData } from "@/services/bluetooth/bluetooth-service";
 import { Badge } from "@/components/ui/badge";
-import { useTheme } from "@/context/ThemeContext";
 
 interface ExpenseShareDialogProps {
   expense: Expense;
@@ -39,8 +38,6 @@ export const ExpenseShareDialog = ({
     disconnectFromDevice,
     sendExpense
   } = useBluetoothSharing();
-
-  const { t } = useTheme();
 
   // Start scan when dialog opens
   useEffect(() => {
@@ -85,27 +82,27 @@ export const ExpenseShareDialog = ({
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{t("bluetooth.shareExpenseTitle")}</DialogTitle>
+          <DialogTitle>Partager la dépense</DialogTitle>
           <DialogDescription>
-            {t("bluetooth.shareExpenseDesc")}
+            Partagez cette dépense avec un autre appareil via Bluetooth
           </DialogDescription>
         </DialogHeader>
 
         <div className="py-4">
           <div className="mb-4 rounded-md bg-muted/50 p-4">
-            <h4 className="text-sm font-medium mb-2">{t("bluetooth.detailsTitle")}</h4>
+            <h4 className="text-sm font-medium mb-2">Détails de la dépense</h4>
             <div className="space-y-1 text-sm">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">{t("bluetooth.detailsFieldTitle")}</span>
+                <span className="text-muted-foreground">Titre</span>
                 <span className="font-medium">{expense.title}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">{t("bluetooth.detailsFieldAmount")}</span>
+                <span className="text-muted-foreground">Montant</span>
                 <span className="font-medium">{expense.budget.toFixed(2)} €</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">{t("bluetooth.detailsFieldDate")}</span>
-                <span className="font-medium">{expense.date || t("bluetooth.unknownDate")}</span>
+                <span className="text-muted-foreground">Date</span>
+                <span className="font-medium">{expense.date || "Non spécifiée"}</span>
               </div>
             </div>
           </div>
@@ -114,12 +111,12 @@ export const ExpenseShareDialog = ({
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h4 className="text-sm font-medium">{t("bluetooth.connectedTo")}</h4>
+                  <h4 className="text-sm font-medium">Connecté à</h4>
                   <p className="text-sm text-muted-foreground">
-                    {selectedDevice.name || t("bluetooth.unnamedDevice")}
+                    {selectedDevice.name || "Appareil sans nom"}
                   </p>
                 </div>
-                <Badge variant="outline" className="bg-green-50">{t("bluetooth.connected")}</Badge>
+                <Badge variant="outline" className="bg-green-50">Connecté</Badge>
               </div>
               
               <div className="flex flex-col gap-2">
@@ -131,12 +128,12 @@ export const ExpenseShareDialog = ({
                   {isSendingData ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      {t("bluetooth.sending")}
+                      Envoi en cours...
                     </>
                   ) : (
                     <>
                       <Send className="mr-2 h-4 w-4" />
-                      {t("bluetooth.sendData")}
+                      Envoyer les données
                     </>
                   )}
                 </Button>
@@ -145,7 +142,7 @@ export const ExpenseShareDialog = ({
                   onClick={disconnectFromDevice}
                   disabled={isSendingData}
                 >
-                  {t("bluetooth.disconnect")}
+                  Déconnecter
                 </Button>
               </div>
             </div>

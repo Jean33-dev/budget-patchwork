@@ -20,7 +20,7 @@ interface CategoryCardProps {
 export const CategoryCard = ({ category, onEdit, currency }: CategoryCardProps) => {
   const [budgetNames, setBudgetNames] = useState<string[]>([]);
   const { currentDashboardId } = useDashboardContext();
-  const { currency: globalCurrency, t } = useTheme();
+  const { currency: globalCurrency } = useTheme();
   const usedCurrency = currency || globalCurrency;
 
   useEffect(() => {
@@ -65,26 +65,26 @@ export const CategoryCard = ({ category, onEdit, currency }: CategoryCardProps) 
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="text-sm text-muted-foreground">
-          {t("categories.card.budgetsAssigned")} : {budgetNames.length > 0 ? budgetNames.join(", ") : t("categories.card.noBudgetsAssigned")}
+          Budgets associés : {budgetNames.length > 0 ? budgetNames.join(", ") : "Aucun budget assigné"}
         </div>
         <div className="space-y-2">
           <div className="flex justify-between items-center">
-            <div className="font-semibold">{t("categories.card.totalBudget")} :</div>
+            <div className="font-semibold">Budget total :</div>
             <div>{formatAmount(category.total, usedCurrency)}</div>
           </div>
           <div className="flex justify-between items-center">
-            <div className="font-semibold">{t("categories.card.expenses")} :</div>
+            <div className="font-semibold">Dépenses :</div>
             <div className={isOverBudget ? "text-budget-expense" : ""}>{formatAmount(category.spent, usedCurrency)}</div>
           </div>
           <div className="flex justify-between items-center">
-            <div className="font-semibold">{t("categories.card.remaining")} :</div>
+            <div className="font-semibold">Reste :</div>
             <div className={isOverBudget ? "text-budget-expense" : "text-budget-income"}>
               {formatAmount(remaining, usedCurrency)}
             </div>
           </div>
           <div className="space-y-1">
             <div className="flex justify-between text-sm">
-              <span>{t("categories.card.progression")} :</span>
+              <span>Progression :</span>
               <span className={isOverBudget ? "text-budget-expense" : ""}>
                 {percentage.toFixed(1)}%
               </span>

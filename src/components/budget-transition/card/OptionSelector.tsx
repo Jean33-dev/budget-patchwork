@@ -16,7 +16,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { ChevronDown } from "lucide-react";
 import { TransitionOption, BudgetEnvelope } from "@/types/transition";
-import { useTheme } from "@/context/ThemeContext";
 
 interface OptionSelectorProps {
   envelope: BudgetEnvelope;
@@ -33,8 +32,6 @@ export const OptionSelector: React.FC<OptionSelectorProps> = ({
   onOptionChange,
   onTransferTargetSelect,
 }) => {
-  const { t } = useTheme();
-
   // Determine whether to show the additional inputs based on selected option
   const showTransferOptions = selectedOption === "transfer";
   
@@ -45,13 +42,13 @@ export const OptionSelector: React.FC<OptionSelectorProps> = ({
         onValueChange={(value) => onOptionChange(value as TransitionOption)}
       >
         <SelectTrigger className="w-full sm:w-[200px]">
-          <SelectValue placeholder={t("transition.selectOptionPlaceholder") || "Select an option"} />
+          <SelectValue placeholder="Choisir une option" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="carry">{t("transition.option.carry")}</SelectItem>
-          <SelectItem value="reset">{t("transition.option.reset")}</SelectItem>
-          <SelectItem value="transfer">{t("transition.option.transfer")}</SelectItem>
-          <SelectItem value="multi-transfer">{t("transition.option.multiTransfer")}</SelectItem>
+          <SelectItem value="carry">Reporter tout</SelectItem>
+          <SelectItem value="reset">Réinitialiser</SelectItem>
+          <SelectItem value="transfer">Transférer</SelectItem>
+          <SelectItem value="multi-transfer">Transferts multiples</SelectItem>
         </SelectContent>
       </Select>
 
@@ -59,7 +56,7 @@ export const OptionSelector: React.FC<OptionSelectorProps> = ({
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="w-full sm:w-[200px]">
-              {envelope.transferTargetTitle || t("transition.selectEnvelopePlaceholder")}
+              {envelope.transferTargetTitle || "Choisir une enveloppe"}
               <ChevronDown className="ml-2 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>

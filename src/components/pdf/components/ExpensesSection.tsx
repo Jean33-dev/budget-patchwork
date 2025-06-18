@@ -1,9 +1,7 @@
-
 import React from "react";
 import { Text, View } from "@react-pdf/renderer";
 import { styles } from "../styles/pdfStyles";
 import { formatAmount } from "@/utils/format-amount";
-import { translations } from "@/i18n/translations";
 
 interface Expense {
   id: string;
@@ -12,48 +10,29 @@ interface Expense {
   type: "expense";
   date?: string;
 }
+
 interface ExpensesSectionProps {
   expenses?: Expense[];
   currency?: "EUR" | "USD" | "GBP";
-  language?: string;
 }
 
-function getTranslation(language: string, key: string): string {
-  if (translations[language] && translations[language][key]) {
-    return translations[language][key];
-  }
-  if (translations["en"] && translations["en"][key]) {
-    return translations["en"][key];
-  }
-  if (process.env.NODE_ENV !== "production") {
-    console.warn(`[TRANSLATION MISSING] ${key} (${language})`);
-  }
-  return key;
-}
-
-export const ExpensesSection: React.FC<ExpensesSectionProps> = ({
-  expenses,
-  currency = "EUR",
-  language = "fr"
-}) => {
+export const ExpensesSection: React.FC<ExpensesSectionProps> = ({ expenses, currency = "EUR" }) => {
   if (!expenses || !expenses.length) return null;
-
-  const t = (key: string) => getTranslation(language, key);
-
+  
   return (
     <View style={styles.section}>
-      <Text style={styles.sectionTitle}>{t("pdf.expenses")}</Text>
+      <Text style={styles.sectionTitle}>Dépenses</Text>
       <View style={styles.table}>
         <View style={[styles.tableRow, styles.tableHeader]}>
-          <Text style={styles.tableCell}>{t("pdf.name")}</Text>
-          <Text style={styles.tableCell}>{t("pdf.date")}</Text>
-          <Text style={styles.tableCellAmount}>{t("pdf.amount")}</Text>
+          <Text style={styles.tableCell}>Nom</Text>
+          <Text style={styles.tableCell}>Date</Text>
+          <Text style={styles.tableCellAmount}>Montant</Text>
         </View>
         {expenses.map((expense) => (
           <View style={styles.tableRow} key={expense.id}>
             <Text style={styles.tableCell}>{expense.title}</Text>
             <Text style={styles.tableCell}>
-              {expense.date ? new Date(expense.date).toLocaleDateString(language === "fr" ? "fr-FR" : "en-US") : "N/A"}
+              {expense.date ? new Date(expense.date).toLocaleDateString("fr-FR") : "N/A"}
             </Text>
             <Text style={styles.tableCellAmount}>{formatAmount(expense.budget, currency)}</Text>
           </View>

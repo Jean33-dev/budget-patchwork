@@ -1,4 +1,3 @@
-
 import React from "react";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import { Button } from "@/components/ui/button";
@@ -18,7 +17,7 @@ export const BudgetPDFDownload = ({
   onClick,
   currency: currencyProp,
 }: BudgetPDFDownloadProps) => {
-  const { currency, t, language } = useTheme();
+  const { currency } = useTheme();
 
   return (
     <PDFDownloadLink
@@ -30,7 +29,6 @@ export const BudgetPDFDownload = ({
           incomes={incomes}
           expenses={expenses}
           currency={currencyProp || currency}
-          language={language}
         />
       }
       fileName={fileName}
@@ -45,7 +43,7 @@ export const BudgetPDFDownload = ({
           disabled={loading}
         >
           <FileDown className="h-4 w-4" />
-          {loading ? t("pdf.downloading") : t("pdf.download")}
+          {loading ? "Génération..." : "Télécharger PDF"}
         </Button>
       )}
     </PDFDownloadLink>

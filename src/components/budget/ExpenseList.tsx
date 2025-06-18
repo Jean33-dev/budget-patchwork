@@ -6,8 +6,6 @@ import { AddEnvelopeDialog } from "./AddEnvelopeDialog";
 import { Expense, Budget } from "@/hooks/useExpenseManagement";
 import { ExpenseDialogs, useExpenseDialogState } from "./ExpenseDialogs";
 import { useTheme } from "@/context/ThemeContext";
-import { ExpenseEmptyState } from "./ExpenseEmptyState";
-import { Button } from "@/components/ui/button";
 
 interface ExpenseListProps {
   expenses: Expense[];
@@ -40,8 +38,6 @@ export const ExpenseList = ({
   showHeader = true,
   currency,
 }: ExpenseListProps) => {
-  const { t } = useTheme();
-
   useEffect(() => {
     console.log("ExpenseList - received expenses:", expenses.length);
     if (expenses.length > 0) {
@@ -61,7 +57,7 @@ export const ExpenseList = ({
   const usedCurrency = currency || globalCurrency;
 
   return (
-    <div>
+    <div className="space-y-6">
       {showHeader && (
         <EnvelopeListHeader
           type="expense"
@@ -69,22 +65,17 @@ export const ExpenseList = ({
         />
       )}
 
-      {/* Affiche l'état vide si aucune dépense */}
-      {expenses.length === 0 ? (
-        <ExpenseEmptyState />
-      ) : (
-        <ExpenseTable
-          expenses={expenses}
-          onEnvelopeClick={dialogState.handleEditClick}
-          availableBudgets={availableBudgets.map(budget => ({
-            id: budget.id,
-            title: budget.title,
-          }))}
-          onDeleteExpense={handleDelete}
-          onUpdateExpense={handleUpdateExpense}
-          currency={usedCurrency}
-        />
-      )}
+      <ExpenseTable
+        expenses={expenses}
+        onEnvelopeClick={dialogState.handleEditClick}
+        availableBudgets={availableBudgets.map(budget => ({
+          id: budget.id,
+          title: budget.title,
+        }))}
+        onDeleteExpense={handleDelete}
+        onUpdateExpense={handleUpdateExpense}
+        currency={usedCurrency}
+      />
 
       <AddEnvelopeDialog
         open={addDialogOpen}
@@ -95,6 +86,7 @@ export const ExpenseList = ({
           id: budget.id,
           title: budget.title,
         }))}
+        defaultBudgetId={defaultBudgetId}
       />
 
       <ExpenseDialogs

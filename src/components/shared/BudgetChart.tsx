@@ -1,8 +1,7 @@
 
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, Label } from "recharts";
 import { formatAmount } from "@/utils/format-amount";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { useTheme } from "@/context/ThemeContext";
+import { useIsMobile } from "@/hooks/use-mobile"; // Ajout du hook
 
 interface BudgetData {
   name: string;
@@ -43,8 +42,7 @@ const COLORS = {
 const UNALLOCATED_COLOR = "#64748B"; // Gris bleuté
 
 export const BudgetChart = ({ data, totalIncome = 0, addUnallocated = false, currency = "EUR" }: BudgetChartProps) => {
-  const isMobile = useIsMobile();
-  const { t } = useTheme();
+  const isMobile = useIsMobile(); // usage du hook
 
   let chartData = [...data];
   
@@ -53,7 +51,7 @@ export const BudgetChart = ({ data, totalIncome = 0, addUnallocated = false, cur
     const remainingBudget = totalIncome - totalAllocated;
     if (remainingBudget > 0) {
       chartData.push({
-        name: t("charts.unallocatedBudget"),
+        name: "Budget non alloué",
         value: remainingBudget,
         type: "budget" as const,
       });
@@ -88,9 +86,9 @@ export const BudgetChart = ({ data, totalIncome = 0, addUnallocated = false, cur
               outerRadius={outerRadius}
               fill="#8884d8"
               dataKey="value"
-              paddingAngle={2}
-              cornerRadius={4}
-              stroke="transparent"
+              paddingAngle={2} // Espacement entre les segments pour un look plus moderne
+              cornerRadius={4} // Coins arrondis pour un aspect plus élégant
+              stroke="transparent" // Suppression des bordures pour un aspect plus propre
             >
               {chartData.length > 0 && (
                 <Label
@@ -107,7 +105,7 @@ export const BudgetChart = ({ data, totalIncome = 0, addUnallocated = false, cur
                           dominantBaseline="central"
                           className="fill-muted-foreground font-medium text-sm"
                         >
-                          {t("charts.total")}
+                          Total
                         </text>
                         <text
                           x={cx}
@@ -125,7 +123,7 @@ export const BudgetChart = ({ data, totalIncome = 0, addUnallocated = false, cur
               )}
               {chartData.map((entry, index) => {
                 // Couleur spéciale pour le budget non alloué
-                if (entry.name === t("charts.unallocatedBudget")) {
+                if (entry.name === "Budget non alloué") {
                   return <Cell key={`cell-${index}`} fill={UNALLOCATED_COLOR} />;
                 }
                 
@@ -172,7 +170,7 @@ export const BudgetChart = ({ data, totalIncome = 0, addUnallocated = false, cur
         <div className="mt-4 flex flex-wrap justify-center gap-4">
           {chartData.map((entry, index) => {
             // Couleur spéciale pour le budget non alloué
-            const color = entry.name === t("charts.unallocatedBudget")
+            const color = entry.name === "Budget non alloué" 
               ? UNALLOCATED_COLOR 
               : COLORS[entry.type][index % COLORS[entry.type].length];
               
@@ -199,3 +197,4 @@ export const BudgetChart = ({ data, totalIncome = 0, addUnallocated = false, cur
     </div>
   );
 };
+

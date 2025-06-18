@@ -5,7 +5,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { useTheme } from "@/context/ThemeContext";
 
 interface EditDashboardDialogProps {
   open: boolean;
@@ -23,7 +22,6 @@ export const EditDashboardDialog = ({
   const [name, setName] = useState(currentName);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
-  const { t } = useTheme();
 
   // Réinitialiser le nom et l'état de soumission quand le dialogue s'ouvre
   useEffect(() => {
@@ -39,8 +37,8 @@ export const EditDashboardDialog = ({
     if (!name.trim()) {
       toast({
         variant: "destructive",
-        title: t("dashboard.errorRequired"),
-        description: t("dashboard.errorRequired")
+        title: "Erreur",
+        description: "Le nom du tableau de bord ne peut pas être vide"
       });
       return;
     }
@@ -70,19 +68,19 @@ export const EditDashboardDialog = ({
     }}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{t("dashboard.rename")}</DialogTitle>
+          <DialogTitle>Modifier le tableau de bord</DialogTitle>
           <DialogDescription>
-            {t("dashboard.nameLabel")}
+            Modifiez le nom de votre tableau de bord.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="dashboard-name">{t("dashboard.nameLabel")}</Label>
+            <Label htmlFor="dashboard-name">Nom du tableau de bord</Label>
             <Input
               id="dashboard-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder={t("dashboard.namePlaceholder")}
+              placeholder="Entrez le nom du tableau de bord"
               autoFocus
               disabled={isSubmitting}
             />
@@ -94,13 +92,13 @@ export const EditDashboardDialog = ({
               onClick={() => onOpenChange(false)}
               disabled={isSubmitting}
             >
-              {t("dashboard.cancel")}
+              Annuler
             </Button>
             <Button 
               type="submit"
               disabled={isSubmitting}
             >
-              {isSubmitting ? t("dashboard.creating") : t("dashboard.create")}
+              {isSubmitting ? "Enregistrement..." : "Enregistrer"}
             </Button>
           </DialogFooter>
         </form>

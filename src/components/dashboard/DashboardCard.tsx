@@ -14,7 +14,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useState } from "react";
-import { useTheme } from "@/context/ThemeContext";
 
 interface DashboardCardProps {
   id: string;
@@ -26,7 +25,6 @@ interface DashboardCardProps {
 export const DashboardCard = ({ id, title, onEdit, onDelete }: DashboardCardProps) => {
   const navigate = useNavigate();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const { t } = useTheme();
 
   const handleClick = () => {
     localStorage.setItem('currentDashboardId', id);
@@ -54,7 +52,7 @@ export const DashboardCard = ({ id, title, onEdit, onDelete }: DashboardCardProp
                   onEdit(id, title);
                 }}
               >
-                {t("dashboard.rename")}
+                Renommer
               </Button>
               <Button 
                 variant="outline" 
@@ -65,7 +63,7 @@ export const DashboardCard = ({ id, title, onEdit, onDelete }: DashboardCardProp
                   setShowDeleteDialog(true);
                 }}
               >
-                {t("dashboard.delete")}
+                Supprimer
               </Button>
             </div>
           </CardTitle>
@@ -75,20 +73,20 @@ export const DashboardCard = ({ id, title, onEdit, onDelete }: DashboardCardProp
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t("dashboard.confirmDeleteTitle")}</AlertDialogTitle>
+            <AlertDialogTitle>Êtes-vous sûr ?</AlertDialogTitle>
             <AlertDialogDescription>
-              {t("dashboard.confirmDeleteDescription")}
+              Cette action est irréversible. Le tableau de bord sera définitivement supprimé.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{t("dashboard.cancel")}</AlertDialogCancel>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
             <AlertDialogAction 
               onClick={() => {
                 onDelete(id);
                 setShowDeleteDialog(false);
               }}
             >
-              {t("dashboard.confirmDeleteAction")}
+              Supprimer
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
