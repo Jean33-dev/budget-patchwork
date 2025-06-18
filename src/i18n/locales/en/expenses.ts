@@ -12,6 +12,7 @@ const expensesTranslations = {
   "expenses.typeMustBeExpense": "Type must be 'expense'",
   "expenses.editRecurring": "Edit recurring expense",
   "expenses.save": "Save",
+  "expenses.save": "Enregistrer",
   "expenses.receive": "Receive",
   "expenses.receiveExpenseTitle": "Receive an expense",
   "expenses.receiveExpenseDesc": "Connect to a device to receive an expense via Bluetooth",
@@ -34,6 +35,7 @@ const expensesTranslations = {
   "expense.actions.actions": "Actions",
   "expense.actions.edit": "Edit",
   "expense.actions.delete": "Delete",
+  "expenses.save" : "Save",
   "expense.actions.share": "Share",
   "expense.actions.openMenu": "Open expense actions menu",
 };
