@@ -34,6 +34,7 @@ const expensesTranslations = {
   "expense.actions.actions": "Actions",
   "expense.actions.edit": "Edit",
   "expense.actions.delete": "Delete",
+  "expenses.save" : "Save"
   "expense.actions.share": "Share",
   "expense.actions.openMenu": "Open expense actions menu",
 };
