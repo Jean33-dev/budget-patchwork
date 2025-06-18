@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -123,28 +122,6 @@ const Settings = () => {
               checked={showToasts} 
               onCheckedChange={toggleShowToasts} 
             />
-          </div>
-          <div className="flex items-center justify-between py-2">
-            <div>
-              <h3 className="font-medium">{t("settings.language")}</h3>
-              <p className="text-sm text-muted-foreground">
-                {t("settings.languageDesc")}
-              </p>
-            </div>
-            <Select value={language} onValueChange={setLanguage}>
-              <SelectTrigger className="w-40">
-                <SelectValue>
-                  {supportedLanguages.find(l => l.value === language)?.label}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                {supportedLanguages.map(lang => (
-                  <SelectItem key={lang.value} value={lang.value}>
-                    {lang.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
           </div>
           <div className="flex items-center justify-between py-2">
             <div>
