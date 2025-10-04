@@ -23,10 +23,6 @@ const config: CapacitorConfig = {
         availableDevices: "Appareils disponibles",
         noDeviceFound: "Aucun appareil trouvé"
       }
-    },
-    AdMob: {
-      appId: 'ca-app-pub-3284826601315861~1234567890', // À remplacer avec l'App ID réel
-      testDeviceIds: []
     }
   },
   ios: {
