@@ -32,8 +32,14 @@ export const useAdMob = () => {
     if (!isInitialized) return;
 
     try {
+      // Détection de la plateforme pour utiliser le bon Ad Unit ID
+      const isIOS = Capacitor.getPlatform() === 'ios';
+      const adId = isIOS 
+        ? 'ca-app-pub-3284826601315861/1969364502' // iOS
+        : 'ca-app-pub-3284826601315861/7061801284'; // Android
+
       const options: BannerAdOptions = {
-        adId: 'ca-app-pub-3284826601315861/7061801284',
+        adId,
         adSize: BannerAdSize.ADAPTIVE_BANNER,
         position: BannerAdPosition.BOTTOM_CENTER,
         margin: 0,
