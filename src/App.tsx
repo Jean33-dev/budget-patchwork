@@ -15,13 +15,14 @@ import Categories from "./pages/Categories";
 import BudgetTransition from "./pages/BudgetTransition";
 import Settings from "./pages/Settings";
 import Help from "./pages/Help";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 
 const queryClient = new QueryClient();
 
 // Composant pour gérer l'affichage conditionnel du Footer
 const AppContent = () => {
   const location = useLocation();
-  const showFooter = location.pathname !== '/' && location.pathname !== '/settings' && location.pathname !== '/help';
+  const showFooter = location.pathname !== '/' && location.pathname !== '/settings' && location.pathname !== '/help' && location.pathname !== '/privacy';
 
   // On applique un padding plus large quand le footer est présent, sinon plus petit
   const paddingBottom = showFooter ? "pb-36" : "pb-8";
@@ -33,6 +34,7 @@ const AppContent = () => {
           <Route path="/" element={<Home />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/help" element={<Help />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/dashboard/:dashboardId" element={<Dashboard />} />
           <Route path="/dashboard/:dashboardId/budgets" element={<Budgets />} />
           <Route path="/dashboard/:dashboardId/expenses" element={<Expenses />} />
